@@ -56,8 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: 'app-v${{ steps.get_version.outputs.VERSION }}' # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v${{ steps.get_version.outputs.VERSION }}'
+          tagName: 'aircraft-${{ steps.get_version.outputs.VERSION }}' # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: 'Aircraft ${{ steps.get_version.outputs.VERSION }}'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
