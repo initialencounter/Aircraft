@@ -1,4 +1,5 @@
-use tauri::{App, AppHandle, Emitter, Manager, Wry, WindowEvent};
+use std::env;
+use tauri::{App, AppHandle, Wry, Emitter, Manager, WindowEvent};
 use tauri::menu::{MenuBuilder, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri_plugin_autostart::ManagerExt;

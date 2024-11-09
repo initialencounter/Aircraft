@@ -1,5 +1,5 @@
 use reqwest;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tauri::{self, WebviewWindow};
 
 #[derive(Deserialize)]
@@ -47,12 +47,4 @@ pub fn hide_or_show<'a>(window: WebviewWindow) -> &'a str {
         window.show().unwrap();
         "隐藏(H)"
     }
-}
-
-#[derive(Serialize)]
-pub struct FileTile {
-    name: String,
-    path: String,
-    blake2b512: String,
-    last_modified: String,
 }
