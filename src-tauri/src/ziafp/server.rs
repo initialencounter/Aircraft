@@ -1,12 +1,15 @@
 use std::env;
 use std::path::PathBuf;
+use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use tokio::sync::watch;
 
 use reqwest::header;
 use reqwest::{multipart, Client};
 use warp::Filter;
 
+use crate::logger::LogMessage;
 use crate::logger::Logger;
 use crate::utils::{
     build_confirmation_message, get_today_date, match_file, parse_date, popup_message,
@@ -76,6 +79,7 @@ impl HttpClient {
         password: String,
         debug: bool,
         log_enabled: bool,
+        log_tx: Sender<LogMessage>,
     ) -> Self {
         let client = reqwest::Client::builder()
             .cookie_store(true)
@@ -83,7 +87,7 @@ impl HttpClient {
             .unwrap();
         let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
         let log_dir = PathBuf::from(current_exe.parent().unwrap().join("logs"));
-        let logger = Arc::new(Mutex::new(Logger::new(log_dir, "server", log_enabled)));
+        let logger = Arc::new(Mutex::new(Logger::new(log_dir, "server", log_enabled, log_tx)));
 
         HttpClient {
             client,
@@ -154,7 +158,8 @@ impl HttpClient {
     }
     async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
         let url = format!("{}/rest/inspect/query?{}", self.base_url, query_string);
-        let response = self
+        
+        let response = match self
             .client
             .get(&url)
             .header(
@@ -167,10 +172,34 @@ impl HttpClient {
             .header("Referer", self.base_url.to_string())
             .header(header::ACCEPT, "application/json")
             .send()
-            .await?;
+            .await
+        {
+            Ok(resp) => resp,
+            Err(e) => {
+                self.logger
+                    .lock()
+                    .await
+                    .log("ERROR", &format!("请求失败: {}", e));
+                return Err(Box::new(e));
+            }
+        };
 
-        let result: QueryResult = response.json().await?;
-        Ok(result)
+        if !response.status().is_success() {
+            let error_msg = format!("服务器返回错误状态码: {}", response.status());
+            self.logger.lock().await.log("ERROR", &error_msg);
+            return Err(error_msg.into());
+        }
+
+        match response.json().await {
+            Ok(result) => Ok(result),
+            Err(e) => {
+                self.logger
+                    .lock()
+                    .await
+                    .log("ERROR", &format!("解析JSON失败: {}", e));
+                Err(Box::new(e))
+            }
+        }
     }
     async fn get_project_id(&self, project_no: &str) -> Result<String> {
         let (start_date, end_date) = parse_date(project_no)?;
@@ -184,7 +213,9 @@ impl HttpClient {
             "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
         );
-        let result: QueryResult = self.query_project(&query_string).await.unwrap();
+        
+        let result = self.query_project(&query_string).await?;
+        
         if result.rows.is_empty() {
             self.logger
                 .lock()
@@ -321,7 +352,11 @@ impl HttpClient {
     async fn get_project_info(&self, project_no: &str) -> Result<QueryResult> {
         self.log("INFO", &format!("GET /get-project-info: {:?}", project_no))
             .await;
-        let (start_date, end_date) = parse_date(&project_no).unwrap();
+        
+        // 处理日期解析错误
+        let (start_date, end_date) = parse_date(&project_no)
+            .map_err(|e| format!("解析日期失败: {}", e))?;
+        
         let system_id = if project_no.starts_with("PEK") {
             "pek"
         } else {
@@ -332,8 +367,17 @@ impl HttpClient {
             "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
         );
-        let result = self.query_project(&query_string).await.unwrap();
-        Ok(result)
+        
+        match self.query_project(&query_string).await {
+            Ok(result) => Ok(result),
+            Err(e) => {
+                self.logger
+                    .lock()
+                    .await
+                    .log("ERROR", &format!("查询项目失败: {}", e));
+                Err(format!("查询项目失败: {}", e).into())
+            }
+        }
     }
 }
 
@@ -341,16 +385,19 @@ pub async fn run(
     base_url: String,
     username: String,
     password: String,
-    port: String,
-    debug: String,
-    log_enabled: String,
+    port: u16,
+    debug: bool,
+    log_enabled: bool,
+    mut shutdown_rx: watch::Receiver<bool>,
+    log_tx: Sender<LogMessage>,
 ) -> Result<()> {
     let client = Arc::new(Mutex::new(HttpClient::new(
         base_url.clone(),
         username.clone(),
         password.clone(),
-        debug == "true",
-        log_enabled == "true",
+        debug,
+        log_enabled,
+        log_tx,
     )));
     client.lock().await.log("INFO", "开始运行").await;
     client.lock().await.log("INFO", &format!("base_url: {}", base_url)).await;
@@ -361,9 +408,9 @@ pub async fn run(
     client.lock().await.log("INFO", &format!("log_enabled: {}", log_enabled)).await;
     let _ = client.lock().await.login().await;
     let client_clone = client.clone();
-    let _heartbeat = tokio::spawn(async move {
+    let heartbeat = tokio::spawn(async move {
         loop {
-            if debug == "false" {
+            if !debug {
                 LOGIN_STATUS.store(false, Ordering::Relaxed);
                 client_clone.lock().await.heartbeat().await.unwrap();
             } else {
@@ -411,23 +458,34 @@ pub async fn run(
                     .await
                     .log("INFO", &format!("GET /get-project-info: {:?}", project_no))
                     .await;
-                let response = if let Ok(result) = client.lock().await.get_project_info(&project_no).await {
-                    warp::reply::json(&result)
-                } else {
-                    warp::reply::json(&CustomError {
-                        message: "未找到项目ID".to_string(),
-                    })
-                };
-                response
+                
+                // 处理所有可能的错误情况
+                match client.lock().await.get_project_info(&project_no).await {
+                    Ok(result) => warp::reply::json(&result),
+                    Err(e) => warp::reply::json(&CustomError {
+                        message: format!("获取项目信息失败: {}", e),
+                    }),
+                }
             },
         );
 
     let combined_routes = routes.or(doc_routes);
     // 启动 web 服务器
-    let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port.parse::<u16>().unwrap()));
-    let _server_handle = tokio::spawn(server);
+    let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));
+    let server_handle = tokio::spawn(server);
 
     loop {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        tokio::select! {
+            _ = shutdown_rx.changed() => {
+                if *shutdown_rx.borrow() {
+                    server_handle.abort();
+                    heartbeat.abort();
+                    break;
+                }
+            }
+        }
     }
+    client.lock().await.log("INFO", "服务已停止").await;
+    Ok(())
 }

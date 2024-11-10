@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import TitleBar from "./components/TitleBar.vue";
-import {invoke, isTauri} from '@tauri-apps/api/core';
+import {isTauri} from '@tauri-apps/api/core';
 import {Event, listen} from '@tauri-apps/api/event';
-import {ElMessage} from "element-plus";
+import SideBar from "./components/SideBar.vue";
 
 interface Link {
   link: string;
@@ -14,23 +14,34 @@ if (isTauri()) {
   })
 }
 
-// 使用 async/await
-async function checkLoginStatus() {
-  const isLoggedIn = await invoke('get_login_status')
-  ElMessage.success(isLoggedIn ? "登录成功" : "登录失败")
-}
 </script>
 
 <template>
-  <TitleBar avatar="https://avatars.githubusercontent.com/u/109729945"
-            link="https://github.com/initialencounter/aircraft"></TitleBar>
-  <body>
-  <br>
-  <br>
-  <el-button @click="checkLoginStatus"></el-button>
-  </body>
+  <div class="main-container">
+    <TitleBar avatar="https://avatars.githubusercontent.com/u/109729945"
+    link="https://github.com/initialencounter/aircraft"></TitleBar>
+    <SideBar />
+    <div class="content">
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
+    </div>
+  </div>
 </template>
 
 <style scoped>
 @import url('./assets/css/app.css');
+
+.main-container {
+  border-radius: 5%;
+  display: flex;
+  height: calc(100vh - 60px); /* 减去标题栏高度 */
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  margin-left: 8rem;  /* 添加左边距，与侧边栏宽度相同 */
+}
 </style>

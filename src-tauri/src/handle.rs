@@ -2,32 +2,15 @@ use std::env;
 use tauri::{App, AppHandle, Wry, Emitter, Manager, WindowEvent};
 use tauri::menu::{MenuBuilder, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
-use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use crate::{Link, menu};
+use crate::command as cmd;
+use crate::{menu, Link};
 use crate::utils::{check_update, hide_or_show, restart};
 
 pub fn handle_hide_or_show(app: &AppHandle<Wry>, hide: &MenuItem<Wry>) {
     let window = app.get_webview_window("main").unwrap();
     let title = hide_or_show(window);
     hide.set_text(title).expect("Failed to set tray text");
-}
-
-pub fn handle_auto_start(app: &AppHandle<Wry>, auto_start: &MenuItem<Wry>) {
-    let autostart_manager = app.autolaunch();
-    let is_enabled = autostart_manager.is_enabled().unwrap();
-    if is_enabled {
-        let _ = autostart_manager.disable();
-    } else {
-        let _ = autostart_manager.enable();
-    }
-    auto_start
-        .set_text(if is_enabled {
-            "开机自启动(❌)"
-        } else {
-            "开机自启动(✔️)"
-        })
-        .expect("Failed to set tray text");
 }
 
 pub fn handle_tray_icon_event(tray: &TrayIcon, event: &TrayIconEvent) {
@@ -59,11 +42,9 @@ pub fn handle_menu_event_update(app: &AppHandle<Wry>) {
 }
 
 pub fn handle_setup(app: &mut App) {
-    let [help_, quit, hide,
-    about, update, restart_,
-    auto_start] = menu::create_menu_item(app);
+    let [help_, quit, hide, about, update, restart_] = menu::create_menu_item(app);
     let tray_menu = MenuBuilder::new(app)
-        .items(&[&help_, &update, &restart_, &auto_start, &about, &hide, &quit]) // insert the menu items here
+        .items(&[&help_, &update, &restart_, &about, &hide, &quit]) // insert the menu items here
         .build()
         .unwrap();
     let _ = TrayIconBuilder::with_id("system-tray-1")
@@ -76,14 +57,21 @@ pub fn handle_setup(app: &mut App) {
             "restart" => restart(),
             "about" => app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft".to_string() })).unwrap(),
             "update" => handle_menu_event_update(&app),
-            "auto_start" => handle_auto_start(&app, &auto_start),
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
             handle_tray_icon_event(tray, &event);
         })
         .build(app).unwrap();
-    app.get_webview_window("main").unwrap().set_always_on_top(true).expect("Failed to set window as topmost");
+    // 静默启动
+    let base_config = cmd::get_base_config(app.handle().clone());
+    if base_config.silent_start {
+        if let Some(window) = app.get_webview_window("main") {
+            window.hide().unwrap();
+        }
+    }
+    // 设置窗口置顶
+    // app.get_webview_window("main").unwrap().set_always_on_top(true).expect("Failed to set window as topmost");
     let window = app.get_webview_window("main").unwrap();
     let window_clone = window.clone();
     window.on_window_event(move |event| {

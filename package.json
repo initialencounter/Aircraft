@@ -13,13 +13,22 @@
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-shell": "^2",
     "element-plus": "^2.8.7",
-    "vue": "^3.3.4"
+    "pinia": "^2.2.6",
+    "vue": "^3.3.4",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
+    "@maikolib/vite-plugin-yaml": "^1.1.0",
     "@tauri-apps/cli": "^2.0.4",
+    "@types/node": "^22.9.0",
     "@vitejs/plugin-vue": "^5.0.5",
+    "@vueuse/core": "^11.2.0",
+    "markdown-vue": "^1.0.3",
+    "sass-embedded": "^1.80.6",
+    "schemastery-vue": "^7.3.7",
     "typescript": "^5.2.2",
     "vite": "^5.3.1",
+    "vue-i18n": "^10.0.4",
     "vue-tsc": "^2.0.22"
   },
   "packageManager": "yarn@4.1.0"
