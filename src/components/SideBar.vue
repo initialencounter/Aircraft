@@ -11,6 +11,7 @@ const menuItems = [
   { index: '1', path: '/', label: '首页', icon: House },
   { index: '2', path: '/schema', label: '服务设置', icon: Setting },
   { index: '3', path: '/schema_base', label: '基础设置', icon: Setting },
+  { index: '4', path: '/schema_hotkey', label: '快捷键设置', icon: Setting },
   { index: '4', path: '/logs', label: '日志', icon: Document },
 ]
 
@@ -23,14 +24,11 @@ const handleSelect = (index: string) => {
 </script>
 
 <template>
-  <el-menu
-    :default-active="activeIndex"
-    class="sidebar-menu"
-    @select="handleSelect">
-    <el-menu-item class="sidebar-menu-item" v-for="item in menuItems" 
-                  :key="item.index" 
-                  :index="item.index">
-      <el-icon><component :is="item.icon" /></el-icon>
+  <el-menu :default-active="activeIndex" class="sidebar-menu" @select="handleSelect">
+    <el-menu-item class="sidebar-menu-item" v-for="item in menuItems" :key="item.index" :index="item.index">
+      <el-icon>
+        <component :is="item.icon" />
+      </el-icon>
       <span>{{ item.label }}</span>
     </el-menu-item>
   </el-menu>
@@ -50,7 +48,8 @@ const handleSelect = (index: string) => {
 .sidebar-menu-item {
   background-color: #252529;
 }
+
 .sidebar-menu-item:hover {
   background-color: #4f9633;
 }
-</style> 
+</style>

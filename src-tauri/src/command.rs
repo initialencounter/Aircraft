@@ -3,7 +3,8 @@ use std::path::Path;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 
-use crate::config::{BaseConfig, ServerConfig};
+use crate::config::{BaseConfig, HotkeyConfig, ServerConfig};
+use crate::listen_manager::ListenManager;
 use crate::logger::LogMessage;
 use crate::server_manager::ServerManager;
 
@@ -98,4 +99,60 @@ pub fn save_base_config(app: tauri::AppHandle, config: BaseConfig) -> Result<(),
 #[tauri::command]
 pub fn get_server_logs(state: tauri::State<'_, ServerManager>) -> Vec<LogMessage> {
     state.try_get_logs()
+}
+
+// 快捷键设置
+#[tauri::command]
+pub fn get_hotkey_config(app: tauri::AppHandle) -> HotkeyConfig {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    match store.get("hotkey") {
+        Some(data) => match serde_json::from_value(data) {
+            Ok(config) => config,
+            Err(_) => HotkeyConfig::default(),
+        },
+        None => HotkeyConfig::default(),
+    }
+}
+
+#[tauri::command]
+pub fn save_hotkey_config(app: tauri::AppHandle, config: HotkeyConfig) -> Result<(), String> {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    store.set("hotkey", json!(config.clone()));
+    store.save().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn stop_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result<(), String> {
+    state.stop();
+    Ok(())
+}
+
+#[tauri::command]
+pub fn start_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result<(), String> {
+    state.start();
+    Ok(())
+}
+
+#[tauri::command]
+pub fn restart_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result<(), String> {
+    state.stop();
+    state.start();
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn reload_hotkey_listener(
+    state: tauri::State<'_, ListenManager>,
+    config: HotkeyConfig,
+) -> Result<(), String> {
+    state.stop();
+    state.save_config(config);
+    state.start();
+    Ok(())
+}
+
+#[tauri::command]
+pub fn is_listening(state: tauri::State<'_, ListenManager>) -> bool {
+    state.is_listening()
 }

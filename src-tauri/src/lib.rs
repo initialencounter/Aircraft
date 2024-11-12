@@ -1,19 +1,21 @@
 mod command;
+mod config;
 mod handle;
+mod listen_manager;
 mod logger;
 mod menu;
-mod utils;
-mod config;
-mod ziafp;
 mod server_manager;
-use tauri::Manager;
+mod utils;
+mod ziafp;
 use serde::Serialize;
 use std::env;
+use tauri::Manager;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri_plugin_autostart::MacosLauncher;
 
 use crate::command as cmd;
 use crate::handle::handle_setup;
+use crate::listen_manager::ListenManager;
 use crate::server_manager::ServerManager;
 
 #[derive(Serialize, Clone)]
@@ -36,6 +38,8 @@ pub async fn run() {
             handle_setup(app);
             let server_manager = ServerManager::new(app.handle().clone());
             app.manage(server_manager);
+            let listen_manager = ListenManager::new(app.handle().clone());
+            app.manage(listen_manager);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -48,6 +52,13 @@ pub async fn run() {
             cmd::get_base_config,
             cmd::save_base_config,
             cmd::get_server_logs,
+            cmd::get_hotkey_config,
+            cmd::save_hotkey_config,
+            cmd::start_hotkey_listener,
+            cmd::stop_hotkey_listener,
+            cmd::restart_hotkey_listener,
+            cmd::reload_hotkey_listener,
+            cmd::is_listening,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

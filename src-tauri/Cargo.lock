@@ -1414,12 +1414,13 @@ dependencies = [
 
 [[package]]
 name = "flextrek"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e99003d5afe938ffac7609ff3f89c65876f97520029979224b0385757c39433"
+checksum = "e27cbaa2c5bb84a53ca2cf46c67666d662e8dc915dfec2978ae0c44d758688d4"
 dependencies = [
  "futures",
  "scopeguard",
+ "tokio",
  "urlencoding",
  "windows 0.58.0",
 ]
