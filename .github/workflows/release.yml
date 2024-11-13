@@ -59,6 +59,3 @@ jobs:
           tagName: 'aircraft-${{ steps.get_version.outputs.VERSION }}' # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: 'Aircraft ${{ steps.get_version.outputs.VERSION }}'
           releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
