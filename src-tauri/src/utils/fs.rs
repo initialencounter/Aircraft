@@ -101,3 +101,44 @@ pub fn prepare_file_info(file_info: RawFileInfo) -> Option<FileInfo> {
         file_type,
     })
 }
+
+pub fn match_file_list(file_list: Vec<String>) -> Vec<RawFileInfo> {
+    let mut result_file_list = Vec::new();
+    for path_str in file_list {
+        let path = PathBuf::from(path_str);
+        if path.is_dir() {
+            continue;
+        }
+        let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
+
+        // 检查文件名是否符合要求
+        if !file_name.ends_with(".pdf")
+            || (!file_name.starts_with("PEK") && !file_name.starts_with("SEK"))
+        {
+            continue;
+        }
+
+        // 构造对应的 doc 文件路径
+        let doc_file_path = path.with_extension(if file_name.contains("概要") {
+            "docx"
+        } else {
+            "doc"
+        });
+        // 如果 doc 源文件不存在，则说明 pdf 不是 doc 转换而来的，直接跳过
+        if !doc_file_path.exists() {
+            continue;
+        }
+
+        let project_no = if let Some(match_result) = PROJECT_NO_REGEX.find(&file_name) {
+            match_result.as_str().to_string()
+        } else {
+            continue;
+        };
+        result_file_list.push(RawFileInfo {
+            file_name,
+            project_no,
+            file_path: path,
+        });
+    }
+    result_file_list
+}

@@ -22,9 +22,7 @@ if (isTauri()) {
     link="https://github.com/initialencounter/aircraft"></TitleBar>
     <SideBar />
     <div class="content">
-      <keep-alive>
-        <router-view></router-view>
-      </keep-alive>
+      <router-view></router-view>
     </div>
   </div>
 </template>

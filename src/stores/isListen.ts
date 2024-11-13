@@ -7,25 +7,25 @@ interface AuthState {
   timer: number | null
 }
 
-export const useListenStore = defineStore('auth', {
+export const useListenStore = defineStore('isListen', {
   state: (): AuthState => ({
     isListening: false,
     timer: null,
   }),
   actions: {
-    async checkLoginStatus(): Promise<void> {
+    async checkListenStatus(): Promise<void> {
       if (!isTauri()) {
         this.isListening = true
         return
       }
-      const isLoggedIn = await invoke<boolean>('is_listening')
-      this.isListening = isLoggedIn
+      const isRunning = await invoke<boolean>('is_listening')
+      this.isListening = isRunning
     },
     startPolling(): void {
       if (this.timer) return // 避免重复启动
 
       this.timer = window.setInterval(() => {
-        this.checkLoginStatus()
+        this.checkListenStatus()
       }, 1000)
     },
     stopPolling(): void {

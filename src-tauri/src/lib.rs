@@ -7,6 +7,7 @@ mod menu;
 mod server_manager;
 mod utils;
 mod ziafp;
+mod hotkey;
 use serde::Serialize;
 use std::env;
 use tauri::Manager;

@@ -2,8 +2,8 @@ use std::env;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use tokio::sync::watch;
+use tokio::sync::Mutex;
 
 use reqwest::header;
 use reqwest::{multipart, Client};
@@ -11,6 +11,7 @@ use warp::Filter;
 
 use crate::logger::LogMessage;
 use crate::logger::Logger;
+use crate::utils::match_file_list;
 use crate::utils::{
     build_confirmation_message, get_today_date, match_file, parse_date, popup_message,
     prepare_file_info, RawFileInfo,
@@ -22,7 +23,6 @@ use serde::{Deserialize, Serialize};
 
 use std::fmt;
 use warp::reject::Reject;
-
 
 // 自定义错误类型
 #[derive(Debug, Serialize)]
@@ -39,7 +39,6 @@ impl fmt::Display for CustomError {
 impl Reject for CustomError {}
 
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
-
 
 #[derive(Deserialize, Serialize)]
 struct QueryResult {
@@ -87,7 +86,12 @@ impl HttpClient {
             .unwrap();
         let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
         let log_dir = PathBuf::from(current_exe.parent().unwrap().join("logs"));
-        let logger = Arc::new(Mutex::new(Logger::new(log_dir, "server", log_enabled, log_tx)));
+        let logger = Arc::new(Mutex::new(Logger::new(
+            log_dir,
+            "server",
+            log_enabled,
+            log_tx,
+        )));
 
         HttpClient {
             client,
@@ -158,7 +162,7 @@ impl HttpClient {
     }
     async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
         let url = format!("{}/rest/inspect/query?{}", self.base_url, query_string);
-        
+
         let response = match self
             .client
             .get(&url)
@@ -213,9 +217,9 @@ impl HttpClient {
             "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
         );
-        
+
         let result = self.query_project(&query_string).await?;
-        
+
         if result.rows.is_empty() {
             self.logger
                 .lock()
@@ -326,7 +330,21 @@ impl HttpClient {
             .await;
         uploaded_files
     }
-
+    async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
+        let raw_file_list = match_file_list(file_list);
+        let message = build_confirmation_message(&raw_file_list);
+        if !popup_message("警告", &message) {
+            return Vec::new();
+        }
+        let mut uploaded_files = Vec::new();
+        for file_info in raw_file_list {
+            let result = self.process_single_file(file_info).await;
+            if let Ok(file_name) = result {
+                uploaded_files.push(file_name);
+            }
+        }
+        uploaded_files
+    }
     async fn process_single_file(&self, file_info: RawFileInfo) -> Result<String> {
         let Some(file_info) = prepare_file_info(file_info) else {
             return Err("准备文件信息失败".into());
@@ -352,11 +370,11 @@ impl HttpClient {
     async fn get_project_info(&self, project_no: &str) -> Result<QueryResult> {
         self.log("INFO", &format!("GET /get-project-info: {:?}", project_no))
             .await;
-        
+
         // 处理日期解析错误
-        let (start_date, end_date) = parse_date(&project_no)
-            .map_err(|e| format!("解析日期失败: {}", e))?;
-        
+        let (start_date, end_date) =
+            parse_date(&project_no).map_err(|e| format!("解析日期失败: {}", e))?;
+
         let system_id = if project_no.starts_with("PEK") {
             "pek"
         } else {
@@ -367,7 +385,7 @@ impl HttpClient {
             "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
         );
-        
+
         match self.query_project(&query_string).await {
             Ok(result) => Ok(result),
             Err(e) => {
@@ -400,12 +418,36 @@ pub async fn run(
         log_tx,
     )));
     client.lock().await.log("INFO", "开始运行").await;
-    client.lock().await.log("INFO", &format!("base_url: {}", base_url)).await;
-    client.lock().await.log("INFO", &format!("username: {}", username)).await;
-    client.lock().await.log("INFO", &format!("password: {}", password)).await;
-    client.lock().await.log("INFO", &format!("port: {}", port)).await;
-    client.lock().await.log("INFO", &format!("debug: {}", debug)).await;
-    client.lock().await.log("INFO", &format!("log_enabled: {}", log_enabled)).await;
+    client
+        .lock()
+        .await
+        .log("INFO", &format!("base_url: {}", base_url))
+        .await;
+    client
+        .lock()
+        .await
+        .log("INFO", &format!("username: {}", username))
+        .await;
+    client
+        .lock()
+        .await
+        .log("INFO", &format!("password: {}", password))
+        .await;
+    client
+        .lock()
+        .await
+        .log("INFO", &format!("port: {}", port))
+        .await;
+    client
+        .lock()
+        .await
+        .log("INFO", &format!("debug: {}", debug))
+        .await;
+    client
+        .lock()
+        .await
+        .log("INFO", &format!("log_enabled: {}", log_enabled))
+        .await;
     let _ = client.lock().await.login().await;
     let client_clone = client.clone();
     let heartbeat = tokio::spawn(async move {
@@ -443,7 +485,24 @@ pub async fn run(
                 warp::reply::json(&files)
             },
         );
-
+    let selected_routes = warp::post()
+        .and(warp::path("upload-selected"))
+        .and(warp::body::content_length_limit(1024 * 16))
+        .and(warp::body::json())
+        .and(warp::any().map({
+            let client = client.clone();
+            move || client.clone()
+        }))
+        .then(
+            move |file_list: Vec<String>, client: Arc<Mutex<HttpClient>>| async move {
+                let files = client
+                    .lock()
+                    .await
+                    .post_file_from_file_list(file_list)
+                    .await;
+                warp::reply::json(&files)
+            },
+        );
     let doc_routes = warp::get()
         .and(warp::path("get-project-info"))
         .and(warp::path::param::<String>())
@@ -458,7 +517,7 @@ pub async fn run(
                     .await
                     .log("INFO", &format!("GET /get-project-info: {:?}", project_no))
                     .await;
-                
+
                 // 处理所有可能的错误情况
                 match client.lock().await.get_project_info(&project_no).await {
                     Ok(result) => warp::reply::json(&result),
@@ -469,7 +528,7 @@ pub async fn run(
             },
         );
 
-    let combined_routes = routes.or(doc_routes);
+    let combined_routes = routes.or(doc_routes).or(selected_routes);
     // 启动 web 服务器
     let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));
     let server_handle = tokio::spawn(server);

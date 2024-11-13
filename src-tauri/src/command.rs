@@ -45,7 +45,6 @@ pub async fn reload_config(
     state: tauri::State<'_, ServerManager>,
     config: ServerConfig,
 ) -> Result<(), String> {
-    println!("reload_config: {:?}", config);
     let _ = save_server_config(app, config.clone()).await;
     state.reload(config).await;
     Ok(())
