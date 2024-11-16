@@ -12,7 +12,7 @@ const menuItems = [
   { index: '2', path: '/schema', label: '服务设置', icon: Setting },
   { index: '3', path: '/schema_base', label: '基础设置', icon: Setting },
   { index: '4', path: '/schema_hotkey', label: '快捷键设置', icon: Setting },
-  { index: '4', path: '/logs', label: '日志', icon: Document },
+  { index: '5', path: '/logs', label: '日志', icon: Document },
 ]
 
 const handleSelect = (index: string) => {
