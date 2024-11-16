@@ -60,7 +60,7 @@ async fn send_task(request_body: &serde_json::Value) -> Result<()> {
     if response.status().is_success() {
         let res: EditDocResponse = response.json().await?;
         let save_path = res.save_path;
-        open_file_with_default_program(&save_path);
+        let _ = open_file_with_default_program(&save_path);
     } else {
         println!("Failed to edit document: {:?}", response.text().await?);
     }
@@ -69,16 +69,17 @@ async fn send_task(request_body: &serde_json::Value) -> Result<()> {
 }
 
 
-fn get_clip_text() -> String {
-    let mut ctx: ClipboardContext = ClipboardContext::new().unwrap();
-    let clip_text = ctx.get_contents().unwrap();
-    return clip_text;
+fn get_clip_text() -> Result<String> {
+    let mut ctx: ClipboardContext = ClipboardContext::new()
+        .map_err(|e| format!("无法访问剪贴板: {}", e))?;
+    let clip_text = ctx.get_contents()
+        .map_err(|e| format!("无法获取剪贴板内容: {}", e))?;
+    Ok(clip_text)
 }
 
 async fn get_project_info(project_no: &str) -> Result<QueryResult> {
     let client = Client::new();
-    println!("get_project_info: {}", project_no);
-    // 发送POST请求
+    
     let response = client
         .get(format!(
             "http://localhost:25455/get-project-info/{}",
@@ -86,9 +87,8 @@ async fn get_project_info(project_no: &str) -> Result<QueryResult> {
         ))
         .send()
         .await
-        .unwrap();
+        .map_err(|e| format!("请求失败: {}", e))?;
 
-    // 检查响应状态
     if response.status().is_success() {
         let res: QueryResult = response.json().await?;
         Ok(res)
@@ -97,23 +97,23 @@ async fn get_project_info(project_no: &str) -> Result<QueryResult> {
     }
 }
 
-fn open_file_with_default_program(path: &str) {
+fn open_file_with_default_program(path: &str) -> Result<()> {
     Command::new("cmd")
         .args(&["/C", "start", "", path])
         .spawn()
-        .expect("Failed to open file with default program");
+        .map_err(|e| format!("无法打开文件: {}", e))?;
+    Ok(())
 }
 
-pub async fn write_doc(target_dir: String) {
-    let clip_text = get_clip_text();
+pub async fn write_doc(target_dir: String) -> Result<()> {
+    let clip_text = get_clip_text()?;
     if !check_project_no(&clip_text) {
         popup_message(
             "项目编号不合法",
             &format!("请检查项目编号是否正确: {}", clip_text),
         );
-        return;
+        return Ok(());
     }
-    println!("项目编号: {}", clip_text);
 
     match get_project_info(&clip_text).await {
         Ok(project_info) => {
@@ -126,21 +126,44 @@ pub async fn write_doc(target_dir: String) {
             };
             let is_power_bank =
                 item_c_name.contains("移动电源") || item_c_name.contains("储能电源");
-            // 构建请求体
+                
+            let exe_path = env::current_exe()
+                .map_err(|e| format!("无法获取执行路径: {}", e))?;
+            let parent_path = exe_path.parent()
+                .ok_or("无法获取父目录")?;
+            let source_path = parent_path.join("image.doc")
+                .to_str()
+                .ok_or("路径转换失败")?
+                .to_string();
+                
+            let en_name = item_e_name.split(" ")
+                .nth(1)
+                .ok_or("无法解析英文名称")?;
+                
             let request_body = json!({
-                "source_path": env::current_exe().unwrap().parent().unwrap().join("image.doc").to_str().unwrap(),
+                "source_path": source_path,
                 "save_dir": target_dir,
                 "project_no": clip_text,
                 "project_name": item_c_name,
                 "is_965": is_965,
                 "is_power_bank": is_power_bank,
-                "en_name": item_e_name.split(" ").nth(1).unwrap()
+                "en_name": en_name
             });
-            send_task(&request_body).await.unwrap();
-            simulate_f5_press();
+            
+            match send_task(&request_body).await {
+                Ok(_) => {
+                    simulate_f5_press();
+                    Ok(())
+                }
+                Err(e) => {
+                    popup_message("写入文档失败", &e.to_string());
+                    Err(e)
+                }
+            }
         }
-        _ => {
+        Err(e) => {
             popup_message("项目信息获取失败", "请检查项目编号是否正确");
+            Err(e)
         }
     }
 }

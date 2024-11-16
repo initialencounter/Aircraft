@@ -36,12 +36,21 @@ struct EditDocResponse {
 async fn send_task(path: String, project_no: &str) -> Result<()> {
     let client = Client::new();
     let today_date = get_today_date();
+    let exe_path = env::current_exe()
+        .map_err(|e| format!("无法获取执行文件路径: {}", e))?;
+    let parent_path = exe_path
+        .parent()
+        .ok_or("无法获取父目录")?;
+    let signature_path_buf = parent_path.join("signature.png");
+    let signature_path = signature_path_buf
+        .to_str()
+        .ok_or("路径转换失败")?;
+
     let request_body = json!({
         "source_path": &path,
         "project_no": project_no,
         "date": today_date,
-        "signature_img_path": env::current_exe().unwrap().parent().unwrap().join("signature.png").to_str().unwrap()
-
+        "signature_img_path": signature_path
     });
 
     // 发送POST请求
@@ -62,10 +71,12 @@ async fn send_task(path: String, project_no: &str) -> Result<()> {
     Ok(())
 }
 
-fn get_clip_text() -> String {
-    let mut ctx: ClipboardContext = ClipboardContext::new().unwrap();
-    let clip_text = ctx.get_contents().unwrap();
-    return clip_text;
+fn get_clip_text() -> Result<String> {
+    let mut ctx: ClipboardContext = ClipboardContext::new()
+        .map_err(|e| format!("无法创建剪贴板上下文: {}", e))?;
+    let clip_text = ctx.get_contents()
+        .map_err(|e| format!("无法获取剪贴板内容: {}", e))?;
+    Ok(clip_text)
 }
 
 fn open_file_with_default_program(path: &str) {
@@ -75,34 +86,49 @@ fn open_file_with_default_program(path: &str) {
         .expect("Failed to open file with default program");
 }
 
-async fn match_file(dir: &PathBuf, project_no: &str) {
+async fn match_file(dir: &PathBuf, project_no: &str) -> Result<()> {
     let mut file_path_list = vec![];
     let mut file_name_list = vec![];
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
+    
+    let entries = fs::read_dir(dir)
+        .map_err(|e| format!("无法读取目录: {}", e))?;
+        
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("无法读取目录项: {}", e))?;
+        let path = entry.path();
         if path.is_dir() {
             continue;
         }
-        let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
+        
+        let file_name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or("无效的文件名")?
+            .to_string();
+            
         if !file_name.contains("概要") {
             continue;
         }
-        // 检查文件名是否符合要求
         if !file_name.ends_with(".docx") {
             continue;
         }
         if !file_name.starts_with("PEK") && !file_name.starts_with("SEK") {
             continue;
         }
-        file_path_list.push(path.to_str().unwrap().to_string());
-        file_name_list.push(file_name.to_string());
+        
+        file_path_list.push(path.to_str().ok_or("路径转换失败")?.to_string());
+        file_name_list.push(file_name);
     }
+    
     if !popup_message("是否要修改这些概要？", &file_name_list.join("\n")) {
-        return;
+        return Ok(());
     }
+    
     for path in file_path_list {
-        let _ = send_task(path, project_no).await;
+        send_task(path, project_no).await?;
     }
+    
+    Ok(())
 }
 
 fn get_today_date() -> String {
@@ -114,7 +140,8 @@ fn get_today_date() -> String {
     formatted_date
 }
 
-pub async fn replace_docx(target_dir: String) {
-    let clip_text = get_clip_text();
-    match_file(&PathBuf::from(&target_dir), &clip_text).await;
+pub async fn replace_docx(target_dir: String) -> Result<()> {
+    let clip_text = get_clip_text()?;
+    match_file(&PathBuf::from(&target_dir), &clip_text).await?;
+    Ok(())
 }

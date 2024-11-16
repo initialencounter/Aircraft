@@ -87,7 +87,9 @@ impl Logger {
             level: level.to_string(),
             message: message.to_string(),
         };
-        self.log_tx.send(log_message).unwrap();
+        self.log_tx.send(log_message).unwrap_or_else(|e| {
+            eprintln!("发送日志失败: {}", e);
+        });
     }
 
     pub fn read_existing_logs(&self, log_dir: PathBuf, service_name: &str) -> Result<(), std::io::Error> {

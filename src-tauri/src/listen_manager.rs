@@ -22,7 +22,7 @@ impl ListenManager {
         let config_clone = config.clone();
         let doc_handle = if config.doc_enable {
             Some(listen_path(config.doc_key, move |path| async move {
-                write_doc(path.to_str().unwrap().to_string()).await;
+                let _ = write_doc(path.to_str().unwrap().to_string()).await;
             }))
         } else {
             None
@@ -46,7 +46,7 @@ impl ListenManager {
         };
         let docx_handle = if config.docx_enable {
             Some(listen_path(config.docx_key, |path| async move {
-                replace_docx(path.to_str().unwrap().to_string()).await;
+                let _ = replace_docx(path.to_str().unwrap().to_string()).await;
             }))
         } else {
             None
@@ -66,7 +66,7 @@ impl ListenManager {
         if config.doc_enable {
             *self.doc_handle.lock().unwrap() =
                 Some(listen_path(config.doc_key, move |path| async move {
-                    write_doc(path.to_str().unwrap().to_string()).await;
+                    let _ = write_doc(path.to_str().unwrap().to_string()).await;
                 }));
         }
         if config.copy_enable {
@@ -86,7 +86,7 @@ impl ListenManager {
         if config.docx_enable {
             *self.docx_handle.lock().unwrap() =
                 Some(listen_path(config.docx_key, |path| async move {
-                    replace_docx(path.to_str().unwrap().to_string()).await;
+                    let _ = replace_docx(path.to_str().unwrap().to_string()).await;
                 }));
         }
         self.is_running

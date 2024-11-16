@@ -15,12 +15,12 @@ use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
 
 
 fn popup_message(title: &str, message: &str) -> bool {
-    let result = MessageDialog::new()
+    MessageDialog::new()
         .set_title(title)
         .set_text(&message)
         .set_type(MessageType::Warning)
-        .show_confirm();
-    result.unwrap()
+        .show_confirm()
+        .unwrap_or(false)
 }
 
 #[derive(Serialize, Debug)]
@@ -61,20 +61,35 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
         }
     };
     if response.status().is_success() {
-        let text = response.text().await.unwrap();
-        // 使用新的结构体解析 JSON
-        let result: SearchResponse = serde_json::from_str(&text).unwrap();
-        return result.results;
+        match response.text().await {
+            Ok(text) => {
+                match serde_json::from_str::<SearchResponse>(&text) {
+                    Ok(result) => result.results,
+                    Err(e) => {
+                        eprintln!("Failed to parse JSON: {}", e);
+                        vec![]
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to get response text: {}", e);
+                vec![]
+            }
+        }
+    } else {
+        vec![]
     }
-    return vec![];
 }
 
 fn simulate_f5_press() {
-    let mut enigo = Enigo::new(&Settings::default()).unwrap();
-    enigo.key(Key::F5, Click).unwrap();
+    if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
+        if let Err(e) = enigo.key(Key::F5, Click) {
+            eprintln!("Failed to simulate F5 press: {}", e);
+        }
+    }
 }
 
-fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) -> () {
+fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) {
     let mut file_list = vec![];
     for result in search_result {
         let source_path = format!("{}\\{}", result.path, result.name);
@@ -89,21 +104,35 @@ fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) -> () {
     if !popup_message("确认复制文件?", &file_list.join("\n")) {
         return;
     }
+    
     for source_path in file_list {
-        let target_path = target_path.clone() + "\\" + &source_path.split("\\").last().unwrap();
+        let file_name = match source_path.split('\\').last() {
+            Some(name) => name,
+            None => {
+                eprintln!("Invalid source path: {}", source_path);
+                continue;
+            }
+        };
+        let target_path = format!("{}\\{}", target_path, file_name);
+        
         if let Err(e) = fs::copy(&source_path, &target_path) {
             eprintln!("Failed to copy {} to {}: {}", source_path, target_path, e);
         }
     }
 
-    // 复制完成后模拟按下 F5
     simulate_f5_press();
 }
 
-fn get_clip_text() -> String {
-    let mut ctx: ClipboardContext = ClipboardContext::new().unwrap();
-    let clip_text = ctx.get_contents().unwrap();
-    return clip_text;
+fn get_clip_text() -> Option<String> {
+    match ClipboardContext::new() {
+        Ok(mut ctx) => {
+            ctx.get_contents().ok()
+        }
+        Err(e) => {
+            eprintln!("Failed to create clipboard context: {}", e);
+            None
+        }
+    }
 }
 
 fn check_project_no(project_no: &str) -> bool {
@@ -111,7 +140,14 @@ fn check_project_no(project_no: &str) -> bool {
 }
 
 pub async fn copy_file_to_here(target_dir: String) {
-    let clip_text = get_clip_text();
+    let clip_text = match get_clip_text() {
+        Some(text) => text,
+        None => {
+            popup_message("剪贴板错误", "无法读取剪贴板内容");
+            return;
+        }
+    };
+    
     if !check_project_no(&clip_text) {
         popup_message("项目编号不合法", "请检查项目编号是否正确");
         return;
