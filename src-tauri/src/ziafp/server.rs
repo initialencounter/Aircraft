@@ -451,17 +451,21 @@ pub async fn run(
     let _ = client.lock().await.login().await;
     let client_clone = client.clone();
     let heartbeat = tokio::spawn(async move {
+        let mut last_heartbeat = std::time::Instant::now();
         loop {
             if !debug {
                 LOGIN_STATUS.store(false, Ordering::Relaxed);
-                client_clone.lock().await.heartbeat().await.unwrap();
+                // 检查距离上次心跳是否超过阈值
+                if last_heartbeat.elapsed() > std::time::Duration::from_secs(60 * 30) {
+                    client_clone.lock().await.log("WARN", "检测到较长时间未进行心跳，可能是由于系统睡眠导致，开始重新登录").await;
+                    client_clone.lock().await.login().await.unwrap();
+                } else {
+                    client_clone.lock().await.heartbeat().await.unwrap();
+                }
+                last_heartbeat = std::time::Instant::now();
             } else {
                 LOGIN_STATUS.store(true, Ordering::Relaxed);
-                client_clone
-                    .lock()
-                    .await
-                    .log("INFO", "调试模式，跳过心跳")
-                    .await;
+                client_clone.lock().await.log("INFO", "调试模式，跳过心跳").await;
             }
             tokio::time::sleep(std::time::Duration::from_secs(60 * 28)).await;
         }
