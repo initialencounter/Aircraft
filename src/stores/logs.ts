@@ -22,12 +22,13 @@ export const useLogStore = defineStore('logs', {
       const logs = await invoke<LogMessage[]>('get_server_logs')
       return logs
     },
-    startGetLog(callback: (logs: LogMessage[]) => void): void {
+    startGetLog(): void {
       if (this.logTimer) return
       this.logTimer = window.setInterval(async () => {
         let logs = await this.getServerLogs()
-        this.logHistory.push(...logs)
-        callback(logs)
+        if (logs.length) {
+          this.logHistory.push(...logs)
+        }
       }, 1000)
     },
     stopGetLog(): void {

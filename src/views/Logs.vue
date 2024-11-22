@@ -21,28 +21,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useLogStore, type LogStore } from "../stores/logs";
-interface Log {
-  time_stamp: string;
-  level: string;
-  message: string;
-}
-const logs = ref<Log[]>([]);
 
 const BUFFER_SIZE = 1000; // 一次显示的日志数量
 const scrollerRef = ref<HTMLElement | null>(null);
 const visibleLogs = computed(() => {
-  return [...logs.value].reverse().slice(0, BUFFER_SIZE);
+  return [...logStore.logHistory].reverse().slice(0, BUFFER_SIZE);
 });
 
 const logStore: LogStore = useLogStore();
 onMounted(() => {
-  logs.value = logStore.logHistory;
-  logStore.startGetLog((newLogs) => {
-    logs.value.push(...newLogs);
-    if (logs.value.length > BUFFER_SIZE * 2) {
-      logs.value = logs.value.slice(-BUFFER_SIZE);
-    }
-  });
+  logStore.startGetLog()
 });
 onBeforeUnmount(() => {
   logStore.stopGetLog();
