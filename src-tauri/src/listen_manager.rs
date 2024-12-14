@@ -1,6 +1,7 @@
 use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 use tauri::Wry;
+use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
 
 use crate::config::HotkeyConfig;
 use crate::hotkey::{copy_file_to_here, upload_file, write_doc};
@@ -13,13 +14,28 @@ pub struct ListenManager {
     copy_handle: Mutex<Option<HotkeyHandle>>,
     upload_handle: Mutex<Option<HotkeyHandle>>,
     docx_handle: Mutex<Option<HotkeyHandle>>,
+    key_proxy_handle: Mutex<Option<HotkeyHandle>>,
     config: Mutex<HotkeyConfig>,
+}
+
+// pub struct KeyProxy {
+//     pub enable: bool,
+//     pub hotkey: String,
+//     pub target_key: Key,
+// }
+
+fn simulate_f2_press() {
+    let mut enigo = Enigo::new(&Settings::default()).unwrap();
+    enigo.key(Key::F2, Click).unwrap();
 }
 
 impl ListenManager {
     pub fn new(app_handle: tauri::AppHandle<Wry>) -> Self {
         let config = get_hotkey_config(app_handle.clone());
         let config_clone = config.clone();
+        let key_proxy_handle = Some(listen_path("ctrl+shift+a".to_string(), move |_path| async move {
+            simulate_f2_press();
+        }));
         let doc_handle = if config.doc_enable {
             Some(listen_path(config.doc_key, move |path| async move {
                 let _ = write_doc(path.to_str().unwrap().to_string()).await;
@@ -58,11 +74,15 @@ impl ListenManager {
             upload_handle: Mutex::new(upload_handle),
             docx_handle: Mutex::new(docx_handle),
             config: Mutex::new(config_clone),
+            key_proxy_handle: Mutex::new(key_proxy_handle),
         }
     }
 
     pub fn start(&self) {
         let config = self.config.lock().unwrap().clone();
+        *self.key_proxy_handle.lock().unwrap() = Some(listen_path("ctrl+shift+a".to_string(), move |_path| async move {
+            simulate_f2_press();
+        }));
         if config.doc_enable {
             *self.doc_handle.lock().unwrap() =
                 Some(listen_path(config.doc_key, move |path| async move {
@@ -94,6 +114,7 @@ impl ListenManager {
     }
 
     pub fn stop(&self) {
+        self.key_proxy_handle.lock().unwrap().take().unwrap().unregister();
         if let Some(handle) = self.doc_handle.lock().unwrap().take() {
             handle.unregister();
         }
