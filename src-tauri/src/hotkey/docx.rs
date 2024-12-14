@@ -1,16 +1,18 @@
-use chrono::Local;
-use copypasta::{ClipboardContext, ClipboardProvider};
-use reqwest::Client;
+use crate::utils::popup_message;
+use lazy_static::lazy_static;
+use regex::Regex;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::json;
 use std::env;
 use std::fs;
-use crate::utils::popup_message;
 use std::path::PathBuf;
-use std::process::Command;
 
-type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+lazy_static! {
+    static ref RE_IMAGE_EXTENT: Regex = Regex::new(r#"cx="(\d+)" cy="(\d+)""#).unwrap();
+    static ref RE_IMAGE_BEHIND_DOCUMENT: Regex = Regex::new(r#"behindDoc="(\d)""#).unwrap();
+}
 
 #[derive(Deserialize, Serialize)]
 struct QueryResult {
@@ -33,79 +35,124 @@ struct EditDocResponse {
     save_path: String,
 }
 
-async fn send_task(path: String, project_no: &str) -> Result<()> {
-    let client = Client::new();
-    let today_date = get_today_date();
-    let exe_path = env::current_exe()
-        .map_err(|e| format!("无法获取执行文件路径: {}", e))?;
-    let parent_path = exe_path
-        .parent()
-        .ok_or("无法获取父目录")?;
+use std::fs::File;
+use std::io::{Read, Write};
+use zip::write::{ExtendedFileOptions, FileOptions};
+use zip::{ZipArchive, ZipWriter};
+
+pub fn get_signature_path() -> Result<String> {
+    let exe_path = env::current_exe()?;
+    let parent_path = exe_path.parent().ok_or("无法获取父目录")?;
     let signature_path_buf = parent_path.join("signature.png");
-    let signature_path = signature_path_buf
-        .to_str()
-        .ok_or("路径转换失败")?;
+    let signature_path = signature_path_buf.to_str().ok_or("路径转换失败")?;
+    Ok(signature_path.to_string())
+}
+pub fn read_file_to_buffer(file_path: &str) -> Result<Vec<u8>> {
+    let mut file_content = Vec::new();
+    File::open(PathBuf::from(file_path))?.read_to_end(&mut file_content)?;
+    Ok(file_content)
+}
 
-    let request_body = json!({
-        "source_path": &path,
-        "project_no": project_no,
-        "date": today_date,
-        "signature_img_path": signature_path
-    });
+fn change_title(content: String) -> String {
+    let title = "锂电池/钠离子电池UN38.3试验概要";
+    let content = content.replace("锂电池UN38.3试验概要", title);
+    let content = content.replace("Lithium Battery Test Summary", "Test Summary");
+    content.to_string()
+}
 
-    // 发送POST请求
-    let response = client
-        .post("http://localhost:25457/edit-docx")
-        .json(&request_body)
-        .send()
-        .await?;
+fn change_test_info(content: String) -> String {
+    let mut content = content.replacen("UN38.3.3(f)", "UN38.3.3.1(f)或/or\nUN38.3.3.2(d)", 1);
+    content = content.replace("UN38.3.3(g)", "UN38.3.3.1(g) 或/or UN38.3.3.2(e)");
+    content = content.replacen("UN38.3.3.1(f)", "dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS1", 1);
+    content = content.replacen("UN38.3.3.2(d)", "dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS2", 1);
+    content = content.replacen("UN38.3.3.1(f)", "UN38.3.3.1(g) ", 1);
+    content = content.replacen("UN38.3.3.2(d)", "UN38.3.3.2(e)", 1);
+    content = content.replace("dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS1", "UN38.3.3.1(f)");
+    content = content.replace("dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS2", "UN38.3.3.2(d)");
+    content.to_string()
+}
 
-    // 检查响应状态
-    if response.status().is_success() {
-        let _res: EditDocResponse = response.json().await?;
-        open_file_with_default_program(&path);
-    } else {
-        popup_message("替换文件失败", "替换文件失败");
+pub fn set_image_size(content: String) -> Result<String> {
+    let x = (3.5 * 360000.0) as i32;
+    let y = (1.5 * 360000.0) as i32;
+    let wp_extent = format!("cx=\"{}\" cy=\"{}\"", x, y);
+    let content = RE_IMAGE_EXTENT.replace_all(&content, &wp_extent);
+    Ok(content.to_string())
+}
+
+pub fn set_image_behind_document(content: String) -> Result<String> {
+    let behind_doc = "behindDoc=\"1\"";
+    let content = RE_IMAGE_BEHIND_DOCUMENT.replace_all(&content, &behind_doc.to_string());
+    Ok(content.to_string())
+}
+
+pub fn modify_docx(input_path: &str) -> Result<()> {
+    // 先将整个文件读入内存
+    let mut file_content = Vec::new();
+    File::open(input_path)?.read_to_end(&mut file_content)?;
+
+    // 从内存中读取zip文件
+    let mut archive = ZipArchive::new(std::io::Cursor::new(&file_content))?;
+
+    // 创建新的内存缓冲区用于存储修改后的文件
+    let mut output_buffer = Vec::new();
+    let mut zip_writer = ZipWriter::new(std::io::Cursor::new(&mut output_buffer));
+
+    // 复制所有文件，修改document.xml
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i)?;
+        let name = file.name().to_string();
+
+        if name == "word/document.xml" {
+            let mut content = String::new();
+            file.read_to_string(&mut content)?;
+            content = change_title(content);
+            content = change_test_info(content);
+            content = set_image_size(content)?;
+            content = set_image_behind_document(content)?;
+            zip_writer.start_file::<String, ExtendedFileOptions>(name, FileOptions::default())?;
+            zip_writer.write_all(content.as_bytes())?;
+        } else if name == "word/media/image1.png" {
+            let signature_path = get_signature_path()?;
+            let buffer = read_file_to_buffer(&signature_path)?;
+            zip_writer.start_file::<String, ExtendedFileOptions>(name, FileOptions::default())?;
+            zip_writer.write_all(&buffer)?;
+        } else {
+            let mut buffer = Vec::new();
+            file.read_to_end(&mut buffer)?;
+            zip_writer.start_file::<String, ExtendedFileOptions>(name, FileOptions::default())?;
+            zip_writer.write_all(&buffer)?;
+        }
     }
+
+    zip_writer.finish()?;
+
+    // 直接写入原文件
+    let mut output_file = File::create(input_path)?;
+    output_file.write_all(&output_buffer)?;
 
     Ok(())
 }
 
-fn get_clip_text() -> Result<String> {
-    let mut ctx: ClipboardContext = ClipboardContext::new()
-        .map_err(|e| format!("无法创建剪贴板上下文: {}", e))?;
-    let clip_text = ctx.get_contents()
-        .map_err(|e| format!("无法获取剪贴板内容: {}", e))?;
-    Ok(clip_text)
-}
-
-fn open_file_with_default_program(path: &str) {
-    Command::new("cmd")
-        .args(&["/C", "start", "", path])
-        .spawn()
-        .expect("Failed to open file with default program");
-}
-
-async fn match_file(dir: &PathBuf, project_no: &str) -> Result<()> {
+async fn match_file(dir: &PathBuf) -> Result<()> {
     let mut file_path_list = vec![];
     let mut file_name_list = vec![];
-    
-    let entries = fs::read_dir(dir)
-        .map_err(|e| format!("无法读取目录: {}", e))?;
-        
+
+    let entries = fs::read_dir(dir).map_err(|e| format!("无法读取目录: {}", e))?;
+
     for entry in entries {
         let entry = entry.map_err(|e| format!("无法读取目录项: {}", e))?;
         let path = entry.path();
         if path.is_dir() {
             continue;
         }
-        
+
         let file_name = path
             .file_name()
             .and_then(|n| n.to_str())
             .ok_or("无效的文件名")?
             .to_string();
-            
+
         if !file_name.contains("概要") {
             continue;
         }
@@ -115,33 +162,23 @@ async fn match_file(dir: &PathBuf, project_no: &str) -> Result<()> {
         if !file_name.starts_with("PEK") && !file_name.starts_with("SEK") {
             continue;
         }
-        
+
         file_path_list.push(path.to_str().ok_or("路径转换失败")?.to_string());
         file_name_list.push(file_name);
     }
-    
+
     if !popup_message("是否要修改这些概要？", &file_name_list.join("\n")) {
         return Ok(());
     }
-    
+
     for path in file_path_list {
-        send_task(path, project_no).await?;
+        let _ = modify_docx(&path);
     }
-    
+
     Ok(())
 }
 
-fn get_today_date() -> String {
-    // 获取当前日期
-    let today = Local::now().naive_local().date();
-
-    // 格式化为 YYYY-MM-DD
-    let formatted_date = today.format("%Y-%m-%d").to_string();
-    formatted_date
-}
-
 pub async fn replace_docx(target_dir: String) -> Result<()> {
-    let clip_text = get_clip_text()?;
-    match_file(&PathBuf::from(&target_dir), &clip_text).await?;
+    match_file(&PathBuf::from(&target_dir)).await?;
     Ok(())
 }
