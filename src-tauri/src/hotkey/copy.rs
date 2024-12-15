@@ -32,8 +32,8 @@ struct SearchParams {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SearchResult {
-    path: String,
-    name: String,
+    pub path: String,
+    pub name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -56,6 +56,7 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
     let response = match response {
         Ok(res) => res,
         Err(e) => {
+            println!("Request failed: {}", e);
             eprintln!("Request failed: {}", e);
             return vec![];
         }
@@ -66,17 +67,21 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
                 match serde_json::from_str::<SearchResponse>(&text) {
                     Ok(result) => result.results,
                     Err(e) => {
+                        println!("Failed to parse JSON: {}", e);
                         eprintln!("Failed to parse JSON: {}", e);
                         vec![]
                     }
                 }
             }
             Err(e) => {
+                println!("Failed to get response text: {}", e);
                 eprintln!("Failed to get response text: {}", e);
                 vec![]
             }
         }
     } else {
+        println!("Request failed: {}", response.status());
+        eprintln!("Request failed: {}", response.status());
         vec![]
     }
 }

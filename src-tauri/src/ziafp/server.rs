@@ -24,6 +24,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use warp::reject::Reject;
 
+use super::get_summary_info;
+
 // 自定义错误类型
 #[derive(Debug, Serialize)]
 struct CustomError {
@@ -457,7 +459,14 @@ pub async fn run(
                 LOGIN_STATUS.store(false, Ordering::Relaxed);
                 // 检查距离上次心跳是否超过阈值
                 if last_heartbeat.elapsed() > std::time::Duration::from_secs(60 * 30) {
-                    client_clone.lock().await.log("WARN", "检测到较长时间未进行心跳，可能是由于系统睡眠导致，开始重新登录").await;
+                    client_clone
+                        .lock()
+                        .await
+                        .log(
+                            "WARN",
+                            "检测到较长时间未进行心跳，可能是由于系统睡眠导致，开始重新登录",
+                        )
+                        .await;
                     client_clone.lock().await.login().await.unwrap();
                 } else {
                     client_clone.lock().await.heartbeat().await.unwrap();
@@ -465,7 +474,11 @@ pub async fn run(
                 last_heartbeat = std::time::Instant::now();
             } else {
                 LOGIN_STATUS.store(true, Ordering::Relaxed);
-                client_clone.lock().await.log("INFO", "调试模式，跳过心跳").await;
+                client_clone
+                    .lock()
+                    .await
+                    .log("INFO", "调试模式，跳过心跳")
+                    .await;
             }
             tokio::time::sleep(std::time::Duration::from_secs(60 * 28)).await;
         }
@@ -531,8 +544,26 @@ pub async fn run(
                 }
             },
         );
-
-    let combined_routes = routes.or(doc_routes).or(selected_routes);
+    let get_summary_info = warp::get()
+        .and(warp::path("get-summary-info"))
+        .and(warp::path::param::<String>())
+        .then(move |project_no: String| async move {
+            match get_summary_info(project_no).await {
+                Ok(summary_info) => warp::reply::json(&summary_info),
+                Err(e) => warp::reply::json(&CustomError {
+                    message: format!("获取项目信息失败: {}", e),
+                }),
+            }
+        });
+    let cors = warp::cors()
+        .allow_any_origin() // 允许所有来源
+        .allow_headers(vec!["content-type"]) // 允许的请求头
+        .allow_methods(vec!["POST", "GET", "OPTIONS"]); // 允许的HTTP方法
+    let combined_routes = routes
+        .or(doc_routes)
+        .or(selected_routes)
+        .or(get_summary_info)
+        .with(cors);
     // 启动 web 服务器
     let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));
     let server_handle = tokio::spawn(server);
