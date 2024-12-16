@@ -4977,9 +4977,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "summary-rs"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74690c4e20222df482131004b81dddcacec4a198e83f3836efdb28b4202eaace"
+checksum = "b6a8b9b73e3635b5890f5bb5eb7f2265fdd6705b27e2b6c763f503de02ab50d4"
 dependencies = [
  "lazy_static",
  "quick-xml 0.37.1",
