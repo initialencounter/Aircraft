@@ -209,12 +209,7 @@ impl HttpClient {
     }
     async fn get_project_id(&self, project_no: &str) -> Result<String> {
         let (start_date, end_date) = parse_date(project_no)?;
-        let system_id = if project_no.starts_with("PEK") {
-            "pek"
-        } else {
-            "sek"
-        };
-
+        let system_id = project_no[0..3].to_lowercase();
         let query_string = format!(
             "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
@@ -377,11 +372,7 @@ impl HttpClient {
         let (start_date, end_date) =
             parse_date(&project_no).map_err(|e| format!("解析日期失败: {}", e))?;
 
-        let system_id = if project_no.starts_with("PEK") {
-            "pek"
-        } else {
-            "sek"
-        };
+        let system_id = project_no[0..3].to_lowercase();
 
         let query_string = format!(
             "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",

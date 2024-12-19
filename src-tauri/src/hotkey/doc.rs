@@ -11,7 +11,7 @@ use crate::utils::popup_message;
 use std::process::Command;
 
 lazy_static! {
-    static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S]EK.{2}\d{12}").unwrap();
+    static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S|A|R]EK.{2}\d{12}").unwrap();
 }
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;

@@ -7,7 +7,7 @@ use std::{
 use lazy_static::lazy_static;
 use regex::Regex;
 lazy_static! {
-    static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S]EK.{2}\d{12}").unwrap();
+    static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S|A|R]EK.{2}\d{12}").unwrap();
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -42,8 +42,12 @@ pub fn match_file(dir: &PathBuf) -> Vec<RawFileInfo> {
         let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
 
         // 检查文件名是否符合要求
-        if !file_name.ends_with(".pdf")
-            || (!file_name.starts_with("PEK") && !file_name.starts_with("SEK"))
+        if !file_name.ends_with(".pdf") {
+            continue;
+        }
+        if !["PEK", "SEK", "AEK", "REK"]
+            .iter()
+            .any(|prefix| file_name.starts_with(prefix))
         {
             continue;
         }
@@ -110,10 +114,13 @@ pub fn match_file_list(file_list: Vec<String>) -> Vec<RawFileInfo> {
             continue;
         }
         let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
-
         // 检查文件名是否符合要求
-        if !file_name.ends_with(".pdf")
-            || (!file_name.starts_with("PEK") && !file_name.starts_with("SEK"))
+        if !file_name.ends_with(".pdf") {
+            continue;
+        }
+        if !["PEK", "SEK", "AEK", "REK"]
+            .iter()
+            .any(|prefix| file_name.starts_with(prefix))
         {
             continue;
         }

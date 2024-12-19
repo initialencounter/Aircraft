@@ -159,7 +159,10 @@ async fn match_file(dir: &PathBuf) -> Result<()> {
         if !file_name.ends_with(".docx") {
             continue;
         }
-        if !file_name.starts_with("PEK") && !file_name.starts_with("SEK") {
+        if !["PEK", "SEK", "AEK", "REK"]
+            .iter()
+            .any(|prefix| file_name.starts_with(prefix))
+        {
             continue;
         }
 

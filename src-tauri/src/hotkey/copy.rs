@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S]EK.{2}\d{12}").unwrap();
+    static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S|A|R]EK.{2}\d{12}").unwrap();
 }
 
 use native_dialog::{MessageDialog, MessageType};
