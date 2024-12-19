@@ -20,9 +20,9 @@ interface Config {
 }
 
 const Config = Schema.object({
-  auto_login: Schema.boolean().required().description("自动登录").default(false),
-  auto_start: Schema.boolean().required().description("开机自启").default(false),
-  silent_start: Schema.boolean().required().description("静默启动").default(false),
+  auto_login: Schema.boolean().description("自动登录").default(false),
+  auto_start: Schema.boolean().description("开机自启").default(false),
+  silent_start: Schema.boolean().description("静默启动").default(false),
 });
 
 const config = ref<Config>({
