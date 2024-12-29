@@ -24,7 +24,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use warp::reject::Reject;
 
-use super::get_summary_info;
+use super::get_attachment_info;
 
 // 自定义错误类型
 #[derive(Debug, Serialize)]
@@ -536,10 +536,10 @@ pub async fn run(
             },
         );
     let get_summary_info = warp::get()
-        .and(warp::path("get-summary-info"))
+        .and(warp::path("get-attachment-info"))
         .and(warp::path::param::<String>())
         .then(move |project_no: String| async move {
-            match get_summary_info(project_no).await {
+            match get_attachment_info(project_no).await {
                 Ok(summary_info) => warp::reply::json(&summary_info),
                 Err(e) => warp::reply::json(&CustomError {
                     message: format!("获取项目信息失败: {}", e),
