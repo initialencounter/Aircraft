@@ -408,7 +408,7 @@ pub async fn run(
         password.clone(),
         debug,
         log_enabled,
-        log_tx,
+        log_tx.clone(),
     )));
     client.lock().await.log("INFO", "开始运行").await;
     client
@@ -535,11 +535,13 @@ pub async fn run(
                 }
             },
         );
+    let log_tx_clone = log_tx.clone();
     let get_summary_info = warp::get()
         .and(warp::path("get-attachment-info"))
         .and(warp::path::param::<String>())
-        .then(move |project_no: String| async move {
-            match get_attachment_info(project_no).await {
+        .and(warp::any().map(move || log_tx_clone.clone()))
+        .then(|project_no: String, log_tx: Sender<LogMessage>| async move {
+            match get_attachment_info(project_no, log_tx).await {
                 Ok(summary_info) => warp::reply::json(&summary_info),
                 Err(e) => warp::reply::json(&CustomError {
                     message: format!("获取项目信息失败: {}", e),
