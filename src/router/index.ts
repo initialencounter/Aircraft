@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useMaskStore } from '../stores/mask'
 import Home from '../views/Home.vue'
 import Schema from '../components/Schema.vue'
 import SchemaBase from '../components/SchemaBase.vue'
@@ -16,7 +17,8 @@ const router = createRouter({
     {
       path: '/schema',
       name: 'Schema',
-      component: Schema
+      component: Schema,
+      meta: { requiresUnlock: true }
     },
     {
       path: '/schema_base',
@@ -26,7 +28,8 @@ const router = createRouter({
     {
       path: '/schema_hotkey',
       name: 'SchemaHotkey',
-      component: SchemaHotkey
+      component: SchemaHotkey,
+      meta: { requiresUnlock: true }
     },
     {
       path: '/logs',
@@ -34,6 +37,16 @@ const router = createRouter({
       component: Logs
     }
   ]
+})
+
+router.beforeEach((to, _from, next) => {
+  const maskStore = useMaskStore()
+  
+  if (to.meta.requiresUnlock && !maskStore.isUnlocked) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router 

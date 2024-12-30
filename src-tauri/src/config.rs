@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BaseConfig {
-    pub auto_login: bool,
+    // 暗号
+    pub nothing: String,
     pub auto_start: bool,
     pub silent_start: bool,
 }
@@ -10,7 +11,7 @@ pub struct BaseConfig {
 impl BaseConfig {
     pub fn default() -> Self {
         BaseConfig {
-            auto_login: false,
+            nothing: "".to_string(),
             auto_start: false,
             silent_start: false,
         }
@@ -34,7 +35,7 @@ impl ServerConfig {
             username: "".to_string(),
             password: "".to_string(),
             port: 8080,
-            debug: false,
+            debug: true,
             log_enabled: false,
         }
     }

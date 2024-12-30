@@ -29,8 +29,8 @@ const Config = Schema.object({
   username: Schema.string().description("用户名").default(""),
   password: Schema.string().description("密码").role("secret").default(""),
   port: Schema.number().description("端口").default(25455),
-  debug: Schema.boolean().description("调试模式").default(false),
-  log_enabled: Schema.boolean().description("日志记录").default(false),
+  debug: Schema.boolean().description("调试模式").default(true),
+  log_enabled: Schema.boolean().description("日志记录").default(true),
 }).description("服务设置");
 
 const config = ref<Config>({
