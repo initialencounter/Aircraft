@@ -10,10 +10,12 @@ mod ziafp;
 mod hotkey;
 mod yolov8;
 mod pdf;
+mod blake2;
 
+use blake2::handle_drag_drop_event;
 use serde::Serialize;
 use std::env;
-use tauri::Manager;
+use tauri::{DragDropEvent, Manager, WindowEvent};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri_plugin_autostart::MacosLauncher;
 
@@ -46,6 +48,12 @@ pub async fn run() {
             app.manage(listen_manager);
             Ok(())
         })
+        .on_window_event(|window, event| match event {
+            WindowEvent::DragDrop(DragDropEvent::Drop { paths, .. }) => {
+                handle_drag_drop_event(window, &paths);
+            }
+            _ => {}
+        })
         .invoke_handler(tauri::generate_handler![
             cmd::get_login_status,
             cmd::get_server_config,
@@ -63,6 +71,8 @@ pub async fn run() {
             cmd::restart_hotkey_listener,
             cmd::reload_hotkey_listener,
             cmd::is_listening,
+            cmd::open_local_dir,
+            cmd::open_with_wps,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

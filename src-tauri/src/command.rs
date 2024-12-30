@@ -155,3 +155,32 @@ pub async fn reload_hotkey_listener(
 pub fn is_listening(state: tauri::State<'_, ListenManager>) -> bool {
     state.is_listening()
 }
+
+#[tauri::command]
+pub fn open_local_dir(target: &str) {
+    println!("open_local_dir: {}", target);
+    let path = Path::new(target);
+    if path.exists() {
+        if path.is_dir() {
+            if cfg!(target_os = "windows") {
+                let _ = std::process::Command::new("explorer").arg(path).spawn();
+            } else if cfg!(target_os = "macos") {
+                let _ = std::process::Command::new("open").arg(path).spawn();
+            } else if cfg!(target_os = "linux") {
+                let _ = std::process::Command::new("xdg-open").arg(path).spawn();
+            }
+        } else {
+            let _ = std::process::Command::new("explorer")
+                .arg(path.parent().unwrap())
+                .spawn();
+        }
+    }
+}
+
+#[tauri::command]
+pub fn open_with_wps(target: &str, name: &str) {
+    let file_path = Path::new(target).join(Path::new(name));
+    let _ = std::process::Command::new("wps")
+        .arg(file_path)
+        .spawn();
+}

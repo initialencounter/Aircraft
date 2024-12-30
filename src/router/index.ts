@@ -5,6 +5,7 @@ import Schema from '../components/Schema.vue'
 import SchemaBase from '../components/SchemaBase.vue'
 import SchemaHotkey from '../components/SchemaHotkey.vue'
 import Logs from '../views/Logs.vue'
+import Blake2 from '../views/Blake2.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -35,6 +36,11 @@ const router = createRouter({
       path: '/logs',
       name: 'Logs',
       component: Logs
+    },
+    {
+      path: '/blake2',
+      name: 'Blake2',
+      component: Blake2
     }
   ]
 })

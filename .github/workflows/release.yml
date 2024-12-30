@@ -49,7 +49,7 @@ jobs:
           node-version: "20"
 
       - name: Yarn install
-        run: yarn install
+        run: npm install
 
       - name: Tauri build
         uses: tauri-apps/tauri-action@v0
