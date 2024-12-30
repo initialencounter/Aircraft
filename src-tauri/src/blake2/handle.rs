@@ -27,7 +27,6 @@ fn handle_directory(path: String, tx: mpsc::Sender<FileTile>) {
 }
 
 pub fn handle_drag_drop_event(window: &Window, paths: &Vec<PathBuf>) {
-    println!("handle_drag_drop_event: {:?}", paths);
     let app = window.app_handle();
     let (tx, rx) = mpsc::channel();
 

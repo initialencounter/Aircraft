@@ -60,6 +60,17 @@ if (is_tauri) {
 </template>
 
 <style scoped>
+* {
+  user-select: none;
+  /* For modern browsers */
+  -webkit-user-select: none;
+  /* For Safari */
+  -moz-user-select: none;
+  /* For Firefox */
+  -ms-user-select: none;
+  /* For IE10+ */
+  text-align: center;
+}
 .titlebar {
   height: 30px;
   user-select: none;

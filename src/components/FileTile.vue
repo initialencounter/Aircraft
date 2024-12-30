@@ -2,15 +2,14 @@
 import { FileTileMap } from "../types/index";
 import { calculateColorBrightness } from "../utils/utils";
 import { ElMessage } from "element-plus";
-import { invoke, isTauri } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 import Clip from "../assets/svg/Clip.vue";
 import { register } from "@tauri-apps/plugin-global-shortcut";
 
-let is_tauri = isTauri();
-const PATH_OR_LAST_MODIFIED = is_tauri ? "路径" : "修改日期";
-const PATH_OR_LAST_MODIFIED_ATTR = is_tauri ? "path" : "lastModified";
-const MD5_OR_BLAKE2 = is_tauri ? "BLAKE2" : "MD5";
-const NAME_WIDTH = is_tauri ? 300 : 500;
+const PATH_OR_LAST_MODIFIED = "路径";
+const PATH_OR_LAST_MODIFIED_ATTR = "path";
+const MD5_OR_BLAKE2 = "BLAKE2";
+const NAME_WIDTH = 300;
 const file_list = defineModel<FileTileMap>({ required: true });
 const emit = defineEmits(["removeItem"]);
 
@@ -58,50 +57,48 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
   };
 }
 
-if (is_tauri) {
-  // focusAll
-  register("CommandOrControl+Shift+A", () => {
-    for (let i = 0; i < file_list.value.length; i++) {
-      file_list.value[i].focus = true;
+// focusAll
+register("CommandOrControl+Shift+A", () => {
+  for (let i = 0; i < file_list.value.length; i++) {
+    file_list.value[i].focus = true;
+  }
+});
+
+// focusAll
+register("CommandOrControl+Shift+D", () => {
+  for (let i = 0; i < file_list.value.length; i++) {
+    if (file_list.value[i].focus) {
+      removeItem(i);
     }
-  });
+  }
+});
 
-  // focusAll
-  register("CommandOrControl+Shift+D", () => {
-    for (let i = 0; i < file_list.value.length; i++) {
-      if (file_list.value[i].focus) {
-        removeItem(i);
-      }
+register("CommandOrControl+Shift+O", () => {
+  for (let i = 0; i < file_list.value.length; i++) {
+    if (file_list.value[i].focus) {
+      openDir(file_list.value[i].path);
     }
-  });
+  }
+});
 
-  register("CommandOrControl+Shift+O", () => {
-    for (let i = 0; i < file_list.value.length; i++) {
-      if (file_list.value[i].focus) {
-        openDir(file_list.value[i].path);
-      }
+// refresh page
+register("CommandOrControl+R", () => {
+  location.reload();
+});
+
+// showPage
+register("CommandOrControl+Shift+B", () => {
+  invoke("show_page");
+});
+
+// open with wps
+register("CommandOrControl+Shift+W", () => {
+  for (let i = 0; i < file_list.value.length; i++) {
+    if (file_list.value[i].focus) {
+      open_with_wps(file_list.value[i].path, file_list.value[i].name);
     }
-  });
-
-  // refresh page
-  register("CommandOrControl+R", () => {
-    location.reload();
-  });
-
-  // showPage
-  register("CommandOrControl+Shift+B", () => {
-    invoke("show_page");
-  });
-
-  // open with wps
-  register("CommandOrControl+Shift+W", () => {
-    for (let i = 0; i < file_list.value.length; i++) {
-      if (file_list.value[i].focus) {
-        open_with_wps(file_list.value[i].path, file_list.value[i].name);
-      }
-    }
-  });
-}
+  }
+});
 
 function openDir(dirName: string) {
   invoke("open_local_dir", { target: dirName });
