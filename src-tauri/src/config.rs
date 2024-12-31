@@ -34,7 +34,7 @@ impl ServerConfig {
             base_url: "".to_string(),
             username: "".to_string(),
             password: "".to_string(),
-            port: 8080,
+            port: 25455,
             debug: true,
             log_enabled: false,
         }
@@ -51,6 +51,9 @@ pub struct HotkeyConfig {
     pub copy_key: String,
     pub docx_enable: bool,
     pub docx_key: String,
+    pub inspector: String,
+    pub signature_width: f32,
+    pub signature_height: f32,
 }
 impl HotkeyConfig {
     pub fn default() -> Self {
@@ -63,6 +66,9 @@ impl HotkeyConfig {
             copy_key: "ctrl+shift+z".to_string(),
             docx_enable: false,
             docx_key: "ctrl+shift+x".to_string(),
+            inspector: "".to_string(),
+            signature_width: 5.58,
+            signature_height: 1.73,
         }
     }
 }

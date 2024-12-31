@@ -22,6 +22,9 @@ interface Config {
   copy_key: string;
   docx_enable: boolean;
   docx_key: string;
+  inspector: string;
+  signature_width: number;
+  signature_height: number;
 }
 
 const Config = Schema.object({
@@ -37,6 +40,9 @@ const Config = Schema.object({
     .description("开启docx替换快捷键")
     .default(false),
   docx_key: Schema.string().description("docx替换快捷键").default(""),
+  inspector: Schema.string().description("检验员").default(""),
+  signature_width: Schema.number().description("签名宽度").default(5.58),
+  signature_height: Schema.number().description("签名高度").default(1.73),
 }).description("快捷键设置");
 
 const config = ref<Config>({
@@ -48,6 +54,9 @@ const config = ref<Config>({
   upload_key: "ctrl+shift+u",
   docx_enable: false,
   docx_key: "ctrl+shift+x",
+  inspector: "",
+  signature_width: 5.58,
+  signature_height: 1.73,
 });
 const initial = ref<Config>({
   doc_enable: false,
@@ -58,6 +67,9 @@ const initial = ref<Config>({
   copy_key: "ctrl+shift+z",
   docx_enable: false,
   docx_key: "ctrl+shift+x",
+  inspector: "",
+  signature_width: 5.58,
+  signature_height: 1.73,
 });
 
 const isDev = isTauri();

@@ -1,7 +1,7 @@
+use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
 use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 use tauri::Wry;
-use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
 
 use crate::config::HotkeyConfig;
 use crate::hotkey::{copy_file_to_here, upload_file, write_doc};
@@ -33,9 +33,12 @@ impl ListenManager {
     pub fn new(app_handle: tauri::AppHandle<Wry>) -> Self {
         let config = get_hotkey_config(app_handle.clone());
         let config_clone = config.clone();
-        let key_proxy_handle = Some(listen_path("ctrl+shift+a".to_string(), move |_path| async move {
-            simulate_f2_press();
-        }));
+        let key_proxy_handle = Some(listen_path(
+            "ctrl+shift+a".to_string(),
+            move |_path| async move {
+                simulate_f2_press();
+            },
+        ));
         let doc_handle = if config.doc_enable {
             Some(listen_path(config.doc_key, move |path| async move {
                 let _ = write_doc(path.to_str().unwrap().to_string()).await;
@@ -61,8 +64,18 @@ impl ListenManager {
             None
         };
         let docx_handle = if config.docx_enable {
-            Some(listen_path(config.docx_key, |path| async move {
-                let _ = replace_docx(path.to_str().unwrap().to_string()).await;
+            let inspector_clone = config.inspector.clone();
+            Some(listen_path(config.docx_key, move |path| {
+                let inspector = inspector_clone.clone();
+                async move {
+                    let _ = replace_docx(
+                        path.to_str().unwrap().to_string(),
+                        &inspector,
+                        config.signature_width,
+                        config.signature_height,
+                    )
+                    .await;
+                }
             }))
         } else {
             None
@@ -80,9 +93,12 @@ impl ListenManager {
 
     pub fn start(&self) {
         let config = self.config.lock().unwrap().clone();
-        *self.key_proxy_handle.lock().unwrap() = Some(listen_path("ctrl+shift+a".to_string(), move |_path| async move {
-            simulate_f2_press();
-        }));
+        *self.key_proxy_handle.lock().unwrap() = Some(listen_path(
+            "ctrl+shift+a".to_string(),
+            move |_path| async move {
+                simulate_f2_press();
+            },
+        ));
         if config.doc_enable {
             *self.doc_handle.lock().unwrap() =
                 Some(listen_path(config.doc_key, move |path| async move {
@@ -104,17 +120,31 @@ impl ListenManager {
             ));
         }
         if config.docx_enable {
-            *self.docx_handle.lock().unwrap() =
-                Some(listen_path(config.docx_key, |path| async move {
-                    let _ = replace_docx(path.to_str().unwrap().to_string()).await;
-                }));
+            let inspector_clone = config.inspector.clone();
+            *self.docx_handle.lock().unwrap() = Some(listen_path(config.docx_key, move |path| {
+                let inspector = inspector_clone.clone();
+                async move {
+                    let _ = replace_docx(
+                        path.to_str().unwrap().to_string(),
+                        &inspector,
+                        config.signature_width,
+                        config.signature_height,
+                    )
+                    .await;
+                }
+            }));
         }
         self.is_running
             .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub fn stop(&self) {
-        self.key_proxy_handle.lock().unwrap().take().unwrap().unregister();
+        self.key_proxy_handle
+            .lock()
+            .unwrap()
+            .take()
+            .unwrap()
+            .unregister();
         if let Some(handle) = self.doc_handle.lock().unwrap().take() {
             handle.unregister();
         }

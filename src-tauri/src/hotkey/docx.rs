@@ -40,14 +40,14 @@ use std::io::{Read, Write};
 use zip::write::{ExtendedFileOptions, FileOptions};
 use zip::{ZipArchive, ZipWriter};
 
-pub fn get_signature_path() -> Result<String> {
+fn get_signature_path() -> Result<String> {
     let exe_path = env::current_exe()?;
     let parent_path = exe_path.parent().ok_or("无法获取父目录")?;
     let signature_path_buf = parent_path.join("signature.png");
     let signature_path = signature_path_buf.to_str().ok_or("路径转换失败")?;
     Ok(signature_path.to_string())
 }
-pub fn read_file_to_buffer(file_path: &str) -> Result<Vec<u8>> {
+fn read_file_to_buffer(file_path: &str) -> Result<Vec<u8>> {
     let mut file_content = Vec::new();
     File::open(PathBuf::from(file_path))?.read_to_end(&mut file_content)?;
     Ok(file_content)
@@ -60,7 +60,7 @@ fn change_title(content: String) -> String {
     content.to_string()
 }
 
-fn change_test_info(content: String) -> String {
+fn change_test_info(content: String, inspector: &str) -> String {
     let mut content = content.replacen("UN38.3.3(f)", "UN38.3.3.1(f)或/or\nUN38.3.3.2(d)", 1);
     content = content.replace("UN38.3.3(g)", "UN38.3.3.1(g) 或/or UN38.3.3.2(e)");
     content = content.replacen("UN38.3.3.1(f)", "dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS1", 1);
@@ -69,24 +69,38 @@ fn change_test_info(content: String) -> String {
     content = content.replacen("UN38.3.3.2(d)", "UN38.3.3.2(e)", 1);
     content = content.replace("dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS1", "UN38.3.3.1(f)");
     content = content.replace("dXNlIHN0ZDo6ZnM6OkZpbGU7CnVzZS2", "UN38.3.3.2(d)");
+    if !content.contains("Inspector") {
+        content = content.replace("检验员", &format!("检验员Inspector：{}", inspector));
+    }
     content.to_string()
 }
 
-pub fn set_image_size(content: String) -> Result<String> {
-    let x = (3.5 * 360000.0) as i32;
-    let y = (1.5 * 360000.0) as i32;
+fn set_image_size(content: String, width: f32, height: f32) -> Result<String> {
+    let x = (width * 360000.0) as i32;
+    let y = (height * 360000.0) as i32;
     let wp_extent = format!("cx=\"{}\" cy=\"{}\"", x, y);
     let content = RE_IMAGE_EXTENT.replace_all(&content, &wp_extent);
     Ok(content.to_string())
 }
 
-pub fn set_image_behind_document(content: String) -> Result<String> {
+fn set_image_behind_document(content: String) -> Result<String> {
     let behind_doc = "behindDoc=\"1\"";
     let content = RE_IMAGE_BEHIND_DOCUMENT.replace_all(&content, &behind_doc.to_string());
     Ok(content.to_string())
 }
 
-pub fn modify_docx(input_path: &str) -> Result<()> {
+fn set_page_margins(content: String) -> Result<String> {
+    let re = Regex::new(r#"<w:pgMar[^>]+/>"#).unwrap();
+    
+    // 设置页边距为2厘米
+    // 2厘米 ≈ 1134 twips (567 * 2)
+    let new_margins = r#"<w:pgMar w:top="1134" w:right="1230" w:bottom="567" w:left="1230" w:header="851" w:footer="992" w:gutter="0"/>"#;
+    
+    let content = re.replace_all(&content, new_margins);
+    Ok(content.to_string())
+}
+
+pub fn modify_docx(input_path: &str, inspector: &str, width: f32, height: f32) -> Result<()> {
     // 先将整个文件读入内存
     let mut file_content = Vec::new();
     File::open(input_path)?.read_to_end(&mut file_content)?;
@@ -107,13 +121,20 @@ pub fn modify_docx(input_path: &str) -> Result<()> {
             let mut content = String::new();
             file.read_to_string(&mut content)?;
             content = change_title(content);
-            content = change_test_info(content);
-            content = set_image_size(content)?;
+            content = change_test_info(content, inspector);
+            content = set_image_size(content, width, height)?;
             content = set_image_behind_document(content)?;
+            content = set_page_margins(content)?;
             zip_writer.start_file::<String, ExtendedFileOptions>(name, FileOptions::default())?;
             zip_writer.write_all(content.as_bytes())?;
         } else if name == "word/media/image1.png" {
-            let signature_path = get_signature_path()?;
+            let signature_path = match get_signature_path() {
+                Ok(path) => path,
+                Err(_) => {
+                    println!("无法获取签名路径");
+                    continue;
+                },
+            };
             let buffer = read_file_to_buffer(&signature_path)?;
             zip_writer.start_file::<String, ExtendedFileOptions>(name, FileOptions::default())?;
             zip_writer.write_all(&buffer)?;
@@ -129,12 +150,19 @@ pub fn modify_docx(input_path: &str) -> Result<()> {
 
     // 直接写入原文件
     let mut output_file = File::create(input_path)?;
-    output_file.write_all(&output_buffer)?;
+    match output_file.write_all(&output_buffer) {
+        Ok(_) => {
+            println!("修改成功");
+        },
+        Err(e) => {
+            println!("无法写入文件: {}", e);
+        },
+    };
 
     Ok(())
 }
 
-async fn match_file(dir: &PathBuf) -> Result<()> {
+async fn match_file(dir: &PathBuf) -> Result<Vec<String>> {
     let mut file_path_list = vec![];
     let mut file_name_list = vec![];
 
@@ -171,17 +199,16 @@ async fn match_file(dir: &PathBuf) -> Result<()> {
     }
 
     if !popup_message("是否要修改这些概要？", &file_name_list.join("\n")) {
-        return Ok(());
+        return Ok(vec![]);
     }
 
-    for path in file_path_list {
-        let _ = modify_docx(&path);
-    }
-
-    Ok(())
+    Ok(file_path_list)
 }
 
-pub async fn replace_docx(target_dir: String) -> Result<()> {
-    match_file(&PathBuf::from(&target_dir)).await?;
+pub async fn replace_docx(target_dir: String, inspector: &str, width: f32, height: f32) -> Result<()> {
+    let file_list = match_file(&PathBuf::from(&target_dir)).await?;
+    for path in file_list {
+        let _ = modify_docx(&path, inspector, width, height);
+    }
     Ok(())
 }
