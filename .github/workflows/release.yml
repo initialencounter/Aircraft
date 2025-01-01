@@ -18,10 +18,6 @@ jobs:
         include:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            fix-webview2: true
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            fix-webview2: false
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,28 +46,35 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
-      - name: Yarn install
+      - name: npm install
         run: npm install
       
+      
+      - name: Build Tauri-lite 
+        run: |
+          npm run tauri build
+          New-Item -ItemType Directory -Path .\release
+          Move-Item .\src-tauri\target\release\bundle\msi\aircraft_*_x64_zh-CN.msi .\release\aircraft_${{ steps.get_version.outputs.VERSION }}_x64_zh-CN.msi
+      
       - name: Download WebView2 Runtime
-        if: ${{ matrix.fix-webview2 }}
         run: |
           invoke-webrequest -uri https://github.com/westinyang/WebView2RuntimeArchive/releases/download/109.0.1518.78/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab -outfile Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab
           Expand .\Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab -F:* ./src-tauri
           Remove-Item .\src-tauri\tauri.conf.json
           Rename-Item .\src-tauri\webview2.x64.json tauri.conf.json
-
-      - name: Tauri build
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build Tauri-webview2
+        run: |
+          npm run tauri build
+          Move-Item .\src-tauri\target\release\bundle\msi\aircraft_*_x64_zh-CN.msi .\release\aircraft_${{ steps.get_version.outputs.VERSION }}_fixed_webview2_x64_zh-CN.msi
+      
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          tagName: '${{ steps.get_version.outputs.VERSION }}' # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'Aircraft ${{ steps.get_version.outputs.VERSION }}'
-          releaseBody: 'See the assets to download this version and install.'
-          args: >
-            ${{ matrix.fix-webview2 && 
-            '--config src-tauri/tauri.conf.json --filename-pattern "aircraft-webview2-{target}-{arch}"' || 
-            '--filename-pattern "aircraft-{target}-{arch}"' }}
+          files: |
+            release/aircraft_${{ steps.get_version.outputs.VERSION }}_x64_zh-CN.msi
+            release/aircraft_${{ steps.get_version.outputs.VERSION }}_fixed_webview2_x64_zh-CN.msi
+          name: 'Aircraft ${{ steps.get_version.outputs.VERSION }}'

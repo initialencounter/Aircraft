@@ -100,6 +100,51 @@ fn set_page_margins(content: String) -> Result<String> {
     Ok(content.to_string())
 }
 
+fn match_table_cell_width(regex: &Regex, content: &str) -> Result<Vec<i32>> {
+    let captures: Vec<i32> = regex.captures_iter(content)
+    .filter_map(|cap| {
+        println!("{:?}", cap);
+        cap[1].parse::<i32>().ok()})
+    .collect();
+    if captures.is_empty() {
+        return Ok(vec![0,0,0]);
+    }
+    Ok(captures)
+}
+
+fn set_specific_table_cell_width(content: String) -> Result<String> {
+    println!("{}", content);
+    let last_3_table_cell_start = match content.find("签名Signatory") {
+        Some(pos) => pos,
+        None => return Ok(content),
+    };
+    let last_3_table_cell_xml = &content[last_3_table_cell_start..];
+    let tmp_last_3_table_cell_xml = last_3_table_cell_xml.to_string();
+    println!("{}", last_3_table_cell_xml);
+    let size_regex = Regex::new(r#"<w:tcW w:w="(\d+)" w:type="dxa""#).unwrap();
+    // 提取原始大小
+    let sizes = match_table_cell_width(&size_regex, last_3_table_cell_xml)?;
+    let size1_value = sizes[0];
+    let size2_value = sizes[1];
+    let size3_value = sizes[2];
+    // 计算总和
+    let total_size = size1_value + size2_value + size3_value;
+
+    // 按比例重新分配大小
+    let new_size1 = (total_size * 5 / 7) as i32; // 5/7
+    let new_size2 = (total_size * 1 / 7) as i32; // 1/7
+    let new_size3 = (total_size * 1 / 7) as i32; // 1/7
+    println!("{}", new_size1);
+    println!("{}", new_size2);
+    println!("{}", new_size3);
+    // // 替换原来的大小
+    let new_last_3_table_cell_xml = last_3_table_cell_xml.replace(size1_value.to_string().as_str(), new_size1.to_string().as_str());
+    let new_last_3_table_cell_xml = new_last_3_table_cell_xml.replace(size2_value.to_string().as_str(), new_size2.to_string().as_str());
+    let new_last_3_table_cell_xml = new_last_3_table_cell_xml.replace(size3_value.to_string().as_str(), new_size3.to_string().as_str());
+    let content = content.replace(&tmp_last_3_table_cell_xml, &new_last_3_table_cell_xml);
+    Ok(content.to_string())
+}
+
 pub fn modify_docx(input_path: &str, inspector: &str, width: f32, height: f32) -> Result<()> {
     // 先将整个文件读入内存
     let mut file_content = Vec::new();
@@ -125,6 +170,7 @@ pub fn modify_docx(input_path: &str, inspector: &str, width: f32, height: f32) -
             content = set_image_size(content, width, height)?;
             content = set_image_behind_document(content)?;
             content = set_page_margins(content)?;
+            // content = set_specific_table_cell_width(content)?;
             zip_writer.start_file::<String, ExtendedFileOptions>(name, FileOptions::default())?;
             zip_writer.write_all(content.as_bytes())?;
         } else if name == "word/media/image1.png" {
