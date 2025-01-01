@@ -18,6 +18,10 @@ jobs:
         include:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            fix-webview2: true
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            fix-webview2: false
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,6 +54,14 @@ jobs:
 
       - name: Yarn install
         run: npm install
+      
+      - name: Download WebView2 Runtime
+        if: ${{ matrix.fix-webview2 }}
+        run: |
+          invoke-webrequest -uri https://github.com/westinyang/WebView2RuntimeArchive/releases/download/109.0.1518.78/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab -outfile Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab
+          Expand .\Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab -F:* ./src-tauri
+          Remove-Item .\src-tauri\tauri.conf.json
+          Rename-Item .\src-tauri\webview2.x64.json .\src-tauri\tauri.conf.json
 
       - name: Tauri build
         uses: tauri-apps/tauri-action@v0
