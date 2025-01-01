@@ -56,11 +56,11 @@ pub async fn get_goods_path(project_no: String) -> Result<String> {
     return Ok(file_list[0].clone());
 }
 
-pub async fn get_goods_info(project_no: String, log_tx: Sender<LogMessage>) -> Result<GoodsInfo> {
+pub async fn get_goods_info(project_no: String, log_tx: Sender<LogMessage>, return_label: bool) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let result = read_pdf(&path)?;
     let goods_pdf = parse_good_file(result.text)?;
-    let labels = detect_goods_pdf(result.images, log_tx).await;
+    let labels = detect_goods_pdf(result.images, log_tx, return_label).await;
     return Ok(GoodsInfo {
         project_no: goods_pdf.project_no,
         name: goods_pdf.item_c_name,
@@ -71,7 +71,10 @@ pub async fn get_goods_info(project_no: String, log_tx: Sender<LogMessage>) -> R
 // const LABEL_SET: [&str; 8] = ["9A", "3480", "CAO", "3481", "UN spec", "Blur", "9", "3091"];
 const BTY_SET: [&str; 4] = ["3480", "3481", "3091", "Blur"];
 
-pub async fn detect_goods_pdf(images: Vec<Vec<u8>>, log_tx: Sender<LogMessage>) -> Vec<String> {
+pub async fn detect_goods_pdf(images: Vec<Vec<u8>>, log_tx: Sender<LogMessage>, return_label: bool) -> Vec<String> {
+    if !return_label {
+        return vec![];
+    }
     let now = SystemTime::now();
     let mut labels = vec![];
     for (_, image) in images.iter().enumerate() {
@@ -106,8 +109,8 @@ pub struct AttachmentInfo {
     pub goods: GoodsInfo,
 }
 
-pub async fn get_attachment_info(project_no: String, log_tx: Sender<LogMessage>) -> Result<AttachmentInfo> {
+pub async fn get_attachment_info(project_no: String, log_tx: Sender<LogMessage>, return_label: bool) -> Result<AttachmentInfo> {
     let summary = get_summary_info(project_no.clone()).await?;
-    let goods_info = get_goods_info(project_no.clone(), log_tx).await?;
+    let goods_info = get_goods_info(project_no.clone(), log_tx, return_label).await?;
     return Ok(AttachmentInfo { summary, goods: goods_info });
 }

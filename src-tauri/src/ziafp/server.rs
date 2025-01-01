@@ -26,6 +26,8 @@ use warp::reject::Reject;
 
 use super::get_attachment_info;
 
+use std::collections::HashMap;
+
 // 自定义错误类型
 #[derive(Debug, Serialize)]
 struct CustomError {
@@ -539,9 +541,13 @@ pub async fn run(
     let get_summary_info = warp::get()
         .and(warp::path("get-attachment-info"))
         .and(warp::path::param::<String>())
+        .and(warp::query::<HashMap<String, String>>())
         .and(warp::any().map(move || log_tx_clone.clone()))
-        .then(|project_no: String, log_tx: Sender<LogMessage>| async move {
-            match get_attachment_info(project_no, log_tx).await {
+        .then(|project_no: String, params: HashMap<String, String>, log_tx: Sender<LogMessage>| async move {
+            // 从 params 中获取 label 参数
+            let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
+            let return_label = label == "1";
+            match get_attachment_info(project_no, log_tx, return_label).await {
                 Ok(summary_info) => warp::reply::json(&summary_info),
                 Err(e) => warp::reply::json(&CustomError {
                     message: format!("获取项目信息失败: {}", e),
