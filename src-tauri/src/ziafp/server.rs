@@ -1,3 +1,4 @@
+use chrono::Local;
 use std::env;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
@@ -10,7 +11,6 @@ use reqwest::{multipart, Client};
 use warp::Filter;
 
 use crate::logger::LogMessage;
-use crate::logger::Logger;
 use crate::utils::match_file_list;
 use crate::utils::{
     build_confirmation_message, get_today_date, match_file, parse_date, popup_message,
@@ -72,7 +72,7 @@ struct HttpClient {
     username: String,
     password: String,
     debug: bool,
-    logger: Arc<Mutex<Logger>>,
+    log_tx: Sender<LogMessage>,
 }
 
 impl HttpClient {
@@ -81,21 +81,12 @@ impl HttpClient {
         username: String,
         password: String,
         debug: bool,
-        log_enabled: bool,
         log_tx: Sender<LogMessage>,
     ) -> Self {
         let client = reqwest::Client::builder()
             .cookie_store(true)
             .build()
             .unwrap();
-        let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
-        let log_dir = PathBuf::from(current_exe.parent().unwrap().join("logs"));
-        let logger = Arc::new(Mutex::new(Logger::new(
-            log_dir,
-            "server",
-            log_enabled,
-            log_tx,
-        )));
 
         HttpClient {
             client,
@@ -103,7 +94,7 @@ impl HttpClient {
             username,
             password,
             debug,
-            logger,
+            log_tx,
         }
     }
     async fn heartbeat(&self) -> Result<()> {
@@ -116,14 +107,12 @@ impl HttpClient {
             .await
         {
             LOGIN_STATUS.store(true, Ordering::Relaxed);
-            self.logger
-                .lock()
-                .await
-                .log("INFO", &format!("心跳成功: {:?}", result.rows.len()));
+            self.log("INFO", &format!("心跳成功: {:?}", result.rows.len()))
+                .await;
             Ok(())
         } else {
             LOGIN_STATUS.store(false, Ordering::Relaxed);
-            self.logger.lock().await.log("ERROR", "心跳失败");
+            self.log("ERROR", "心跳失败").await;
             Err("心跳失败".into())
         }
     }
@@ -153,14 +142,12 @@ impl HttpClient {
 
         if response.status().is_success() {
             LOGIN_STATUS.store(true, Ordering::Relaxed);
-            self.logger.lock().await.log("INFO", "登录成功");
+            self.log("INFO", "登录成功").await;
             Ok(())
         } else {
             LOGIN_STATUS.store(false, Ordering::Relaxed);
-            self.logger
-                .lock()
-                .await
-                .log("ERROR", &format!("登录失败: {:?}", response.text().await?));
+            self.log("ERROR", &format!("登录失败: {:?}", response.text().await?))
+                .await;
             Err("登录失败".into())
         }
     }
@@ -184,27 +171,21 @@ impl HttpClient {
         {
             Ok(resp) => resp,
             Err(e) => {
-                self.logger
-                    .lock()
-                    .await
-                    .log("ERROR", &format!("请求失败: {}", e));
+                self.log("ERROR", &format!("请求失败: {}", e)).await;
                 return Err(Box::new(e));
             }
         };
 
         if !response.status().is_success() {
             let error_msg = format!("服务器返回错误状态码: {}", response.status());
-            self.logger.lock().await.log("ERROR", &error_msg);
+            self.log("ERROR", &error_msg).await;
             return Err(error_msg.into());
         }
 
         match response.json().await {
             Ok(result) => Ok(result),
             Err(e) => {
-                self.logger
-                    .lock()
-                    .await
-                    .log("ERROR", &format!("解析JSON失败: {}", e));
+                self.log("ERROR", &format!("解析JSON失败: {}", e)).await;
                 Err(Box::new(e))
             }
         }
@@ -220,17 +201,16 @@ impl HttpClient {
         let result = self.query_project(&query_string).await?;
 
         if result.rows.is_empty() {
-            self.logger
-                .lock()
-                .await
-                .log("ERROR", &format!("未找到项目ID: {:?}", query_string));
+            self.log("ERROR", &format!("未找到项目ID: {:?}", query_string))
+                .await;
             return Err("未找到项目ID".into());
         }
         if result.rows[0].edit_status > 2 {
-            self.logger.lock().await.log(
+            self.log(
                 "ERROR",
                 &format!("没有权限修改: {:?}", result.rows[0].project_id),
-            );
+            )
+            .await;
             return Err("没有权限修改".into());
         }
         Ok(result.rows[0].project_id.clone())
@@ -277,22 +257,31 @@ impl HttpClient {
         let response = self.client.post(url).multipart(form).send().await?;
 
         if response.status().is_success() {
-            self.logger.lock().await.log(
+            self.log(
                 "INFO",
                 &format!("文件上传成功: {:?}", response.text().await?),
-            );
+            )
+            .await;
             Ok(file_name.to_string())
         } else {
-            self.logger.lock().await.log(
+            self.log(
                 "ERROR",
                 &format!("文件上传失败，状态码: {:?}", response.status()),
-            );
+            )
+            .await;
             Err("文件上传失败".into())
         }
     }
 
     async fn log(&self, level: &str, message: &str) {
-        self.logger.lock().await.log(level, message);
+        let current_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        self.log_tx
+            .send(LogMessage {
+                time_stamp: current_time,
+                level: level.to_string(),
+                message: message.to_string(),
+            })
+            .unwrap();
     }
     async fn post_file_from_directory(&self, path: PathBuf) -> Vec<String> {
         self.log(
@@ -384,10 +373,7 @@ impl HttpClient {
         match self.query_project(&query_string).await {
             Ok(result) => Ok(result),
             Err(e) => {
-                self.logger
-                    .lock()
-                    .await
-                    .log("ERROR", &format!("查询项目失败: {}", e));
+                self.log("ERROR", &format!("查询项目失败: {}", e)).await;
                 Err(format!("查询项目失败: {}", e).into())
             }
         }
@@ -400,7 +386,6 @@ pub async fn run(
     password: String,
     port: u16,
     debug: bool,
-    log_enabled: bool,
     mut shutdown_rx: watch::Receiver<bool>,
     log_tx: Sender<LogMessage>,
 ) -> Result<()> {
@@ -409,7 +394,6 @@ pub async fn run(
         username.clone(),
         password.clone(),
         debug,
-        log_enabled,
         log_tx.clone(),
     )));
     client.lock().await.log("INFO", "开始运行").await;
@@ -437,11 +421,6 @@ pub async fn run(
         .lock()
         .await
         .log("INFO", &format!("debug: {}", debug))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("log_enabled: {}", log_enabled))
         .await;
     let _ = client.lock().await.login().await;
     let client_clone = client.clone();
@@ -538,22 +517,27 @@ pub async fn run(
             },
         );
     let log_tx_clone = log_tx.clone();
-    let get_summary_info = warp::get()
-        .and(warp::path("get-attachment-info"))
-        .and(warp::path::param::<String>())
-        .and(warp::query::<HashMap<String, String>>())
-        .and(warp::any().map(move || log_tx_clone.clone()))
-        .then(|project_no: String, params: HashMap<String, String>, log_tx: Sender<LogMessage>| async move {
-            // 从 params 中获取 label 参数
-            let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
-            let return_label = label == "1";
-            match get_attachment_info(project_no, log_tx, return_label).await {
-                Ok(summary_info) => warp::reply::json(&summary_info),
-                Err(e) => warp::reply::json(&CustomError {
-                    message: format!("获取项目信息失败: {}", e),
-                }),
-            }
-        });
+    let get_summary_info =
+        warp::get()
+            .and(warp::path("get-attachment-info"))
+            .and(warp::path::param::<String>())
+            .and(warp::query::<HashMap<String, String>>())
+            .and(warp::any().map(move || log_tx_clone.clone()))
+            .then(
+                |project_no: String,
+                 params: HashMap<String, String>,
+                 log_tx: Sender<LogMessage>| async move {
+                    // 从 params 中获取 label 参数
+                    let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
+                    let return_label = label == "1";
+                    match get_attachment_info(project_no, log_tx, return_label).await {
+                        Ok(summary_info) => warp::reply::json(&summary_info),
+                        Err(e) => warp::reply::json(&CustomError {
+                            message: format!("获取项目信息失败: {}", e),
+                        }),
+                    }
+                },
+            );
     let cors = warp::cors()
         .allow_any_origin() // 允许所有来源
         .allow_headers(vec!["content-type"]) // 允许的请求头

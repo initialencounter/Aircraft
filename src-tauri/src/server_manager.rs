@@ -1,47 +1,48 @@
-use tokio::task::JoinHandle;
-use tokio::sync::watch;
-use tauri::Wry;
 use std::sync::atomic::AtomicBool;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::Sender;
 use std::sync::Mutex;
+use tauri::Wry;
+use tokio::sync::watch;
+use tokio::task::JoinHandle;
 
+use crate::command::get_server_config;
+use crate::config::ServerConfig;
 use crate::logger::LogMessage;
 use crate::ziafp::run as ziafp_run;
-use crate::config::ServerConfig;
-use crate::command::get_server_config;
 
 pub struct ServerManager {
     is_running: AtomicBool,
     handle: Mutex<JoinHandle<()>>,
     config: Mutex<ServerConfig>,
     shutdown_tx: Mutex<watch::Sender<bool>>,
-    log_rx: Mutex<Receiver<LogMessage>>,
+    log_tx: Sender<LogMessage>,
 }
 impl ServerManager {
-    pub fn new(app_handle: tauri::AppHandle<Wry>) -> Self {
-      let (shutdown_tx, shutdown_rx) = watch::channel(false);
-      let (log_tx, log_rx) = channel::<LogMessage>();
-      let app_handle_clone = app_handle.clone();  
-      let config = get_server_config(app_handle_clone);
-      let config_clone = config.clone();
+    pub fn new(app_handle: tauri::AppHandle<Wry>, log_tx: Sender<LogMessage>) -> Self {
+        let (shutdown_tx, shutdown_rx) = watch::channel(false);
+        let app_handle_clone = app_handle.clone();
+        let config = get_server_config(app_handle_clone);
+        let config_clone = config.clone();
+        let log_tx_clone = log_tx.clone();
         let handle = tokio::spawn(async move {
-          let _ = ziafp_run(
-            config_clone.base_url,
-            config_clone.username,
-            config_clone.password,
-            config_clone.port,
-            config_clone.debug,
-            config_clone.log_enabled,
-            shutdown_rx,
-            log_tx,
-          ).await;
+            let _ = ziafp_run(
+                config_clone.base_url,
+                config_clone.username,
+                config_clone.password,
+                config_clone.port,
+                config_clone.debug,
+                shutdown_rx,
+                log_tx_clone,
+            )
+            .await;
         });
-        Self { 
+        let log_tx = log_tx.clone();
+        Self {
             is_running: AtomicBool::new(true),
-            handle: Mutex::new(handle), 
-            config: Mutex::new(config), 
+            handle: Mutex::new(handle),
+            config: Mutex::new(config),
             shutdown_tx: Mutex::new(shutdown_tx),
-            log_rx: Mutex::new(log_rx),
+            log_tx,
         }
     }
     pub fn start(&self) {
@@ -49,12 +50,12 @@ impl ServerManager {
             println!("服务已运行");
             return;
         }
-        self.is_running.store(true, std::sync::atomic::Ordering::Relaxed);
+        self.is_running
+            .store(true, std::sync::atomic::Ordering::Relaxed);
         let config = self.config.lock().unwrap().clone();
         let (shutdown_tx, shutdown_rx) = watch::channel(false);
-        let (log_tx, log_rx) = channel::<LogMessage>();
+        let log_tx = self.log_tx.clone();
         *self.shutdown_tx.lock().unwrap() = shutdown_tx;
-        *self.log_rx.lock().unwrap() = log_rx;
         *self.handle.lock().unwrap() = tokio::spawn(async move {
             let _ = ziafp_run(
                 config.base_url,
@@ -62,15 +63,16 @@ impl ServerManager {
                 config.password,
                 config.port,
                 config.debug,
-                config.log_enabled,
                 shutdown_rx,
                 log_tx,
-            ).await;
+            )
+            .await;
         });
     }
     pub fn stop(&self) {
         let _ = self.shutdown_tx.lock().unwrap().send(true);
-        self.is_running.store(false, std::sync::atomic::Ordering::Relaxed);
+        self.is_running
+            .store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub async fn restart(&self) {
@@ -85,16 +87,5 @@ impl ServerManager {
         self.stop();
         self.update_config(config);
         self.start();
-    }
-    pub fn try_get_logs(&self) -> Vec<LogMessage> {
-        let mut logs = Vec::new();
-        let rx = self.log_rx.lock().unwrap();
-        
-        // 循环接收所有可用的日志消息
-        while let Ok(log) = rx.try_recv() {
-            logs.push(log);
-        }
-        
-        logs
     }
 }

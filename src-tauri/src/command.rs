@@ -1,11 +1,12 @@
 use serde_json::json;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 
 use crate::config::{BaseConfig, HotkeyConfig, ServerConfig};
 use crate::listen_manager::ListenManager;
-use crate::logger::LogMessage;
+use crate::logger::{LogMessage, Logger};
 use crate::server_manager::ServerManager;
 
 #[tauri::command]
@@ -96,8 +97,17 @@ pub fn save_base_config(app: tauri::AppHandle, config: BaseConfig) -> Result<(),
 }
 
 #[tauri::command]
-pub fn get_server_logs(state: tauri::State<'_, ServerManager>) -> Vec<LogMessage> {
-    state.try_get_logs()
+pub fn get_server_logs(logger: tauri::State<'_, Arc<Mutex<Logger>>>) -> Vec<LogMessage> {
+    let mut logger = logger.lock().unwrap();
+    logger.try_get_logs()
+}
+
+
+#[tauri::command]
+pub fn write_log(logger: tauri::State<'_, Arc<Mutex<Logger>>>, level: &str, message: &str) {
+    if let Ok(mut logger) = logger.lock() {
+        logger.log(level, message);
+    }
 }
 
 // 快捷键设置

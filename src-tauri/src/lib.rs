@@ -11,18 +11,17 @@ mod hotkey;
 mod yolov8;
 mod pdf;
 mod blake2;
+mod apply;
 
 use blake2::handle_drag_drop_event;
 use serde::Serialize;
 use std::env;
-use tauri::{DragDropEvent, Manager, WindowEvent};
+use tauri::{DragDropEvent, WindowEvent};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri_plugin_autostart::MacosLauncher;
 
 use crate::command as cmd;
 use crate::handle::handle_setup;
-use crate::listen_manager::ListenManager;
-use crate::server_manager::ServerManager;
 
 #[derive(Serialize, Clone)]
 struct Link {
@@ -42,10 +41,7 @@ pub async fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             handle_setup(app);
-            let server_manager = ServerManager::new(app.handle().clone());
-            app.manage(server_manager);
-            let listen_manager = ListenManager::new(app.handle().clone());
-            app.manage(listen_manager);
+            apply::apply(app);
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -73,6 +69,7 @@ pub async fn run() {
             cmd::is_listening,
             cmd::open_local_dir,
             cmd::open_with_wps,
+            cmd::write_log,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
