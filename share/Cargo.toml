@@ -20,4 +20,5 @@ summary-rs = {version = "0.1.2", path = "../summary-rs"}
 ort = "2.0.0-rc.9"
 ndarray = "0.16.1"
 image = "0.25.4"
-
+pdf = "0.9.0"
+fax = "0.2.4"

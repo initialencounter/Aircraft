@@ -11,10 +11,9 @@ use reqwest::{multipart, Client};
 use warp::Filter;
 
 use share::logger::LogMessage;
-use crate::utils::match_file_list;
 use crate::utils::{
     build_confirmation_message, get_today_date, match_file, parse_date, popup_message,
-    prepare_file_info, RawFileInfo,
+    prepare_file_info, RawFileInfo, match_file_list,
 };
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -24,7 +23,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use warp::reject::Reject;
 
-use super::get_attachment_info;
+use share::attachment_parser::get_attachment_info;
 
 use std::collections::HashMap;
 
