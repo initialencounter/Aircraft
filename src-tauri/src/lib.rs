@@ -6,7 +6,6 @@ mod menu;
 mod server_manager;
 mod utils;
 mod ziafp;
-mod hotkey;
 mod yolov8;
 mod pdf;
 mod blake2;

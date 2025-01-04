@@ -5107,10 +5107,15 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "colored",
+ "copypasta",
+ "enigo",
  "lazy_static",
  "native-dialog",
  "regex",
+ "reqwest",
  "serde",
+ "serde_json",
+ "summary-rs",
  "tokio",
  "warp",
 ]

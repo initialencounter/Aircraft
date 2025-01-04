@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use share::utils::popup_message;
+use crate::utils::popup_message;
 use std::fs;
 
 lazy_static! {

@@ -3,10 +3,10 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 use tauri::Wry;
 
+use crate::command::get_hotkey_config;
 use crate::config::HotkeyConfig;
-use crate::hotkey::{copy_file_to_here, upload_file, write_doc};
-use crate::{command::get_hotkey_config, hotkey::replace_docx};
 use flextrek::{listen_path, listen_selected_files, HotkeyHandle};
+use share::hotkey_handler::{copy_file_to_here, replace_docx, upload_file, write_doc};
 
 pub struct ListenManager {
     is_running: AtomicBool,
@@ -18,11 +18,6 @@ pub struct ListenManager {
     config: Mutex<HotkeyConfig>,
 }
 
-// pub struct KeyProxy {
-//     pub enable: bool,
-//     pub hotkey: String,
-//     pub target_key: Key,
-// }
 
 fn simulate_f2_press() {
     let mut enigo = Enigo::new(&Settings::default()).unwrap();

@@ -4,8 +4,8 @@ use chrono::Local;
 use serde::{Deserialize, Serialize};
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content, SummaryModelDocx};
 
-use crate::hotkey::copy::search;
-use crate::hotkey::SearchResult;
+use share::hotkey_handler::copy::search;
+use share::hotkey_handler::SearchResult;
 use share::logger::LogMessage;
 use crate::pdf::parse::parse_good_file;
 use crate::pdf::read::read_pdf;
