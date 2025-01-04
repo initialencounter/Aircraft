@@ -89,7 +89,7 @@ export default {
       return this.layerCount * this.weight
     },
     loadByLayerNewton() {
-      return this.loadByLayer * 9.81
+      return this.loadByLayer * 9.8
     },
 
     // 按高度计算
@@ -101,7 +101,7 @@ export default {
       return this.heightBasedLayer * this.weight
     },
     loadByHeightNewton() {
-      return this.loadByHeight * 9.81
+      return this.loadByHeight * 9.8
     }
   },
   methods: {
