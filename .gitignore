@@ -25,3 +25,4 @@ dist-ssr
 
 /res
 /src-tauri/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64
+/uploader

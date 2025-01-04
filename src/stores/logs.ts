@@ -29,7 +29,7 @@ export const useLogStore = defineStore('logs', {
         if (logs.length) {
           this.logHistory.push(...logs)
         }
-      }, 1000)
+      }, 500)
     },
     stopGetLog(): void {
       if (this.logTimer) {
