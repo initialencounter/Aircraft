@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "headless",
+    "share",
+    "summary-rs",
+    "src-tauri",
+] 
