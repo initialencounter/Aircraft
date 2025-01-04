@@ -5,9 +5,9 @@ use std::sync::{Arc, Mutex};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 
-use crate::config::{BaseConfig, HotkeyConfig, ServerConfig};
-use crate::listen_manager::ListenManager;
+use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
 use crate::server_manager::ServerManager;
+use share::hotkey_manager::HotkeyManager;
 use share::logger::{LogMessage, Logger};
 use share::task_proxy::LOGIN_STATUS;
 
@@ -132,19 +132,19 @@ pub fn save_hotkey_config(app: tauri::AppHandle, config: HotkeyConfig) -> Result
 }
 
 #[tauri::command]
-pub fn stop_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result<(), String> {
+pub fn stop_hotkey_listener(state: tauri::State<'_, HotkeyManager>) -> Result<(), String> {
     state.stop();
     Ok(())
 }
 
 #[tauri::command]
-pub fn start_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result<(), String> {
+pub fn start_hotkey_listener(state: tauri::State<'_, HotkeyManager>) -> Result<(), String> {
     state.start();
     Ok(())
 }
 
 #[tauri::command]
-pub fn restart_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result<(), String> {
+pub fn restart_hotkey_listener(state: tauri::State<'_, HotkeyManager>) -> Result<(), String> {
     state.stop();
     state.start();
     Ok(())
@@ -152,7 +152,7 @@ pub fn restart_hotkey_listener(state: tauri::State<'_, ListenManager>) -> Result
 
 #[tauri::command]
 pub async fn reload_hotkey_listener(
-    state: tauri::State<'_, ListenManager>,
+    state: tauri::State<'_, HotkeyManager>,
     config: HotkeyConfig,
 ) -> Result<(), String> {
     state.stop();
@@ -162,7 +162,7 @@ pub async fn reload_hotkey_listener(
 }
 
 #[tauri::command]
-pub fn is_listening(state: tauri::State<'_, ListenManager>) -> bool {
+pub fn is_listening(state: tauri::State<'_, HotkeyManager>) -> bool {
     state.is_listening()
 }
 

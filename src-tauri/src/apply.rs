@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-
-use crate::listen_manager::ListenManager;
+use crate::command::{get_hotkey_config, get_server_config};
+use share::hotkey_manager::HotkeyManager;
 use share::logger::Logger;
 use crate::server_manager::ServerManager;
 use tauri::{App, Manager};
@@ -23,8 +23,11 @@ pub fn apply(app: &mut App) {
     )));
     let log_tx = logger.lock().unwrap().log_tx.clone();
     app.manage(logger);
-    let server_manager = ServerManager::new(app.handle().clone(), log_tx);
+    let server_config = get_server_config(app.handle().clone());
+    let server_manager = ServerManager::new(server_config, log_tx);
     app.manage(server_manager);
-    let listen_manager = ListenManager::new(app.handle().clone());
-    app.manage(listen_manager);
+    let hotkey_config = get_hotkey_config(app.handle().clone());
+    let hotkey_manager = HotkeyManager::new(hotkey_config);
+    hotkey_manager.start();
+    app.manage(hotkey_manager);
 }

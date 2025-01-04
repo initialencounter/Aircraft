@@ -1,11 +1,9 @@
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
-use tauri::Wry;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
-use crate::command::get_server_config;
-use crate::config::ServerConfig;
+use share::types::ServerConfig;
 use share::logger::LogMessage;
 use share::task_proxy::run as task_proxy_run;
 
@@ -16,10 +14,8 @@ pub struct ServerManager {
     log_tx: Sender<LogMessage>,
 }
 impl ServerManager {
-    pub fn new(app_handle: tauri::AppHandle<Wry>, log_tx: Sender<LogMessage>) -> Self {
+    pub fn new(config: ServerConfig, log_tx: Sender<LogMessage>) -> Self {
         let (shutdown_tx, shutdown_rx) = watch::channel(false);
-        let app_handle_clone = app_handle.clone();
-        let config = get_server_config(app_handle_clone);
         let config_clone = config.clone();
         let log_tx_clone = log_tx.clone();
         let handle = tokio::spawn(async move {

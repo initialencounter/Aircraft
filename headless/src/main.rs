@@ -1,9 +1,14 @@
 mod config;
 mod tray;
 mod utils;
-use config::read_env_to_config;
+use config::{read_env_to_config, read_hotkey_config};
 use is_elevated::is_elevated;
-use share::{logger::Logger, task_proxy::run as task_proxy_run, utils::popup_message};
+use share::{
+    hotkey_manager::HotkeyManager,
+    logger::Logger,
+    task_proxy::run as task_proxy_run,
+    types::{HotkeyConfig, ServerConfig},
+};
 use std::{
     env,
     path::PathBuf,
@@ -29,7 +34,7 @@ async fn main() -> Result<()> {
         } else {
             // 如果当前为非管理员权限，则请求管理员权限并重新启动程序
             if request_admin_and_restart(&current_exe) {
-                return Ok(());
+                std::process::exit(0);
             }
         }
     }
@@ -37,10 +42,7 @@ async fn main() -> Result<()> {
     let log_dir = current_exe.parent().unwrap().join("logs");
     let config = match read_env_to_config(&current_exe) {
         Ok(config) => config,
-        Err(e) => {
-            let _ = popup_message("读取配置文件失败", &e.to_string());
-            return Err(e);
-        }
+        Err(_e) => ServerConfig::default(),
     };
     // 创建事件循环
     let event_loop = EventLoop::new();
@@ -70,6 +72,12 @@ async fn main() -> Result<()> {
         log_tx,
     ));
 
+    let hotkey_config = match read_hotkey_config(&current_exe) {
+        Ok(config) => config,
+        Err(_e) => HotkeyConfig::default(),
+    };
+    let hotkey_manager = HotkeyManager::new(hotkey_config);
+    hotkey_manager.start();
     // 运行事件循环
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -77,6 +85,8 @@ async fn main() -> Result<()> {
         if let tao::event::Event::UserEvent(()) = event {
             *control_flow = ControlFlow::Exit;
             shutdown_tx.send(true).unwrap();
+            hotkey_manager.stop();
+            std::process::exit(0);
         }
     });
 }
