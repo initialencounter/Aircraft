@@ -1,8 +1,8 @@
-pub mod utils;
+pub mod fs;
+pub mod dialog;
 use chrono::Local;
-pub use utils::*;
-pub use share::utils::fs::*;
-pub use share::utils::dialog::*;
+pub use fs::*;
+pub use dialog::*;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 

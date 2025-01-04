@@ -1,27 +1,16 @@
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
-use std::fs;
 use copypasta::{ClipboardContext, ClipboardProvider};
 use lazy_static::lazy_static;
 use regex::Regex;
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+use share::utils::popup_message;
+use std::fs;
 
 lazy_static! {
     static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S|A|R]EK.{2}\d{12}").unwrap();
 }
 
-use native_dialog::{MessageDialog, MessageType};
-
 use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
-
-
-fn popup_message(title: &str, message: &str) -> bool {
-    MessageDialog::new()
-        .set_title(title)
-        .set_text(&message)
-        .set_type(MessageType::Warning)
-        .show_confirm()
-        .unwrap_or(false)
-}
 
 #[derive(Serialize, Debug)]
 struct SearchParams {
@@ -63,16 +52,14 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
     };
     if response.status().is_success() {
         match response.text().await {
-            Ok(text) => {
-                match serde_json::from_str::<SearchResponse>(&text) {
-                    Ok(result) => result.results,
-                    Err(e) => {
-                        println!("Failed to parse JSON: {}", e);
-                        eprintln!("Failed to parse JSON: {}", e);
-                        vec![]
-                    }
+            Ok(text) => match serde_json::from_str::<SearchResponse>(&text) {
+                Ok(result) => result.results,
+                Err(e) => {
+                    println!("Failed to parse JSON: {}", e);
+                    eprintln!("Failed to parse JSON: {}", e);
+                    vec![]
                 }
-            }
+            },
             Err(e) => {
                 println!("Failed to get response text: {}", e);
                 eprintln!("Failed to get response text: {}", e);
@@ -109,7 +96,7 @@ fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) {
     if !popup_message("确认复制文件?", &file_list.join("\n")) {
         return;
     }
-    
+
     for source_path in file_list {
         let file_name = match source_path.split('\\').last() {
             Some(name) => name,
@@ -119,7 +106,7 @@ fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) {
             }
         };
         let target_path = format!("{}\\{}", target_path, file_name);
-        
+
         if let Err(e) = fs::copy(&source_path, &target_path) {
             eprintln!("Failed to copy {} to {}: {}", source_path, target_path, e);
         }
@@ -130,9 +117,7 @@ fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) {
 
 fn get_clip_text() -> Option<String> {
     match ClipboardContext::new() {
-        Ok(mut ctx) => {
-            ctx.get_contents().ok()
-        }
+        Ok(mut ctx) => ctx.get_contents().ok(),
         Err(e) => {
             eprintln!("Failed to create clipboard context: {}", e);
             None
@@ -152,7 +137,7 @@ pub async fn copy_file_to_here(target_dir: String) {
             return;
         }
     };
-    
+
     if !check_project_no(&clip_text) {
         popup_message("项目编号不合法", "请检查项目编号是否正确");
         return;
