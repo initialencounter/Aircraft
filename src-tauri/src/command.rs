@@ -1,18 +1,19 @@
 use serde_json::json;
 use std::path::Path;
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 
 use crate::config::{BaseConfig, HotkeyConfig, ServerConfig};
 use crate::listen_manager::ListenManager;
-use share::logger::{LogMessage, Logger};
 use crate::server_manager::ServerManager;
+use share::logger::{LogMessage, Logger};
+use share::task_proxy::LOGIN_STATUS;
 
+// 获取登录状态
 #[tauri::command]
 pub async fn get_login_status() -> bool {
-    use crate::ziafp::LOGIN_STATUS;
-    use std::sync::atomic::Ordering;
     let login_status = LOGIN_STATUS.load(Ordering::Relaxed);
     login_status
 }
@@ -102,7 +103,6 @@ pub fn get_server_logs(logger: tauri::State<'_, Arc<Mutex<Logger>>>) -> Vec<LogM
     logger.try_get_logs()
 }
 
-
 #[tauri::command]
 pub fn write_log(logger: tauri::State<'_, Arc<Mutex<Logger>>>, level: &str, message: &str) {
     if let Ok(mut logger) = logger.lock() {
@@ -190,7 +190,5 @@ pub fn open_local_dir(target: &str) {
 #[tauri::command]
 pub fn open_with_wps(target: &str, name: &str) {
     let file_path = Path::new(target).join(Path::new(name));
-    let _ = std::process::Command::new("wps")
-        .arg(file_path)
-        .spawn();
+    let _ = std::process::Command::new("wps").arg(file_path).spawn();
 }

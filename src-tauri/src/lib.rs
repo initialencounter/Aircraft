@@ -1,3 +1,5 @@
+mod apply;
+mod blake2;
 mod command;
 mod config;
 mod handle;
@@ -5,9 +7,6 @@ mod listen_manager;
 mod menu;
 mod server_manager;
 mod utils;
-mod ziafp;
-mod blake2;
-mod apply;
 
 use blake2::handle_drag_drop_event;
 use serde::Serialize;

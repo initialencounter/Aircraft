@@ -1,4 +1,3 @@
-use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use tauri::Wry;
@@ -8,10 +7,9 @@ use tokio::task::JoinHandle;
 use crate::command::get_server_config;
 use crate::config::ServerConfig;
 use share::logger::LogMessage;
-use crate::ziafp::run as ziafp_run;
+use share::task_proxy::run as task_proxy_run;
 
 pub struct ServerManager {
-    is_running: AtomicBool,
     handle: Mutex<JoinHandle<()>>,
     config: Mutex<ServerConfig>,
     shutdown_tx: Mutex<watch::Sender<bool>>,
@@ -25,7 +23,7 @@ impl ServerManager {
         let config_clone = config.clone();
         let log_tx_clone = log_tx.clone();
         let handle = tokio::spawn(async move {
-            let _ = ziafp_run(
+            let _ = task_proxy_run(
                 config_clone.base_url,
                 config_clone.username,
                 config_clone.password,
@@ -38,26 +36,20 @@ impl ServerManager {
         });
         let log_tx = log_tx.clone();
         Self {
-            is_running: AtomicBool::new(true),
             handle: Mutex::new(handle),
             config: Mutex::new(config),
             shutdown_tx: Mutex::new(shutdown_tx),
             log_tx,
         }
     }
+
     pub fn start(&self) {
-        if self.is_running.load(std::sync::atomic::Ordering::Relaxed) {
-            println!("服务已运行");
-            return;
-        }
-        self.is_running
-            .store(true, std::sync::atomic::Ordering::Relaxed);
         let config = self.config.lock().unwrap().clone();
         let (shutdown_tx, shutdown_rx) = watch::channel(false);
         let log_tx = self.log_tx.clone();
         *self.shutdown_tx.lock().unwrap() = shutdown_tx;
         *self.handle.lock().unwrap() = tokio::spawn(async move {
-            let _ = ziafp_run(
+            let _ = task_proxy_run(
                 config.base_url,
                 config.username,
                 config.password,
@@ -69,10 +61,9 @@ impl ServerManager {
             .await;
         });
     }
+
     pub fn stop(&self) {
         let _ = self.shutdown_tx.lock().unwrap().send(true);
-        self.is_running
-            .store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub async fn restart(&self) {

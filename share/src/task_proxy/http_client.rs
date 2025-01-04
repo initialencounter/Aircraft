@@ -2,49 +2,24 @@ use chrono::Local;
 use std::env;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
-use std::sync::Arc;
-use tokio::sync::watch;
-use tokio::sync::Mutex;
 
 use reqwest::header;
 use reqwest::{multipart, Client};
-use warp::Filter;
 
-use share::logger::LogMessage;
+use crate::logger::LogMessage;
 use crate::utils::{
-    build_confirmation_message, get_today_date, match_file, parse_date, popup_message,
-    prepare_file_info, RawFileInfo, match_file_list,
+    build_confirmation_message, get_today_date, match_file, match_file_list, parse_date,
+    popup_message, prepare_file_info, RawFileInfo,
 };
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::{Deserialize, Serialize};
 
-use std::fmt;
-use warp::reject::Reject;
-
-use share::attachment_parser::get_attachment_info;
-
-use std::collections::HashMap;
-
-// 自定义错误类型
-#[derive(Debug, Serialize)]
-struct CustomError {
-    message: String,
-}
-
-impl fmt::Display for CustomError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
-
-impl Reject for CustomError {}
-
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
 
 #[derive(Deserialize, Serialize)]
-struct QueryResult {
+pub struct QueryResult {
     rows: Vec<ProjectRow>,
 }
 
@@ -65,17 +40,17 @@ struct DirectoryInfo {
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-struct HttpClient {
-    client: Client,
-    base_url: String,
-    username: String,
-    password: String,
-    debug: bool,
-    log_tx: Sender<LogMessage>,
+pub struct HttpClient {
+    pub client: Client,
+    pub base_url: String,
+    pub username: String,
+    pub password: String,
+    pub debug: bool,
+    pub log_tx: Sender<LogMessage>,
 }
 
 impl HttpClient {
-    fn new(
+    pub fn new(
         base_url: String,
         username: String,
         password: String,
@@ -96,7 +71,7 @@ impl HttpClient {
             log_tx,
         }
     }
-    async fn heartbeat(&self) -> Result<()> {
+    pub async fn heartbeat(&self) -> Result<()> {
         let today_date = get_today_date();
         if let Ok(result) = self
             .query_project(&format!(
@@ -115,7 +90,7 @@ impl HttpClient {
             Err("心跳失败".into())
         }
     }
-    async fn login(&self) -> Result<()> {
+    pub async fn login(&self) -> Result<()> {
         if self.debug {
             self.log("INFO", "调试模式，跳过登录").await;
             return Ok(());
@@ -150,7 +125,7 @@ impl HttpClient {
             Err("登录失败".into())
         }
     }
-    async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
+    pub async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
         let url = format!("{}/rest/inspect/query?{}", self.base_url, query_string);
 
         let response = match self
@@ -189,7 +164,7 @@ impl HttpClient {
             }
         }
     }
-    async fn get_project_id(&self, project_no: &str) -> Result<String> {
+    pub async fn get_project_id(&self, project_no: &str) -> Result<String> {
         let (start_date, end_date) = parse_date(project_no)?;
         let system_id = project_no[0..3].to_lowercase();
         let query_string = format!(
@@ -272,7 +247,7 @@ impl HttpClient {
         }
     }
 
-    async fn log(&self, level: &str, message: &str) {
+    pub async fn log(&self, level: &str, message: &str) {
         let current_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         self.log_tx
             .send(LogMessage {
@@ -282,7 +257,7 @@ impl HttpClient {
             })
             .unwrap();
     }
-    async fn post_file_from_directory(&self, path: PathBuf) -> Vec<String> {
+    pub async fn post_file_from_directory(&self, path: PathBuf) -> Vec<String> {
         self.log(
             "INFO",
             &format!("开始从 {} 上传文件", path.to_str().unwrap()),
@@ -317,7 +292,7 @@ impl HttpClient {
             .await;
         uploaded_files
     }
-    async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
+    pub async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
         let raw_file_list = match_file_list(file_list);
         let message = build_confirmation_message(&raw_file_list);
         if !popup_message("警告", &message) {
@@ -354,7 +329,7 @@ impl HttpClient {
         .await
     }
 
-    async fn get_project_info(&self, project_no: &str) -> Result<QueryResult> {
+    pub async fn get_project_info(&self, project_no: &str) -> Result<QueryResult> {
         self.log("INFO", &format!("GET /get-project-info: {:?}", project_no))
             .await;
 
@@ -377,191 +352,4 @@ impl HttpClient {
             }
         }
     }
-}
-
-pub async fn run(
-    base_url: String,
-    username: String,
-    password: String,
-    port: u16,
-    debug: bool,
-    mut shutdown_rx: watch::Receiver<bool>,
-    log_tx: Sender<LogMessage>,
-) -> Result<()> {
-    let client = Arc::new(Mutex::new(HttpClient::new(
-        base_url.clone(),
-        username.clone(),
-        password.clone(),
-        debug,
-        log_tx.clone(),
-    )));
-    client.lock().await.log("INFO", "开始运行").await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("base_url: {}", base_url))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("username: {}", username))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("password: {}", password))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("port: {}", port))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("debug: {}", debug))
-        .await;
-    let _ = client.lock().await.login().await;
-    let client_clone = client.clone();
-    let heartbeat = tokio::spawn(async move {
-        let mut last_heartbeat = std::time::Instant::now();
-        loop {
-            if !debug {
-                LOGIN_STATUS.store(false, Ordering::Relaxed);
-                // 检查距离上次心跳是否超过阈值
-                if last_heartbeat.elapsed() > std::time::Duration::from_secs(60 * 30) {
-                    client_clone
-                        .lock()
-                        .await
-                        .log(
-                            "WARN",
-                            "检测到较长时间未进行心跳，可能是由于系统睡眠导致，开始重新登录",
-                        )
-                        .await;
-                    client_clone.lock().await.login().await.unwrap();
-                } else {
-                    client_clone.lock().await.heartbeat().await.unwrap();
-                }
-                last_heartbeat = std::time::Instant::now();
-            } else {
-                LOGIN_STATUS.store(true, Ordering::Relaxed);
-                client_clone
-                    .lock()
-                    .await
-                    .log("INFO", "调试模式，跳过心跳")
-                    .await;
-            }
-            tokio::time::sleep(std::time::Duration::from_secs(60 * 28)).await;
-        }
-    });
-    // 设置 webhook 路由
-    let routes = warp::post()
-        .and(warp::path("upload"))
-        .and(warp::body::content_length_limit(1024 * 16))
-        .and(warp::body::json())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |dir: DirectoryInfo, client: Arc<Mutex<HttpClient>>| async move {
-                let files = client
-                    .lock()
-                    .await
-                    .post_file_from_directory(PathBuf::from(&dir.dir))
-                    .await;
-                warp::reply::json(&files)
-            },
-        );
-    let selected_routes = warp::post()
-        .and(warp::path("upload-selected"))
-        .and(warp::body::content_length_limit(1024 * 16))
-        .and(warp::body::json())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |file_list: Vec<String>, client: Arc<Mutex<HttpClient>>| async move {
-                let files = client
-                    .lock()
-                    .await
-                    .post_file_from_file_list(file_list)
-                    .await;
-                warp::reply::json(&files)
-            },
-        );
-    let doc_routes = warp::get()
-        .and(warp::path("get-project-info"))
-        .and(warp::path::param::<String>())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |project_no: String, client: Arc<Mutex<HttpClient>>| async move {
-                client
-                    .lock()
-                    .await
-                    .log("INFO", &format!("GET /get-project-info: {:?}", project_no))
-                    .await;
-
-                // 处理所有可能的错误情况
-                match client.lock().await.get_project_info(&project_no).await {
-                    Ok(result) => warp::reply::json(&result),
-                    Err(e) => warp::reply::json(&CustomError {
-                        message: format!("获取项目信息失败: {}", e),
-                    }),
-                }
-            },
-        );
-    let log_tx_clone = log_tx.clone();
-    let get_summary_info =
-        warp::get()
-            .and(warp::path("get-attachment-info"))
-            .and(warp::path::param::<String>())
-            .and(warp::query::<HashMap<String, String>>())
-            .and(warp::any().map(move || log_tx_clone.clone()))
-            .then(
-                |project_no: String,
-                 params: HashMap<String, String>,
-                 log_tx: Sender<LogMessage>| async move {
-                    // 从 params 中获取 label 参数
-                    let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
-                    let return_label = label == "1";
-                    match get_attachment_info(project_no, log_tx, return_label).await {
-                        Ok(summary_info) => warp::reply::json(&summary_info),
-                        Err(e) => warp::reply::json(&CustomError {
-                            message: format!("获取项目信息失败: {}", e),
-                        }),
-                    }
-                },
-            );
-    let cors = warp::cors()
-        .allow_any_origin() // 允许所有来源
-        .allow_headers(vec!["content-type"]) // 允许的请求头
-        .allow_methods(vec!["POST", "GET", "OPTIONS"]); // 允许的HTTP方法
-    let combined_routes = routes
-        .or(doc_routes)
-        .or(selected_routes)
-        .or(get_summary_info)
-        .with(cors);
-    // 启动 web 服务器
-    let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));
-    let server_handle = tokio::spawn(server);
-
-    loop {
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        tokio::select! {
-            _ = shutdown_rx.changed() => {
-                if *shutdown_rx.borrow() {
-                    server_handle.abort();
-                    heartbeat.abort();
-                    break;
-                }
-            }
-        }
-    }
-    client.lock().await.log("INFO", "服务已停止").await;
-    Ok(())
 }
