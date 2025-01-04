@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use crate::listen_manager::ListenManager;
-use crate::logger::Logger;
+use share::logger::Logger;
 use crate::server_manager::ServerManager;
 use tauri::{App, Manager};
 

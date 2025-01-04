@@ -7,7 +7,7 @@ use tokio::task::JoinHandle;
 
 use crate::command::get_server_config;
 use crate::config::ServerConfig;
-use crate::logger::LogMessage;
+use share::logger::LogMessage;
 use crate::ziafp::run as ziafp_run;
 
 pub struct ServerManager {

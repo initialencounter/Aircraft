@@ -45,3 +45,4 @@ pdf = "0.9.0"
 fax = "0.2.4"
 blake2 = "0.10.6"
 hex = "0.4.3"
+share = { path = "../share" }

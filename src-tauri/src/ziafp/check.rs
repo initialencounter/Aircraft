@@ -6,7 +6,7 @@ use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content, SummaryMo
 
 use crate::hotkey::copy::search;
 use crate::hotkey::SearchResult;
-use crate::logger::LogMessage;
+use share::logger::LogMessage;
 use crate::pdf::parse::parse_good_file;
 use crate::pdf::read::read_pdf;
 use crate::pdf::types::GoodsInfo;

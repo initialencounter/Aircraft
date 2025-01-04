@@ -2,7 +2,6 @@ mod command;
 mod config;
 mod handle;
 mod listen_manager;
-mod logger;
 mod menu;
 mod server_manager;
 mod utils;

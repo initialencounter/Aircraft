@@ -60,7 +60,7 @@ impl Logger {
         };
 
         let mut logger_clone = logger.clone();
-        tauri::async_runtime::spawn(async move {
+        tokio::spawn(async move {
             while let Ok(log) = receiver.recv() {
                 logger_clone.log(&log.level, &log.message);
             }

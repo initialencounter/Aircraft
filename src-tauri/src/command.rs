@@ -6,7 +6,7 @@ use tauri_plugin_store::StoreExt;
 
 use crate::config::{BaseConfig, HotkeyConfig, ServerConfig};
 use crate::listen_manager::ListenManager;
-use crate::logger::{LogMessage, Logger};
+use share::logger::{LogMessage, Logger};
 use crate::server_manager::ServerManager;
 
 #[tauri::command]
