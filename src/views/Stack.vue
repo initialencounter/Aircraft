@@ -79,7 +79,7 @@ export default {
     // 按层数计算
     layerCount() {
       if (!this.height) return 0
-      let layers = Number.isInteger(3000 / this.height)
+      let layers = 3000 / this.height
       if (Number.isInteger(layers)) {
         return layers - 1
       }
