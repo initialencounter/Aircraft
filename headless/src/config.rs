@@ -9,12 +9,12 @@ pub fn read_env_to_config(current_exe: &PathBuf) -> Result<ServerConfig> {
         current_exe.parent().unwrap().to_str().unwrap()
     );
     dotenv::from_path(env_file_path).ok();
-    let base_url = env::var("BASE_URL").expect("Error reading BASE_URL");
-    let username = env::var("USER_NAME").expect("Error reading USER_NAME");
-    let password = env::var("PASSWORD").expect("Error reading PASSWORD");
-    let port = env::var("PORT")?.parse::<u16>().unwrap_or(25455);
-    let debug = env::var("DEBUG")?.parse::<bool>().unwrap_or(false);
-    let log_enabled = env::var("LOG_ENABLED")?.parse::<bool>().unwrap_or(false);
+    let base_url = env::var("BASE_URL")?;
+    let username = env::var("USER_NAME")?;
+    let password = env::var("PASSWORD")?;
+    let port = env::var("PORT")?.parse::<u16>()?;
+    let debug = env::var("DEBUG")?.parse::<bool>()?;
+    let log_enabled = env::var("LOG_ENABLED")?.parse::<bool>()?;
     Ok(ServerConfig {
         base_url,
         username,
@@ -32,17 +32,17 @@ pub fn read_hotkey_config(current_exe: &PathBuf) -> Result<HotkeyConfig> {
     );
     println!("{}", env_file_path);
     dotenv::from_path(env_file_path).ok();
-    let doc_enable = env::var("DOC_ENABLE")?.parse::<bool>().unwrap_or(false);
-    let doc_key = env::var("DOC_KEY").unwrap_or("ctrl+shift+d".to_string());
-    let upload_enable = env::var("UPLOAD_ENABLE")?.parse::<bool>().unwrap_or(false);
-    let upload_key = env::var("UPLOAD_KEY").unwrap_or("ctrl+shift+u".to_string());
-    let copy_enable = env::var("COPY_ENABLE")?.parse::<bool>().unwrap_or(false);
-    let copy_key = env::var("COPY_KEY").unwrap_or("ctrl+shift+z".to_string());
-    let docx_enable = env::var("DOCX_ENABLE")?.parse::<bool>().unwrap_or(false);
-    let docx_key = env::var("DOCX_KEY").unwrap_or("ctrl+shift+x".to_string());
-    let inspector = env::var("INSPECTOR").unwrap_or("".to_string());
-    let signature_width = env::var("SIGNATURE_WIDTH")?.parse::<f32>().unwrap_or(5.58);
-    let signature_height = env::var("SIGNATURE_HEIGHT")?.parse::<f32>().unwrap_or(1.73);
+    let doc_enable = env::var("DOC_ENABLE")?.parse::<bool>()?;
+    let doc_key = env::var("DOC_KEY")?;
+    let upload_enable = env::var("UPLOAD_ENABLE")?.parse::<bool>()?;
+    let upload_key = env::var("UPLOAD_KEY")?;
+    let copy_enable = env::var("COPY_ENABLE")?.parse::<bool>()?;
+    let copy_key = env::var("COPY_KEY")?;
+    let docx_enable = env::var("DOCX_ENABLE")?.parse::<bool>()?;
+    let docx_key = env::var("DOCX_KEY")?;
+    let inspector = env::var("INSPECTOR")?;
+    let signature_width = env::var("SIGNATURE_WIDTH")?.parse::<f32>()?;
+    let signature_height = env::var("SIGNATURE_HEIGHT")?.parse::<f32>()?;
     Ok(HotkeyConfig {
         doc_enable,
         doc_key,
