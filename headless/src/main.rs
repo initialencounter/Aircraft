@@ -7,7 +7,7 @@ use share::{
     hotkey_manager::HotkeyManager,
     logger::Logger,
     task_proxy::run as task_proxy_run,
-    types::{HotkeyConfig, ServerConfig},
+    types::{HotkeyConfig, ServerConfig}, utils::config_everything::modify_everything_config,
 };
 use std::{
     env,
@@ -26,6 +26,12 @@ async fn main() -> Result<()> {
     let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
     // 如果未设置开机自启动，则设置开机自启动
     if !is_launched_from_registry() {
+        match modify_everything_config() {
+            Ok(_) => {}
+            Err(e) => {
+                println!("modify e8g config failed: {}", e);
+            }
+        }
         // 如果当前为管理员权限，则创建注册表自启动
         if is_elevated() {
             println!("当前已为管理员权限");

@@ -5,6 +5,7 @@ use share::hotkey_manager::HotkeyManager;
 use share::logger::Logger;
 use crate::server_manager::ServerManager;
 use tauri::{App, Manager};
+use share::utils::config_everything::modify_everything_config;
 
 pub fn apply(app: &mut App) {
     // 获取 app_data 目录
@@ -29,5 +30,11 @@ pub fn apply(app: &mut App) {
     let hotkey_config = get_hotkey_config(app.handle().clone());
     let hotkey_manager = HotkeyManager::new(hotkey_config);
     hotkey_manager.start();
+    match modify_everything_config() {
+        Ok(_) => {}
+        Err(e) => {
+            println!("modify e8g config failed: {}", e);
+        }
+    }
     app.manage(hotkey_manager);
 }
