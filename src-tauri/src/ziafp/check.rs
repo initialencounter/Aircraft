@@ -1,16 +1,16 @@
-use std::time::SystemTime;
-use std::sync::mpsc::Sender;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
+use std::sync::mpsc::Sender;
+use std::time::SystemTime;
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content, SummaryModelDocx};
 
-use share::hotkey_handler::copy::search;
-use share::hotkey_handler::SearchResult;
-use share::logger::LogMessage;
 use crate::pdf::parse::parse_good_file;
 use crate::pdf::read::read_pdf;
 use crate::pdf::types::GoodsInfo;
-use crate::yolov8::detect_objects_on_image;
+use share::hotkey_handler::copy::search;
+use share::hotkey_handler::SearchResult;
+use share::logger::LogMessage;
+use share::yolov8::detect_objects_on_image;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -56,7 +56,11 @@ pub async fn get_goods_path(project_no: String) -> Result<String> {
     return Ok(file_list[0].clone());
 }
 
-pub async fn get_goods_info(project_no: String, log_tx: Sender<LogMessage>, return_label: bool) -> Result<GoodsInfo> {
+pub async fn get_goods_info(
+    project_no: String,
+    log_tx: Sender<LogMessage>,
+    return_label: bool,
+) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let result = read_pdf(&path)?;
     let goods_pdf = parse_good_file(result.text)?;
@@ -71,7 +75,11 @@ pub async fn get_goods_info(project_no: String, log_tx: Sender<LogMessage>, retu
 // const LABEL_SET: [&str; 8] = ["9A", "3480", "CAO", "3481", "UN spec", "Blur", "9", "3091"];
 const BTY_SET: [&str; 4] = ["3480", "3481", "3091", "Blur"];
 
-pub async fn detect_goods_pdf(images: Vec<Vec<u8>>, log_tx: Sender<LogMessage>, return_label: bool) -> Vec<String> {
+pub async fn detect_goods_pdf(
+    images: Vec<Vec<u8>>,
+    log_tx: Sender<LogMessage>,
+    return_label: bool,
+) -> Vec<String> {
     if !return_label {
         return vec![];
     }
@@ -96,11 +104,14 @@ pub async fn detect_goods_pdf(images: Vec<Vec<u8>>, log_tx: Sender<LogMessage>, 
     let _ = log_tx.send(LogMessage {
         time_stamp: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
         level: "INFO".to_string(),
-        message: format!("检测{}个图片，用时{}s", images.len(), now.elapsed().unwrap().as_secs_f32()),
+        message: format!(
+            "检测{}个图片，用时{}s",
+            images.len(),
+            now.elapsed().unwrap().as_secs_f32()
+        ),
     });
     return labels;
 }
-
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -109,8 +120,15 @@ pub struct AttachmentInfo {
     pub goods: GoodsInfo,
 }
 
-pub async fn get_attachment_info(project_no: String, log_tx: Sender<LogMessage>, return_label: bool) -> Result<AttachmentInfo> {
+pub async fn get_attachment_info(
+    project_no: String,
+    log_tx: Sender<LogMessage>,
+    return_label: bool,
+) -> Result<AttachmentInfo> {
     let summary = get_summary_info(project_no.clone()).await?;
     let goods_info = get_goods_info(project_no.clone(), log_tx, return_label).await?;
-    return Ok(AttachmentInfo { summary, goods: goods_info });
+    return Ok(AttachmentInfo {
+        summary,
+        goods: goods_info,
+    });
 }
