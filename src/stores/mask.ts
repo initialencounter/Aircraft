@@ -15,7 +15,7 @@ export interface BaseConfig {
 export const useMaskStore = defineStore('mask', {
   state: (): MaskState => ({
     isUnlocked: false,
-    secretCode: '确认危险操作，并承担后果' // 设置你的暗号
+    secretCode: '' // 设置你的暗号
   }),
 
   actions: {
