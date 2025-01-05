@@ -30,7 +30,6 @@ pub fn read_hotkey_config(current_exe: &PathBuf) -> Result<HotkeyConfig> {
         "{}/local.env",
         current_exe.parent().unwrap().to_str().unwrap()
     );
-    println!("{}", env_file_path);
     dotenv::from_path(env_file_path).ok();
     let doc_enable = env::var("DOC_ENABLE")?.parse::<bool>()?;
     let doc_key = env::var("DOC_KEY")?;
