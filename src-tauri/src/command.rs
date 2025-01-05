@@ -99,13 +99,13 @@ pub fn save_base_config(app: tauri::AppHandle, config: BaseConfig) -> Result<(),
 
 #[tauri::command]
 pub fn get_server_logs(logger: tauri::State<'_, Arc<Mutex<Logger>>>) -> Vec<LogMessage> {
-    let mut logger = logger.lock().unwrap();
+    let logger = logger.lock().unwrap();
     logger.try_get_logs()
 }
 
 #[tauri::command]
 pub fn write_log(logger: tauri::State<'_, Arc<Mutex<Logger>>>, level: &str, message: &str) {
-    if let Ok(mut logger) = logger.lock() {
+    if let Ok(logger) = logger.lock() {
         logger.log(level, message);
     }
 }

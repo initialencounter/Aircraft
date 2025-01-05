@@ -6,6 +6,7 @@ use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::sync::mpsc::{self, Sender};
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct LogMessage {
@@ -16,8 +17,8 @@ pub struct LogMessage {
 
 pub struct Logger {
     enabled: bool,
-    file: File,
-    temp_logs: Vec<LogMessage>,
+    file: Arc<Mutex<File>>,
+    temp_logs: Arc<Mutex<Vec<LogMessage>>>,
     pub log_tx: Sender<LogMessage>,
 }
 
@@ -25,8 +26,8 @@ impl Clone for Logger {
     fn clone(&self) -> Self {
         Logger {
             enabled: self.enabled,
-            file: self.file.try_clone().unwrap(),
-            temp_logs: self.temp_logs.clone(),
+            file: Arc::clone(&self.file),
+            temp_logs: Arc::clone(&self.temp_logs),
             log_tx: self.log_tx.clone(),
         }
     }
@@ -52,68 +53,87 @@ impl Logger {
             File::create("NUL").unwrap()
         };
 
-        let mut logger = Logger {
-            file,
+        let file = Arc::new(Mutex::new(file));
+        let temp_logs = Arc::new(Mutex::new(Vec::new()));
+
+        let logger = Logger {
             enabled,
-            temp_logs: Vec::new(),
-            log_tx: sender.clone(),
+            file: Arc::clone(&file),
+            temp_logs: Arc::clone(&temp_logs),
+            log_tx: sender,
         };
 
-        let mut logger_clone = logger.clone();
+        // 启动全局日志处理任务
+        let file_clone = Arc::clone(&file);
+        let temp_logs_clone = Arc::clone(&temp_logs);
+        let enabled_clone = enabled;
+        
         tokio::spawn(async move {
             while let Ok(log) = receiver.recv() {
-                logger_clone.log(&log.level, &log.message);
+                let now = Local::now();
+                let time_stamp = now.format("%Y-%m-%d %H:%M:%S").to_string();
+                let colored_level = match log.level.to_uppercase().as_str() {
+                    "ERROR" => log.level.red().bold(),
+                    "WARN" => log.level.yellow().bold(),
+                    "INFO" => log.level.green().bold(),
+                    "DEBUG" => log.level.blue().bold(),
+                    _ => log.level.normal(),
+                };
+
+                let log_entry = format!("[{}] {} - {}\n", time_stamp, log.level, log.message);
+
+                if enabled_clone {
+                    if let Ok(mut file) = file_clone.lock() {
+                        let _ = file.write_all(log_entry.as_bytes());
+                    }
+                }
+
+                let colored_log = format!(
+                    "[{}] {} - {}",
+                    time_stamp.bright_black(),
+                    colored_level,
+                    log.message
+                );
+                println!("{}", colored_log);
+
+                if let Ok(mut temp_logs) = temp_logs_clone.lock() {
+                    temp_logs.push(LogMessage {
+                        time_stamp,
+                        level: log.level,
+                        message: log.message,
+                    });
+                }
             }
         });
 
         // 读取历史日志
         if enabled {
             if let Ok(logs) = read_existing_logs(log_dir, service_name) {
-                logger.temp_logs.extend(logs);
+                if let Ok(mut temp_logs) = logger.temp_logs.lock() {
+                    temp_logs.extend(logs);
+                }
             }
         }
 
         logger
     }
 
-    pub fn log(&mut self, level: &str, message: &str) {
-        let now = Local::now();
-        let time_stamp = now.format("%Y-%m-%d %H:%M:%S").to_string();
-        let colored_level = match level.to_uppercase().as_str() {
-            "ERROR" => level.red().bold(),
-            "WARN" => level.yellow().bold(),
-            "INFO" => level.green().bold(),
-            "DEBUG" => level.blue().bold(),
-            _ => level.normal(),
-        };
-
-        let log_entry = format!("[{}] {} - {}\n", time_stamp, level, message);
-
-        if self.enabled {
-            self.file
-                .write_all(log_entry.as_bytes())
-                .expect("写入日志失败");
-        }
-
-        let colored_log = format!(
-            "[{}] {} - {}",
-            time_stamp.bright_black(),
-            colored_level,
-            message
-        );
-        println!("{}", colored_log);
-        let log_message = LogMessage {
-            time_stamp,
+    pub fn log(&self, level: &str, message: &str) {
+        let _ = self.log_tx.send(LogMessage {
+            time_stamp: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             level: level.to_string(),
             message: message.to_string(),
-        };
-        self.temp_logs.push(log_message);
+        });
     }
 
-    pub fn try_get_logs(&mut self) -> Vec<LogMessage> {
-        let logs = self.temp_logs.clone();
-        self.temp_logs.clear();
-        logs
+    pub fn try_get_logs(&self) -> Vec<LogMessage> {
+        if let Ok(mut temp_logs) = self.temp_logs.lock() {
+            let logs = temp_logs.clone();
+            temp_logs.clear();
+            logs
+        } else {
+            Vec::new()
+        }
     }
 }
 
