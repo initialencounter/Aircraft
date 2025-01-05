@@ -4,7 +4,6 @@ import { calculateColorBrightness } from "../utils/utils";
 import { ElMessage } from "element-plus";
 import { invoke } from "@tauri-apps/api/core";
 import Clip from "../assets/svg/Clip.vue";
-import { register } from "@tauri-apps/plugin-global-shortcut";
 
 const PATH_OR_LAST_MODIFIED = "路径";
 const PATH_OR_LAST_MODIFIED_ATTR = "path";
@@ -56,49 +55,6 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
     padding: "4px",
   };
 }
-
-// focusAll
-register("CommandOrControl+Shift+A", () => {
-  for (let i = 0; i < file_list.value.length; i++) {
-    file_list.value[i].focus = true;
-  }
-});
-
-// focusAll
-register("CommandOrControl+Shift+D", () => {
-  for (let i = 0; i < file_list.value.length; i++) {
-    if (file_list.value[i].focus) {
-      removeItem(i);
-    }
-  }
-});
-
-register("CommandOrControl+Shift+O", () => {
-  for (let i = 0; i < file_list.value.length; i++) {
-    if (file_list.value[i].focus) {
-      openDir(file_list.value[i].path);
-    }
-  }
-});
-
-// refresh page
-register("CommandOrControl+R", () => {
-  location.reload();
-});
-
-// showPage
-register("CommandOrControl+Shift+B", () => {
-  invoke("show_page");
-});
-
-// open with wps
-register("CommandOrControl+Shift+W", () => {
-  for (let i = 0; i < file_list.value.length; i++) {
-    if (file_list.value[i].focus) {
-      open_with_wps(file_list.value[i].path, file_list.value[i].name);
-    }
-  }
-});
 
 function openDir(dirName: string) {
   invoke("open_local_dir", { target: dirName });
