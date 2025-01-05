@@ -2,20 +2,30 @@
   <div class="stack-calculator">
     <div class="calculator-container">
       <h2 class="title">堆码载荷计算器</h2>
-      
+
       <div class="input-group">
         <div class="input-item">
           <label>包装件毛重 (kg)</label>
           <div class="input-wrapper">
-            <input type="number" v-model="weight" step="0.01" placeholder="请输入重量">
+            <input
+              type="number"
+              v-model="weight"
+              step="0.01"
+              placeholder="请输入重量"
+            />
             <span class="unit">kg</span>
           </div>
         </div>
-        
+
         <div class="input-item">
           <label>包装件高度 (mm)</label>
           <div class="input-wrapper">
-            <input type="number" v-model="height" step="0.1" placeholder="请输入高度">
+            <input
+              type="number"
+              v-model="height"
+              step="0.1"
+              placeholder="请输入高度"
+            />
             <span class="unit">mm</span>
           </div>
         </div>
@@ -27,16 +37,22 @@
           <div class="result-item">
             <div class="result-row">
               <span class="label">堆码层数:</span>
-              <span class="result-value result-value-layer">{{ layerCount }}</span>
+              <span class="result-value result-value-layer">{{
+                layerCount
+              }}</span>
             </div>
             <div class="result-row">
               <span class="label">载荷:</span>
-              <span class="result-value result-value-kgf">{{ formatNumber(loadByLayer) }} </span>
+              <span class="result-value result-value-kgf"
+                >{{ formatNumber(loadByLayer, 3) }}
+              </span>
               <span class="label">kgf</span>
             </div>
             <div class="result-row">
               <span class="label">载荷:</span>
-              <span class="result-value result-value-n">{{ formatNumber(loadByLayerNewton) }} </span>
+              <span class="result-value result-value-n"
+                >{{ formatNumber(loadByLayerNewton, 4) }}
+              </span>
               <span class="label">N</span>
             </div>
           </div>
@@ -47,16 +63,22 @@
           <div class="result-item">
             <div class="result-row">
               <span class="label">堆码层数:</span>
-              <span class="result-value result-value-layer">{{ formatNumber(heightBasedLayer) }}</span>
+              <span class="result-value result-value-layer">{{
+                formatNumber(heightBasedLayer, 4)
+              }}</span>
             </div>
             <div class="result-row">
               <span class="label">载荷:</span>
-              <span class="result-value result-value-kgf">{{ formatNumber(loadByHeight) }} </span>
+              <span class="result-value result-value-kgf"
+                >{{ formatNumber(loadByHeight, 3) }}
+              </span>
               <span class="label">kgf</span>
             </div>
             <div class="result-row">
               <span class="label">载荷:</span>
-              <span class="result-value result-value-n">{{ formatNumber(loadByHeightNewton) }} </span>
+              <span class="result-value result-value-n"
+                >{{ formatNumber(loadByHeightNewton, 4) }}
+              </span>
               <span class="label">N</span>
             </div>
           </div>
@@ -68,52 +90,59 @@
 
 <script>
 export default {
-  name: 'Stack',
+  name: "Stack",
   data() {
     return {
       weight: null,
       height: null,
-    }
+    };
   },
   computed: {
     // 按层数计算
     layerCount() {
-      if (!this.height) return 0
-      let layers = 3000 / this.height
+      if (!this.height) return 0;
+      let layers = 3000 / this.height;
       if (Number.isInteger(layers)) {
-        return layers - 1
+        return layers - 1;
       }
-      return Math.floor(layers)
+      return Math.floor(layers);
     },
     loadByLayer() {
-      return this.layerCount * this.weight
+      return this.layerCount * this.weight;
     },
     loadByLayerNewton() {
-      return this.loadByLayer * 9.8
+      return this.loadByLayer * 9.8;
     },
 
     // 按高度计算
     heightBasedLayer() {
-      if (!this.height) return 0
-      return (3000 / (this.height)) - 1
+      if (!this.height) return 0;
+      return 3000 / this.height - 1;
     },
     loadByHeight() {
-      return this.heightBasedLayer * this.weight
+      return this.heightBasedLayer * this.weight;
     },
     loadByHeightNewton() {
-      return this.loadByHeight * 9.8
-    }
+      return this.loadByHeight * 9.8;
+    },
   },
   methods: {
-    formatNumber(num) {
-      if (!num) return '0'
-      // 先保留2位小数
-      const fixed = num.toFixed(2)
+    formatNumber(num, fixed = 3) {
+      if (!num) return "0";
+      const result = String(num.toFixed(fixed));
       // 如果小数点后都是0，则转为整数
-      return fixed.endsWith('.00') ? Math.round(num).toString() : fixed
-    }
-  }
-}
+      if (
+        result.endsWith(".0000") ||
+        result.endsWith(".000") ||
+        result.endsWith(".00") ||
+        result.endsWith(".0")
+      ) {
+        return result.replace(".0000", "").replace(".000", "").replace(".00", "").replace(".0", "");
+      }
+      return result;
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -225,26 +254,26 @@ export default {
 }
 
 .result-value-layer {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .result-value-kgf {
-  color: #FFC107;
+  color: #ffc107;
 }
 
 .result-value-n {
-  color: #64B5F6;
+  color: #64b5f6;
 }
 
 @media (max-width: 600px) {
   .calculator-container {
     padding: 20px;
   }
-  
+
   .input-group {
     grid-template-columns: 1fr;
   }
-  
+
   .results {
     flex-direction: column;
   }
