@@ -1,6 +1,5 @@
 pub mod fs;
 pub mod dialog;
-pub mod config_everything;
 
 use chrono::Local;
 pub use fs::*;
