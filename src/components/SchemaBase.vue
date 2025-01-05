@@ -21,7 +21,7 @@ import type { BaseConfig } from "../stores/mask";
 const BaseConfig = Schema.object({
   auto_start: Schema.boolean().description("开机自启").default(false),
   silent_start: Schema.boolean().description("静默启动").default(false),
-  nothing: Schema.string().description("这里什么也没有").default(""),
+  nothing: Schema.string().description("这里什么也没有").default("").hidden(true),
 });
 
 const config = ref<BaseConfig>({
