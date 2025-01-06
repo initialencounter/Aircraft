@@ -34,7 +34,7 @@ impl Clone for Logger {
 }
 
 impl Logger {
-    pub fn new(log_dir: PathBuf, service_name: &str, enabled: bool) -> Self {
+    pub fn new(log_dir: PathBuf, service_name: &str, enabled: bool, color: bool) -> Self {
         let (sender, receiver) = mpsc::channel::<LogMessage>();
 
         let file = if enabled {
@@ -94,7 +94,11 @@ impl Logger {
                     colored_level,
                     log.message
                 );
-                println!("{}", colored_log);
+                if color {
+                    println!("{}", colored_log);
+                } else {
+                    print!("{}", log_entry);
+                }
 
                 if let Ok(mut temp_logs) = temp_logs_clone.lock() {
                     temp_logs.push(LogMessage {

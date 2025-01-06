@@ -54,6 +54,7 @@ async fn main() -> Result<()> {
         PathBuf::from(log_dir),
         "aircraft",         // app数据目录
         config.log_enabled, // 日志目录
+        false,
     )));
     let log_tx = logger.lock().unwrap().log_tx.clone();
     let (shutdown_tx, shutdown_rx) = watch::channel(false);

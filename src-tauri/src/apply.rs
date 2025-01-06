@@ -20,6 +20,7 @@ pub fn apply(app: &mut App) {
         PathBuf::from(app_log_dir),
         "aircraft", // app数据目录
         true,       // 日志目录
+        true,
     )));
     let log_tx = logger.lock().unwrap().log_tx.clone();
     app.manage(logger);
