@@ -1,14 +1,9 @@
 mod config;
 mod tray;
 mod utils;
-use config::{read_env_to_config, read_hotkey_config};
+use config::read_env_to_config;
 use is_elevated::is_elevated;
-use share::{
-    hotkey_manager::HotkeyManager,
-    logger::Logger,
-    task_proxy::run as task_proxy_run,
-    types::{HotkeyConfig, ServerConfig}
-};
+use share::{logger::Logger, task_proxy::run as task_proxy_run, types::ServerConfig};
 use std::{
     env,
     path::PathBuf,
@@ -72,12 +67,6 @@ async fn main() -> Result<()> {
         log_tx,
     ));
 
-    let hotkey_config = match read_hotkey_config(&current_exe) {
-        Ok(config) => config,
-        Err(_e) => HotkeyConfig::default(),
-    };
-    let hotkey_manager = HotkeyManager::new(hotkey_config);
-    hotkey_manager.start();
     // 运行事件循环
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -85,7 +74,6 @@ async fn main() -> Result<()> {
         if let tao::event::Event::UserEvent(()) = event {
             *control_flow = ControlFlow::Exit;
             shutdown_tx.send(true).unwrap();
-            hotkey_manager.stop();
             std::process::exit(0);
         }
     });
