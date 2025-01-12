@@ -6,4 +6,5 @@ pub mod copy;
 pub use copy::*;
 pub mod upload;
 pub use upload::*;
-
+pub mod copy_to_clipboard;
+pub use copy_to_clipboard::*;
