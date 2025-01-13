@@ -8,6 +8,7 @@ use std::path::PathBuf;
 
 use summary_rs::modify_docx;
 
+
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 lazy_static! {

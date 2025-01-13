@@ -1,10 +1,9 @@
-use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
 use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 
-use crate::hotkey_handler::{copy_file_to_here, replace_docx, upload_file, write_doc};
+use crate::hotkey_handler::{copy_file_to_here, replace_docx, set_image_to_clipboard, upload_file, write_doc};
 use crate::types::HotkeyConfig;
-use flextrek::{listen_path, listen_selected_files, HotkeyHandle};
+use flextrek::{listen_path, listen_selected_files, HotkeyHandle, listen};
 
 pub struct HotkeyManager {
     is_running: AtomicBool,
@@ -16,10 +15,6 @@ pub struct HotkeyManager {
     config: Mutex<HotkeyConfig>,
 }
 
-fn simulate_f2_press() {
-    let mut enigo = Enigo::new(&Settings::default()).unwrap();
-    enigo.key(Key::F2, Click).unwrap();
-}
 
 impl HotkeyManager {
     pub fn new(config: HotkeyConfig) -> Self {
@@ -36,10 +31,10 @@ impl HotkeyManager {
 
     pub fn start(&self) {
         let config = self.config.lock().unwrap().clone();
-        *self.key_proxy_handle.lock().unwrap() = Some(listen_path(
+        *self.key_proxy_handle.lock().unwrap() = Some(listen(
             "ctrl+shift+a".to_string(),
-            move |_path| async move {
-                simulate_f2_press();
+            move || async move {
+                set_image_to_clipboard().unwrap();
             },
         ));
         if config.doc_enable {

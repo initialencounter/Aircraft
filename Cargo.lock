@@ -1570,9 +1570,9 @@ dependencies = [
 
 [[package]]
 name = "flextrek"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e27cbaa2c5bb84a53ca2cf46c67666d662e8dc915dfec2978ae0c44d758688d4"
+checksum = "5878376b253408093b85299416b6fb87c198cc177e4a51b99e907539cbb01360"
 dependencies = [
  "futures",
  "scopeguard",
