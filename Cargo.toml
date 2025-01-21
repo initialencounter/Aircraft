@@ -4,4 +4,7 @@ members = [
     "share",
     "summary-rs",
     "src-tauri",
-] 
+    "pdf-parser",
+    "bindings/node",
+]
+resolver = "2" 

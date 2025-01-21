@@ -45,7 +45,7 @@ pub fn parse_good_file(pdf_text: String) -> Result<GoodsPDF> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::attachment_parser::pdf::read::read_pdf;
+    use crate::read::read_pdf;
 
     #[test]
     fn test_parse_good_file() {

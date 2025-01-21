@@ -12,6 +12,7 @@ use pdf::font::*;
 use pdf::object::{MaybeRef, RcRef, Resolve};
 use std::collections::HashMap;
 use std::convert::TryInto;
+use fax::tiff;
 
 struct FontInfo {
     font: RcRef<Font>,
@@ -173,21 +174,21 @@ pub fn read_pdf(path: &str) -> Result<PdfReadResult, PdfError> {
             Some(StreamFilter::JPXDecode) => "jp2k",
             Some(StreamFilter::FlateDecode(_)) => "png",
             Some(StreamFilter::CCITTFaxDecode(_)) => {
-                data = fax::tiff::wrap(&data, img.width, img.height).into();
+                data = tiff::wrap(&data, img.width, img.height).into();
                 "tiff"
             }
             _ => continue,
         };
         image_buffer_vec.push(data.to_vec());
     }
-    println!("Found {} image(s).", images.len());
+    // println!("Found {} image(s).", images.len());
 
 
-    if let Ok(elapsed) = now.elapsed() {
-        println!(
-            "Time: {}s",
-            elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9
-        );
+    if let Ok(_elapsed) = now.elapsed() {
+        // println!(
+        //     "Time: {}s",
+        //     elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9
+        // );
     }
     Ok(PdfReadResult {
         text: out,

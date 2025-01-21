@@ -1,13 +1,12 @@
-pub mod pdf;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc::Sender;
 use std::time::SystemTime;
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content, SummaryModelDocx};
 
-use pdf::parse::parse_good_file;
-use pdf::read::read_pdf;
-use pdf::types::GoodsInfo;
+use pdf_parser::parse::parse_good_file;
+use pdf_parser::read::read_pdf;
+use pdf_parser::types::GoodsInfo;
 use crate::hotkey_handler::copy::search;
 use crate::hotkey_handler::SearchResult;
 use crate::logger::LogMessage;
