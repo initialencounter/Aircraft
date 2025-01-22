@@ -2,6 +2,7 @@
 import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { isTauri } from '@tauri-apps/api/core';
 
+
 let appWindow: WebviewWindow
 defineProps<{
   link: string
@@ -10,6 +11,24 @@ defineProps<{
 let is_tauri = isTauri()
 if (is_tauri) {
   appWindow = getCurrentWebviewWindow()
+}
+
+const minimizeWindow = () => {
+  if (is_tauri) {
+    appWindow.minimize()
+  }
+  else {
+    window.ipcRenderer.invoke('window-minimize')
+  }
+}
+
+const hideWindow = () => {
+  if (is_tauri) {
+    appWindow.hide()
+  }
+  else {
+    window.ipcRenderer.invoke('window-hide')
+  }
 }
 </script>
 
@@ -45,12 +64,12 @@ if (is_tauri) {
         </div>
       </template>
     </el-popover>
-    <div v-if="is_tauri" id="titlebar-minimize" class="titlebar-button" @click="appWindow.minimize()">
+    <div id="titlebar-minimize" class="titlebar-button" @click="minimizeWindow">
       <svg height="1.5em" viewBox="0 0 24 24" width="1.5em">
         <path d="M20 14H4v-4h16" />
       </svg>
     </div>
-    <div v-if="is_tauri" id="titlebar-close" class="titlebar-button" @click="appWindow.hide()">
+    <div id="titlebar-close" class="titlebar-button" @click="hideWindow">
       <svg height="1.5em" viewBox="0 0 24 24" width="1.5em">
         <path
           d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z" />

@@ -13,10 +13,10 @@
 <script lang="ts" setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import Schema from "schemastery";
-import { invoke, isTauri } from "@tauri-apps/api/core";
 import { ElMessage } from "element-plus";
 import { useMaskStore } from "../stores/mask";
 import type { BaseConfig } from "../stores/mask";
+import { ipcManager } from "../utils/ipcManager";
 
 const BaseConfig = Schema.object({
   auto_start: Schema.boolean().description("开机自启").default(false),
@@ -36,23 +36,16 @@ const initial = ref<BaseConfig>({
 });
 
 const maskStore = useMaskStore();
-const isDev = isTauri();
 async function getBaseConfig() {
-  if (!isDev) {
-    return;
-  }
-  const result = await invoke<BaseConfig>("get_base_config");
+  const result = (await ipcManager.invoke("get_base_config")) as BaseConfig;
   config.value = result;
 }
 
 async function saveBaseConfig() {
-  if (!isDev) {
-    return;
-  }
   try {
     maskStore.unlock(config.value.nothing);
     const tmpConfig: BaseConfig = new BaseConfig(config.value);
-    await invoke("save_base_config", { config: tmpConfig });
+    await ipcManager.invoke("save_base_config", { config: tmpConfig });
     ElMessage.success(`保存成功`);
   } catch (error) {
     ElMessage.error(JSON.stringify(error));

@@ -2,8 +2,8 @@
 import { FileTileMap } from "../types/index";
 import { calculateColorBrightness } from "../utils/utils";
 import { ElMessage } from "element-plus";
-import { invoke } from "@tauri-apps/api/core";
 import Clip from "../assets/svg/Clip.vue";
+import { ipcManager } from "../utils/ipcManager";
 
 const PATH_OR_LAST_MODIFIED = "路径";
 const PATH_OR_LAST_MODIFIED_ATTR = "path";
@@ -57,11 +57,11 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
 }
 
 function openDir(dirName: string) {
-  invoke("open_local_dir", { target: dirName });
+  ipcManager.invoke("open_local_dir", { target: dirName });
 }
 
 function open_with_wps(dirName: string, fileName: string) {
-  invoke("open_with_wps", { target: dirName, name: fileName });
+  ipcManager.invoke("open_with_wps", { target: dirName, name: fileName });
 }
 </script>
 

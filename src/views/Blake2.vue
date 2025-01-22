@@ -72,8 +72,11 @@ function handleClearList() {
     <h1 class="noSelectTitle" data-tauri-drag-region style="font-size: 24px">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp文件一致性校对器 </h1>
     <!-- 内容区 -->
     <br>
-    <div class="middle-con">
+    <div v-if="is_tauri" class="middle-con">
       <FileTileTauri v-model="file_list" @removeItem="handleClearList"></FileTileTauri>
+    </div>
+    <div v-else class="middle-con">
+      <h1>electron 不支持此功能</h1>
     </div>
 </template>
 

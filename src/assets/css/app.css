@@ -84,4 +84,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  .draggable {
+    -webkit-app-region: drag;
+  }
   
+  /* 如果在可拖动区域内有按钮等控件，需要将其设置为不可拖动 */
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }

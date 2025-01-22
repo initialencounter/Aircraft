@@ -1,0 +1,42 @@
+import { isTauri } from '@tauri-apps/api/core'
+let is_electron = !isTauri()
+
+declare global {
+  interface Window {
+    ipcRenderer: {
+      invoke(channel: string, ...args: any[]): Promise<any>
+      on(channel: string, listener: (event: Event<any>, ...args: any[]) => void): void
+    }
+  }
+}
+
+import { invoke } from '@tauri-apps/api/core'
+import { Event, listen } from '@tauri-apps/api/event';
+
+class IpcManager {
+  constructor() {
+    if (is_electron) {
+      console.log("is_electron", is_electron)
+      window.ipcRenderer.on("log-message", (_event, ...args) => {
+        console.log("log-message", _event, ...args);
+        console.log("log-message", ...args);
+      });
+    }
+  }
+  async invoke(channel: string, ...args: any[]): Promise<any> {
+    if (is_electron) {
+      return window.ipcRenderer.invoke(channel, ...args);
+    } else {
+      return await invoke(channel, ...args);
+    }
+  }
+  on(channel: string, listener: (event: Event<any>, ...args: any[]) => void): void {
+    if (is_electron) {
+      window.ipcRenderer.on(channel, listener);
+    } else {
+      listen(channel, listener);
+    }
+  }
+}
+
+export const ipcManager = new IpcManager();

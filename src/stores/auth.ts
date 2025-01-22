@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { invoke } from '@tauri-apps/api/core'
 import { isTauri } from '@tauri-apps/api/core'
+import { ipcManager } from "../utils/ipcManager";
 
 interface AuthState {
   loginStatus: boolean
@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', {
         this.loginStatus = true
         return
       }
-      const isLoggedIn = await invoke<boolean>('get_login_status')
+      const isLoggedIn = await ipcManager.invoke('get_login_status')
       this.loginStatus = isLoggedIn
     },
     startPolling(): void {

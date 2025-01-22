@@ -2,38 +2,59 @@
   "name": "aircraft",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "main": "dist-electron/main/index.js",
   "workspaces": [
     "bindings/node"
   ],
+  "debug": {
+    "env": {
+      "VITE_DEV_SERVER_URL": "http://127.0.0.1:3344/"
+    }
+  },
+  "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:electron": "vite -c vite.electron.config.ts",
+    "build:electron": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-global-shortcut": "^2.2.0",
-    "@tauri-apps/plugin-shell": "^2",
-    "element-plus": "^2.8.7",
-    "pinia": "^2.2.6",
-    "vue": "^3.3.4",
-    "vue-router": "^4.4.5"
+    "tauri": "tauri",
+    "start": "electron-forge start"
   },
   "devDependencies": {
+    "@electron/fuses": "^1.8.0",
     "@maikolib/vite-plugin-yaml": "^1.1.0",
+    "@tauri-apps/api": "^2",
     "@tauri-apps/cli": "^2.0.4",
+    "@tauri-apps/plugin-global-shortcut": "^2.2.0",
+    "@tauri-apps/plugin-shell": "^2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.9.0",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vueuse/core": "^11.2.0",
+    "auto-launch": "^5.0.6",
+    "electron": "^29.1.1",
+    "electron-builder": "^25.1.8",
+    "element-plus": "^2.8.7",
     "markdown-vue": "^1.0.3",
+    "pinia": "^2.2.6",
     "sass-embedded": "^1.80.6",
     "schemastery-vue": "^7.3.7",
-    "typescript": "^5.2.2",
+    "typescript": "^5.4.2",
     "vite": "^5.3.1",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue": "^3.4.21",
     "vue-i18n": "^10.0.4",
-    "vue-tsc": "^2.0.22"
+    "vue-router": "^4.4.5",
+    "vue-tsc": "^2.0.6"
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.6.0",
+  "dependencies": {
+    "aircraft-rs": "^0.0.0",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
 }

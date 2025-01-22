@@ -1,27 +1,40 @@
 <!-- App.vue -->
 <template>
-  <el-button class="schema-button" type="primary" @click="reloadConfig">重载配置</el-button>
-  <el-button class="schema-button" type="primary" @click="saveConfig">保存配置</el-button>
-  <el-button class="schema-button" type="primary" @click="resetConfig">重置</el-button>
-  <el-button class="schema-button" type="primary" @click="stopServer">停止服务</el-button>
+  <div v-if="isTauri()">
+    <el-button class="schema-button" type="primary" @click="reloadConfig"
+      >重载配置</el-button
+    >
+    <el-button class="schema-button" type="primary" @click="saveConfig"
+      >保存配置</el-button
+    >
+    <el-button class="schema-button" type="primary" @click="resetConfig"
+      >重置</el-button
+    >
+    <el-button class="schema-button" type="primary" @click="stopServer"
+      >停止服务</el-button
+    >
 
-  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
-  
+    <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
+  </div>
+  <div v-else>
+    <h1>electron 暂未实现该功能</h1>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import Schema from "schemastery";
-import {invoke, isTauri} from '@tauri-apps/api/core';
-import {ElMessage} from "element-plus";
+import { isTauri } from "@tauri-apps/api/core";
+import { ElMessage } from "element-plus";
+import { ipcManager } from "../utils/ipcManager";
 
 interface Config {
-  base_url: string
-  username: string
-  password: string
-  port: number
-  debug: boolean
-  log_enabled: boolean
+  base_url: string;
+  username: string;
+  password: string;
+  port: number;
+  debug: boolean;
+  log_enabled: boolean;
 }
 
 const Config = Schema.object({
@@ -50,45 +63,46 @@ const initial = ref<Config>({
   log_enabled: false,
 });
 
-const isDev = isTauri()
+const isDev = isTauri();
 
-async function getConfig(){
-  if (!isDev){
-    return
-  } 
-  config.value = await invoke('get_server_config')
+async function getConfig() {
+  if (!isDev) {
+    return;
+  }
+  config.value = (await ipcManager.invoke("get_server_config")) as Config;
 }
-async function saveConfig(){
-  if (!isDev){
-    return
+async function saveConfig() {
+  if (!isDev) {
+    return;
   }
   try {
-    const tmpConfig: Config = new Config(config.value)
-    const result = await invoke('save_server_config', {config: tmpConfig})
-    ElMessage.success(`保存成功: ${JSON.stringify(result)}`)
+    const tmpConfig: Config = new Config(config.value);
+    const result = await ipcManager.invoke("save_server_config", {
+      config: tmpConfig,
+    });
+    ElMessage.success(`保存成功: ${JSON.stringify(result)}`);
   } catch (error) {
-    ElMessage.error(JSON.stringify(error))
+    ElMessage.error(JSON.stringify(error));
   }
 }
-function resetConfig(){
-  config.value = initial.value
+function resetConfig() {
+  config.value = initial.value;
 }
 
-async function reloadConfig(){
-  const tmpConfig: Config = new Config(config.value)
-  await invoke('reload_config', {config: tmpConfig})
-  ElMessage.success("重载成功")
+async function reloadConfig() {
+  const tmpConfig: Config = new Config(config.value);
+  await ipcManager.invoke("reload_config", { config: tmpConfig });
+  ElMessage.success("重载成功");
 }
 
-async function stopServer(){
-  await invoke('stop_server')
-  ElMessage.success("停止成功")
+async function stopServer() {
+  await ipcManager.invoke("stop_server");
+  ElMessage.success("停止成功");
 }
 
 onMounted(() => {
-  getConfig()
-})
-
+  getConfig();
+});
 </script>
 
 <style scoped>

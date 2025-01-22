@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { invoke } from '@tauri-apps/api/core'
 import { isTauri } from '@tauri-apps/api/core'
+import { ipcManager } from "../utils/ipcManager";
 
 interface AuthState {
   isListening: boolean
@@ -18,7 +18,7 @@ export const useListenStore = defineStore('isListen', {
         this.isListening = true
         return
       }
-      const isRunning = await invoke<boolean>('is_listening')
+      const isRunning = await ipcManager.invoke('is_listening')
       this.isListening = isRunning
     },
     startPolling(): void {

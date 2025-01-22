@@ -10,7 +10,6 @@ import Markdown from "markdown-vue";
 import App from "./App.vue";
 import './assets/css/main.scss'
 import router from './router'
-// @ts-ignore
 import { createPinia } from 'pinia'
 
 const i18n = createI18n({

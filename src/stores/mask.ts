@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
-import { invoke } from '@tauri-apps/api/core'
-
+import { ipcManager } from "../utils/ipcManager";
 interface MaskState {
   isUnlocked: boolean;
   secretCode: string;
@@ -29,7 +28,7 @@ export const useMaskStore = defineStore('mask', {
       if (this.isUnlocked) {
         return true
       }
-      let baseConfig = await invoke<BaseConfig>("get_base_config");
+      let baseConfig = await ipcManager.invoke("get_base_config");
       if (baseConfig.nothing === this.secretCode) {
         this.isUnlocked = true
         return true

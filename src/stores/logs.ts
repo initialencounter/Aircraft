@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { invoke } from '@tauri-apps/api/core'
+import { ipcManager } from '../utils/ipcManager'
 
 interface LogState {
   logHistory: LogMessage[]
@@ -19,7 +19,7 @@ export const useLogStore = defineStore('logs', {
   }),
   actions: {
     async getServerLogs(): Promise<LogMessage[]> {
-      const logs = await invoke<LogMessage[]>('get_server_logs')
+      const logs = await ipcManager.invoke('get_server_logs')
       return logs
     },
     startGetLog(): void {
