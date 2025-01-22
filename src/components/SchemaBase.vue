@@ -1,13 +1,18 @@
 <!-- App.vue -->
 <template>
-  <el-button class="schema-button" type="primary" @click="saveBaseConfig"
-    >保存配置</el-button
-  >
-  <el-button class="schema-button" type="primary" @click="resetConfig"
-    >重置</el-button
-  >
+  <div v-if="isTauri()">
+    <el-button class="schema-button" type="primary" @click="saveBaseConfig"
+      >保存配置</el-button
+    >
+    <el-button class="schema-button" type="primary" @click="resetConfig"
+      >重置</el-button
+    >
 
-  <k-form v-model="config" :schema="BaseConfig" :initial="initial"></k-form>
+    <k-form v-model="config" :schema="BaseConfig" :initial="initial"></k-form>
+  </div>
+  <div v-else>
+    <h1>electron 暂未实现该功能</h1>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -17,11 +22,15 @@ import { ElMessage } from "element-plus";
 import { useMaskStore } from "../stores/mask";
 import type { BaseConfig } from "../stores/mask";
 import { ipcManager } from "../utils/ipcManager";
+import { isTauri } from "@tauri-apps/api/core";
 
 const BaseConfig = Schema.object({
   auto_start: Schema.boolean().description("开机自启").default(false),
   silent_start: Schema.boolean().description("静默启动").default(false),
-  nothing: Schema.string().description("这里什么也没有").default("").hidden(true),
+  nothing: Schema.string()
+    .description("这里什么也没有")
+    .default("")
+    .hidden(true),
 });
 
 const config = ref<BaseConfig>({
@@ -62,7 +71,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   maskStore.unlock("");
 });
-
 </script>
 
 <style scoped>

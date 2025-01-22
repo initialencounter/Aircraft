@@ -5,8 +5,20 @@ import path from 'node:path'
 import os from 'node:os'
 import { webHookStart } from '../task/index'
 import { BaseConfig, LogMessage } from '../types'
+import log from 'electron-log';
+import AutoLaunch from 'auto-launch';
+// 配置日志
+log.transports.file.level = 'info'; // 设置日志级别
+log.transports.console.level = 'info'; // 在控制台输出日志
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const appLauncher = new AutoLaunch({
+  name: app.getName(),
+  path: process.env.VITE_DEV_SERVER_URL 
+    ? process.execPath // 开发模式使用 electron 可执行文件路径
+    : app.getPath('exe') // 生产模式使用打包后的应用路径
+});
 
 // The built directory structure
 //
@@ -163,51 +175,43 @@ ipcMain.handle('set-window-draggable', (_, isDraggable: boolean) => {
 
 ipcMain.handle('window-minimize', () => {
   win?.minimize();
-  console.log('window-minimize');
+  log.info('window-minimize');
 });
 
 ipcMain.handle('window-hide', () => {
   win?.hide();
-  console.log('window-hide');
+  log.info('window-hide');
 });
 
 ipcMain.handle('window-show', () => {
   win?.show();
-  console.log('window-show');
+  log.info('window-show');
 });
 
 
 // 修改用于开机自启的 ipcMain 处理程序
 ipcMain.handle('save_base_config', async (_, config: BaseConfig) => {
-  const AutoLaunch = require('auto-launch');
-  
-  const appLauncher = new AutoLaunch({
-    name: app.getName(),
-    path: process.env.VITE_DEV_SERVER_URL 
-      ? process.execPath // 开发模式使用 electron 可执行文件路径
-      : app.getPath('exe') // 生产模式使用打包后的应用路径
-  });
-
   try {
     if (config.auto_start) {
       if (process.env.VITE_DEV_SERVER_URL) {
-        console.log('In development mode, the startup function may not work normally');
+        log.info('In development mode, the startup function may not work normally');
         return;
       }
       await appLauncher.enable();
-      console.log('Startup function enabled');
+      log.info('Startup function enabled');
     } else {
       await appLauncher.disable();
-      console.log('Startup function disabled');
+      log.info('Startup function disabled');
     }
   } catch (error) {
-    console.error('Error setting startup function: ' + error.message);
+    log.error('Error setting startup function: ' + error.message);
   }
 });
 
 ipcMain.handle('get_base_config', async () => {
+  let isAutoStart = await appLauncher.isEnabled();
   return {
-    auto_start: false,
+    auto_start: isAutoStart,
     silent_start: false,
     nothing: "",
   };
