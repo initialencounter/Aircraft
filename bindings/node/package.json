@@ -1,10 +1,16 @@
 {
-  "name": "attachment-parser",
+  "name": "aircraft-rs",
   "version": "0.0.0",
   "main": "index.js",
   "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "aircraft-rs.win32-x64-msvc.node",
+    "readme.md"
+  ],
   "napi": {
-    "name": "attachment-parser",
+    "name": "aircraft-rs",
     "triples": {
       "defaults": false,
       "additional": [
@@ -14,14 +20,25 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.4",
-    "ava": "^6.0.1"
-  },
-  "ava": {
-    "timeout": "3m"
+    "@napi-rs/cli": "^2.18.4"
   },
   "engines": {
     "node": ">= 10"
+  },
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/Aircraft.git"
   },
   "scripts": {
     "artifacts": "napi artifacts",

@@ -8,8 +8,8 @@ use pdf_parser::read::read_pdf;
 use serde::{Deserialize, Serialize};
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content};
 
-#[napi(js_name = "HeadlessManager")]
-pub struct HeadlessManager {}
+#[napi(js_name = "AircraftRs")]
+pub struct AircraftRs {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +20,7 @@ struct GoodsInfo {
 }
 
 #[napi]
-impl HeadlessManager {
+impl AircraftRs {
   #[napi(constructor)]
   pub fn new() -> Self {
     Self {}

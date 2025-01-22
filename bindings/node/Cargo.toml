@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "attachment-parser"
+name = "aircraft-rs"
 version = "0.0.0"
 
 [lib]
