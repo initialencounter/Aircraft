@@ -57,6 +57,10 @@ const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
 async function createWindow() {
+  if (!process.env.VITE_PUBLIC) {
+    log.error('VITE_PUBLIC is not set');
+    return;
+  }
   win = new BrowserWindow({
     title: 'Aircraft',
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
@@ -96,6 +100,10 @@ async function createWindow() {
 }
 
 function createTray() {
+  if (!process.env.VITE_PUBLIC) {
+    log.error('VITE_PUBLIC is not set');
+    return;
+  }
   tray = new Tray(path.join(process.env.VITE_PUBLIC, 'favicon.ico'))
   const contextMenu = Menu.buildFromTemplate([
     {
