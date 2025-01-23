@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
-import { webHookStart } from '../task/index'
+import { webHookStart } from './task/index'
 import { BaseConfig, LogMessage } from '../types'
 import log from 'electron-log';
 import AutoLaunch from 'auto-launch';
