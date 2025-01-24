@@ -1,6 +1,9 @@
 import { Context } from 'cordis'
 import { BrowserWindow, Menu } from 'electron'
 import { } from '../service/tray'
+import { } from '../service/win'
+import { } from '../service/app'
+
 
 declare module 'cordis' {
   interface Events {
@@ -18,6 +21,10 @@ class WindowManager {
       ctx.emit('electron-ready')
       ctx.win.createWindow()
       ctx.tray.createTray()
+      ctx.win.win?.webContents.on('will-navigate', (event, url) => {
+        // 处理拖入文件的路径
+        console.log('拖入的文件路径:', url);
+      })
     })
 
     // 关闭窗口
