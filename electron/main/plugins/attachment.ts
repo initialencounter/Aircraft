@@ -1,18 +1,20 @@
 import { Context } from 'cordis'
-import { AircraftRs } from 'aircraft-rs';
 import { resolve } from 'path';
-import  { } from '@cordisjs/plugin-http'
+import { } from '@cordisjs/plugin-http'
 import { } from '@cordisjs/plugin-server'
+import { } from '../service/bindings'
 import cors from '@koa/cors';
 
 class Attachment {
-  static inject = ['server', 'http']
+  static inject = ['server', 'http', 'bindings']
   private ctx: Context
   private bindings: any;
   constructor(ctx: Context) {
     this.ctx = ctx
-    this.bindings = new AircraftRs();
-    
+    ctx.on('bindings-ready', () => {
+      this.bindings = new ctx.bindings.bindings.AircraftRs();
+    })
+
     // 使用 cors 中间件
     ctx.server.use(cors({
       origin: '*',  // 允许所有来源

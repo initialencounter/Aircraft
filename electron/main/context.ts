@@ -10,6 +10,7 @@ import { Logger } from './service/log'
 import { Ipc } from './service/ipc'
 import { Hotkey } from './service/hotkey'
 import { Config } from './service/config'
+import { RustBindings } from './service/bindings'
 
 const context = new Context()
 context.plugin(Logger)
@@ -18,6 +19,7 @@ context.plugin(Router, {
   port: 25455,
   host: '0.0.0.0',
 })
+context.plugin(RustBindings)
 context.plugin(Attachment)
 context.plugin(App)
 context.plugin(Window)

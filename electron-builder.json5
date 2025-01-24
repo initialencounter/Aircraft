@@ -9,6 +9,7 @@
   },
   "files": [
     "dist",
+    "bindings",
     "dist-electron"
   ],
   "mac": {
