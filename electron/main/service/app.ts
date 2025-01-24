@@ -1,5 +1,5 @@
-import { Context, Service } from 'cordis'
-import Electron, { BrowserWindow } from 'electron'
+import { Context, Service, Logger } from 'cordis'
+import Electron from 'electron'
 import os from 'node:os'
 import path from 'path'
 import { createRequire } from 'node:module'
@@ -22,6 +22,7 @@ class App extends Service {
   VITE_PUBLIC: string
   preload: string
   indexHtml: string
+  logger: Logger
   constructor(ctx: Context) {
     super(ctx, 'app')
     this.require = createRequire(import.meta.url)
@@ -50,6 +51,7 @@ class App extends Service {
       this.app.quit()
       process.exit(0)
     }
+    this.logger = new Logger('app')
   }
 }
 

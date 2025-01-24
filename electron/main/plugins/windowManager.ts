@@ -11,7 +11,7 @@ declare module 'cordis' {
 
 
 class WindowManager {
-  static inject = ['app', 'win', 'tray', 'log']
+  static inject = ['app', 'win', 'tray']
   constructor(ctx: Context) {
     // 创建窗口
     ctx.app.app.whenReady().then(async () => {

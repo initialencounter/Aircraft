@@ -1,7 +1,6 @@
 import { Context, Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
 import { BaseConfig, ServerConfig } from '../../types'
-import { } from '../service/log'
 import { } from '../service/config'
 
 declare module 'cordis' {
@@ -15,17 +14,16 @@ declare module 'cordis' {
 }
 
 class Ipc extends Service {
-  static inject = ['app', 'win', 'log', 'config']
+  static inject = ['app', 'win', 'configManager']
   constructor(ctx: Context) {
     super(ctx, 'ipc')
     ctx.on('electron-ready', () => {
-      ctx.log.info('ipc ready')
       this.registerIpc()
     })
 
   }
   registerIpc() {
-    this.ctx.log.info('registerIpc')
+    this.ctx.logger.info('registerIpc')
     // New window example arg: new windows url
     ipcMain.handle('open-win', (_, arg) => {
       this.ctx.win.win = new BrowserWindow({
@@ -46,32 +44,32 @@ class Ipc extends Service {
     });
     ipcMain.handle('window-minimize', () => {
       this.ctx.win.win?.minimize();
-      this.ctx.log.info('window-minimize');
+      this.ctx.logger.info('window-minimize');
     });
 
     ipcMain.handle('window-hide', () => {
       this.ctx.win.win?.hide();
-      this.ctx.log.info('window-hide');
+      this.ctx.logger.info('window-hide');
     });
 
     ipcMain.handle('window-show', () => {
       this.ctx.win.win?.show();
-      this.ctx.log.info('window-show');
+      this.ctx.logger.info('window-show');
     });
 
     // 修改用于开机自启的 ipcMain 处理程序
     ipcMain.handle('save_base_config', async (_, config: BaseConfig) => {
-      this.ctx.config.saveBaseConfig(config);
+      this.ctx.configManager.saveBaseConfig(config);
     });
     ipcMain.handle('get_base_config', async () => {
-      return this.ctx.config.getBaseConfig();
+      return this.ctx.configManager.getBaseConfig();
     });
-    this.ctx.log.info('get_base_config called')
+    this.ctx.logger.info('get_base_config called')
     ipcMain.handle('save_server_config', async (_, config: ServerConfig) => {
-      this.ctx.config.saveServerConfig(config);
+      this.ctx.configManager.saveServerConfig(config);
     });
     ipcMain.handle('get_server_config', async () => {
-      return this.ctx.config.getServerConfig();
+      return this.ctx.configManager.getServerConfig();
     });
 
     ipcMain.handle('get_server_logs', async () => {

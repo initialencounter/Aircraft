@@ -1,6 +1,6 @@
 import { Context, Service } from 'cordis'
 import { globalShortcut } from 'electron'
-import { } from '../service/log'
+import { } from '../service/win'
 
 declare module 'cordis' {
   interface Context {
@@ -13,13 +13,12 @@ declare module 'cordis' {
 }
 
 class Hotkey extends Service {
-  static inject = ['app', 'log', 'tray', 'win']
+  static inject = ['app', 'tray', 'win']
 
   constructor(ctx: Context) {
     super(ctx, 'hotkey')
     // 在构造函数中注册热键
     ctx.on('electron-ready', () => {
-      ctx.log.info('hotkey ready')
       this.registerHotkeys()
     })
 
@@ -35,7 +34,9 @@ class Hotkey extends Service {
     })
 
     if (!success) {
-      this.ctx.log.error('hotkey register failed')
+      this.ctx.logger.error('hotkey register failed')
+    } else {
+      this.ctx.logger.info('hotkey register success')
     }
   }
 }

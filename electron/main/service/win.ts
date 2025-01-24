@@ -10,12 +10,13 @@ declare module 'cordis' {
 }
 
 class Window extends Service {
-  static inject = ['app', 'log']
+  static inject = ['app']
   win: BrowserWindow | null
   constructor(ctx: Context) {
     super(ctx, 'win')
   }
   createWindow() {
+    this.ctx.logger.info('createWindow')
     this.win = new BrowserWindow({
       title: 'Aircraft',
       icon: path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'),

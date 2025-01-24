@@ -2,7 +2,7 @@ import { app } from 'electron'
 import { Tray, Menu } from 'electron'
 import path from 'path'
 import { Context, Service } from 'cordis'
-import { } from './log'
+
 
 declare module 'cordis' {
   interface Context {
@@ -18,7 +18,7 @@ class CustomTray extends Service {
   }
   createTray() {
     if (!this.ctx.app.VITE_PUBLIC) {
-      this.ctx.log.error('VITE_PUBLIC is not set');
+      this.ctx.logger.error('VITE_PUBLIC is not set');
     }
     this.tray = new Tray(path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'))
     this.tray.setToolTip('Aircraft')

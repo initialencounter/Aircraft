@@ -4,14 +4,25 @@ import { existsSync } from 'fs'
 import path from 'path'
 import { ServerConfig, BaseConfig, Config as ConfigType } from '../../types/index'
 
-class Config extends Service {
+declare module 'cordis' {
+  interface Context {
+    configManager: ConfigManager
+  }
+}
+
+class ConfigManager extends Service {
   static inject = ['app']
   configFilePath: string
   constructor(ctx: Context) {
-    super(ctx, 'config')
+    super(ctx, 'configManager')
     this.configFilePath = path.join(this.ctx.app.APP_ROOT, 'config.json')
+    ctx.on('ready', () => {
+      this.init()
+    })
+  }
+  init() {
     if (!existsSync(this.configFilePath)) {
-      console.log('config file not found, creating new config file')
+      this.ctx.logger.warn('config file not found, creating new config file')
       writeFileSync(this.configFilePath, JSON.stringify({
         server: {
           base_url: '',
@@ -28,6 +39,7 @@ class Config extends Service {
         },
       }))
     }
+    this.ctx.logger.success('config init success')
   }
   getServerConfig() {
     let config: ConfigType = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
@@ -49,4 +61,4 @@ class Config extends Service {
   }
 }
 
-export { Config }
+export { ConfigManager }
