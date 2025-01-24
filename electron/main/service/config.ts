@@ -1,5 +1,4 @@
-import { Context, Service } from 'cordis'
-import Logger from '../logger';
+import { Context, Service, Logger } from 'cordis'
 import { readFileSync, writeFileSync } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'

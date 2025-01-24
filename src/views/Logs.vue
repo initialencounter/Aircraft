@@ -1,32 +1,26 @@
 <template>
-  <div v-if="isTauri()">
-    <div class="scroller" ref="scrollerRef">
-      <div v-for="item in visibleLogs">
-        <div class="log-item">
-          <span class="log-timestamp">[{{ item.time_stamp }}]</span>
-          <span
-            class="log-level"
-            :class="{
-              'level-info': item.level === 'INFO',
-              'level-error': item.level === 'ERROR',
-              'level-warn': item.level === 'WARN',
-            }"
-            >{{ item.level }}</span
-          >
-          <span class="log-message">{{ item.message }}</span>
-        </div>
+  <div class="scroller" ref="scrollerRef">
+    <div v-for="item in visibleLogs">
+      <div class="log-item">
+        <span class="log-timestamp">[{{ item.time_stamp }}]</span>
+        <span
+          class="log-level"
+          :class="{
+            'level-info': item.level === 'INFO',
+            'level-error': item.level === 'ERROR',
+            'level-warn': item.level === 'WARN',
+          }"
+          >{{ item.level }}</span
+        >
+        <span class="log-message">{{ item.message }}</span>
       </div>
     </div>
-  </div>
-  <div v-else>
-    <h1>electron 暂未实现该功能</h1>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useLogStore, type LogStore } from "../stores/logs";
-import { isTauri } from "@tauri-apps/api/core";
 
 const BUFFER_SIZE = 1000; // 一次显示的日志数量
 const scrollerRef = ref<HTMLElement | null>(null);

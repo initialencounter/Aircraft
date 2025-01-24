@@ -10,6 +10,7 @@ import { Ipc } from './service/ipc'
 import { Hotkey } from './service/hotkey'
 import { ConfigManager } from './service/config'
 import { RustBindings } from './service/bindings'
+import { LoggerService } from './service/logger'
 
 const context = new Context()
 context.plugin(Undios)
@@ -26,5 +27,6 @@ context.plugin(WindowManager)
 context.plugin(ConfigManager)
 context.plugin(Hotkey)
 context.plugin(Ipc)
+context.plugin(LoggerService)
 
 export { context }

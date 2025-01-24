@@ -2,6 +2,7 @@ import { Context, Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
 import { BaseConfig, ServerConfig } from '../../types'
 import { } from '../service/config'
+import { formatLogMessage } from '../service/logger'
 
 declare module 'cordis' {
   interface Context {
@@ -14,7 +15,7 @@ declare module 'cordis' {
 }
 
 class Ipc extends Service {
-  static inject = ['app', 'win', 'configManager']
+  static inject = ['app', 'win', 'configManager', 'loggerService']
   constructor(ctx: Context) {
     super(ctx, 'ipc')
     ctx.on('electron-ready', () => {
@@ -71,9 +72,9 @@ class Ipc extends Service {
     ipcMain.handle('get_server_config', async () => {
       return this.ctx.configManager.getServerConfig();
     });
-
     ipcMain.handle('get_server_logs', async () => {
-      return [];
+      let logs = this.ctx.loggerService.tryGetLogs();
+      return logs.map(formatLogMessage);
     });
   }
 }

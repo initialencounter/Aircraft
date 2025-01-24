@@ -1,5 +1,5 @@
 import { Context, Service } from 'cordis'
-import { globalShortcut } from 'electron'
+import { globalShortcut, ipcMain } from 'electron'
 import { } from '../service/win'
 
 declare module 'cordis' {

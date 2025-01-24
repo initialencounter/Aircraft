@@ -16,10 +16,8 @@ import { Event, listen } from '@tauri-apps/api/event';
 class IpcManager {
   constructor() {
     if (is_electron) {
-      console.log("is_electron", is_electron)
-      window.ipcRenderer.on("log-message", (_event, ...args) => {
-        console.log("log-message", _event, ...args);
-        console.log("log-message", ...args);
+      window.ipcRenderer.on("logger:push", (_event, ...args) => {
+        console.log("logger:push", ...args);
       });
     }
   }
