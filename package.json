@@ -60,6 +60,7 @@
     "cordis": "^3.18.1",
     "cors": "^2.8.5",
     "electron-log": "^5.2.4",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "koa-compose": "^4.1.0"
   }
 }
