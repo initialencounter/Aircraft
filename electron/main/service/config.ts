@@ -1,4 +1,5 @@
 import { Context, Service } from 'cordis'
+import Logger from '../logger';
 import { readFileSync, writeFileSync } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
@@ -10,6 +11,8 @@ declare module 'cordis' {
   }
 }
 
+const logger = new Logger('configManager')
+
 class ConfigManager extends Service {
   static inject = ['app']
   configFilePath: string
@@ -17,12 +20,13 @@ class ConfigManager extends Service {
     super(ctx, 'configManager')
     this.configFilePath = path.join(this.ctx.app.APP_ROOT, 'config.json')
     ctx.on('ready', () => {
+      logger.info('configManager initializing')
       this.init()
     })
   }
   init() {
     if (!existsSync(this.configFilePath)) {
-      this.ctx.logger.warn('config file not found, creating new config file')
+      logger.warn('config file not found, creating new config file')
       writeFileSync(this.configFilePath, JSON.stringify({
         server: {
           base_url: '',
@@ -39,7 +43,7 @@ class ConfigManager extends Service {
         },
       }))
     }
-    this.ctx.logger.success('config init success')
+    logger.success('config init success')
   }
   getServerConfig() {
     let config: ConfigType = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
