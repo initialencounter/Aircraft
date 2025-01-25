@@ -1,34 +1,25 @@
-import { Context } from 'cordis'
+import { Context, Service } from 'cordis'
 import { resolve } from 'path';
 import { } from '@cordisjs/plugin-http'
 import { } from '@cordisjs/plugin-server'
 import { } from '../service/bindings'
-import cors from '@koa/cors';
 
-class Attachment {
-  static inject = ['server', 'http', 'bindings']
-  private ctx: Context
+declare module 'cordis' {
+  interface Context {
+    attachment: Attachment
+  }
+}
+
+class Attachment extends Service {
+  static inject = ['http', 'bindings']
   private bindings: any;
   constructor(ctx: Context) {
-    this.ctx = ctx
+    super(ctx, 'attachment')
     ctx.on('bindings-ready', () => {
       this.bindings = new ctx.bindings.bindings.AircraftRs();
     })
-
-    // 使用 cors 中间件
-    ctx.server.use(cors({
-      origin: '*',  // 允许所有来源
-      allowMethods: ['GET', 'POST', 'OPTIONS'],
-      allowHeaders: ['Content-Type'],
-    }));
-
-    ctx.server.get('/get-attachment-info/:projectNo', async (ctx) => {
-      const projectNo = ctx.params.projectNo;
-      const attachmentInfo = await this.getAttachmentInfo(projectNo)
-      ctx.body = attachmentInfo;
-      ctx.status = 200;
-    })
   }
+
   async getAttachmentInfo(projectNo: string): Promise<AttachmentInfo> {
     const summaryPath = await this.getSummaryPath(projectNo);
     const goodsPath = await this.getGoodsPath(projectNo);

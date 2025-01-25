@@ -1,7 +1,7 @@
 import { Context } from 'cordis'
 import Undios from '@cordisjs/plugin-http'
 import Router from '@cordisjs/plugin-server'
-import { Attachment } from './plugins/attachment'
+import { Attachment } from './service/attachment'
 import { App } from './service/app'
 import { WindowManager } from './plugins/windowManager'
 import { CustomTray as Tray } from './service/tray'
@@ -11,6 +11,7 @@ import { Hotkey } from './service/hotkey'
 import { ConfigManager } from './service/config'
 import { RustBindings } from './service/bindings'
 import { LoggerService } from './service/logger'
+import { AircraftServer } from './service/server'
 
 const context = new Context()
 context.plugin(Undios)
@@ -28,5 +29,5 @@ context.plugin(ConfigManager)
 context.plugin(Hotkey)
 context.plugin(Ipc)
 context.plugin(LoggerService)
-
+context.plugin(AircraftServer)
 export { context }

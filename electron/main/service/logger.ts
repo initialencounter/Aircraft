@@ -17,7 +17,7 @@ Logger.targets[0].colors = 4
 export const name = 'logger'
 const logger = new Logger(name)
 
-interface LogMessage {
+export interface LogMessage {
   time_stamp: string
   level: string
   message: string
