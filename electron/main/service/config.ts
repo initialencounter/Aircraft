@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
 import { ServerConfig, BaseConfig, Config as ConfigType } from '../../types/index'
+import { } from '../service/app'
 
 declare module 'cordis' {
   interface Context {
