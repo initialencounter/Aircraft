@@ -61,17 +61,17 @@ class Ipc extends Service {
 
     // 修改用于开机自启的 ipcMain 处理程序
     ipcMain.handle('save_base_config', async (_, config: BaseConfig) => {
-      this.ctx.configManager.saveBaseConfig(config);
+      this.ctx.configManager.saveConfig(config, 'base');
     });
     ipcMain.handle('get_base_config', async () => {
-      return this.ctx.configManager.getBaseConfig();
+      return this.ctx.configManager.getConfig('base');
     });
     this.ctx.logger.info('get_base_config called')
     ipcMain.handle('save_server_config', async (_, config: ServerConfig) => {
-      this.ctx.configManager.saveServerConfig(config);
+      this.ctx.configManager.saveConfig(config, 'server');
     });
     ipcMain.handle('get_server_config', async () => {
-      return this.ctx.configManager.getServerConfig();
+      return this.ctx.configManager.getConfig('server');
     });
     ipcMain.handle('get_server_logs', async () => {
       let logs = this.ctx.loggerService.tryGetLogs();

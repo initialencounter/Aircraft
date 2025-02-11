@@ -1,5 +1,5 @@
 {
-  "name": "aircraft",
+  "name": "electron.initialencounter.aircraft",
   "private": true,
   "version": "0.1.0",
   "main": "dist-electron/main/index.js",

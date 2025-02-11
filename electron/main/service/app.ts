@@ -20,6 +20,8 @@ class App extends Service {
   RENDERER_DIST: string
   VITE_DEV_SERVER_URL: string
   VITE_PUBLIC: string
+  APP_DATA_PATH: string
+  APP_CONFIG_PATH: string
   preload: string
   indexHtml: string
   logger: Logger
@@ -41,6 +43,8 @@ class App extends Service {
     this.indexHtml = path.join(this.RENDERER_DIST, 'index.html')
 
     this.app = Electron.app
+    this.APP_DATA_PATH = this.app.getPath('appData')
+    this.APP_CONFIG_PATH = path.join(this.APP_DATA_PATH, this.app.getName())
     // Disable GPU Acceleration for Windows 7
     if (os.release().startsWith('6.1')) this.app.disableHardwareAcceleration()
 
