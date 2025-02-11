@@ -2,8 +2,8 @@ import { Context, Service, Logger } from 'cordis'
 import { readFileSync, writeFileSync } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
-import { Config as ConfigType } from '../../types/index'
-import { } from '../service/app'
+import type { Config as ConfigType } from '../../types/index'
+import type { } from '../service/app'
 
 declare module 'cordis' {
   interface Context {

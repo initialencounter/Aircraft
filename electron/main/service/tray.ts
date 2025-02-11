@@ -1,8 +1,7 @@
-import { app } from 'electron'
 import { Tray, Menu } from 'electron'
 import path from 'path'
 import { Context, Service } from 'cordis'
-import { } from '../service/app'
+import type { } from '../service/app'
 
 
 declare module 'cordis' {

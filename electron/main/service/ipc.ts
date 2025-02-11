@@ -1,8 +1,8 @@
 import { Context, Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
-import { BaseConfig, ServerConfig } from '../../types'
-import { } from '../service/config'
-import { } from '../service/win'
+import type { BaseConfig, ServerConfig } from '../../types'
+import type { } from '../service/config'
+import type { } from '../service/win'
 import { formatLogMessage } from '../service/logger'
 
 declare module 'cordis' {

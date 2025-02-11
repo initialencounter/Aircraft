@@ -1,8 +1,8 @@
 import { Context } from 'cordis'
 import { BrowserWindow, Menu } from 'electron'
-import { } from '../service/tray'
-import { } from '../service/win'
-import { } from '../service/app'
+import type { } from '../service/tray'
+import type { } from '../service/win'
+import type { } from '../service/app'
 
 
 declare module 'cordis' {

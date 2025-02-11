@@ -1,8 +1,8 @@
 import { Context, Service } from 'cordis'
 import { resolve } from 'path';
-import { } from '@cordisjs/plugin-http'
-import { } from '@cordisjs/plugin-server'
-import { } from '../service/bindings'
+import type { } from '@cordisjs/plugin-http'
+import type { } from '@cordisjs/plugin-server'
+import type { } from '../service/bindings'
 
 declare module 'cordis' {
   interface Context {

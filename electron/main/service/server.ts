@@ -1,7 +1,7 @@
 import cors from '@koa/cors';
 import { Context, Service } from 'cordis'
-import {  } from '@cordisjs/plugin-server'
-import {  } from '../service/attachment'
+import type { } from '@cordisjs/plugin-server'
+import type { } from '../service/attachment'
 
 class AircraftServer extends Service {
   static inject = ['server', 'attachment']

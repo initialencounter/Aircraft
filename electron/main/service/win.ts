@@ -1,5 +1,5 @@
 import { Context, Service } from 'cordis'
-import { } from '../service/app'
+import type { } from '../service/app'
 import { BrowserWindow, shell } from 'electron'
 import path from 'path'
 

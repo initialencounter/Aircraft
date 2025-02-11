@@ -2,7 +2,7 @@ import { Context, Schema, Service } from 'cordis'
 import { resolve } from 'path'
 import { rm } from 'fs/promises'
 import { FileWriter } from '../external/loggerFileWriter'
-import { } from './app'
+import type { } from './app'
 import { mkdirSync, readdirSync } from 'fs'
 import Logger from 'reggol';
 import { ipcMain } from 'electron'
