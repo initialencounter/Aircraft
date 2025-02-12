@@ -2,6 +2,7 @@ import { Context, Service } from 'cordis'
 import type { } from '../service/app'
 import { BrowserWindow, shell } from 'electron'
 import path from 'path'
+import { BaseConfig } from '../../types'
 
 declare module 'cordis' {
   interface Context {
@@ -15,13 +16,14 @@ class Window extends Service {
   constructor(ctx: Context) {
     super(ctx, 'win')
   }
-  createWindow() {
+  createWindow(config: BaseConfig) {
     this.ctx.logger.info('createWindow')
     this.win = new BrowserWindow({
       title: 'Aircraft',
       icon: path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'),
       frame: false,
       transparent: true,
+      show: !config.silent_start,
       titleBarStyle: 'hidden',
       webPreferences: {
         preload: this.ctx.app.preload,

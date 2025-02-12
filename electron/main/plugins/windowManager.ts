@@ -3,6 +3,8 @@ import { BrowserWindow, Menu } from 'electron'
 import type { } from '../service/tray'
 import type { } from '../service/win'
 import type { } from '../service/app'
+import type { } from '../service/config'
+import { BaseConfig } from '../../types'
 
 
 declare module 'cordis' {
@@ -14,12 +16,14 @@ declare module 'cordis' {
 
 
 class WindowManager {
-  static inject = ['app', 'win', 'tray']
+  static inject = ['app', 'win', 'tray', 'configManager']
   constructor(ctx: Context) {
+    ctx.logger.info('WindowManager initializing')
     // 创建窗口
     ctx.app.app.whenReady().then(async () => {
       ctx.emit('electron-ready')
-      ctx.win.createWindow()
+      const baseConfig = ctx.configManager.getConfig('base') as BaseConfig
+      ctx.win.createWindow(baseConfig)
       ctx.tray.createTray()
       ctx.win.win?.webContents.on('will-navigate', (event, url) => {
         // 处理拖入文件的路径
@@ -60,7 +64,8 @@ class WindowManager {
       if (allWindows.length) {
         allWindows[0].focus()
       } else {
-        ctx.win.createWindow()
+        const baseConfig = ctx.configManager.getConfig('base') as BaseConfig
+        ctx.win.createWindow(baseConfig)
       }
     })
     const contextMenu = Menu.buildFromTemplate([
