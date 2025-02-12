@@ -1,6 +1,6 @@
 use std::env;
 use tauri::{App, AppHandle, Wry, Emitter, Manager, WindowEvent};
-use tauri::menu::{MenuBuilder, MenuItem};
+use tauri::menu::{MenuBuilder, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use crate::command as cmd;
@@ -44,12 +44,21 @@ pub fn handle_menu_event_update(app: &AppHandle<Wry>) {
 pub fn handle_setup(app: &mut App) {
     let [help_, quit, hide, about, update, restart_] = menu::create_menu_item(app);
     let tray_menu = MenuBuilder::new(app)
-        .items(&[&help_, &update, &restart_, &about, &hide, &quit]) // insert the menu items here
+        .items(&[
+            &help_,
+            &about,
+            &update, 
+            &PredefinedMenuItem::separator(app).unwrap(),
+            &restart_, 
+            &PredefinedMenuItem::separator(app).unwrap(),
+            &hide,
+            &quit]) // insert the menu items here
         .build()
         .unwrap();
     let _ = TrayIconBuilder::with_id("system-tray-1")
         .icon(app.default_window_icon().unwrap().clone())
         .menu(&tray_menu)
+        .show_menu_on_left_click(false)
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "help" => app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助".to_string() })).unwrap(),
             "quit" => app.exit(0),
