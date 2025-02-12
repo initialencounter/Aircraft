@@ -66,6 +66,8 @@ jobs:
           cd ../../
 
       - name: Build electron
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm install
           npm run build:electron
