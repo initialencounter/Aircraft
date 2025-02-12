@@ -67,7 +67,7 @@ class ConfigManager extends Service {
     try {
       const oldConfig: ConfigType = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
       oldConfig[configName] = config
-      writeFileSync(this.configFilePath, JSON.stringify(oldConfig))
+      writeFileSync(this.configFilePath, JSON.stringify(oldConfig, null, 2))
     } catch (error) {
       logger.error('config file save error', error)
     }

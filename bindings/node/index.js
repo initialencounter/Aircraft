@@ -30,7 +30,7 @@ if (!nativeBinding) {
   if (loadError) {
     throw loadError
   }
-  throw new Error(`Failed to load native binding`)
+  throw new Error('Failed to load native binding')
 }
 
 const { AircraftRs } = nativeBinding
