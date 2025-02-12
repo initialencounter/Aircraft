@@ -63,6 +63,8 @@ pub async fn run() {
             cmd::open_local_dir,
             cmd::open_with_wps,
             cmd::write_log,
+            cmd::minimize_window,
+            cmd::hide_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

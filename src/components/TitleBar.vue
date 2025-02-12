@@ -1,34 +1,16 @@
 <script lang="ts" setup>
-import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { isTauri } from '@tauri-apps/api/core';
-
-
-let appWindow: WebviewWindow
+import { ipcManager } from '../utils/ipcManager'
 defineProps<{
   link: string
   avatar: string
 }>()
-let is_tauri = isTauri()
-if (is_tauri) {
-  appWindow = getCurrentWebviewWindow()
-}
 
 const minimizeWindow = () => {
-  if (is_tauri) {
-    appWindow.minimize()
-  }
-  else {
-    window.ipcRenderer.invoke('window-minimize')
-  }
+  ipcManager.invoke('minimize_window')
 }
 
 const hideWindow = () => {
-  if (is_tauri) {
-    appWindow.hide()
-  }
-  else {
-    window.ipcRenderer.invoke('window-hide')
-  }
+  ipcManager.invoke('hide_window') 
 }
 </script>
 

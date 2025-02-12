@@ -44,19 +44,14 @@ class Ipc extends Service {
     ipcMain.handle('set-window-draggable', (_, isDraggable: boolean) => {
       this.ctx.win.win?.setMovable(isDraggable);
     });
-    ipcMain.handle('window-minimize', () => {
+    ipcMain.handle('minimize_window', () => {
       this.ctx.win.win?.minimize();
-      this.ctx.logger.info('window-minimize');
+      this.ctx.logger.info('minimize window');
     });
 
-    ipcMain.handle('window-hide', () => {
+    ipcMain.handle('hide_window', () => {
       this.ctx.win.win?.hide();
-      this.ctx.logger.info('window-hide');
-    });
-
-    ipcMain.handle('window-show', () => {
-      this.ctx.win.win?.show();
-      this.ctx.logger.info('window-show');
+      this.ctx.logger.info('hide window');
     });
 
     // 修改用于开机自启的 ipcMain 处理程序

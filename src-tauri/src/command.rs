@@ -4,6 +4,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
+use tauri::Manager;
 
 use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
 use crate::server_manager::ServerManager;
@@ -191,4 +192,16 @@ pub fn open_local_dir(target: &str) {
 pub fn open_with_wps(target: &str, name: &str) {
     let file_path = Path::new(target).join(Path::new(name));
     let _ = std::process::Command::new("wps").arg(file_path).spawn();
+}
+
+#[tauri::command]
+pub fn minimize_window(app: tauri::AppHandle) {
+    let window = app.get_webview_window("main").unwrap();
+    window.minimize().unwrap();
+}
+
+#[tauri::command]
+pub fn hide_window(app: tauri::AppHandle) {
+    let window = app.get_webview_window("main").unwrap();
+    window.hide().unwrap();
 }
