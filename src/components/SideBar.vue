@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMaskStore } from '../stores/mask'
 import { House, Setting, Document, Box } from '@element-plus/icons-vue'
+import { isTauri } from '@tauri-apps/api/core'
 import Clip from "../assets/svg/Clip.vue";
 
 const router = useRouter()
@@ -20,13 +21,15 @@ const visibleMenuItems = computed(() => {
   })
 })
 
+const is_electron = !isTauri()
+
 const menuItems = [
   { index: '1', path: '/', label: '首页', icon: House, requiresUnlock: false },
-  { index: '2', path: '/schema', label: '服务设置', icon: Setting, requiresUnlock: true },
+  { index: '2', path: '/schema', label: '服务设置', icon: Setting, requiresUnlock: false },
   { index: '3', path: '/schema_base', label: '基础设置', icon: Setting, requiresUnlock: false },
-  { index: '4', path: '/schema_hotkey', label: '快捷键设置', icon: Setting, requiresUnlock: true },
+  { index: '4', path: '/schema_hotkey', label: '快捷键设置', icon: Setting, requiresUnlock: is_electron },
   { index: '5', path: '/logs', label: '日志', icon: Document, requiresUnlock: false },
-  { index: '6', path: '/blake2', label: 'BLAKE2', icon: Clip, requiresUnlock: false },
+  { index: '6', path: '/blake2', label: 'BLAKE2', icon: Clip, requiresUnlock: is_electron },
   { index: '7', path: '/stack', label: '堆码计算', icon: Box, requiresUnlock: false },
 ]
 

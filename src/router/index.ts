@@ -20,7 +20,6 @@ const router = createRouter({
       path: '/schema',
       name: 'Schema',
       component: Schema,
-      meta: { requiresUnlock: true }
     },
     {
       path: '/schema_base',
@@ -31,7 +30,6 @@ const router = createRouter({
       path: '/schema_hotkey',
       name: 'SchemaHotkey',
       component: SchemaHotkey,
-      meta: { requiresUnlock: true }
     },
     {
       path: '/logs',
