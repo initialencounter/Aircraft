@@ -25,10 +25,6 @@ class WindowManager {
       const baseConfig = ctx.configManager.getConfig('base') as BaseConfig
       ctx.win.createWindow(baseConfig)
       ctx.tray.createTray()
-      ctx.win.win?.webContents.on('will-navigate', (event, url) => {
-        // 处理拖入文件的路径
-        console.log('拖入的文件路径:', url);
-      })
     })
 
     // 关闭窗口

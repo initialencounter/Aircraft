@@ -1,23 +1,17 @@
 <template>
-  <div v-if="isTauri()">
-    <el-button class="schema-button" type="primary" @click="reloadConfig"
-      >重载配置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="saveConfig"
-      >保存配置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="resetConfig"
-      >重置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="stopHotkeyListener"
-      >停止监听</el-button
-    >
-
-    <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
-  </div>
-  <div v-else>
-    <h1>electron 暂未实现该功能</h1>
-  </div>
+  <el-button class="schema-button" type="primary" @click="reloadConfig"
+    >重载配置</el-button
+  >
+  <el-button class="schema-button" type="primary" @click="saveConfig"
+    >保存配置</el-button
+  >
+  <el-button class="schema-button" type="primary" @click="resetConfig"
+    >重置</el-button
+  >
+  <el-button class="schema-button" type="primary" @click="stopHotkeyListener"
+    >停止监听</el-button
+  >
+  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
 </template>
 
 <script lang="ts" setup>

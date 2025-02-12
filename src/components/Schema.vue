@@ -1,30 +1,23 @@
 <!-- App.vue -->
 <template>
-  <div v-if="isTauri()">
-    <el-button class="schema-button" type="primary" @click="reloadConfig"
-      >重载配置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="saveConfig"
-      >保存配置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="resetConfig"
-      >重置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="stopServer"
-      >停止服务</el-button
-    >
-
-    <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
-  </div>
-  <div v-else>
-    <h1>electron 暂未实现该功能</h1>
-  </div>
+  <el-button class="schema-button" type="primary" @click="reloadConfig"
+    >重载配置</el-button
+  >
+  <el-button class="schema-button" type="primary" @click="saveConfig"
+    >保存配置</el-button
+  >
+  <el-button class="schema-button" type="primary" @click="resetConfig"
+    >重置</el-button
+  >
+  <el-button class="schema-button" type="primary" @click="stopServer"
+    >停止服务</el-button
+  >
+  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import Schema from "schemastery";
-import { isTauri } from "@tauri-apps/api/core";
 import { ElMessage } from "element-plus";
 import { ipcManager } from "../utils/ipcManager";
 
@@ -63,7 +56,7 @@ const initial = ref<Config>({
   log_enabled: false,
 });
 
-const isDev = isTauri();
+const isDev = import.meta.env.DEV;
 
 async function getConfig() {
   if (!isDev) {
