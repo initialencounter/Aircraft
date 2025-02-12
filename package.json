@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "vite",
     "dev:electron": "chcp 65001 && vite -c vite.electron.config.ts",
-    "build:electron": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder",
+    "build:electron": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
