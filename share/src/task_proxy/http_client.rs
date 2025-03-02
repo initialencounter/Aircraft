@@ -9,7 +9,7 @@ use reqwest::{multipart, Client};
 use crate::logger::LogMessage;
 use crate::utils::{
     build_confirmation_message, get_today_date, match_file, match_file_list, parse_date,
-    popup_message, prepare_file_info, RawFileInfo,
+    prepare_file_info, RawFileInfo,
 };
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -47,6 +47,7 @@ pub struct HttpClient {
     pub password: String,
     pub debug: bool,
     pub log_tx: Sender<LogMessage>,
+    pub confirm_fn: fn(&str, &str) -> bool,
 }
 
 impl HttpClient {
@@ -56,6 +57,7 @@ impl HttpClient {
         password: String,
         debug: bool,
         log_tx: Sender<LogMessage>,
+        confirm_fn: fn(&str, &str) -> bool,
     ) -> Self {
         let client = reqwest::Client::builder()
             .cookie_store(true)
@@ -69,6 +71,7 @@ impl HttpClient {
             password,
             debug,
             log_tx,
+            confirm_fn,
         }
     }
     pub async fn heartbeat(&self) -> Result<()> {
@@ -265,7 +268,7 @@ impl HttpClient {
         .await;
         let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
         if !LOGIN_STATUS.load(Ordering::Relaxed) {
-            popup_message(
+            (self.confirm_fn)(
                 "登录失败",
                 &format!(
                     "请先检查密码是否正确，日志中可能会有更多信息: 日志文件路径{:?}",
@@ -277,7 +280,7 @@ impl HttpClient {
         let raw_file_info = match_file(&path);
         let message = build_confirmation_message(&raw_file_info);
 
-        if !popup_message("警告", &message) {
+        if !(self.confirm_fn)("警告", &message) {
             return Vec::new();
         }
 
@@ -295,7 +298,7 @@ impl HttpClient {
     pub async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
         let raw_file_list = match_file_list(file_list);
         let message = build_confirmation_message(&raw_file_list);
-        if !popup_message("警告", &message) {
+        if !(self.confirm_fn)("警告", &message) {
             return Vec::new();
         }
         let mut uploaded_files = Vec::new();

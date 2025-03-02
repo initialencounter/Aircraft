@@ -8,6 +8,7 @@ use tokio::sync::Mutex;
 pub mod http_client;
 pub mod webhook;
 pub use http_client::LOGIN_STATUS;
+use crate::utils::popup_message;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -26,6 +27,7 @@ pub async fn run(
         password.clone(),
         debug,
         log_tx.clone(),
+        popup_message,
     )));
     client.lock().await.log("INFO", "开始运行").await;
     client
