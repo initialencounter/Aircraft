@@ -4,13 +4,13 @@ use std::sync::mpsc::Sender;
 use std::time::SystemTime;
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content, SummaryModelDocx};
 
-use pdf_parser::parse::parse_good_file;
-use pdf_parser::read::read_pdf;
-use pdf_parser::types::GoodsInfo;
 use crate::hotkey_handler::copy::search;
 use crate::hotkey_handler::SearchResult;
 use crate::logger::LogMessage;
 use crate::yolov8::detect_objects_on_image;
+use pdf_parser::parse::parse_good_file;
+use pdf_parser::read::read_pdf;
+use pdf_parser::types::GoodsInfo;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -62,9 +62,14 @@ pub async fn get_goods_info(
     return_label: bool,
 ) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
-    let result = read_pdf(&path)?;
+    let result = read_pdf(&path, return_label)?;
     let goods_pdf = parse_good_file(result.text)?;
-    let labels = detect_goods_pdf(result.images, log_tx, return_label).await;
+    let mut labels: Vec<String> = vec![];
+    if let Some(images) = result.images {
+        if images.is_empty() {
+            labels.extend(detect_goods_pdf(images, log_tx).await);
+        }
+    }
     return Ok(GoodsInfo {
         project_no: goods_pdf.project_no,
         name: goods_pdf.item_c_name,
@@ -75,14 +80,7 @@ pub async fn get_goods_info(
 // const LABEL_SET: [&str; 8] = ["9A", "3480", "CAO", "3481", "UN spec", "Blur", "9", "3091"];
 const BTY_SET: [&str; 4] = ["3480", "3481", "3091", "Blur"];
 
-pub async fn detect_goods_pdf(
-    images: Vec<Vec<u8>>,
-    log_tx: Sender<LogMessage>,
-    return_label: bool,
-) -> Vec<String> {
-    if !return_label {
-        return vec![];
-    }
+pub async fn detect_goods_pdf(images: Vec<Vec<u8>>, log_tx: Sender<LogMessage>) -> Vec<String> {
     let now = SystemTime::now();
     let mut labels = vec![];
     for (_, image) in images.iter().enumerate() {

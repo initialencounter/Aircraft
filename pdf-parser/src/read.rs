@@ -1,18 +1,17 @@
 // Fork from https://github.com/pdf-rs/pdf/blob/master/pdf/examples/read.rs
-use std::time::SystemTime;
 
 use pdf::enc::StreamFilter;
 use pdf::error::PdfError;
 use pdf::file::FileOptions;
 use pdf::object::*;
 
+use fax::tiff;
 use pdf::content::*;
 use pdf::encoding::BaseEncoding;
 use pdf::font::*;
 use pdf::object::{MaybeRef, RcRef, Resolve};
 use std::collections::HashMap;
 use std::convert::TryInto;
-use fax::tiff;
 
 struct FontInfo {
     font: RcRef<Font>,
@@ -72,12 +71,10 @@ pub fn replace_whitespace_with_space(text: &str) -> String {
 
 pub struct PdfReadResult {
     pub text: String,
-    pub images: Vec<Vec<u8>>,
+    pub images: Option<Vec<Vec<u8>>>,
 }
 
-pub fn read_pdf(path: &str) -> Result<PdfReadResult, PdfError> {
-    let now = SystemTime::now();
-
+pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfError> {
     let file = FileOptions::cached().open(&path)?;
     let resolver = file.resolver();
 
@@ -94,7 +91,7 @@ pub fn read_pdf(path: &str) -> Result<PdfReadResult, PdfError> {
             match font {
                 MaybeRef::Indirect(font) => {
                     cache.add_font(name.as_str(), font.clone(), &resolver);
-                },
+                }
                 _ => {}
             }
         }
@@ -114,7 +111,7 @@ pub fn read_pdf(path: &str) -> Result<PdfReadResult, PdfError> {
         for op in contents.operations(&resolver)?.iter() {
             match op {
                 Op::GraphicsState { name } => {
-                    let gs = match resources.graphics_states.get(name){
+                    let gs = match resources.graphics_states.get(name) {
                         Some(gs) => gs,
                         None => continue,
                     };
@@ -149,51 +146,51 @@ pub fn read_pdf(path: &str) -> Result<PdfReadResult, PdfError> {
                 _ => {}
             }
         }
-        // 提取图片
-        images.extend(
-            resources
-                .xobjects
-                .iter()
-                .map(|(_name, &r)| resolver.get(r).unwrap())
-                .filter(|o| matches!(**o, XObject::Image(_))),
-        );
+        if required_image {
+            // 提取图片
+            images.extend(
+                resources
+                    .xobjects
+                    .iter()
+                    .map(|(_name, &r)| resolver.get(r).unwrap())
+                    .filter(|o| matches!(**o, XObject::Image(_))),
+            );
+        }
     }
     out = replace_whitespace_with_space(&out);
 
-    let mut image_buffer_vec: Vec<Vec<u8>> = vec![];
-    // 提取图片
-    for (_i, o) in images.iter().enumerate() {
-        let img = match **o {
-            XObject::Image(ref im) => im,
-            _ => continue,
-        };
-        let (mut data, filter) = img.raw_image_data(&resolver)?;
-        match filter {
-            Some(StreamFilter::DCTDecode(_)) => "jpeg",
-            Some(StreamFilter::JBIG2Decode(_)) => "jbig2",
-            Some(StreamFilter::JPXDecode) => "jp2k",
-            Some(StreamFilter::FlateDecode(_)) => "png",
-            Some(StreamFilter::CCITTFaxDecode(_)) => {
-                data = tiff::wrap(&data, img.width, img.height).into();
-                "tiff"
-            }
-            _ => continue,
-        };
-        image_buffer_vec.push(data.to_vec());
+    if required_image {
+        let mut image_buffer_vec: Vec<Vec<u8>> = vec![];
+        // 提取图片
+        for (_i, o) in images.iter().enumerate() {
+            let img = match **o {
+                XObject::Image(ref im) => im,
+                _ => continue,
+            };
+            let (mut data, filter) = img.raw_image_data(&resolver)?;
+            match filter {
+                Some(StreamFilter::DCTDecode(_)) => "jpeg",
+                Some(StreamFilter::JBIG2Decode(_)) => "jbig2",
+                Some(StreamFilter::JPXDecode) => "jp2k",
+                Some(StreamFilter::FlateDecode(_)) => "png",
+                Some(StreamFilter::CCITTFaxDecode(_)) => {
+                    data = tiff::wrap(&data, img.width, img.height).into();
+                    "tiff"
+                }
+                _ => continue,
+            };
+            image_buffer_vec.push(data.to_vec());
+        }
+        Ok(PdfReadResult {
+            text: out,
+            images: Some(image_buffer_vec),
+        })
+    } else {
+        Ok(PdfReadResult {
+            text: out,
+            images: None,
+        })
     }
-    // println!("Found {} image(s).", images.len());
-
-
-    if let Ok(_elapsed) = now.elapsed() {
-        // println!(
-        //     "Time: {}s",
-        //     elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9
-        // );
-    }
-    Ok(PdfReadResult {
-        text: out,
-        images: image_buffer_vec,
-    })
 }
 
 #[cfg(test)]
@@ -203,6 +200,6 @@ mod tests {
     #[test]
     fn test_read_pdf() {
         let path = r"0.pdf";
-        let _result = read_pdf(path).unwrap();
+        let _result = read_pdf(path, false).unwrap();
     }
 }

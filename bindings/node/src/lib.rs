@@ -44,7 +44,7 @@ impl AircraftRs {
 
   #[napi]
   pub fn parse_goods_info(&self, path: String) -> napi::Result<String> {
-    let pdf_text = match read_pdf(&path) {
+    let pdf_text = match read_pdf(&path, false) {
       Ok(result) => result.text,
       Err(_) => "".to_string(),
     };
