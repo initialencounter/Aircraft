@@ -69,7 +69,9 @@ jobs:
         run: |
           npm install
           npm run build:electron
-          Move-Item ./release/Aircraft-Windows-*-Setup.exe ./releases/aircraft_${{ steps.get_version.outputs.VERSION }}_electron-setup.exe
+          $V_VERSION = ${{ steps.get_version.outputs.VERSION }}
+          $E_VERSION = V_VERSION.Substring(1)
+          Move-Item ./release/$E_VERSION/Aircraft-Windows-$E_VERSION-Setup.exe ./releases/aircraft_${{ steps.get_version.outputs.VERSION }}_electron-setup.exe
 
       - name: Download WebView2 Runtime
         run: |
