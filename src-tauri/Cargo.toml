@@ -39,3 +39,4 @@ summary-rs = {version = "0.1.2", path = "../summary-rs"}
 blake2 = "0.10.6"
 hex = "0.4.3"
 share = { path = "../share" }
+pdf-parser = {version = "0.1.0", path = "../pdf-parser"}

@@ -66,6 +66,7 @@ dependencies = [
  "enigo",
  "hex",
  "lazy_static",
+ "pdf-parser",
  "regex",
  "reqwest",
  "serde",
@@ -4019,6 +4020,7 @@ dependencies = [
  "lazy_static",
  "pdf",
  "regex",
+ "reqwest",
  "serde",
  "serde_json",
 ]

@@ -1,11 +1,14 @@
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
 use std::sync::mpsc;
 use std::{fs, thread};
 
-use tauri::{AppHandle, Manager, Window};
+use tauri::AppHandle;
 use tauri::Emitter;
 
 use crate::blake2::{calculate_blake2b512, FileTile};
+
+pub static DRAG_TO_BLAKE2: AtomicBool = AtomicBool::new(true);
 
 fn handle_file(path: String, tx: mpsc::Sender<FileTile>) {
     let file_tile = calculate_blake2b512(path.to_string());
@@ -26,10 +29,8 @@ fn handle_directory(path: String, tx: mpsc::Sender<FileTile>) {
     }
 }
 
-pub fn handle_drag_drop_event(window: &Window, paths: &Vec<PathBuf>) {
-    let app = window.app_handle();
+pub fn handle_drag_drop_event(app: &AppHandle, paths: &Vec<PathBuf>) {
     let (tx, rx) = mpsc::channel();
-
     // 启动一个线程处理拖拽的文件或目录
     let paths = paths.clone();
     thread::spawn(move || {

@@ -2,15 +2,16 @@ use serde_json::json;
 use std::path::Path;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
+use tauri::Manager;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
-use tauri::Manager;
 
-use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
+use crate::blake2::DRAG_TO_BLAKE2;
 use crate::server_manager::ServerManager;
 use share::hotkey_manager::HotkeyManager;
 use share::logger::{LogMessage, Logger};
 use share::task_proxy::LOGIN_STATUS;
+use share::types::{BaseConfig, HotkeyConfig, LLMConfig, ServerConfig};
 
 // 获取登录状态
 #[tauri::command]
@@ -124,6 +125,19 @@ pub fn get_hotkey_config(app: tauri::AppHandle) -> HotkeyConfig {
     }
 }
 
+// 大模型配置
+#[tauri::command]
+pub fn get_llm_config(app: tauri::AppHandle) -> LLMConfig {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    match store.get("big_model") {
+        Some(data) => match serde_json::from_value(data) {
+            Ok(config) => config,
+            Err(_) => LLMConfig::default(),
+        },
+        None => LLMConfig::default(),
+    }
+}
+
 #[tauri::command]
 pub fn save_hotkey_config(app: tauri::AppHandle, config: HotkeyConfig) -> Result<(), String> {
     let store = app.store(&Path::new("config.json")).unwrap();
@@ -204,4 +218,9 @@ pub fn minimize_window(app: tauri::AppHandle) {
 pub fn hide_window(app: tauri::AppHandle) {
     let window = app.get_webview_window("main").unwrap();
     window.hide().unwrap();
+}
+
+#[tauri::command]
+pub fn switch_drag_to_blake2(value: bool) {
+    DRAG_TO_BLAKE2.store(value, Ordering::Relaxed);
 }

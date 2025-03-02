@@ -1,9 +1,10 @@
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use crate::command::{get_hotkey_config, get_server_config};
+use crate::command::{get_hotkey_config, get_llm_config, get_server_config};
+use crate::server_manager::ServerManager;
+use pdf_parser::uploader::FileManager;
 use share::hotkey_manager::HotkeyManager;
 use share::logger::Logger;
-use crate::server_manager::ServerManager;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use tauri::{App, Manager};
 
 pub fn apply(app: &mut App) {
@@ -31,4 +32,7 @@ pub fn apply(app: &mut App) {
     let hotkey_manager = HotkeyManager::new(hotkey_config);
     hotkey_manager.start();
     app.manage(hotkey_manager);
+    let llm_config = get_llm_config(app.handle().clone());
+    let file_manager = FileManager::new(llm_config.base_url, llm_config.api_key, llm_config.model);
+    app.manage(file_manager);
 }
