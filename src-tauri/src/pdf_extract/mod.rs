@@ -13,7 +13,7 @@ pub fn handle_pdf_parse_event(app: &AppHandle, paths: &Vec<PathBuf>) {
     // 启动一个线程处理拖拽的文件或目录
     let paths = paths.clone();
     thread::spawn(move || {
-        let mut res: Vec<PdfReadResult> = vec![];
+        let mut res: Vec<String> = vec![];
         let app_clone: AppHandle = app_clone.clone();
         for path in paths {
             let path_str = path.to_string_lossy().into_owned();
@@ -45,7 +45,7 @@ pub struct PdfReadResult {
     pub content_type: String,
 }
 
-fn handle_parse_file(app: &AppHandle, path: String) -> Option<PdfReadResult> {
+fn handle_parse_file(app: &AppHandle, path: String) -> Option<String> {
     let pdf_read_result = read_pdf(&path, false);
     let manager = app.state::<FileManager>();
 
@@ -61,14 +61,14 @@ fn handle_parse_file(app: &AppHandle, path: String) -> Option<PdfReadResult> {
             if pdf_read_result.text.trim().is_empty() {
                 res.content = manager.get_file_content(&path).unwrap();
             }
-            return Some(res);
+            return Some(serde_json::to_string(&res).unwrap());
         }
         Err(_e) => return None,
     }
 }
 
-fn handle_parse_directory(app: &AppHandle, path: String) -> Vec<PdfReadResult> {
-    let mut res: Vec<PdfReadResult> = vec![];
+fn handle_parse_directory(app: &AppHandle, path: String) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
     match fs::read_dir(path) {
         Ok(entries) => {
             let app_clone: AppHandle = app.clone();
