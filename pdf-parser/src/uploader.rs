@@ -1,6 +1,7 @@
 use reqwest::blocking::{multipart, Client};
 use reqwest::header::AUTHORIZATION;
 use std::error::Error;
+use crate::types::LLMConfig;
 
 use serde::{Deserialize, Serialize};
 
@@ -120,14 +121,20 @@ pub struct FileManager {
     model: String,
 }
 impl FileManager {
-    pub fn new(base_url: String, api_key: String, model: String) -> Self {
+    pub fn new(config: LLMConfig) -> Self {
         let client = Client::new();
         Self {
             client,
-            base_url,
-            api_key,
-            model,
+            base_url: config.base_url,
+            api_key: config.api_key,
+            model: config.model,
         }
+    }
+
+    pub fn reload(&mut self, config: LLMConfig) {
+        self.base_url = config.base_url;
+        self.api_key = config.api_key;
+        self.model = config.model;
     }
 
     fn upload(&self, file_path: &str) -> Result<String, Box<dyn Error>> {
@@ -315,7 +322,12 @@ mod tests {
         let api_key = "sk-";
         let file_path = r#"C:\Users\29115\RustroverProjects\validators\ts\test.pdf"#;
         let model = "moonshot-v1-128k";
-        let manage = FileManager::new(base_url.to_string(), api_key.to_string(), model.to_string());
+        let config = LLMConfig {
+            base_url: base_url.to_string(),
+            api_key: api_key.to_string(),
+            model: model.to_string(),
+        };
+        let manage = FileManager::new(config);
         // let result = manage.upload(file_path).unwrap();
         // println!("{:?}", result.clone());
         // println!("{:?}", manage.delete(&result));

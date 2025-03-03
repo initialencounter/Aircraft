@@ -1,3 +1,5 @@
+use pdf_parser::uploader::FileManager;
+use pdf_parser::types::LLMConfig;
 use serde_json::json;
 use std::path::Path;
 use std::sync::atomic::Ordering;
@@ -11,7 +13,7 @@ use crate::server_manager::ServerManager;
 use share::hotkey_manager::HotkeyManager;
 use share::logger::{LogMessage, Logger};
 use share::task_proxy::LOGIN_STATUS;
-use share::types::{BaseConfig, HotkeyConfig, LLMConfig, ServerConfig};
+use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
 
 // 获取登录状态
 #[tauri::command]
@@ -129,7 +131,7 @@ pub fn get_hotkey_config(app: tauri::AppHandle) -> HotkeyConfig {
 #[tauri::command]
 pub fn get_llm_config(app: tauri::AppHandle) -> LLMConfig {
     let store = app.store(&Path::new("config.json")).unwrap();
-    match store.get("big_model") {
+    match store.get("llm") {
         Some(data) => match serde_json::from_value(data) {
             Ok(config) => config,
             Err(_) => LLMConfig::default(),
@@ -223,4 +225,28 @@ pub fn hide_window(app: tauri::AppHandle) {
 #[tauri::command]
 pub fn switch_drag_to_blake2(value: bool) {
     DRAG_TO_BLAKE2.store(value, Ordering::Relaxed);
+}
+
+#[tauri::command]
+pub fn reload_llm_config(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, FileManager>,
+    config: LLMConfig,
+) -> Result<(), String> {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    store.set("llm", json!(config.clone()));
+    store.save().map_err(|e| e.to_string())?;
+    // state.reload(config);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn save_llm_config(
+    app: tauri::AppHandle,
+    config: LLMConfig,
+) -> Result<(), String> {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    store.set("llm", json!(config.clone()));
+    store.save().map_err(|e| e.to_string())?;
+    Ok(())
 }

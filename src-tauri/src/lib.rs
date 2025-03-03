@@ -74,6 +74,9 @@ pub async fn run() {
             cmd::minimize_window,
             cmd::hide_window,
             cmd::switch_drag_to_blake2,
+            cmd::get_llm_config,
+            cmd::save_llm_config,
+            cmd::reload_llm_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
