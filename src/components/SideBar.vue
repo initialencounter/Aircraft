@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMaskStore } from '../stores/mask'
-import { House, Setting, Document, Box } from '@element-plus/icons-vue'
+import { House, Setting, Document, Box, MoonNight } from '@element-plus/icons-vue'
 import { isTauri } from '@tauri-apps/api/core'
 import Clip from "../assets/svg/Clip.vue";
 
@@ -31,7 +31,8 @@ const menuItems = [
   { index: '5', path: '/logs', label: '日志', icon: Document, requiresUnlock: false },
   { index: '6', path: '/blake2', label: 'BLAKE2', icon: Clip, requiresUnlock: is_electron },
   { index: '7', path: '/stack', label: '堆码计算', icon: Box, requiresUnlock: false },
-  { index: '8', path: '/llm_config', label: '大模型配置', icon: Setting, requiresUnlock: false },
+  { index: '8', path: '/pdf_parse', label: 'pdf解析', icon: MoonNight, requiresUnlock: false },
+  { index: '9', path: '/llm_config', label: '大模型配置', icon: Setting, requiresUnlock: false },
 ]
 
 const handleSelect = (index: string) => {

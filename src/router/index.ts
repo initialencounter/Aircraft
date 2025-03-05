@@ -8,6 +8,7 @@ import Logs from '../views/Logs.vue'
 import Blake2 from '../views/Blake2.vue'
 import Stack from '../views/Stack.vue'
 import SchemaLLM from '../components/SchemaLLM.vue'
+import PdfParse from '../views/PdfParse.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -48,10 +49,15 @@ const router = createRouter({
       component: Stack
     },
     {
+      path: '/pdf_parse',
+      name: 'Pdf Parse',
+      component: PdfParse,
+    },
+    {
       path: '/llm_config',
       name: 'LLM Config',
       component: SchemaLLM,
-    }
+    },
   ]
 })
 

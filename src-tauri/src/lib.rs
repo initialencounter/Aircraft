@@ -43,6 +43,7 @@ pub async fn run() {
         .on_window_event(|window, event| match event {
             WindowEvent::DragDrop(DragDropEvent::Drop { paths, .. }) => {
                 let app = window.app_handle();
+                println!("{:?}", paths.clone());
                 if DRAG_TO_BLAKE2.load(std::sync::atomic::Ordering::Relaxed) {
                     handle_drag_drop_event(app, &paths);
                 } else {

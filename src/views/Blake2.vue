@@ -7,6 +7,7 @@ import FileTileTauri from "../components/FileTile.vue";
 import {ElMessage} from "element-plus";
 import { isTauri } from '@tauri-apps/api/core';
 import { listen,Event } from '@tauri-apps/api/event';
+import { ipcManager } from "../utils/ipcManager";
 
 interface FileTileData {
   name: string,
@@ -24,6 +25,7 @@ let colorIndex = 0
 const file_list = ref<FileTileMap>([]);
 
 if (is_tauri) {
+  ipcManager.invoke("switch_drag_to_blake2", { value: true });
   listen('open_link', (data: Event<Link>): void => {
     window.open(data.payload.link)
   })
