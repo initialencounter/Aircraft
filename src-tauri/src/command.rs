@@ -1,5 +1,5 @@
-use pdf_parser::uploader::FileManager;
 use pdf_parser::types::LLMConfig;
+use pdf_parser::uploader::FileManager;
 use serde_json::json;
 use std::path::Path;
 use std::sync::atomic::Ordering;
@@ -230,21 +230,18 @@ pub fn switch_drag_to_blake2(value: bool) {
 #[tauri::command]
 pub fn reload_llm_config(
     app: tauri::AppHandle,
-    state: tauri::State<'_, FileManager>,
+    state: tauri::State<'_, Arc<Mutex<FileManager>>>,
     config: LLMConfig,
 ) -> Result<(), String> {
     let store = app.store(&Path::new("config.json")).unwrap();
     store.set("llm", json!(config.clone()));
     store.save().map_err(|e| e.to_string())?;
-    // state.reload(config);
+    state.lock().unwrap().reload(config);
     Ok(())
 }
 
 #[tauri::command]
-pub fn save_llm_config(
-    app: tauri::AppHandle,
-    config: LLMConfig,
-) -> Result<(), String> {
+pub fn save_llm_config(app: tauri::AppHandle, config: LLMConfig) -> Result<(), String> {
     let store = app.store(&Path::new("config.json")).unwrap();
     store.set("llm", json!(config.clone()));
     store.save().map_err(|e| e.to_string())?;

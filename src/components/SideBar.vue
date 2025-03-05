@@ -31,6 +31,7 @@ const menuItems = [
   { index: '5', path: '/logs', label: '日志', icon: Document, requiresUnlock: false },
   { index: '6', path: '/blake2', label: 'BLAKE2', icon: Clip, requiresUnlock: is_electron },
   { index: '7', path: '/stack', label: '堆码计算', icon: Box, requiresUnlock: false },
+  { index: '8', path: '/llm_config', label: '大模型配置', icon: Setting, requiresUnlock: false },
 ]
 
 const handleSelect = (index: string) => {

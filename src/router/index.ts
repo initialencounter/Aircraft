@@ -7,6 +7,7 @@ import SchemaHotkey from '../components/SchemaHotkey.vue'
 import Logs from '../views/Logs.vue'
 import Blake2 from '../views/Blake2.vue'
 import Stack from '../views/Stack.vue'
+import SchemaLLM from '../components/SchemaLLM.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -45,6 +46,11 @@ const router = createRouter({
       path: '/stack',
       name: 'Stack',
       component: Stack
+    },
+    {
+      path: '/llm_config',
+      name: 'LLM Config',
+      component: SchemaLLM,
     }
   ]
 })

@@ -33,6 +33,5 @@ pub fn apply(app: &mut App) {
     hotkey_manager.start();
     app.manage(hotkey_manager);
     let llm_config = get_llm_config(app.handle().clone());
-    let file_manager = FileManager::new(llm_config);
-    app.manage(file_manager);
+    app.manage(Arc::new(Mutex::new(FileManager::new(llm_config))));
 }
