@@ -18,6 +18,8 @@ pub fn handle_pdf_parse_event(app: &AppHandle, paths: &Vec<PathBuf>) {
         let rt = Runtime::new().unwrap();
         let mut res: Vec<String> = vec![];
         let app_clone: AppHandle = app_clone.clone();
+        let binding = app_clone.clone();
+        let manager = binding.state::<Arc<Mutex<FileManager>>>();
         rt.block_on(async {
             for path in paths {
                 let path_str = path.to_string_lossy().into_owned();
@@ -31,8 +33,11 @@ pub fn handle_pdf_parse_event(app: &AppHandle, paths: &Vec<PathBuf>) {
                     res.extend(handle_parse_directory(&app_clone.clone(), path_str).await);
                 }
             }
-            println!("res: {:?}", res.clone());
-            let _ = app_clone.emit("pdf_reader_result", serde_json::json!(res));
+            let json = manager
+            .lock()
+            .unwrap()
+            .chat_with_ai_fast_and_cheap(res).await.unwrap();
+            let _ = app_clone.emit("pdf_reader_result", serde_json::json!(json));
         });
     });
 }

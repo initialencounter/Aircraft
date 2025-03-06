@@ -209,6 +209,17 @@ impl FileManager {
     }
 
     pub async fn chat_with_ai(&self, file_list: Vec<String>) -> Result<String, Box<dyn Error>> {
+        let mut file_content: Vec<String> = vec![];
+        for file_path in file_list {
+            let file_id = self.upload(&file_path).await?;
+            let result = self.content(&file_id).await?;
+            self.delete(&file_id).await?;
+            file_content.push(result);
+        }
+        self.chat_with_ai_fast_and_cheap(file_content).await
+    }
+
+    pub async fn chat_with_ai_fast_and_cheap(&self, file_content: Vec<String>) -> Result<String, Box<dyn Error>> {
         let mut messages: Vec<Message> = vec![
             Message {
                 content: r#"你是一个人工智能助手，主要负责帮助用户处理锂电池的测试报告，并输出结构化信息(JSON 字符串)，你需要保证输出的信息全都来自于用户提供的文件信息，如果用户提供的文件中不存在某个信息，则用null代替。结构化信息的类型是这样的：\`\`\`
@@ -286,12 +297,9 @@ export interface PekData {
                 role: "system".to_string(),
             },
         ];
-        for file_path in file_list {
-            let file_id = self.upload(&file_path).await?;
-            let result = self.content(&file_id).await?;
-            self.delete(&file_id).await?;
+        for content in file_content {
             messages.push(Message {
-                content: result,
+                content: content,
                 role: "system".to_string(),
             });
         }
