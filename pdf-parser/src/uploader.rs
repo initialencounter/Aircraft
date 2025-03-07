@@ -322,7 +322,7 @@ export interface PekData {
             match res.choices[0].message.clone() {
                 Some(message) => match extract_json(&message.content) {
                     Some(json) => Ok(json),
-                    None => Err("解析文件内容失败！".to_string())?,
+                    None => Ok(message.content),
                 },
                 None => Err("获取文件内容失败！".to_string())?,
             }
