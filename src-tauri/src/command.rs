@@ -110,7 +110,11 @@ pub fn get_server_logs(logger: tauri::State<'_, Arc<Mutex<Logger>>>) -> Vec<LogM
 #[tauri::command]
 pub fn write_log(logger: tauri::State<'_, Arc<Mutex<Logger>>>, level: &str, message: &str) {
     if let Ok(logger) = logger.lock() {
-        logger.log(level, message);
+        let _ = logger.log_tx.send(LogMessage {
+            time_stamp: chrono::Local::now().to_rfc3339(),
+            level: level.to_string(),
+            message: message.to_string(),
+        });
     }
 }
 
