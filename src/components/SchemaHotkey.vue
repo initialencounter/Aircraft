@@ -17,7 +17,6 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import Schema from "schemastery";
-import { isTauri } from "@tauri-apps/api/core";
 import { ElMessage } from "element-plus";
 import { ipcManager } from "../utils/ipcManager";
 
@@ -80,18 +79,11 @@ const initial = ref<Config>({
   signature_height: 1.73,
 });
 
-const isDev = isTauri();
 
 async function getConfig() {
-  if (!isDev) {
-    return;
-  }
   config.value = (await ipcManager.invoke("get_hotkey_config")) as Config;
 }
 async function saveConfig() {
-  if (!isDev) {
-    return;
-  }
   try {
     const tmpConfig: Config = new Config(config.value);
     const result = await ipcManager.invoke("save_hotkey_config", {

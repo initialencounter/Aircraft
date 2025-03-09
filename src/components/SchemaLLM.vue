@@ -41,18 +41,12 @@ const initial = ref<Config>({
   model: "moonshot-v1-128k",
 });
 
-const isDev = import.meta.env.DEV;
 
 async function getConfig() {
-  if (!isDev) {
-    return;
-  }
-  config.value = (await ipcManager.invoke("get_llm_config")) as Config;
+  let tmpConfig = (await ipcManager.invoke("get_llm_config")) as Config
+  config.value = tmpConfig
 }
 async function saveConfig() {
-  if (!isDev) {
-    return;
-  }
   try {
     const tmpConfig: Config = new Config(config.value);
     const result = await ipcManager.invoke("save_llm_config", {

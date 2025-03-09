@@ -56,18 +56,11 @@ const initial = ref<Config>({
   log_enabled: false,
 });
 
-const isDev = import.meta.env.DEV;
 
 async function getConfig() {
-  if (!isDev) {
-    return;
-  }
   config.value = (await ipcManager.invoke("get_server_config")) as Config;
 }
 async function saveConfig() {
-  if (!isDev) {
-    return;
-  }
   try {
     const tmpConfig: Config = new Config(config.value);
     const result = await ipcManager.invoke("save_server_config", {
