@@ -2,7 +2,7 @@ import { Context, Service, Logger } from 'cordis'
 import { readFileSync, writeFileSync } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
-import type { Config as ConfigType } from '../../types/index'
+import type { BaseConfig, Config as ConfigType } from '../../types/index'
 import type { } from '../service/app'
 
 declare module 'cordis' {
@@ -66,7 +66,10 @@ class ConfigManager extends Service {
   saveConfig<T extends keyof ConfigType>(config: ConfigType[T], configName: T) {
     try {
       const oldConfig: ConfigType = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
-      oldConfig[configName] = config
+      oldConfig[configName] = config["config"]
+      if(configName == "base") {
+        this.ctx.emit('auto-launch-switch', (config["config"] as BaseConfig).auto_start, (config["config"] as BaseConfig).silent_start)
+      }
       writeFileSync(this.configFilePath, JSON.stringify(oldConfig, null, 2))
     } catch (error) {
       logger.error('config file save error', error)
