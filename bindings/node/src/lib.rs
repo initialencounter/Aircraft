@@ -5,6 +5,7 @@ extern crate napi_derive;
 
 use pdf_parser::parse::{parse_good_file, GoodsPDF};
 use pdf_parser::read::read_pdf;
+use pdf_parser::types::LLMConfig;
 use pdf_parser::uploader::FileManager;
 use serde::{Deserialize, Serialize};
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content};
@@ -74,12 +75,14 @@ pub struct FileManagerInstance {
 impl FileManagerInstance {
   #[napi(constructor)]
   pub fn new(base_url: String, api_key: String, model: String) -> Self {
-    let manager = FileManager::new(base_url, api_key, model);
+    let manager = FileManager::new(LLMConfig{
+      base_url, api_key, model
+    });
     Self { manager }
   }
   #[napi]
-  pub fn parse_pdf(&self, path: Vec<String>) -> napi::Result<String> {
-    let res = self.manager.chat_with_ai(path).unwrap();
+  pub async fn parse_pdf(&self, path: Vec<String>) -> napi::Result<String> {
+    let res = self.manager.chat_with_ai(path).await.unwrap();
     Ok(res)
   }
 }
