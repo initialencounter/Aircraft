@@ -1,5 +1,7 @@
 use crate::logger::LogMessage;
 use http_client::HttpClient;
+use pdf_parser::types::LLMConfig;
+use pdf_parser::uploader::FileManager;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
@@ -7,8 +9,8 @@ use tokio::sync::watch;
 use tokio::sync::Mutex;
 pub mod http_client;
 pub mod webhook;
-pub use http_client::LOGIN_STATUS;
 use crate::utils::popup_message;
+pub use http_client::LOGIN_STATUS;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -20,6 +22,7 @@ pub async fn run(
     debug: bool,
     mut shutdown_rx: watch::Receiver<bool>,
     log_tx: Sender<LogMessage>,
+    llm_config: LLMConfig,
 ) -> Result<()> {
     let client = Arc::new(Mutex::new(HttpClient::new(
         base_url.clone(),
@@ -90,7 +93,8 @@ pub async fn run(
     });
 
     let webhook_client = client.clone();
-    let server_handle = webhook::apply_webhook(port, log_tx, webhook_client);
+    let file_manager = Arc::new(Mutex::new(FileManager::new(llm_config)));
+    let server_handle = webhook::apply_webhook(port, log_tx, webhook_client, file_manager);
 
     loop {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;

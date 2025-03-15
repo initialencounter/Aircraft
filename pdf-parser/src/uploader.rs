@@ -115,6 +115,7 @@ fn extract_json(input: &str) -> Option<String> {
     Some(input[start..end].trim().to_string())
 }
 
+#[derive(Debug, Clone)]
 pub struct FileManager {
     pub client: Client,
     base_url: String,
@@ -146,6 +147,10 @@ impl FileManager {
         let file_part = Part::bytes(file_data)
             .file_name(file_path.to_string()) // Convert `file_path` to an owned `String`
             .mime_str("application/pdf")?;
+        self.upload_part(file_part).await
+    }
+
+    pub async fn upload_part(&self, file_part: Part) -> Result<String, Box<dyn Error>> {
         // 创建 multipart 表单
         let form = multipart::Form::new()
             .part("file", file_part)
@@ -167,6 +172,14 @@ impl FileManager {
             Err(format!("上传失败！{}", response.text().await?))?
         }
     }
+
+    pub async fn get_part_text(&self, file_part: Part) -> Result<String, Box<dyn Error>> {
+        let file_id = self.upload_part(file_part).await?;
+        let text = self.content(&file_id).await?;
+        self.delete(&file_id).await?;
+        Ok(text)
+    }
+
     async fn delete(&self, file_id: &str) -> Result<PdfDeleteResult, Box<dyn Error>> {
         // 发送请求
         let response = self
@@ -219,7 +232,24 @@ impl FileManager {
         self.chat_with_ai_fast_and_cheap(file_content).await
     }
 
-    pub async fn chat_with_ai_fast_and_cheap(&self, file_content: Vec<String>) -> Result<String, Box<dyn Error>> {
+    pub async fn chat_with_ai_proxy(
+        &self,
+        file_parts: Vec<Part>,
+    ) -> Result<String, Box<dyn Error>> {
+        let mut file_content: Vec<String> = vec![];
+        for part in file_parts {
+            let file_id = self.upload_part(part).await?;
+            let result = self.content(&file_id).await?;
+            self.delete(&file_id).await?;
+            file_content.push(result);
+        }
+        self.chat_with_ai_fast_and_cheap(file_content).await
+    }
+
+    pub async fn chat_with_ai_fast_and_cheap(
+        &self,
+        file_content: Vec<String>,
+    ) -> Result<String, Box<dyn Error>> {
         let mut messages: Vec<Message> = vec![
             Message {
                 content: r#"你是一个人工智能助手，主要负责帮助用户处理锂电池的测试报告，并输出结构化信息(JSON 字符串)，你需要保证输出的信息全都来自于用户提供的文件信息，如果用户提供的文件中不存在某个信息，则用null代替。结构化信息的类型是这样的：\`\`\`

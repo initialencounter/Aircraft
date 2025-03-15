@@ -26,7 +26,7 @@ pub fn apply(app: &mut App) {
     let log_tx = logger.lock().unwrap().log_tx.clone();
     app.manage(logger);
     let server_config = get_server_config(app.handle().clone());
-    let server_manager = ServerManager::new(server_config, log_tx);
+    let server_manager = ServerManager::new(server_config, log_tx, app.handle().clone());
     app.manage(server_manager);
     let hotkey_config = get_hotkey_config(app.handle().clone());
     let hotkey_manager = HotkeyManager::new(hotkey_config);

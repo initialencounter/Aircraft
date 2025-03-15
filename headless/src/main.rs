@@ -3,6 +3,7 @@ mod tray;
 mod utils;
 use config::read_env_to_config;
 use is_elevated::is_elevated;
+use pdf_parser::types::LLMConfig;
 use share::{logger::Logger, task_proxy::run as task_proxy_run, types::ServerConfig};
 use std::{
     env,
@@ -66,6 +67,7 @@ async fn main() -> Result<()> {
         config.debug,
         shutdown_rx,
         log_tx,
+        LLMConfig::default(),
     ));
 
     // 运行事件循环

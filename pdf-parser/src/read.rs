@@ -1,9 +1,11 @@
 // Fork from https://github.com/pdf-rs/pdf/blob/master/pdf/examples/read.rs
 
+use pdf::any::AnySync;
 use pdf::enc::StreamFilter;
 use pdf::error::PdfError;
-use pdf::file::FileOptions;
+use pdf::file::{File, FileOptions, NoLog, SyncCache};
 use pdf::object::*;
+use std::sync::Arc;
 
 use fax::tiff;
 use pdf::content::*;
@@ -74,8 +76,25 @@ pub struct PdfReadResult {
     pub images: Option<Vec<Vec<u8>>>,
 }
 
+pub fn read_pdf_u8(data: Vec<u8>) -> Result<PdfReadResult, PdfError> {
+    let file = pdf::file::FileOptions::cached().load(data)?;
+    read_pdf_file(file, false)
+}
+
 pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfError> {
     let file = FileOptions::cached().open(&path)?;
+    read_pdf_file(file, required_image)
+}
+
+pub fn read_pdf_file(
+    file: File<
+        Vec<u8>,
+        Arc<SyncCache<PlainRef, Result<AnySync, Arc<PdfError>>>>,
+        Arc<SyncCache<PlainRef, Result<Arc<[u8]>, Arc<PdfError>>>>,
+        NoLog,
+    >,
+    required_image: bool,
+) -> Result<PdfReadResult, PdfError> {
     let resolver = file.resolver();
 
     let mut images: Vec<_> = vec![];

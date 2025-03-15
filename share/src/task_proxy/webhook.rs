@@ -1,6 +1,10 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
 use crate::logger::LogMessage;
+use bytes::BufMut;
+use futures_util::StreamExt;
+use pdf_parser::read::read_pdf_u8;
+use pdf_parser::uploader::FileManager;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;
@@ -9,9 +13,9 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
+use warp::multipart::FormData;
 use warp::reject::Reject;
-use warp::Filter;
-
+use warp::{Filter, Rejection, Reply};
 // 自定义错误类型
 #[derive(Debug, Serialize)]
 struct CustomError {
@@ -35,6 +39,7 @@ pub fn apply_webhook(
     port: u16,
     log_tx: Sender<LogMessage>,
     client: Arc<Mutex<HttpClient>>,
+    file_manager: Arc<Mutex<FileManager>>,
 ) -> JoinHandle<()> {
     // 设置 webhook 路由
     let routes = warp::post()
@@ -119,6 +124,22 @@ pub fn apply_webhook(
                     }
                 },
             );
+
+    let llm_files_handle = warp::post()
+        .and(warp::path("upload-llm-files"))
+        .and(warp::multipart::form().max_length(10_000_000))
+        .and(warp::any().map({
+            let file_manager = file_manager.clone();
+            move || file_manager.clone()
+        }))
+        .then(
+            move |form, file_manager: Arc<Mutex<FileManager>>| async move {
+                let _ = handle_upload(form, file_manager).await;
+                warp::reply::json(&CustomError {
+                    message: format!("获取项目信息失败"),
+                })
+            },
+        );
     let cors = warp::cors()
         .allow_any_origin() // 允许所有来源
         .allow_headers(vec!["content-type"]) // 允许的请求头
@@ -127,8 +148,94 @@ pub fn apply_webhook(
         .or(doc_routes)
         .or(selected_routes)
         .or(get_summary_info)
+        .or(llm_files_handle)
         .with(cors);
     // 启动 web 服务器
     let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));
     tokio::spawn(server)
+}
+
+// 自定义错误类型，处理可能的错误（需实现 Reject）
+#[derive(Debug)]
+struct UploadError;
+impl warp::reject::Reject for UploadError {}
+
+async fn handle_upload(
+    mut form: FormData,
+    file_manager: Arc<Mutex<FileManager>>,
+) -> Result<impl Reply, Rejection> {
+    let mut file_contents: Vec<String> = vec![];
+    while let Some(part) = form.next().await {
+        let part: warp::multipart::Part = part.map_err(|_e| warp::reject::custom(UploadError))?;
+
+        if part.name() == "file" {
+            let filename = part
+                .filename()
+                .ok_or_else(|| warp::reject::custom(UploadError))?
+                .to_string();
+            println!("filename: {}", filename);
+
+            let file_data: Vec<u8> = convert_file_part_to_vecu8(part).await;
+            // save_part_to_file(part.clone()).await;
+            let mut file_content = match read_pdf_u8(file_data.clone()) {
+                Ok(pdf) => pdf.text,
+                Err(e) => {
+                    println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);
+                    "".to_string()
+                }
+            };
+            if file_content.trim().is_empty() {
+                let file_part1: reqwest::multipart::Part =
+                    convert_file_part(filename, file_data).await;
+                file_content = match file_manager.lock().await.get_part_text(file_part1).await {
+                    Ok(text) => {
+                        println!("text: {:?}", text.clone());
+                        text
+                    }
+                    Err(e) => {
+                        println!("Error: OCR {:?}", e);
+                        "".to_string()
+                    }
+                };
+            }
+            file_contents.push(file_content);
+        }
+    }
+    let res = file_manager
+        .lock()
+        .await
+        .chat_with_ai_fast_and_cheap(file_contents)
+        .await;
+
+    match res {
+        Ok(json) => {
+            println!("json: {:?}", json);
+            Ok(warp::reply::json(&json))
+        }
+        Err(e) => Ok(warp::reply::json(&CustomError {
+            message: format!("获取项目信息失败: {}", e),
+        })),
+    }
+}
+
+async fn convert_file_part(filename: String, file_data: Vec<u8>) -> reqwest::multipart::Part {
+    // 构建 reqwest Part
+    let reqwest_part = reqwest::multipart::Part::bytes(file_data)
+        .file_name(filename) // Convert `file_path` to an owned `String`
+        .mime_str("application/pdf")
+        .unwrap();
+
+    reqwest_part
+}
+
+async fn convert_file_part_to_vecu8(mut warp_part: warp::multipart::Part) -> Vec<u8> {
+    let mut file_data: Vec<u8> = Vec::new();
+
+    // field.data() only returns a piece of the content, you should call over it until it replies None
+    while let Some(content) = warp_part.data().await {
+        let content = content.unwrap();
+        file_data.put(content);
+    }
+
+    file_data
 }

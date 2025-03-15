@@ -13,7 +13,7 @@ tokio = {version = "1", features = ["full"]}
 warp = "0.3.7"
 lazy_static = "1.5.0"
 native-dialog = "0.7.0"
-reqwest = {version = "0.12.8", features = ["blocking", "json", "multipart", "cookies"] }
+reqwest = {version = "0.12.8", features = ["blocking", "json", "multipart", "cookies", "stream"] }
 copypasta = "0.10.1"
 enigo = "0.2.1"
 summary-rs = {version = "0.1.2", path = "../summary-rs"}
@@ -26,3 +26,5 @@ fax = "0.2.4"
 flextrek = "0.2.2"
 anyhow = "1.0.95"
 clipboard-rs = "0.2.2"
+futures-util = "0.3.31"
+bytes = "1.10.1"
