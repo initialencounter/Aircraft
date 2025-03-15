@@ -3,7 +3,7 @@ use tauri::{App, AppHandle, Wry, Emitter, Manager, WindowEvent};
 use tauri::menu::{MenuBuilder, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use crate::command as cmd;
+use crate::command::{self as cmd, get_base_config};
 use crate::{menu, Link};
 use crate::utils::{check_update, hide_or_show, restart};
 
@@ -89,4 +89,9 @@ pub fn handle_setup(app: &mut App) {
             window_clone.hide().unwrap();
         }
     });
+    // 静默启动
+    let base_config = get_base_config(app.handle().clone());
+    if !base_config.silent_start {
+        app.get_webview_window("main").unwrap().show().unwrap();
+    }
 }
