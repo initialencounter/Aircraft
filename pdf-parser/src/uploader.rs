@@ -157,6 +157,14 @@ impl FileManager {
         self.upload_part(file_part).await
     }
 
+    pub async fn upload_u8(&self, filename: String, file_data: Vec<u8>) -> Result<String, Box<dyn Error>> {
+        let file_part = reqwest::multipart::Part::bytes(file_data)
+        .file_name(filename) // Convert `file_path` to an owned `String`
+        .mime_str("application/pdf")
+        .unwrap();
+        self.upload_part(file_part).await
+    }
+
     pub async fn upload_part(&self, file_part: Part) -> Result<String, Box<dyn Error>> {
         // 创建 multipart 表单
         let form = multipart::Form::new()
@@ -180,8 +188,8 @@ impl FileManager {
         }
     }
 
-    pub async fn get_part_text(&self, file_part: Part) -> Result<String, Box<dyn Error>> {
-        let file_id = self.upload_part(file_part).await?;
+    pub async fn get_u8_text(&self, filename: String, file_data: Vec<u8>) -> Result<String, Box<dyn Error>> {
+        let file_id = self.upload_u8(filename, file_data).await?;
         let text = self.content(&file_id).await?;
         self.delete(&file_id).await?;
         Ok(text)

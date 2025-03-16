@@ -187,9 +187,7 @@ async fn handle_upload(
                 }
             };
             if file_content.trim().is_empty() {
-                let file_part1: reqwest::multipart::Part =
-                    convert_file_part(filename, file_data).await;
-                file_content = match file_manager.lock().await.get_part_text(file_part1).await {
+                file_content = match file_manager.lock().await.get_u8_text(filename, file_data).await {
                     Ok(text) => {
                         println!("text: {:?}", text.clone());
                         text
@@ -217,16 +215,6 @@ async fn handle_upload(
             message: format!("获取项目信息失败: {}", e),
         })),
     }
-}
-
-async fn convert_file_part(filename: String, file_data: Vec<u8>) -> reqwest::multipart::Part {
-    // 构建 reqwest Part
-    let reqwest_part = reqwest::multipart::Part::bytes(file_data)
-        .file_name(filename) // Convert `file_path` to an owned `String`
-        .mime_str("application/pdf")
-        .unwrap();
-
-    reqwest_part
 }
 
 async fn convert_file_part_to_vecu8(mut warp_part: warp::multipart::Part) -> Vec<u8> {
