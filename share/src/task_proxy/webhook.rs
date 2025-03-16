@@ -178,7 +178,6 @@ async fn handle_upload(
                 .to_string();
 
             let file_data: Vec<u8> = convert_file_part_to_vecu8(part).await;
-            // save_part_to_file(part.clone()).await;
             let mut file_content = match read_pdf_u8(file_data.clone()) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
@@ -189,7 +188,6 @@ async fn handle_upload(
             if file_content.trim().is_empty() {
                 file_content = match file_manager.lock().await.get_u8_text(filename, file_data).await {
                     Ok(text) => {
-                        println!("text: {:?}", text.clone());
                         text
                     }
                     Err(e) => {

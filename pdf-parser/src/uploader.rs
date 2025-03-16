@@ -1,5 +1,5 @@
 use crate::types::LLMConfig;
-use reqwest::header::AUTHORIZATION;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use reqwest::multipart::Part;
 use reqwest::{multipart, Client};
 use std::error::Error;
@@ -420,6 +420,7 @@ export interface SummaryFromLLM {
             .client
             .post(&format!("{}/chat/completions", &self.base_url))
             .header(AUTHORIZATION, format!("Bearer {}", &self.api_key))
+            .header(CONTENT_TYPE, "application/json")
             .body(serde_json::to_string(&payload)?)
             .send()
             .await
@@ -432,10 +433,10 @@ export interface SummaryFromLLM {
                     Some(json) => Ok(json),
                     None => Ok(message.content),
                 },
-                None => Err("获取文件内容失败！".to_string())?,
+                None => Err("chat/completions 提取 json 失败！".to_string())?,
             }
         } else {
-            Err(format!("获取文件内容失败！{}", response.text().await?))?
+            Err(format!("chat/completions 请求失败！{}", response.text().await?))?
         }
     }
 }
