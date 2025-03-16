@@ -134,10 +134,13 @@ pub fn apply_webhook(
         }))
         .then(
             move |form, file_manager: Arc<Mutex<FileManager>>| async move {
-                let _ = handle_upload(form, file_manager).await;
-                warp::reply::json(&CustomError {
-                    message: format!("获取项目信息失败"),
-                })
+                let res = handle_upload(form, file_manager).await;
+                match res {
+                    Ok(reply) => Ok(reply),
+                    Err(e) => Err(warp::reply::json(&CustomError {
+                        message: format!("LLM Parse err:{:?}", e),
+                    })),
+                }
             },
         );
     let cors = warp::cors()
@@ -173,7 +176,6 @@ async fn handle_upload(
                 .filename()
                 .ok_or_else(|| warp::reject::custom(UploadError))?
                 .to_string();
-            println!("filename: {}", filename);
 
             let file_data: Vec<u8> = convert_file_part_to_vecu8(part).await;
             // save_part_to_file(part.clone()).await;
@@ -209,7 +211,6 @@ async fn handle_upload(
 
     match res {
         Ok(json) => {
-            println!("json: {:?}", json);
             Ok(warp::reply::json(&json))
         }
         Err(e) => Ok(warp::reply::json(&CustomError {
