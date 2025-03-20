@@ -3,69 +3,13 @@
 use pdf::any::AnySync;
 use pdf::enc::StreamFilter;
 use pdf::error::PdfError;
-use pdf::file::{File, FileOptions, NoLog, SyncCache};
+use pdf::file::{File, NoLog, SyncCache};
 use pdf::object::*;
 use std::sync::Arc;
 
 use fax::tiff;
-use pdf::content::*;
-use pdf::encoding::BaseEncoding;
-use pdf::font::*;
-use pdf::object::{MaybeRef, RcRef, Resolve};
-use std::collections::HashMap;
-use std::convert::TryInto;
-
-struct FontInfo {
-    font: RcRef<Font>,
-    cmap: ToUnicodeMap,
-}
-struct Cache {
-    fonts: HashMap<String, FontInfo>,
-}
-impl Cache {
-    fn new() -> Self {
-        Cache {
-            fonts: HashMap::new(),
-        }
-    }
-    fn add_font(&mut self, name: impl Into<String>, font: RcRef<Font>, resolver: &impl Resolve) {
-        if let Some(to_unicode) = font.to_unicode(resolver) {
-            self.fonts.insert(
-                name.into(),
-                FontInfo {
-                    font,
-                    cmap: to_unicode.unwrap(),
-                },
-            );
-        }
-    }
-    fn get_font(&self, name: &str) -> Option<&FontInfo> {
-        self.fonts.get(name)
-    }
-}
-fn add_string(data: &[u8], out: &mut String, info: &FontInfo) {
-    if let Some(encoding) = info.font.encoding() {
-        match encoding.base {
-            BaseEncoding::IdentityH => {
-                for w in data.windows(2) {
-                    let cp = u16::from_be_bytes(w.try_into().unwrap());
-                    if let Some(s) = info.cmap.get(cp) {
-                        out.push_str(s);
-                    }
-                }
-            }
-            _ => {
-                for &b in data {
-                    if let Some(s) = info.cmap.get(b as u16) {
-                        out.push_str(s);
-                    } else {
-                        out.push(b as char);
-                    }
-                }
-            }
-        };
-    }
-}
+use pdf::object::Resolve;
+use pdf_extract::extract_text_from_mem;
 
 pub fn replace_whitespace_with_space(text: &str) -> String {
     text.replace(char::is_whitespace, " ")
@@ -77,139 +21,77 @@ pub struct PdfReadResult {
 }
 
 pub fn read_pdf_u8(data: Vec<u8>) -> Result<PdfReadResult, PdfError> {
-    let file = pdf::file::FileOptions::cached().load(data)?;
-    read_pdf_file(file, false)
+    match extract_text_from_mem(&data) {
+        Ok(text) => Ok(PdfReadResult { text, images: None }),
+        Err(_) => Ok(PdfReadResult {
+            text: "".to_string(),
+            images: None,
+        }),
+    }
 }
 
 pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfError> {
-    let file = FileOptions::cached().open(&path)?;
-    read_pdf_file(file, required_image)
+    let data = std::fs::read(path)?;
+    let text = match extract_text_from_mem(&data) {
+        Ok(text) => text,
+        Err(_) => "".to_string(),
+    };
+    let file = pdf::file::FileOptions::cached().load(data)?;
+    let mut images = None;
+    if required_image {
+        images = match read_pdf_img(file) {
+            Ok(images) => Some(images),
+            Err(_) => None,
+        }
+    }
+    Ok(PdfReadResult { text, images })
 }
 
-pub fn read_pdf_file(
+pub fn read_pdf_img(
     file: File<
         Vec<u8>,
         Arc<SyncCache<PlainRef, Result<AnySync, Arc<PdfError>>>>,
         Arc<SyncCache<PlainRef, Result<Arc<[u8]>, Arc<PdfError>>>>,
         NoLog,
     >,
-    required_image: bool,
-) -> Result<PdfReadResult, PdfError> {
+) -> Result<Vec<Vec<u8>>, PdfError> {
     let resolver = file.resolver();
-
     let mut images: Vec<_> = vec![];
-    let mut out = String::new();
 
     for page in file.pages() {
         let page = page?;
         let resources = page.resources()?;
-        let mut cache = Cache::new();
+        images.extend(
+            resources
+                .xobjects
+                .iter()
+                .map(|(_name, &r)| resolver.get(r).unwrap())
+                .filter(|o| matches!(**o, XObject::Image(_))),
+        );
+    }
 
-        // make sure all fonts are in the cache, so we can reference them
-        for (name, font) in resources.fonts.clone() {
-            match font {
-                MaybeRef::Indirect(font) => {
-                    cache.add_font(name.as_str(), font.clone(), &resolver);
-                }
-                _ => {}
-            }
-        }
-        for gs in resources.graphics_states.values() {
-            if let Some((font, _)) = gs.font {
-                let font = resolver.get(font)?;
-                if let Some(font_name) = &font.name {
-                    cache.add_font(font_name.as_str(), font.clone(), &resolver);
-                }
-            }
-        }
-        let mut current_font = None;
-        let contents = match page.contents.as_ref() {
-            Some(c) => c,
-            None => continue,
+    let mut image_buffer_vec: Vec<Vec<u8>> = vec![];
+    // 提取图片
+    for (_i, o) in images.iter().enumerate() {
+        let img = match **o {
+            XObject::Image(ref im) => im,
+            _ => continue,
         };
-        for op in contents.operations(&resolver)?.iter() {
-            match op {
-                Op::GraphicsState { name } => {
-                    let gs = match resources.graphics_states.get(name) {
-                        Some(gs) => gs,
-                        None => continue,
-                    };
-                    if let Some((font_ref, _)) = gs.font {
-                        let font = resolver.get(font_ref)?;
-                        if let Some(font_name) = &font.name {
-                            current_font = cache.get_font(font_name.as_str());
-                        }
-                    }
-                }
-                // text font
-                Op::TextFont { name, .. } => {
-                    current_font = cache.get_font(name.as_str());
-                }
-                Op::TextDraw { text } => {
-                    if let Some(font) = current_font {
-                        add_string(&text.data, &mut out, font);
-                    }
-                }
-                Op::TextDrawAdjusted { array } => {
-                    if let Some(font) = current_font {
-                        for data in array {
-                            if let TextDrawAdjusted::Text(text) = data {
-                                add_string(&text.data, &mut out, font);
-                            }
-                        }
-                    }
-                }
-                Op::EndText => {
-                    out.push(' ');
-                }
-                _ => {}
+        let (mut data, filter) = img.raw_image_data(&resolver)?;
+        match filter {
+            Some(StreamFilter::DCTDecode(_)) => "jpeg",
+            Some(StreamFilter::JBIG2Decode(_)) => "jbig2",
+            Some(StreamFilter::JPXDecode) => "jp2k",
+            Some(StreamFilter::FlateDecode(_)) => "png",
+            Some(StreamFilter::CCITTFaxDecode(_)) => {
+                data = tiff::wrap(&data, img.width, img.height).into();
+                "tiff"
             }
-        }
-        if required_image {
-            // 提取图片
-            images.extend(
-                resources
-                    .xobjects
-                    .iter()
-                    .map(|(_name, &r)| resolver.get(r).unwrap())
-                    .filter(|o| matches!(**o, XObject::Image(_))),
-            );
-        }
+            _ => continue,
+        };
+        image_buffer_vec.push(data.to_vec());
     }
-    out = replace_whitespace_with_space(&out);
-
-    if required_image {
-        let mut image_buffer_vec: Vec<Vec<u8>> = vec![];
-        // 提取图片
-        for (_i, o) in images.iter().enumerate() {
-            let img = match **o {
-                XObject::Image(ref im) => im,
-                _ => continue,
-            };
-            let (mut data, filter) = img.raw_image_data(&resolver)?;
-            match filter {
-                Some(StreamFilter::DCTDecode(_)) => "jpeg",
-                Some(StreamFilter::JBIG2Decode(_)) => "jbig2",
-                Some(StreamFilter::JPXDecode) => "jp2k",
-                Some(StreamFilter::FlateDecode(_)) => "png",
-                Some(StreamFilter::CCITTFaxDecode(_)) => {
-                    data = tiff::wrap(&data, img.width, img.height).into();
-                    "tiff"
-                }
-                _ => continue,
-            };
-            image_buffer_vec.push(data.to_vec());
-        }
-        Ok(PdfReadResult {
-            text: out,
-            images: Some(image_buffer_vec),
-        })
-    } else {
-        Ok(PdfReadResult {
-            text: out,
-            images: None,
-        })
-    }
+    Ok(image_buffer_vec)
 }
 
 #[cfg(test)]
@@ -218,7 +100,8 @@ mod tests {
 
     #[test]
     fn test_read_pdf() {
-        let path = r"0.pdf";
-        let _result = read_pdf(path, false).unwrap();
+        let path = r"C:\\Users\\29115\\RustroverProjects\\extractous\\test.pdf";
+        let result = read_pdf(path, false).unwrap();
+        println!("{:?}", result.text);
     }
 }
