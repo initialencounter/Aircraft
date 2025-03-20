@@ -4,7 +4,7 @@
 extern crate napi_derive;
 
 use pdf_parser::parse::{parse_good_file, GoodsPDF};
-use pdf_parser::read::read_pdf;
+use pdf_parser::read::{read_pdf, read_pdf_u8, PdfReadResult};
 use pdf_parser::types::LLMConfig;
 use pdf_parser::uploader::FileManager;
 use serde::{Deserialize, Serialize};
@@ -84,5 +84,20 @@ impl FileManagerInstance {
   pub async fn parse_pdf(&self, path: Vec<String>) -> napi::Result<String> {
     let res = self.manager.chat_with_ai(path).await.unwrap();
     Ok(res)
+  }
+  #[napi]
+  pub async fn parse_pdf_u8(&self,filename: String, buffer: Vec<u8>) -> napi::Result<String> {
+    let res = self.manager.get_u8_text(filename, buffer).await.unwrap();
+    Ok(res)
+  }
+  #[napi]
+  pub async fn chat_with_ai_fast_and_cheap(&self, file_contents: Vec<String>) -> napi::Result<String> {
+    let res = self.manager.chat_with_ai_fast_and_cheap(file_contents).await.unwrap();
+    Ok(res)
+  }
+  #[napi]
+  pub async fn read_pdf_buffer(&self, buffer: Vec<u8>) -> napi::Result<String> {
+    let res: PdfReadResult = read_pdf_u8(buffer).unwrap();
+    Ok(res.text)
   }
 }

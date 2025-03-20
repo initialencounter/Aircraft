@@ -57,6 +57,7 @@
     "@cordisjs/plugin-server": "^0.2.5",
     "@koa/cors": "^5.0.0",
     "@tauri-apps/plugin-log": "^2.2.3",
+    "auto-launch": "^5.0.6",
     "axios": "^1.7.9",
     "cordis": "^3.18.1",
     "cors": "^2.8.5",

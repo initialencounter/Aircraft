@@ -8,3 +8,11 @@ export declare class AircraftRs {
   getSummaryInfo(path: string): string
   parseGoodsInfo(path: string): string
 }
+export type FileManagerInstance = FileManager
+export declare class FileManager {
+  constructor(baseUrl: string, apiKey: string, model: string)
+  parsePdf(path: Array<string>): Promise<string>
+  parsePdfU8(filename: string, buffer: Array<number>): Promise<string>
+  chatWithAiFastAndCheap(fileContents: Array<string>): Promise<string>
+  readPdfBuffer(buffer: Array<number>): Promise<string>
+}
