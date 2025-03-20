@@ -72,31 +72,11 @@ jobs:
           $V_VERSION = ${{ steps.get_version.outputs.VERSION }}
           $E_VERSION = V_VERSION.Substring(1)
           Move-Item ./release/$E_VERSION/Aircraft-Windows-$E_VERSION-Setup.exe ./releases/aircraft_${{ steps.get_version.outputs.VERSION }}_electron-setup.exe
-
-      - name: Download WebView2 Runtime
-        run: |
-          invoke-webrequest -uri https://github.com/westinyang/WebView2RuntimeArchive/releases/download/109.0.1518.78/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab -outfile Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab
-          Expand .\Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x64.cab -F:* ./src-tauri
-          Remove-Item .\src-tauri\tauri.conf.json
-          Rename-Item .\src-tauri\webview2.x64.json tauri.conf.json
-      
-      - name: Build Tauri-webview2
-        run: |
-          npm run tauri build
-          Move-Item .\target\release\bundle\msi\aircraft_*_x64_zh-CN.msi .\releases\aircraft_${{ steps.get_version.outputs.VERSION }}_fixed_webview2_x64_zh-CN.msi
-      - name: Build Headless
-        run: |
-          cd headless
-          cargo build --release
-          cd ..
-          Compress-Archive -Path .\target\release\headless.exe -DestinationPath .\releases\aircraft_${{ steps.get_version.outputs.VERSION }}_headless.zip
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             releases/aircraft_${{ steps.get_version.outputs.VERSION }}_x64_zh-CN.msi
-            releases/aircraft_${{ steps.get_version.outputs.VERSION }}_fixed_webview2_x64_zh-CN.msi
             releases/aircraft_${{ steps.get_version.outputs.VERSION }}_electron-setup.exe
-            releases/aircraft_${{ steps.get_version.outputs.VERSION }}_headless.zip
           name: 'Aircraft ${{ steps.get_version.outputs.VERSION }}'
