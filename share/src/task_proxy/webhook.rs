@@ -115,8 +115,9 @@ pub fn apply_webhook(
                  log_tx: Sender<LogMessage>| async move {
                     // 从 params 中获取 label 参数
                     let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
+                    let is_965 = params.get("is_965").map(|s| s.as_str()).unwrap_or("0") == "1";
                     let return_label = label == "1";
-                    match get_attachment_info(project_no, log_tx, return_label).await {
+                    match get_attachment_info(project_no, log_tx, return_label, is_965).await {
                         Ok(summary_info) => warp::reply::json(&summary_info),
                         Err(e) => warp::reply::json(&CustomError {
                             message: format!("获取项目信息失败: {}", e),

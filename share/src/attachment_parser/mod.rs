@@ -60,10 +60,11 @@ pub async fn get_goods_info(
     project_no: String,
     log_tx: Sender<LogMessage>,
     return_label: bool,
+    is_965: bool,
 ) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let result = read_pdf(&path, return_label)?;
-    let goods_pdf = parse_good_file(result.text)?;
+    let goods_pdf = parse_good_file(result.text, is_965)?;
     let mut labels: Vec<String> = vec![];
     if let Some(images) = result.images {
         if !images.is_empty() {
@@ -122,9 +123,10 @@ pub async fn get_attachment_info(
     project_no: String,
     log_tx: Sender<LogMessage>,
     return_label: bool,
+    is_965: bool,
 ) -> Result<AttachmentInfo> {
     let summary = get_summary_info(project_no.clone()).await?;
-    let goods_info = get_goods_info(project_no.clone(), log_tx, return_label).await?;
+    let goods_info = get_goods_info(project_no.clone(), log_tx, return_label, is_965).await?;
     return Ok(AttachmentInfo {
         summary,
         goods: goods_info,

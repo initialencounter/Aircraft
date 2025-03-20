@@ -45,12 +45,12 @@ impl AircraftRs {
   }
 
   #[napi]
-  pub fn parse_goods_info(&self, path: String) -> napi::Result<String> {
+  pub fn parse_goods_info(&self, path: String, is_965: bool) -> napi::Result<String> {
     let pdf_text = match read_pdf(&path, false) {
       Ok(result) => result.text,
       Err(_) => "".to_string(),
     };
-    let goods_info = match parse_good_file(pdf_text) {
+    let goods_info = match parse_good_file(pdf_text, is_965) {
       Ok(goods_info) => goods_info,
       Err(_) => GoodsPDF {
         project_no: "".to_string(),
