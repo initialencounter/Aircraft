@@ -66,7 +66,7 @@ pub async fn get_goods_info(
     let goods_pdf = parse_good_file(result.text)?;
     let mut labels: Vec<String> = vec![];
     if let Some(images) = result.images {
-        if images.is_empty() {
+        if !images.is_empty() {
             labels.extend(detect_goods_pdf(images, log_tx).await);
         }
     }
