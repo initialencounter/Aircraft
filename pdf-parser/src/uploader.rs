@@ -349,7 +349,7 @@ export interface SummaryFromLLM {
     testReportNo: string | null
   
     /** UN38.3测试报告签发日期签发日期
-     * 格式为：yyyy-MM-dd
+     * 格式为：yyyy-MM-dd，如果日期为2021.01.01，则填需要转为2021-01-01
     */
     testDate: string | null
   
@@ -358,7 +358,7 @@ export interface SummaryFromLLM {
      * 没有修订号的，不要写修订号，这个经常容易弄错，请仔细核对
     */
     testManual: 
-    "第八修订版" |
+    "第8版" |
     "第7版修订1" |
     "第7版" |
     "第6版修订1" |
