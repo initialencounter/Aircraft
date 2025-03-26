@@ -68,6 +68,12 @@ class Ipc extends Service {
         return this.ctx.configManager.getConfig('base');
       });
     })
+    ipcMain.handle('switch_drag_to_blake2', async () => {
+      this.ctx.logger.info('switch_drag_to_blake2 called')
+    })
+    ipcMain.handle('get_hotkey_config', async () => {
+      this.ctx.logger.info('get_hotkey_config called')
+    })
   }
 }
 
