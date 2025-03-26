@@ -1,6 +1,6 @@
 import { Context, Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
-import type { BaseConfig, ServerConfig } from '../../types'
+import type { Config as ConfigType } from '../../types'
 import type { } from '../service/config'
 import type { } from '../service/win'
 import { formatLogMessage } from '../service/logger'
@@ -53,25 +53,21 @@ class Ipc extends Service {
       this.ctx.win.win?.hide();
       this.ctx.logger.info('hide window');
     });
-
     // 修改用于开机自启的 ipcMain 处理程序
-    ipcMain.handle('save_base_config', async (_, config: BaseConfig) => {
-      this.ctx.configManager.saveConfig(config, 'base');
-    });
-    ipcMain.handle('get_base_config', async () => {
-      return this.ctx.configManager.getConfig('base');
-    });
     this.ctx.logger.info('get_base_config called')
-    ipcMain.handle('save_server_config', async (_, config: ServerConfig) => {
-      this.ctx.configManager.saveConfig(config, 'server');
-    });
-    ipcMain.handle('get_server_config', async () => {
-      return this.ctx.configManager.getConfig('server');
-    });
     ipcMain.handle('get_server_logs', async () => {
       let logs = this.ctx.loggerService.tryGetLogs();
       return logs.map(formatLogMessage);
     });
+    const configKey: (keyof ConfigType)[] = ['base', 'server', 'llm'];
+    configKey.forEach(key => {
+      ipcMain.handle(`save_${key}_config`, async (_, config) => {
+        this.ctx.configManager.saveConfig(config, key);
+      });
+      ipcMain.handle(`get_${key}_config`, async () => {
+        return this.ctx.configManager.getConfig('base');
+      });
+    })
   }
 }
 

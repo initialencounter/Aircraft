@@ -20,7 +20,6 @@ fn parse_goods_name(pdf_text: Vec<&str>, is_965: bool) -> String {
     let mut goods_name = String::new();
     let package_index = find_package_index(pdf_text.clone());
     let pdf_text = pdf_text[0..package_index].to_vec();
-    println!("{:?}", pdf_text);
     if is_965 {
         for i in 3..pdf_text.len()-1 {
             if pdf_text[i].contains("物品名称") {

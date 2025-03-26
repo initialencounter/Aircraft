@@ -9,6 +9,9 @@ declare module 'cordis' {
   interface Context {
     configManager: ConfigManager
   }
+  interface Events {
+    'auto-launch-switch': (auto_start: boolean, silent_start: boolean) => void
+  }
 }
 
 const logger = new Logger('configManager')
@@ -51,9 +54,14 @@ class ConfigManager extends Service {
         silent_start: false,
         nothing: '',
       },
+      llm: {
+        base_url: '',
+        api_key: '',
+        model: '',
+      }
     }
   }
-  getConfig(configName: keyof ConfigType) {
+  getConfig<T extends keyof ConfigType>(configName: T): ConfigType[T] {
     let config: ConfigType
     try {
       config = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
@@ -61,13 +69,13 @@ class ConfigManager extends Service {
       logger.error('config file parse error', error)
       config = this.getDefaultConfig()
     }
-    return config[configName]
+    return config[configName] ?? this.getDefaultConfig()[configName]
   }
   saveConfig<T extends keyof ConfigType>(config: ConfigType[T], configName: T) {
     try {
       const oldConfig: ConfigType = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
       oldConfig[configName] = config["config"]
-      if(configName == "base") {
+      if (configName == "base") {
         this.ctx.emit('auto-launch-switch', (config["config"] as BaseConfig).auto_start, (config["config"] as BaseConfig).silent_start)
       }
       writeFileSync(this.configFilePath, JSON.stringify(oldConfig, null, 2))

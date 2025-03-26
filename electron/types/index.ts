@@ -33,4 +33,12 @@ export interface HotkeyConfig {
 export interface Config {
   base: BaseConfig
   server: ServerConfig
+  llm: LLMConfig
+}
+
+
+export interface LLMConfig {
+  base_url: string;
+  api_key: string;
+  model: string;
 }

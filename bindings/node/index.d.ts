@@ -6,13 +6,18 @@
 export declare class AircraftRs {
   constructor()
   getSummaryInfo(path: string): string
-  parseGoodsInfo(path: string): string
+  parseGoodsInfo(path: string, is965: boolean): string
 }
 export type FileManagerInstance = FileManager
 export declare class FileManager {
   constructor(baseUrl: string, apiKey: string, model: string)
+  reload(baseUrl: string, apiKey: string, model: string): Promise<void>
+  /** 直接读取pdf文件路径，输出解析结果 */
   parsePdf(path: Array<string>): Promise<string>
+  /** 使用 API 上传文件并获取 OCR 内容 */
   parsePdfU8(filename: string, buffer: Array<number>): Promise<string>
+  /** 输出 pdf 文本，输出解析结果 */
   chatWithAiFastAndCheap(fileContents: Array<string>): Promise<string>
+  /** 使用 pdf_extract 读取 pdf 文件的文本内容 */
   readPdfBuffer(buffer: Array<number>): Promise<string>
 }

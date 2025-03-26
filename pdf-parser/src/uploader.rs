@@ -188,6 +188,7 @@ impl FileManager {
         }
     }
 
+    /// 使用 API 上传文件并获取 OCR 内容
     pub async fn get_u8_text(&self, filename: String, file_data: Vec<u8>) -> Result<String, Box<dyn Error>> {
         let file_id = self.upload_u8(filename, file_data).await?;
         let text = self.content(&file_id).await?;

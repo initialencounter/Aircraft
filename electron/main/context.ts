@@ -13,6 +13,7 @@ import { RustBindings } from './service/bindings'
 import { LoggerService } from './service/logger'
 import { AircraftServer } from './service/server'
 import { Launch } from './plugins/launch'
+import { LLM } from './service/llm'
 
 const context = new Context()
 context.plugin(Undios)
@@ -32,4 +33,5 @@ context.plugin(Ipc)
 context.plugin(LoggerService)
 context.plugin(AircraftServer)
 context.plugin(Launch)
+context.plugin(LLM)
 export { context }
