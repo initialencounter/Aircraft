@@ -14,10 +14,11 @@ class AircraftServer extends Service {
       allowMethods: ['GET', 'POST', 'OPTIONS'],
       allowHeaders: ['Content-Type'],
     }));
-    
+
     ctx.server.get('/get-attachment-info/:projectNo', async (ctx) => {
       const projectNo = ctx.params.projectNo;
-      const attachmentInfo = await this.ctx.attachment.getAttachmentInfo(projectNo)
+      const is_965 = ctx.query.is_965 === '1';
+      const attachmentInfo = await this.ctx.attachment.getAttachmentInfo(projectNo, is_965);
       ctx.body = attachmentInfo;
       ctx.status = 200;
     })

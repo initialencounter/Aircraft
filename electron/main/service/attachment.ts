@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import type { } from '@cordisjs/plugin-http'
 import type { } from '@cordisjs/plugin-server'
 import type { } from '../service/bindings'
+import { AircraftRs } from '../../../bindings/node';
 
 declare module 'cordis' {
   interface Context {
@@ -12,7 +13,7 @@ declare module 'cordis' {
 
 class Attachment extends Service {
   static inject = ['http', 'bindings']
-  private bindings: any;
+  private bindings: AircraftRs;
   constructor(ctx: Context) {
     super(ctx, 'attachment')
     ctx.on('bindings-ready', () => {
@@ -20,12 +21,12 @@ class Attachment extends Service {
     })
   }
 
-  async getAttachmentInfo(projectNo: string): Promise<AttachmentInfo> {
+  async getAttachmentInfo(projectNo: string, is_965: boolean): Promise<AttachmentInfo> {
     const summaryPath = await this.getSummaryPath(projectNo);
     const goodsPath = await this.getGoodsPath(projectNo);
     return {
       summary: JSON.parse(this.bindings.getSummaryInfo(summaryPath)),
-      goods: JSON.parse(this.bindings.parseGoodsInfo(goodsPath))
+      goods: JSON.parse(this.bindings.parseGoodsInfo(goodsPath, is_965))
     };
   }
 
