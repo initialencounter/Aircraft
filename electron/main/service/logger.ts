@@ -51,7 +51,7 @@ class LoggerService extends Service {
     super(ctx, 'loggerService')
     this.config = config
     this.tempLogs = []
-    this.root = resolve(ctx.app.APP_ROOT, 'logs')
+    this.root = resolve(ctx.app.APP_CONFIG_PATH, 'logs')
     mkdirSync(this.root, { recursive: true })
 
     this.files = {}
