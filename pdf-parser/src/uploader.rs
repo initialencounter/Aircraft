@@ -386,13 +386,13 @@ export interface SummaryFromLLM {
     /**T.5：外部短路 External Short Circuit*/
     test5: boolean;
   
-    /**T.6：撞击/挤压 Impact/Crush */
+    /**T.6：撞击/挤压 Impact/Crush*/
     test6: boolean;
   
-    /**T.7：过度充电 vercharge*/
+    /**T.7：过度充电 Overcharge*/
     test7: boolean;
-  
-    /**T.8：T.8：强制放电 Forced Discharge*/
+
+    /**T.8：强制放电 Forced Discharge*/
     test8: boolean;
   }
   
