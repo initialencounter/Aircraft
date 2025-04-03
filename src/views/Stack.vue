@@ -1,85 +1,85 @@
 <template>
-  <div class="stack-calculator">
-    <div class="calculator-container">
-      <h2 class="title">堆码载荷计算器</h2>
+  <div class='stack-calculator'>
+    <div class='calculator-container'>
+      <h2 class='title'>堆码载荷计算器</h2>
 
-      <div class="input-group">
-        <div class="input-item">
+      <div class='input-group'>
+        <div class='input-item'>
           <label>包装件毛重 (kg)</label>
-          <div class="input-wrapper">
+          <div class='input-wrapper'>
             <input
-              type="number"
-              v-model="weight"
-              step="0.01"
-              placeholder="请输入重量"
+              type='number'
+              v-model='weight'
+              step='0.01'
+              placeholder='请输入重量'
             />
-            <span class="unit">kg</span>
+            <span class='unit'>kg</span>
           </div>
         </div>
 
-        <div class="input-item">
+        <div class='input-item'>
           <label>包装件高度 (mm)</label>
-          <div class="input-wrapper">
+          <div class='input-wrapper'>
             <input
-              type="number"
-              v-model="height"
-              step="0.1"
-              placeholder="请输入高度"
+              type='number'
+              v-model='height'
+              step='0.1'
+              placeholder='请输入高度'
             />
-            <span class="unit">mm</span>
+            <span class='unit'>mm</span>
           </div>
         </div>
       </div>
 
-      <div class="results" v-if="height && weight">
-        <div class="result-group">
+      <div class='results' v-if='height && weight'>
+        <div class='result-group'>
           <h3>按层数计算</h3>
-          <div class="result-item">
-            <div class="result-row">
-              <span class="label">堆码层数:</span>
-              <span class="result-value result-value-layer">{{
+          <div class='result-item'>
+            <div class='result-row'>
+              <span class='label'>堆码层数:</span>
+              <span class='result-value result-value-layer'>{{
                 layerCount
               }}</span>
             </div>
-            <div class="result-row">
-              <span class="label">载荷:</span>
-              <span class="result-value result-value-kgf"
+            <div class='result-row'>
+              <span class='label'>载荷:</span>
+              <span class='result-value result-value-kgf'
                 >{{ formatNumber(loadByLayer, 3) }}
               </span>
-              <span class="label">kgf</span>
+              <span class='label'>kgf</span>
             </div>
-            <div class="result-row">
-              <span class="label">载荷:</span>
-              <span class="result-value result-value-n"
+            <div class='result-row'>
+              <span class='label'>载荷:</span>
+              <span class='result-value result-value-n'
                 >{{ formatNumber(loadByLayerNewton, 4) }}
               </span>
-              <span class="label">N</span>
+              <span class='label'>N</span>
             </div>
           </div>
         </div>
 
-        <div class="result-group">
+        <div class='result-group'>
           <h3>按高度计算</h3>
-          <div class="result-item">
-            <div class="result-row">
-              <span class="label">堆码层数:</span>
-              <span class="result-value result-value-layer">{{
+          <div class='result-item'>
+            <div class='result-row'>
+              <span class='label'>堆码层数:</span>
+              <span class='result-value result-value-layer'>{{
                 formatNumber(heightBasedLayer, 4)
               }}</span>
             </div>
-            <div class="result-row">
-              <span class="label">载荷:</span>
-              <span class="result-value result-value-kgf"
+            <div class='result-row'>
+              <span class='label'>载荷:</span>
+              <span class='result-value result-value-kgf'
                 >{{ formatNumber(loadByHeight, 3) }}
               </span>
-              <span class="label">kgf</span>
+              <span class='label'>kgf</span>
             </div>
-            <div class="result-row">
-              <span class="label">载荷:</span>
-              <span class="result-value result-value-n"
+            <div class='result-row'>
+              <span class='label'>载荷:</span>
+              <span class='result-value result-value-n'
                 >{{ formatNumber(loadByHeightNewton, 4) }}
               </span>
-              <span class="label">N</span>
+              <span class='label'>N</span>
             </div>
           </div>
         </div>
@@ -90,7 +90,7 @@
 
 <script>
 export default {
-  name: "Stack",
+  name: 'Stack',
   data() {
     return {
       weight: null,
@@ -128,16 +128,16 @@ export default {
   },
   methods: {
     formatNumber(num, fixed = 3) {
-      if (!num) return "0";
+      if (!num) return '0';
       const result = String(num.toFixed(fixed));
       // 如果小数点后都是0，则转为整数
       if (
-        result.endsWith(".0000") ||
-        result.endsWith(".000") ||
-        result.endsWith(".00") ||
-        result.endsWith(".0")
+        result.endsWith('.0000') ||
+        result.endsWith('.000') ||
+        result.endsWith('.00') ||
+        result.endsWith('.0')
       ) {
-        return result.replace(".0000", "").replace(".000", "").replace(".00", "").replace(".0", "");
+        return result.replace('.0000', '').replace('.000', '').replace('.00', '').replace('.0', '');
       }
       return result;
     },

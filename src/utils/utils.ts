@@ -11,7 +11,7 @@ function formatTimestamp(timestamp: number): string {
 }
 
 /**
-* 计算亮度, < 126 ? "#FFFFFF" : "#000000"
+* 计算亮度, < 126 ? '#FFFFFF' : '#000000'
 * @param hex
 */
 function calculateColorBrightness(hex: string) {

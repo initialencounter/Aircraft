@@ -12,7 +12,7 @@ export type FileManagerInstance = FileManager
 export declare class FileManager {
   constructor(baseUrl: string, apiKey: string, model: string)
   reload(baseUrl: string, apiKey: string, model: string): Promise<void>
-  /** 直接读取pdf文件路径，输出解析结果 */
+  /** 直接读取pdf文件路径，输出解析结果，所有操作通过API完成 */
   parsePdf(path: Array<string>): Promise<string>
   /** 使用 API 上传文件并获取 OCR 内容 */
   parsePdfU8(filename: string, buffer: Array<number>): Promise<string>

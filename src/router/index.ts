@@ -49,7 +49,7 @@ const router = createRouter({
       component: Stack
     },
     {
-      path: '/pdf_parse',
+      path: '/summary_parse',
       name: 'Pdf Parse',
       component: PdfParse,
     },

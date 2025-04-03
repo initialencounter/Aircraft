@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { isTauri } from '@tauri-apps/api/core'
-import { ipcManager } from "../utils/ipcManager";
+import { ipcManager } from '../utils/ipcManager';
 
 interface AuthState {
   loginStatus: boolean

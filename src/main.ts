@@ -1,13 +1,13 @@
 // main.ts
-import { createApp } from "vue";
-import ElementPlus from "element-plus";
-import "element-plus/dist/index.css";
+import { createApp } from 'vue';
+import ElementPlus from 'element-plus';
+import 'element-plus/dist/index.css';
 // @ts-ignore
-import form from "schemastery-vue";
-import { createI18n } from "vue-i18n";
+import form from 'schemastery-vue';
+import { createI18n } from 'vue-i18n';
 // @ts-ignore
-import Markdown from "markdown-vue";
-import App from "./App.vue";
+import Markdown from 'markdown-vue';
+import App from './App.vue';
 import './assets/css/main.scss'
 import router from './router'
 import { createPinia } from 'pinia'
@@ -23,5 +23,5 @@ app.use(i18n);
 app.use(form);
 app.use(router)
 app.use(createPinia())
-app.component("k-markdown", Markdown);
-app.mount("#app");
+app.component('k-markdown', Markdown);
+app.mount('#app');

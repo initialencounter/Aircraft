@@ -1,10 +1,10 @@
 <template>
-  <div class="scroller" ref="scrollerRef">
-    <div v-for="item in visibleLogs">
-      <div class="log-item">
-        <span class="log-timestamp">[{{ item.time_stamp }}]</span>
+  <div class='scroller' ref='scrollerRef'>
+    <div v-for='item in visibleLogs'>
+      <div class='log-item'>
+        <span class='log-timestamp'>[{{ item.time_stamp }}]</span>
         <span
-          class="log-level"
+          class='log-level'
           :class="{
             'level-info': item.level === 'INFO',
             'level-error': item.level === 'ERROR',
@@ -12,15 +12,15 @@
           }"
           >{{ item.level }}</span
         >
-        <span class="log-message">{{ item.message }}</span>
+        <span class='log-message'>{{ item.message }}</span>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useLogStore, type LogStore } from "../stores/logs";
+<script setup lang='ts'>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useLogStore, type LogStore } from '../stores/logs';
 
 const BUFFER_SIZE = 1000; // 一次显示的日志数量
 const scrollerRef = ref<HTMLElement | null>(null);
@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
 }
 
 .log-item {
-  font-family: "Consolas", "Monaco", monospace;
+  font-family: 'Consolas', 'Monaco', monospace;
   padding: 4px 0;
   display: grid;
   grid-template-columns: 175px 80px 1fr;

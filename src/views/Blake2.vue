@@ -1,14 +1,14 @@
-<script lang="ts" setup>
+<script lang='ts' setup>
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import {ref} from "vue";
+import {ref} from 'vue';
 import SparkMD5 from 'spark-md5'
-import {FileTileMap, Link} from "../types";
-import FileTileTauri from "../components/FileTile.vue";
-import {ElMessage} from "element-plus";
+import {FileTileMap, Link} from '../types';
+import FileTileTauri from '../components/FileTile.vue';
+import {ElMessage} from 'element-plus';
 import { isTauri } from '@tauri-apps/api/core';
 import { listen,Event } from '@tauri-apps/api/event';
-import { ipcManager } from "../utils/ipcManager";
+import { ipcManager } from '../utils/ipcManager';
 
 interface FileTileData {
   name: string,
@@ -26,7 +26,7 @@ let colorIndex = 0
 const file_list = ref<FileTileMap>([]);
 
 if (is_tauri) {
-  ipcManager.invoke("switch_drag_to_blake2", { value: true });
+  ipcManager.invoke('switch_drag_to_blake2', { value: true });
   listen('open_link', (data: Event<Link>): void => {
     window.open(data.payload.link)
   })
@@ -86,8 +86,8 @@ function displayChsFile(files: FileList) {
         name: file.name,
         lastModified: formatTimestamp(file.lastModified),
         md5: 'loading...',
-        color: "#000",
-        path: "--",
+        color: '#000',
+        path: '--',
         focus: false
       })
     }
@@ -122,7 +122,7 @@ function getMd5(blob: Blob, id: number) {
         break
       }
     }
-    if (file_list.value[id]['color'] === "#000") {
+    if (file_list.value[id]['color'] === '#000') {
       file_list.value[id]['color'] = colorList[colorIndex]
       colorIndex++
       if (colorIndex >= colorList.length) {
@@ -135,7 +135,7 @@ function getMd5(blob: Blob, id: number) {
   };
   reader.onerror = () => {
     if (file_list.value) {
-      file_list.value[id]['md5'] = "Error!"
+      file_list.value[id]['md5'] = 'Error!'
     }
   };
   reader.readAsArrayBuffer(blob);
@@ -153,11 +153,11 @@ function handleClearList() {
 
 <template>
     <!-- 头部 -->
-    <h1 class="noSelectTitle" data-tauri-drag-region style="font-size: 24px">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp文件一致性校对器 </h1>
+    <h1 class='noSelectTitle' data-tauri-drag-region style='font-size: 24px'>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp文件一致性校对器 </h1>
     <!-- 内容区 -->
     <br>
-    <div class="middle-con">
-      <FileTileTauri  v-model="file_list" @removeItem="handleClearList"></FileTileTauri>
+    <div class='middle-con'>
+      <FileTileTauri  v-model='file_list' @removeItem='handleClearList'></FileTileTauri>
     </div>
 </template>
 

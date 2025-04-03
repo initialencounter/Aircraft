@@ -8,14 +8,14 @@ class Logger {
     if (is_electron) {
       console.log(...args)
     } else {
-      invoke('write_log', { level: "INFO", message: args.join(" ") })
+      invoke('write_log', { level: 'INFO', message: args.join(' ') })
     }
   }
   error(...args: any[]) {
     if (is_electron) {
       console.log(...args)
     } else {
-      invoke('write_log', { level: "ERROR", message: args.join(" ") })
+      invoke('write_log', { level: 'ERROR', message: args.join(' ') })
     }
   }
 }

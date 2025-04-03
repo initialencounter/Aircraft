@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ipcManager } from "../utils/ipcManager";
+import { ipcManager } from '../utils/ipcManager';
 interface MaskState {
   isUnlocked: boolean;
   secretCode: string;
@@ -28,7 +28,7 @@ export const useMaskStore = defineStore('mask', {
       if (this.isUnlocked) {
         return true
       }
-      let baseConfig = await ipcManager.invoke("get_base_config");
+      let baseConfig = await ipcManager.invoke('get_base_config');
       if (baseConfig.nothing === this.secretCode) {
         this.isUnlocked = true
         return true
