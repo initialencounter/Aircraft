@@ -82,28 +82,28 @@ const parseResult = ref<SummaryData>({
   /**
    * T.1：高度模拟 Altitude Simulation(通过true, 不适用/未通过false)
    */
-  test1: false,
+  test1: true,
 
   /**T.2：温度试验 Thermal Test*/
-  test2: false,
+  test2: true,
 
   /**T.3：振动 Vibration*/
-  test3: false,
+  test3: true,
 
   /**T.4：冲击 Shock*/
-  test4: false,
+  test4: true,
 
   /**T.5：外部短路 External Short Circuit*/
-  test5: false,
+  test5: true,
 
   /**T.6：撞击/挤压 Impact/Crush */
-  test6: false,
+  test6: true,
 
   /**T.7：过度充电 vercharge*/
   test7: false,
 
   /**T.8：T.8：强制放电 Forced Discharge*/
-  test8: false,
+  test8: true,
 });
 
 const rawText = ref("");
@@ -127,7 +127,6 @@ document.oncontextmenu = function () {
   <!-- 内容区 -->
   <br />
   请拖拽UN报告到此次区域
-  <!-- <summaryData :data="parseResult" layout="custom" /> -->
   <summaryTable :data="parseResult"></summaryTable>
 </template>
 
