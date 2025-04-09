@@ -51,13 +51,6 @@ jobs:
       - name: npm install
         run: npm install
       
-      
-      - name: Build Tauri-lite 
-        run: |
-          npm run tauri build
-          New-Item -ItemType Directory -Path .\releases
-          Move-Item .\target\release\bundle\msi\aircraft_*_x64_zh-CN.msi .\releases\aircraft_${{ steps.get_version.outputs.VERSION }}_x64_zh-CN.msi
-      
       - name: Build bindings
         run: |
           cd bindings/node
@@ -69,9 +62,16 @@ jobs:
         run: |
           npm install
           npm run build:electron
-          $V_VERSION = ${{ steps.get_version.outputs.VERSION }}
+          $V_VERSION = "${{ steps.get_version.outputs.VERSION }}"
           $E_VERSION = $V_VERSION.Substring(1)
           Move-Item ./release/$E_VERSION/Aircraft-Windows-$E_VERSION-Setup.exe ./releases/aircraft_${{ steps.get_version.outputs.VERSION }}_electron-setup.exe
+      
+      - name: Build Tauri-lite 
+        run: |
+          npm run tauri build
+          New-Item -ItemType Directory -Path .\releases
+          Move-Item .\target\release\bundle\msi\aircraft_*_x64_zh-CN.msi .\releases\aircraft_${{ steps.get_version.outputs.VERSION }}_x64_zh-CN.msi
+      
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
