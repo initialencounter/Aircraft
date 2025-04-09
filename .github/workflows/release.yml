@@ -40,8 +40,7 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: .
-          cache-all-crates: true
+          workspaces: ". -> target"
 
       - name: Install Node
         uses: actions/setup-node@v4
