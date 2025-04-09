@@ -3,6 +3,7 @@ import { BrowserWindow, ipcMain } from 'electron'
 import type { Config as ConfigType } from '../../types'
 import type { } from '../service/config'
 import type { } from '../service/win'
+import type { } from '../service/llm'
 import { formatLogMessage } from '../service/logger'
 
 declare module 'cordis' {
@@ -16,7 +17,7 @@ declare module 'cordis' {
 }
 
 class Ipc extends Service {
-  static inject = ['app', 'win', 'configManager', 'loggerService']
+  static inject = ['app', 'win', 'configManager', 'loggerService', 'llm']
   constructor(ctx: Context) {
     super(ctx, 'ipc')
     ctx.on('electron-ready', () => {
@@ -73,6 +74,10 @@ class Ipc extends Service {
     })
     ipcMain.handle('get_hotkey_config', async () => {
       this.ctx.logger.info('get_hotkey_config called')
+    })
+    ipcMain.handle('summary_report', async (_, data: ArrayBuffer) => {
+      let res = await this.ctx.llm.uploadLLMFiles(Buffer.from(data))
+      return res
     })
   }
 }

@@ -6,7 +6,11 @@ import { Event } from "@tauri-apps/api/event";
 import { ipcManager } from "../utils/ipcManager";
 import summaryTable from "../components/SummaryTable.vue";
 import type { SummaryData } from "../types";
+import { isTauri } from "@tauri-apps/api/core";
+import { ElMessage } from "element-plus";
 
+const is_tauri = isTauri();
+const loading = ref(false); // 添加loading状态变量
 const parseResult = ref<SummaryData>({
   /**制造商或生产工厂中文名称*/
   manufacturerCName: "",
@@ -109,12 +113,42 @@ const parseResult = ref<SummaryData>({
 const rawText = ref("");
 ipcManager.invoke("switch_drag_to_blake2", { value: false });
 ipcManager.on("pdf_reader_result", (data: Event<string>): void => {
+  loading.value = false; // 收到结果后关闭loading
   try {
     parseResult.value = JSON.parse(data.payload) as SummaryData;
   } catch (e) {
     rawText.value = data.payload;
   }
 });
+
+if (!is_tauri) {
+  document.ondragover = dragleaveEvent;
+  document.ondragenter = dragleaveEvent;
+  document.ondragleave = dragleaveEvent;
+  document.ondrop = dropEvent;
+}
+
+function dragleaveEvent(event: DragEvent) {
+  event.stopPropagation();
+  event.preventDefault();
+}
+
+async function dropEvent(event: DragEvent) {
+  event.stopPropagation();
+  event.preventDefault();
+  const files = event.dataTransfer!.files;
+  loading.value = true; // 开始处理文件时显示loading
+  const buf = await files[0].arrayBuffer();
+  try {
+    const res = await ipcManager.invoke("summary_report", buf);
+    parseResult.value = JSON.parse(res);
+  } catch (e) {
+    ElMessage.error("解析失败" + e);
+    console.log("解析失败", e);
+  } finally {
+    loading.value = false; // 无论成功或失败都关闭loading
+  }
+}
 
 document.oncontextmenu = function () {
   return false;
@@ -128,6 +162,50 @@ document.oncontextmenu = function () {
   <br />
   请拖拽UN报告到此次区域
   <summaryTable :data="parseResult"></summaryTable>
+  
+  <!-- 添加遮罩层 -->
+  <div class="loading-mask" v-if="loading" @dblclick="loading = false">
+    <div class="loading-content">
+      <el-icon class="loading-icon"><Loading /></el-icon>
+      <span>正在解析文件，请稍候...<br>双击关闭遮罩</span>
+    </div>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.loading-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  padding: 20px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
+  animation: rotate 1.5s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
