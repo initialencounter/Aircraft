@@ -36,7 +36,7 @@ export class FileWriter {
     return text.split('\n').map((line) => {
       try {
         return JSON.parse(line)
-      } catch {}
+      } catch { }
     }).filter(Boolean)
   }
 

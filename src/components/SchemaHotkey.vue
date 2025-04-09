@@ -1,20 +1,20 @@
 <template>
-  <el-button class='schema-button' type='primary' @click='reloadConfig'
+  <el-button class="schema-button" type="primary" @click="reloadConfig"
     >重载配置</el-button
   >
-  <el-button class='schema-button' type='primary' @click='saveConfig'
+  <el-button class="schema-button" type="primary" @click="saveConfig"
     >保存配置</el-button
   >
-  <el-button class='schema-button' type='primary' @click='resetConfig'
+  <el-button class="schema-button" type="primary" @click="resetConfig"
     >重置</el-button
   >
-  <el-button class='schema-button' type='primary' @click='stopHotkeyListener'
+  <el-button class="schema-button" type="primary" @click="stopHotkeyListener"
     >停止监听</el-button
   >
-  <k-form v-model='config' :schema='Config' :initial='initial'></k-form>
+  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
 </template>
 
-<script lang='ts' setup>
+<script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import Schema from 'schemastery';
 import { ElMessage } from 'element-plus';
@@ -78,7 +78,6 @@ const initial = ref<Config>({
   signature_width: 5.58,
   signature_height: 1.73,
 });
-
 
 async function getConfig() {
   config.value = (await ipcManager.invoke('get_hotkey_config')) as Config;

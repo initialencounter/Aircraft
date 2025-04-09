@@ -1,4 +1,4 @@
-<script lang='ts' setup>
+<script lang="ts" setup>
 import TitleBar from './components/TitleBar.vue';
 import { Event } from '@tauri-apps/api/event';
 import SideBar from './components/SideBar.vue';
@@ -11,18 +11,17 @@ interface Link {
 ipcManager.on('open_link', (data: Event<Link>): void => {
   window.open(data.payload.link);
 });
-
 </script>
 
 <template>
-  <div class='main-container' data-tauri-drag-region>
-    <div id='drag-area' class='drag-area draggable'></div>
+  <div class="main-container" data-tauri-drag-region>
+    <div id="drag-area" class="drag-area draggable"></div>
     <TitleBar
-      avatar='https://avatars.githubusercontent.com/u/109729945'
-      link='https://github.com/initialencounter/aircraft'
+      avatar="https://avatars.githubusercontent.com/u/109729945"
+      link="https://github.com/initialencounter/aircraft"
     ></TitleBar>
     <SideBar />
-    <div class='content'>
+    <div class="content">
       <router-view></router-view>
     </div>
   </div>

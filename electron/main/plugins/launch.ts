@@ -19,7 +19,7 @@ class Launch {
         isHidden,
       })
       if (enable) {
-       launch.enable()
+        launch.enable()
       } else {
         launch.isEnabled().then((isEnabled) => {
           if (isEnabled) {

@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
     },
     startPolling(): void {
       if (this.timer) return // 避免重复启动
-      
+
       this.timer = window.setInterval(() => {
         this.checkLoginStatus()
       }, 1000)

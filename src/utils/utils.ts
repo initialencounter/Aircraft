@@ -15,7 +15,7 @@ function formatTimestamp(timestamp: number): string {
 * @param hex
 */
 function calculateColorBrightness(hex: string) {
-  const {r, g, b} = hexToRgb(hex) || {r: 0, g: 0, b: 0}
+  const { r, g, b } = hexToRgb(hex) || { r: 0, g: 0, b: 0 }
   return (((r * 299 + g * 587 + b * 114) / 1000) < 126) ? '#cfcece' : '#272727';
 }
 
@@ -27,13 +27,13 @@ function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
   hex = hex.replace(/^#/, '');
 
   if (!/^[0-9A-F]{6}$/i.test(hex)) {
-      return null;
+    return null;
   }
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
 
-  return {r, g, b};
+  return { r, g, b };
 }
 
-export {formatTimestamp, calculateColorBrightness};
+export { formatTimestamp, calculateColorBrightness };

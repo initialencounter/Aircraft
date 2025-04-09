@@ -1,21 +1,21 @@
 <!-- App.vue -->
 <template>
-  <el-button class='schema-button' type='primary' @click='reloadConfig'
+  <el-button class="schema-button" type="primary" @click="reloadConfig"
     >重载配置</el-button
   >
-  <el-button class='schema-button' type='primary' @click='saveConfig'
+  <el-button class="schema-button" type="primary" @click="saveConfig"
     >保存配置</el-button
   >
-  <el-button class='schema-button' type='primary' @click='resetConfig'
+  <el-button class="schema-button" type="primary" @click="resetConfig"
     >重置</el-button
   >
-  <el-button class='schema-button' type='primary' @click='stopServer'
+  <el-button class="schema-button" type="primary" @click="stopServer"
     >停止服务</el-button
   >
-  <k-form v-model='config' :schema='Config' :initial='initial'></k-form>
+  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
 </template>
 
-<script lang='ts' setup>
+<script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import Schema from 'schemastery';
 import { ElMessage } from 'element-plus';
@@ -55,7 +55,6 @@ const initial = ref<Config>({
   debug: false,
   log_enabled: false,
 });
-
 
 async function getConfig() {
   config.value = (await ipcManager.invoke('get_server_config')) as Config;

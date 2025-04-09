@@ -19,8 +19,8 @@ export const useMaskStore = defineStore('mask', {
 
   actions: {
     async unlock(code: string) {
-      if (code){
-        if (code !== this.secretCode){
+      if (code) {
+        if (code !== this.secretCode) {
           this.isUnlocked = false
           return false
         }

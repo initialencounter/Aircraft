@@ -1,10 +1,10 @@
 <template>
-  <div class='scroller' ref='scrollerRef'>
-    <div v-for='item in visibleLogs'>
-      <div class='log-item'>
-        <span class='log-timestamp'>[{{ item.time_stamp }}]</span>
+  <div class="scroller" ref="scrollerRef">
+    <div v-for="item in visibleLogs">
+      <div class="log-item">
+        <span class="log-timestamp">[{{ item.time_stamp }}]</span>
         <span
-          class='log-level'
+          class="log-level"
           :class="{
             'level-info': item.level === 'INFO',
             'level-error': item.level === 'ERROR',
@@ -12,13 +12,13 @@
           }"
           >{{ item.level }}</span
         >
-        <span class='log-message'>{{ item.message }}</span>
+        <span class="log-message">{{ item.message }}</span>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang='ts'>
+<script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLogStore, type LogStore } from '../stores/logs';
 
