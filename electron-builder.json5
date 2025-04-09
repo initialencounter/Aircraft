@@ -5,7 +5,7 @@
   "asar": true,
   "productName": "aircraft",
   "directories": {
-    "output": "release/v${version}"
+    "output": "release/${version}"
   },
   "files": [
     "dist",
@@ -21,7 +21,7 @@
         ]
       }
     ],
-    "artifactName": "${productName}_v${version}_electron_x64-setup.${ext}"
+    "artifactName": "${productName}_${version}_electron_x64-setup.${ext}"
   },
   "nsis": {
     "oneClick": false,
