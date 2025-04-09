@@ -32,7 +32,7 @@ jobs:
           echo "version=${GITHUB_REF:10}" >> $GITHUB_ENV
 
       - name: Install Rust Stable
-        uses: dtolnay/rust-toolchain@1.82.0
+        uses: dtolnay/rust-toolchain@1.86.0
 
       - name: Add Rust Target
         run: rustup target add ${{ matrix.target }}
