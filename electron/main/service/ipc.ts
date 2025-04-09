@@ -66,7 +66,7 @@ class Ipc extends Service {
         this.ctx.configManager.saveConfig(config, key);
       });
       ipcMain.handle(`get_${key}_config`, async () => {
-        return this.ctx.configManager.getConfig('base');
+        return this.ctx.configManager.getConfig(key);
       });
     })
     ipcMain.handle('switch_drag_to_blake2', async () => {
