@@ -70,7 +70,7 @@ jobs:
           npm install
           npm run build:electron
           $V_VERSION = ${{ steps.get_version.outputs.VERSION }}
-          $E_VERSION = V_VERSION.Substring(1)
+          $E_VERSION = $V_VERSION.Substring(1)
           Move-Item ./release/$E_VERSION/Aircraft-Windows-$E_VERSION-Setup.exe ./releases/aircraft_${{ steps.get_version.outputs.VERSION }}_electron-setup.exe
       - name: Release
         uses: softprops/action-gh-release@v2
