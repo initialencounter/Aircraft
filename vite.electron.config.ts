@@ -29,7 +29,7 @@ export default defineConfig(({ command }) => {
           },
           vite: {
             build: {
-              sourcemap,
+              sourcemap: false,
               minify: isBuild,
               outDir: 'dist-electron/main',
               rollupOptions: {
@@ -71,7 +71,10 @@ export default defineConfig(({ command }) => {
       },
     },
     optimizeDeps: {
-      exclude: ['schemastery-vue']
+      include: ['cordis', 'electron-store', 'schemastery-vue'], // 预构建关键依赖
+      esbuildOptions: {
+        target: 'esnext', // 使用更现代的目标
+      }
     },
     server: process.env.VSCODE_DEBUG && (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)

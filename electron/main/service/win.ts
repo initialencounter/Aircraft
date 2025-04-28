@@ -27,6 +27,8 @@ class Window extends Service {
       titleBarStyle: 'hidden',
       webPreferences: {
         preload: this.ctx.app.preload,
+        spellcheck: false, // 禁用拼写检查
+        enableWebSQL: false, // 禁用 WebSQL
         // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
         // nodeIntegration: true,
 
