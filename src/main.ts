@@ -24,4 +24,6 @@ app.use(form);
 app.use(router)
 app.use(createPinia())
 app.component('k-markdown', Markdown);
-app.mount('#app');
+app.mount('#app').$nextTick(() => {
+    postMessage({ payload: 'removeLoading' }, '*')
+});
