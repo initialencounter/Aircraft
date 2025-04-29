@@ -137,4 +137,9 @@ const handleMouseEnter = debounce((index: string) => {
 .sidebar-menu-item:hover {
   background-color: #4f9633;
 }
+
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
 </style>
