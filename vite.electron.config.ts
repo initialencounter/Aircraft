@@ -29,7 +29,7 @@ export default defineConfig(({ command }) => {
           },
           vite: {
             build: {
-              sourcemap: false,
+              sourcemap,
               minify: isBuild,
               outDir: 'dist-electron/main',
               rollupOptions: {
