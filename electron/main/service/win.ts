@@ -39,6 +39,7 @@ class Window extends Service {
     })
     if (this.ctx.app.VITE_DEV_SERVER_URL) { // #298
       this.win?.loadURL(this.ctx.app.VITE_DEV_SERVER_URL)
+      this.ctx.logger.info('VITE_DEV_SERVER_URL', this.ctx.app.VITE_DEV_SERVER_URL)
       // Open devTool if the app is not packaged
       // this.win?.webContents.openDevTools()
     } else {

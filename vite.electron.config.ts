@@ -72,8 +72,8 @@ export default defineConfig(({ command }) => {
     },
     optimizeDeps: {
       include: [
-        'cordis', 
-        'electron-store', 
+        'cordis',
+        'electron-store',
         'schemastery-vue',
         'element-plus',
         'vue-i18n',
