@@ -32,7 +32,6 @@ const maskStore = useMaskStore();
 onMounted(() => {
   authStore.startPolling();
   listenStore.startPolling();
-  maskStore.unlock('');
 });
 
 onBeforeUnmount(() => {

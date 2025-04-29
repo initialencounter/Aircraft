@@ -14,7 +14,7 @@ export interface BaseConfig {
 export const useMaskStore = defineStore('mask', {
   state: (): MaskState => ({
     isUnlocked: false,
-    secretCode: '' // 设置你的暗号
+    secretCode: 'aircraft' // 设置你的暗号
   }),
 
   actions: {
