@@ -25,10 +25,12 @@ class Window extends Service {
       transparent: true,
       show: !config.silent_start,
       titleBarStyle: 'hidden',
+      alwaysOnTop: true,
       webPreferences: {
         preload: this.ctx.app.preload,
         spellcheck: false, // 禁用拼写检查
         enableWebSQL: false, // 禁用 WebSQL
+        disableDialogs: true, // 禁用对话框
         // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
         // nodeIntegration: true,
 
