@@ -71,16 +71,49 @@ export default defineConfig(({ command }) => {
       },
     },
     optimizeDeps: {
-      include: ['cordis', 'electron-store', 'schemastery-vue'], // 预构建关键依赖
+      include: [
+        'cordis', 
+        'electron-store', 
+        'schemastery-vue',
+        'element-plus',
+        'vue-i18n',
+        'markdown-vue',
+        'pinia',
+        'vue-router',
+        'schemastery',
+        '@tauri-apps/api/core',
+        '@tauri-apps/api/event',
+        'spark-md5',
+        '@element-plus/icons-vue'
+      ], // 预构建关键依赖
       esbuildOptions: {
         target: 'esnext', // 使用更现代的目标
-      }
+      },
     },
     server: process.env.VSCODE_DEBUG && (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
       return {
         host: url.hostname,
         port: +url.port,
+        watch: {
+          ignored: [
+            "**/.yarn/**",
+            "**/.vscode/*",
+            "**/bindings/**",
+            "**/dist/**",
+            "**/dist-electron/**",
+            "**/elctron/**",
+            "**/headless/**",
+            "**/logs**",
+            "**/node_modules/**",
+            "**/pdf-parser/**",
+            "**/release/**",
+            "**/share/**",
+            "**/src-tauri/**",
+            "**/target/**",
+            "**/summary-rs/**",
+          ],
+        }
       }
     })(),
     clearScreen: false,

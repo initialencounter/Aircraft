@@ -22,7 +22,24 @@ export default defineConfig(async () => ({
     },
   },
   optimizeDeps: {
-    exclude: ['schemastery-vue']
+    include: [
+      'cordis', 
+      'electron-store', 
+      'schemastery-vue',
+      'element-plus',
+      'vue-i18n',
+      'markdown-vue',
+      'pinia',
+      'vue-router',
+      'schemastery',
+      '@tauri-apps/api/core',
+      '@tauri-apps/api/event',
+      'spark-md5',
+      '@element-plus/icons-vue'
+    ], // 预构建关键依赖
+    esbuildOptions: {
+      target: 'esnext', // 使用更现代的目标
+    },
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
@@ -35,14 +52,30 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: "ws",
-          host,
-          port: 1421,
-        }
+        protocol: "ws",
+        host,
+        port: 1421,
+      }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      ignored: [
+        "**/.yarn/**",
+        "**/.vscode/*",
+        "**/bindings/**",
+        "**/dist/**",
+        "**/dist-electron/**",
+        "**/elctron/**",
+        "**/headless/**",
+        "**/logs**",
+        "**/node_modules/**",
+        "**/pdf-parser/**",
+        "**/release/**",
+        "**/share/**",
+        "**/src-tauri/**",
+        "**/target/**",
+        "**/summary-rs/**",
+      ],
     },
   },
 }));

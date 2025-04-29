@@ -18,8 +18,7 @@
     "build:electron": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "start": "electron-forge start"
+    "tauri": "tauri"
   },
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
