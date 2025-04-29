@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { useMaskStore } from '../stores/mask'
 import Home from '../views/Home.vue'
 import Schema from '../components/Schema.vue'
@@ -11,7 +11,7 @@ import SchemaLLM from '../components/SchemaLLM.vue'
 import PdfParse from '../views/PdfParse.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [
     {
       path: '/',
