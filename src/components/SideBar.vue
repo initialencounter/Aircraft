@@ -11,6 +11,7 @@ import {
 } from '@element-plus/icons-vue';
 import { isTauri } from '@tauri-apps/api/core';
 import Clip from '../assets/svg/Clip.vue';
+import { debounce } from 'lodash';
 
 const router = useRouter();
 const maskStore = useMaskStore();
@@ -64,7 +65,7 @@ const menuItems = [
     path: '/blake2',
     label: 'BLAKE2',
     icon: Clip,
-    requiresUnlock: is_electron,
+    requiresUnlock: false,
   },
   {
     index: '7',
@@ -89,25 +90,27 @@ const menuItems = [
   },
 ];
 
-const handleSelect = (index: string) => {
+const handleMouseEnter = debounce((index: string) => {
   const item = menuItems.find((item) => item.index === index);
   if (item) {
+    activeIndex.value = index;
     router.push(item.path);
   }
-};
+}, 200); // 200毫秒的延迟
+
 </script>
 
 <template>
   <el-menu
     :default-active="activeIndex"
     class="sidebar-menu"
-    @select="handleSelect"
   >
     <el-menu-item
       class="sidebar-menu-item"
       v-for="item in visibleMenuItems"
       :key="item.index"
       :index="item.index"
+      @mouseenter="handleMouseEnter(item.index)"
     >
       <el-icon>
         <component :is="item.icon" />

@@ -66,6 +66,7 @@
     "electron-log": "^5.2.4",
     "express": "^4.21.2",
     "koa-compose": "^4.1.0",
+    "lodash": "^4.17.21",
     "multer": "^1.4.5-lts.2",
     "reggol": "^1.7.1",
     "spark-md5": "^3.0.2"
