@@ -82,13 +82,6 @@ export default defineConfig(({ command }) => {
         renderer: {},
       }),
     ],
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: "modern-compiler",
-        },
-      },
-    },
     optimizeDeps: {
       include: [
         'cordis',
@@ -104,39 +97,13 @@ export default defineConfig(({ command }) => {
         '@tauri-apps/api/event',
         'spark-md5',
         '@element-plus/icons-vue'
-      ], // 预构建关键依赖
-      esbuildOptions: {
-        target: 'esnext', // 使用更现代的目标
-      },
+      ],
     },
     server: process.env.VSCODE_DEBUG && (() => {
-      const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
+      const url = new URL("http://localhost:5173/")
       return {
         host: url.hostname,
         port: +url.port,
-        watch: {
-          included: [
-            "src/**",
-            "electron/**",
-            "public/**",
-          ],
-          ignored: [
-            "**/.vscode/**",
-            "**/bindings/**",
-            "**/dist/**",
-            "**/dist-electron/**",
-            "**/elctron/**",
-            "**/headless/**",
-            "**/logs/**",
-            "**/node_modules/**",
-            "**/pdf-parser/**",
-            "**/release/**",
-            "**/share/**",
-            "**/src-tauri/**",
-            "**/target/**",
-            "**/summary-rs/**",
-          ],
-        }
       }
     })(),
     clearScreen: false,

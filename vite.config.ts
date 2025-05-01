@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, UserConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import yaml from "@maikolib/vite-plugin-yaml";
 import path from 'path';
@@ -14,17 +14,9 @@ export default defineConfig(async () => ({
       'types': path.resolve(__dirname, './types')
     }
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: "modern-compiler",
-      },
-    },
-  },
   optimizeDeps: {
     include: [
       'cordis',
-      'electron-store',
       'schemastery-vue',
       'element-plus',
       'vue-i18n',
@@ -36,10 +28,7 @@ export default defineConfig(async () => ({
       '@tauri-apps/api/event',
       'spark-md5',
       '@element-plus/icons-vue'
-    ], // 预构建关键依赖
-    esbuildOptions: {
-      target: 'esnext', // 使用更现代的目标
-    },
+    ],
   },
   // 指定项目根目录
   root: path.join(__dirname, 'electron'),
@@ -74,24 +63,5 @@ export default defineConfig(async () => ({
         port: 1421,
       }
       : undefined,
-    watch: {
-      // 3. tell vite to ignore watching `src-tauri`
-      ignored: [
-        "**/.vscode/**",
-        "**/bindings/**",
-        "**/dist/**",
-        "**/dist-electron/**",
-        "**/elctron/**",
-        "**/headless/**",
-        "**/logs/**",
-        "**/node_modules/**",
-        "**/pdf-parser/**",
-        "**/release/**",
-        "**/share/**",
-        "**/src-tauri/**",
-        "**/target/**",
-        "**/summary-rs/**",
-      ],
-    },
   },
 }));

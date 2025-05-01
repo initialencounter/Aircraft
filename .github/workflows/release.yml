@@ -47,24 +47,27 @@ jobs:
         with:
           node-version: "22"
 
-      - name: npm install
-        run: npm install
+      - name: yarn install
+        run: |
+          corepack enable
+          yarn set version stable
+          yarn install
       
       - name: Build bindings
         run: |
           cd bindings/node
-          npm install
-          npm run build
+          yarn
+          yarn build
           cd ../../
 
       - name: Build electron
         run: |
-          npm install
-          npm run build:electron
+          yarn
+          yarn build:electron
       
       - name: Build Tauri-lite 
         run: |
-          npm run tauri build
+          yarn tauri build
       
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -72,5 +75,5 @@ jobs:
         with:
           files: |
             target/release/bundle/msi/aircraft_${{ env.version }}_x64_zh-CN.msi
-            release/${{ env.version }}/aircraft_${{ env.version }}_electron_x64-setup.exe
+            electron/release/${{ env.version }}/aircraft_${{ env.version }}_electron_x64-setup.exe
           name: 'Aircraft ${{ env.version }}'
