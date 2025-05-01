@@ -15,8 +15,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:electron": "cd electron && chcp 65001 && vite -c vite.electron.config.ts",
-    "build:electron": "cd electron && vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never",
+    "dev:electron": "cd electron && npm run start",
+    "build:electron": "cd electron && npm run build",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
