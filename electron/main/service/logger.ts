@@ -1,28 +1,29 @@
-import { Context, Schema, Service } from 'cordis'
+import { mkdirSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 import { rm } from 'fs/promises'
-import { FileWriter } from '../external/loggerFileWriter'
-import type { } from './app'
-import { mkdirSync, readdirSync } from 'fs'
-import Logger from 'reggol';
+
+import type { Context } from 'cordis'
+import { Schema, Service } from 'cordis'
+import type {} from './app'
+
+import Logger from 'reggol'
 import { ipcMain } from 'electron'
 
-Logger.targets[0].showTime = 'yyyy-MM-dd hh:mm:ss';
+import { FileWriter } from '../external/loggerFileWriter'
+
+Logger.targets[0].showTime = 'yyyy-MM-dd hh:mm:ss'
 Logger.targets[0].label = {
   align: 'left',
-};
+}
 Logger.targets[0].colors = 4
 
-
 export const name = 'logger'
-const logger = new Logger(name)
 
 export interface LogMessage {
   time_stamp: string
   level: string
   message: string
 }
-
 
 export function formatLogMessage(record: Logger.Record): LogMessage {
   return {
@@ -31,8 +32,6 @@ export function formatLogMessage(record: Logger.Record): LogMessage {
     message: record.content,
   }
 }
-
-
 
 declare module 'cordis' {
   interface Context {
@@ -63,7 +62,7 @@ class LoggerService extends Service {
     }
 
     const date = new Date().toISOString().slice(0, 10)
-    this.createFile(date, Math.max(...this.files[date] ?? [0]) + 1)
+    this.createFile(date, Math.max(...(this.files[date] ?? [0])) + 1)
 
     let buffer: Logger.Record[] = []
     const update = ctx.throttle(() => {
@@ -91,7 +90,7 @@ class LoggerService extends Service {
         update()
         if (this.writer.size >= config.maxSize) {
           this.writer.close()
-          const index = Math.max(...this.files[date] ?? [0]) + 1
+          const index = Math.max(...(this.files[date] ?? [0])) + 1
           this.files[date] ??= []
           this.files[date].push(index)
           this.createFile(date, index)
@@ -133,7 +132,7 @@ class LoggerService extends Service {
   }
 
   tryGetLogs() {
-    let logs = this.tempLogs
+    const logs = this.tempLogs
     this.tempLogs = []
     return logs
   }

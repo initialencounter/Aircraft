@@ -10,19 +10,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import Schema from 'schemastery';
-import { ElMessage } from 'element-plus';
-import { ipcManager } from '../utils/ipcManager';
-import { useMaskStore } from '../stores/mask';
+import { ref, onMounted } from 'vue'
+import Schema from 'schemastery'
+import { ElMessage } from 'element-plus'
+import { ipcManager } from '../utils/ipcManager'
+import { useMaskStore } from '../stores/mask'
 
 export interface BaseConfig {
-  auto_start: boolean;
-  silent_start: boolean;
-  nothing: string;
+  auto_start: boolean
+  silent_start: boolean
+  nothing: string
 }
 
-const maskStore = useMaskStore();
+const maskStore = useMaskStore()
 
 const BaseConfig = Schema.object({
   auto_start: Schema.boolean().description('开机自启').default(false),
@@ -31,41 +31,41 @@ const BaseConfig = Schema.object({
     .description('这里什么也没有')
     .default('')
     .hidden(true),
-});
+})
 
 const config = ref<BaseConfig>({
   auto_start: false,
   silent_start: false,
   nothing: '',
-});
+})
 const initial = ref<BaseConfig>({
   auto_start: false,
   silent_start: false,
   nothing: '',
-});
+})
 
 async function getBaseConfig() {
-  const result = (await ipcManager.invoke('get_base_config')) as BaseConfig;
-  config.value = result;
+  const result = (await ipcManager.invoke('get_base_config')) as BaseConfig
+  config.value = result
 }
 
 async function saveBaseConfig() {
   try {
-    const tmpConfig: BaseConfig = new BaseConfig(config.value);
-    await ipcManager.invoke('save_base_config', { config: tmpConfig });
-    maskStore.unlock(tmpConfig.nothing);
-    ElMessage.success(`保存成功`);
+    const tmpConfig: BaseConfig = new BaseConfig(config.value)
+    await ipcManager.invoke('save_base_config', { config: tmpConfig })
+    maskStore.unlock(tmpConfig.nothing)
+    ElMessage.success(`保存成功`)
   } catch (error) {
-    ElMessage.error(JSON.stringify(error));
+    ElMessage.error(JSON.stringify(error))
   }
 }
 function resetConfig() {
-  config.value = initial.value;
+  config.value = initial.value
 }
 
 onMounted(() => {
-  getBaseConfig();
-});
+  getBaseConfig()
+})
 </script>
 
 <style scoped>

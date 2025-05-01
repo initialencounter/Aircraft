@@ -1,9 +1,11 @@
 import fs from 'node:fs'
+
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron/simple'
+import yaml from '@maikolib/vite-plugin-yaml'
+
 import pkg from '../package.json'
-import yaml from "@maikolib/vite-plugin-yaml";
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   fs.rmSync('dist-electron', { recursive: true, force: true })
@@ -25,7 +27,9 @@ export default defineConfig(({ command }) => {
           entry: mainEntry,
           onstart({ startup }) {
             if (process.env.VSCODE_DEBUG) {
-              console.log(/* For `.vscode/.debug.script.mjs` */'[startup] Electron App')
+              console.log(
+                /* For `.vscode/.debug.script.mjs` */ '[startup] Electron App'
+              )
             } else {
               startup()
             }
@@ -36,15 +40,19 @@ export default defineConfig(({ command }) => {
               minify: isBuild,
               outDir: 'dist-electron/main',
               rollupOptions: {
-                // Some third-party Node.js libraries may not be built correctly by Vite, especially `C/C++` addons, 
+                // Some third-party Node.js libraries may not be built correctly by Vite, especially `C/C++` addons,
                 // we can use `external` to exclude them to ensure they work correctly.
                 // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
                 // Of course, this is not absolute, just this way is relatively simple. :)
-                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                external: Object.keys(
+                  'dependencies' in pkg ? pkg.dependencies : {}
+                ),
                 onwarn(warning, warn) {
-                  if (warning.code === 'EVAL' &&
+                  if (
+                    warning.code === 'EVAL' &&
                     (warning.id?.includes('file-type/core.js') ||
-                      warning.id?.includes('depd/index.js'))) {
+                      warning.id?.includes('depd/index.js'))
+                  ) {
                     return
                   }
                   warn(warning)
@@ -63,11 +71,15 @@ export default defineConfig(({ command }) => {
               minify: isBuild,
               outDir: 'dist-electron/preload',
               rollupOptions: {
-                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                external: Object.keys(
+                  'dependencies' in pkg ? pkg.dependencies : {}
+                ),
                 onwarn(warning, warn) {
-                  if (warning.code === 'EVAL' &&
+                  if (
+                    warning.code === 'EVAL' &&
                     (warning.id?.includes('file-type/core.js') ||
-                      warning.id?.includes('depd/index.js'))) {
+                      warning.id?.includes('depd/index.js'))
+                  ) {
                     return
                   }
                   warn(warning)
@@ -96,16 +108,18 @@ export default defineConfig(({ command }) => {
         '@tauri-apps/api/core',
         '@tauri-apps/api/event',
         'spark-md5',
-        '@element-plus/icons-vue'
+        '@element-plus/icons-vue',
       ],
     },
-    server: process.env.VSCODE_DEBUG && (() => {
-      const url = new URL("http://localhost:5173/")
-      return {
-        host: url.hostname,
-        port: +url.port,
-      }
-    })(),
+    server:
+      process.env.VSCODE_DEBUG &&
+      (() => {
+        const url = new URL('http://localhost:5173/')
+        return {
+          host: url.hostname,
+          port: +url.port,
+        }
+      })(),
     clearScreen: false,
   }
 })

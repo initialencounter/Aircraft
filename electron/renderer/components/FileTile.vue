@@ -1,51 +1,51 @@
 <script lang="ts" setup xmlns="http://www.w3.org/1999/html">
-import { FileTileMap } from '../types/index';
-import { calculateColorBrightness } from '../utils/utils';
-import { ElMessage } from 'element-plus';
-import Clip from '../assets/svg/Clip.vue';
-import { isTauri } from '@tauri-apps/api/core';
-import { ipcManager } from '../utils/ipcManager.ts';
+import { FileTileMap } from '../types/index'
+import { calculateColorBrightness } from '../utils/utils'
+import { ElMessage } from 'element-plus'
+import Clip from '../assets/svg/Clip.vue'
+import { isTauri } from '@tauri-apps/api/core'
+import { ipcManager } from '../utils/ipcManager.ts'
 
-let is_tauri = isTauri();
-const PATH_OR_LAST_MODIFIED = is_tauri ? '路径' : '修改日期';
-const PATH_OR_LAST_MODIFIED_ATTR = is_tauri ? 'path' : 'lastModified';
-const MD5_OR_BLAKE2 = is_tauri ? 'BLAKE2' : 'MD5';
-const NAME_WIDTH = 300;
-const file_list = defineModel<FileTileMap>({ required: true });
-const emit = defineEmits(['removeItem']);
+let is_tauri = isTauri()
+const PATH_OR_LAST_MODIFIED = is_tauri ? '路径' : '修改日期'
+const PATH_OR_LAST_MODIFIED_ATTR = is_tauri ? 'path' : 'lastModified'
+const MD5_OR_BLAKE2 = is_tauri ? 'BLAKE2' : 'MD5'
+const NAME_WIDTH = 300
+const file_list = defineModel<FileTileMap>({ required: true })
+const emit = defineEmits(['removeItem'])
 
 function removeItem(index: number) {
   if (index === -1) {
-    console.log('Cannot remove the header');
-    emit('removeItem');
-    return;
+    console.log('Cannot remove the header')
+    emit('removeItem')
+    return
   } else {
-    file_list.value.splice(index, 1);
+    file_list.value.splice(index, 1)
   }
 }
 
 async function copyText(textToCopy: string) {
   try {
-    await navigator.clipboard.writeText(textToCopy);
+    await navigator.clipboard.writeText(textToCopy)
     ElMessage.success({
       message: '已复制到剪贴板',
       type: 'success',
-    });
+    })
   } catch (err) {
     ElMessage.error({
       message: '复制失败',
       type: 'error',
-    });
+    })
   }
 }
 
 function focusItem(index: number) {
-  file_list.value[index].focus = !file_list.value[index].focus;
+  file_list.value[index].focus = !file_list.value[index].focus
 }
 
 function handleHeaderClick(column: any) {
   if (column.label == 'BLAKE2') {
-    removeItem(-1);
+    removeItem(-1)
   }
 }
 
@@ -55,15 +55,15 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
     fontSize: '14px',
     backgroundColor: row.color,
     padding: '4px',
-  };
+  }
 }
 
 function openDir(dirName: string) {
-  ipcManager.invoke('open_local_dir', { target: dirName });
+  ipcManager.invoke('open_local_dir', { target: dirName })
 }
 
 function open_with_wps(dirName: string, fileName: string) {
-  ipcManager.invoke('open_with_wps', { target: dirName, name: fileName });
+  ipcManager.invoke('open_with_wps', { target: dirName, name: fileName })
 }
 </script>
 

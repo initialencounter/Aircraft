@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMaskStore } from '../stores/mask';
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useMaskStore } from '../stores/mask'
 import {
   House,
   Setting,
   Document,
   Box,
   MoonNight,
-} from '@element-plus/icons-vue';
-import { isTauri } from '@tauri-apps/api/core';
-import Clip from '../assets/svg/Clip.vue';
+} from '@element-plus/icons-vue'
+import { isTauri } from '@tauri-apps/api/core'
+import Clip from '../assets/svg/Clip.vue'
 
-const router = useRouter();
-const maskStore = useMaskStore();
-const activeIndex = ref('1');
+const router = useRouter()
+const maskStore = useMaskStore()
+const activeIndex = ref('1')
 
 // 使用 computed 属性来根据解锁状态过滤菜单项
 const visibleMenuItems = computed(() => {
   return menuItems.filter((item) => {
     // 如果需要解锁且未解锁，则不显示该菜单项
     if (item.requiresUnlock && !maskStore.isUnlocked) {
-      return false;
+      return false
     }
-    return true;
-  });
-});
+    return true
+  })
+})
 
-const is_electron = !isTauri();
+const is_electron = !isTauri()
 
 const menuItems = [
   { index: '1', path: '/', label: '首页', icon: House, requiresUnlock: false },
@@ -87,23 +87,21 @@ const menuItems = [
     icon: Setting,
     requiresUnlock: false,
   },
-];
+]
 
 const handleSelect = (index: string) => {
-  const item = menuItems.find((item) => item.index === index);
+  const item = menuItems.find((item) => item.index === index)
   if (item) {
-
-    router.push(item.path);
+    router.push(item.path)
   }
-};
-
+}
 </script>
 
 <template>
   <el-menu
     :default-active="activeIndex"
     class="sidebar-menu"
-     @select="handleSelect"
+    @select="handleSelect"
   >
     <el-menu-item
       class="sidebar-menu-item"

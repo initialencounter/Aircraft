@@ -1,11 +1,11 @@
-import { Context } from 'cordis'
+import type { Context } from 'cordis'
 import { BrowserWindow, Menu } from 'electron'
-import type { } from '../service/tray'
-import type { } from '../service/win'
-import type { } from '../service/app'
-import type { } from '../service/config'
-import { BaseConfig } from '../../types'
 
+import type {} from '../service/tray'
+import type {} from '../service/win'
+import type {} from '../service/app'
+import type {} from '../service/config'
+import type { BaseConfig } from '../../types'
 
 declare module 'cordis' {
   interface Events {
@@ -13,7 +13,6 @@ declare module 'cordis' {
     'electron-dispose': () => void
   }
 }
-
 
 class WindowManager {
   static inject = ['app', 'win', 'tray', 'configManager']
@@ -69,8 +68,8 @@ class WindowManager {
         label: '退出',
         click: () => {
           ctx.app.app.quit()
-        }
-      }
+        },
+      },
     ])
     ctx.tray.tray?.setContextMenu(contextMenu)
   }

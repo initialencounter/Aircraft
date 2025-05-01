@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { isTauri } from '@tauri-apps/api/core'
-import { ipcManager } from '../utils/ipcManager';
+
+import { ipcManager } from '../utils/ipcManager'
 
 interface AuthState {
   loginStatus: boolean
@@ -34,8 +35,8 @@ export const useAuthStore = defineStore('auth', {
         this.timer = null
       }
     },
-  }
+  },
 })
 
 // 导出 store 类型，以便在组件中使用
-export type AuthStore = ReturnType<typeof useAuthStore> 
+export type AuthStore = ReturnType<typeof useAuthStore>

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+
 import { useMaskStore } from '../stores/mask'
 import Home from '../views/Home.vue'
 import Schema from '../components/Schema.vue'
@@ -16,7 +17,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: Home
+      component: Home,
     },
     {
       path: '/schema',
@@ -26,7 +27,7 @@ const router = createRouter({
     {
       path: '/schema_base',
       name: 'SchemaBase',
-      component: SchemaBase
+      component: SchemaBase,
     },
     {
       path: '/schema_hotkey',
@@ -36,17 +37,17 @@ const router = createRouter({
     {
       path: '/logs',
       name: 'Logs',
-      component: Logs
+      component: Logs,
     },
     {
       path: '/blake2',
       name: 'Blake2',
-      component: Blake2
+      component: Blake2,
     },
     {
       path: '/stack',
       name: 'Stack',
-      component: Stack
+      component: Stack,
     },
     {
       path: '/summary_parse',
@@ -58,7 +59,7 @@ const router = createRouter({
       name: 'LLM Config',
       component: SchemaLLM,
     },
-  ]
+  ],
 })
 
 router.beforeEach((to, _from, next) => {
@@ -71,4 +72,4 @@ router.beforeEach((to, _from, next) => {
   }
 })
 
-export default router 
+export default router

@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import { ref } from 'vue';
-import { Event } from '@tauri-apps/api/event';
-import { ipcManager } from '../utils/ipcManager';
-import summaryTable from '../components/SummaryTable.vue';
-import type { SummaryData } from '../types';
-import { isTauri } from '@tauri-apps/api/core';
-import { ElMessage } from 'element-plus';
+import { ref } from 'vue'
+import { Event } from '@tauri-apps/api/event'
+import { ipcManager } from '../utils/ipcManager'
+import summaryTable from '../components/SummaryTable.vue'
+import type { SummaryData } from '../types'
+import { isTauri } from '@tauri-apps/api/core'
+import { ElMessage } from 'element-plus'
 
-const is_tauri = isTauri();
-const loading = ref(false); // 添加loading状态变量
+const is_tauri = isTauri()
+const loading = ref(false) // 添加loading状态变量
 const parseResult = ref<SummaryData>({
   /**制造商或生产工厂中文名称*/
   manufacturerCName: '',
@@ -108,51 +108,51 @@ const parseResult = ref<SummaryData>({
 
   /**T.8：T.8：强制放电 Forced Discharge*/
   test8: true,
-});
+})
 
-const rawText = ref('');
-ipcManager.invoke('switch_drag_to_blake2', { value: false });
+const rawText = ref('')
+ipcManager.invoke('switch_drag_to_blake2', { value: false })
 ipcManager.on('pdf_reader_result', (data: Event<string>): void => {
-  loading.value = false; // 收到结果后关闭loading
+  loading.value = false // 收到结果后关闭loading
   try {
-    parseResult.value = JSON.parse(data.payload) as SummaryData;
+    parseResult.value = JSON.parse(data.payload) as SummaryData
   } catch (e) {
-    rawText.value = data.payload;
+    rawText.value = data.payload
   }
-});
+})
 
 if (!is_tauri) {
-  document.ondragover = dragleaveEvent;
-  document.ondragenter = dragleaveEvent;
-  document.ondragleave = dragleaveEvent;
-  document.ondrop = dropEvent;
+  document.ondragover = dragleaveEvent
+  document.ondragenter = dragleaveEvent
+  document.ondragleave = dragleaveEvent
+  document.ondrop = dropEvent
 }
 
 function dragleaveEvent(event: DragEvent) {
-  event.stopPropagation();
-  event.preventDefault();
+  event.stopPropagation()
+  event.preventDefault()
 }
 
 async function dropEvent(event: DragEvent) {
-  event.stopPropagation();
-  event.preventDefault();
-  const files = event.dataTransfer!.files;
-  loading.value = true; // 开始处理文件时显示loading
-  const buf = await files[0].arrayBuffer();
+  event.stopPropagation()
+  event.preventDefault()
+  const files = event.dataTransfer!.files
+  loading.value = true // 开始处理文件时显示loading
+  const buf = await files[0].arrayBuffer()
   try {
-    const res = await ipcManager.invoke('summary_report', buf);
-    parseResult.value = JSON.parse(res);
+    const res = await ipcManager.invoke('summary_report', buf)
+    parseResult.value = JSON.parse(res)
   } catch (e) {
-    ElMessage.error('解析失败' + e);
-    console.log('解析失败', e);
+    ElMessage.error('解析失败' + e)
+    console.log('解析失败', e)
   } finally {
-    loading.value = false; // 无论成功或失败都关闭loading
+    loading.value = false // 无论成功或失败都关闭loading
   }
 }
 
 document.oncontextmenu = function () {
-  return false;
-};
+  return false
+}
 </script>
 
 <template>

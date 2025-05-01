@@ -1,6 +1,6 @@
-import { Context } from 'cordis'
+import type { Context } from 'cordis'
 import AutoLaunch from 'auto-launch'
-import type { } from '../service/win'
+import type {} from '../service/win'
 
 declare module 'cordis' {
   interface Events {

@@ -1,29 +1,30 @@
 // main.ts
-import { createApp } from 'vue';
-import ElementPlus from 'element-plus';
-import 'element-plus/dist/index.css';
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 // @ts-ignore
-import form from 'schemastery-vue';
-import { createI18n } from 'vue-i18n';
+import form from 'schemastery-vue'
+import { createI18n } from 'vue-i18n'
 // @ts-ignore
-import Markdown from 'markdown-vue';
-import App from './App.vue';
-import './assets/css/main.scss'
-import router from './router'
+import Markdown from 'markdown-vue'
 import { createPinia } from 'pinia'
 
-const i18n = createI18n({
-    legacy: false,
-});
-const app = createApp(App);
+import App from './App.vue'
+import './assets/css/main.scss'
+import router from './router'
 
-app.use(ElementPlus);
-app.use(i18n);
+const i18n = createI18n({
+  legacy: false,
+})
+const app = createApp(App)
+
+app.use(ElementPlus)
+app.use(i18n)
 // @ts-ignore
-app.use(form);
+app.use(form)
 app.use(router)
 app.use(createPinia())
-app.component('k-markdown', Markdown);
+app.component('k-markdown', Markdown)
 app.mount('#app').$nextTick(() => {
-    postMessage({ payload: 'removeLoading' }, '*')
-});
+  postMessage({ payload: 'removeLoading' }, '*')
+})

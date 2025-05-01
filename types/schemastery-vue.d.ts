@@ -1,6 +1,6 @@
 declare module 'schemastery-vue' {
   import { Component } from 'vue'
-  
+
   export interface Schema {
     type: string
     meta: {

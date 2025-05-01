@@ -40,19 +40,19 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: ". -> target"
+          workspaces: '. -> target'
 
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: yarn install
         run: |
           corepack enable
           yarn set version stable
           yarn install
-      
+
       - name: Build bindings
         run: |
           cd bindings/node
@@ -64,11 +64,11 @@ jobs:
         run: |
           yarn
           yarn build:electron
-      
-      - name: Build Tauri-lite 
+
+      - name: Build Tauri-lite
         run: |
           yarn tauri build
-      
+
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')

@@ -1,0 +1,71 @@
+# Prettier 配置 (YAML 格式)
+# 文档参考: https://prettier.io/docs/en/options.html
+
+# 每行最大字符数 (超过会换行)
+printWidth: 80
+
+# 缩进空格数
+tabWidth: 2
+
+# 使用制表符(tab)而非空格缩进
+useTabs: false
+
+# 在语句末尾添加分号
+semi: false
+
+# 使用单引号代替双引号
+singleQuote: true
+
+# 对象属性引号处理方式:
+# "as-needed" - 仅在必需时加引号
+# "consistent" - 如果有一个属性需要引号，则所有属性都加引号
+# "preserve" - 保留用户输入的引号方式
+quoteProps: 'as-needed'
+
+# 在 JSX 中使用单引号
+jsxSingleQuote: false
+
+# 尾随逗号配置:
+# "es5" - 在 ES5 中有效的尾随逗号(对象、数组等)
+# "none" - 无尾随逗号
+# "all" - 尽可能使用尾随逗号
+trailingComma: 'es5'
+
+# 对象字面量中括号间的空格: { foo: bar }
+bracketSpacing: true
+
+# 将多行 HTML/JSX 元素的 `>` 放在最后一行的末尾
+bracketSameLine: false
+
+# 箭头函数参数括号:
+# "always" - 总是使用括号: (x) => x
+# "avoid" - 当可以省略时省略: x => x
+arrowParens: 'always'
+
+# 换行符:
+# "lf" - 仅换行(\n)
+# "crlf" - 回车+换行(\r\n)
+# "cr" - 仅回车(\r)
+# "auto" - 保持现有的行尾
+endOfLine: 'lf'
+
+# 覆盖特定文件类型的配置
+overrides:
+  # 对 Markdown 文件配置
+  - files: '*.md'
+    options:
+      printWidth: 80
+      # 保留 markdown 中的换行
+      proseWrap: 'preserve'
+
+  # 对 JSON 文件配置
+  - files: '*.json'
+    options:
+      printWidth: 80
+      tabWidth: 2
+
+  # 对测试文件配置
+  - files: ['*.test.js', '*.spec.js']
+    options:
+      semi: true
+      singleQuote: false

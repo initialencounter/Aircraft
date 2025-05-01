@@ -1,9 +1,12 @@
-import { Context, Service, Logger } from 'cordis'
 import { readFileSync, writeFileSync } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
+
+import type { Context } from 'cordis'
+import { Service, Logger } from 'cordis'
+
 import type { BaseConfig, Config as ConfigType } from '../../types/index'
-import type { } from '../service/app'
+import type {} from '../service/app'
 
 declare module 'cordis' {
   interface Context {
@@ -32,7 +35,10 @@ class ConfigManager extends Service {
     if (!existsSync(this.configFilePath)) {
       logger.warn('config file not found, creating new config file')
       try {
-        writeFileSync(this.configFilePath, JSON.stringify(this.getDefaultConfig()))
+        writeFileSync(
+          this.configFilePath,
+          JSON.stringify(this.getDefaultConfig())
+        )
       } catch (error) {
         logger.error('config file create error', error)
       }
@@ -58,7 +64,7 @@ class ConfigManager extends Service {
         base_url: '',
         api_key: '',
         model: '',
-      }
+      },
     }
   }
   getConfig<T extends keyof ConfigType>(configName: T): ConfigType[T] {
@@ -73,10 +79,16 @@ class ConfigManager extends Service {
   }
   saveConfig<T extends keyof ConfigType>(config: ConfigType[T], configName: T) {
     try {
-      const oldConfig: ConfigType = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
-      oldConfig[configName] = config["config"]
-      if (configName == "base") {
-        this.ctx.emit('auto-launch-switch', (config["config"] as BaseConfig).auto_start, (config["config"] as BaseConfig).silent_start)
+      const oldConfig: ConfigType = JSON.parse(
+        readFileSync(this.configFilePath, 'utf-8')
+      )
+      oldConfig[configName] = config['config']
+      if (configName === 'base') {
+        this.ctx.emit(
+          'auto-launch-switch',
+          (config['config'] as BaseConfig).auto_start,
+          (config['config'] as BaseConfig).silent_start
+        )
       }
       writeFileSync(this.configFilePath, JSON.stringify(oldConfig, null, 2))
     } catch (error) {

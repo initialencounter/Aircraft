@@ -13,15 +13,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import Schema from 'schemastery';
-import { ElMessage } from 'element-plus';
-import { ipcManager } from '../utils/ipcManager';
+import { ref, onMounted } from 'vue'
+import Schema from 'schemastery'
+import { ElMessage } from 'element-plus'
+import { ipcManager } from '../utils/ipcManager'
 
 interface Config {
-  base_url: string;
-  api_key: string;
-  model: string;
+  base_url: string
+  api_key: string
+  model: string
 }
 
 const Config = Schema.object({
@@ -30,47 +30,47 @@ const Config = Schema.object({
     .default('https://api.moonshot.cn/v1'),
   api_key: Schema.string().description('API key').role('secret').default(''),
   model: Schema.string().description('模型').default('moonshot-v1-128k'),
-}).description('服务设置');
+}).description('服务设置')
 
 const config = ref<Config>({
   base_url: 'https://api.moonshot.cn/v1',
   api_key: '',
   model: 'moonshot-v1-128k',
-});
+})
 const initial = ref<Config>({
   base_url: 'https://api.moonshot.cn/v1',
   api_key: '',
   model: 'moonshot-v1-128k',
-});
+})
 
 async function getConfig() {
-  let tmpConfig = (await ipcManager.invoke('get_llm_config')) as Config;
-  config.value = tmpConfig;
+  let tmpConfig = (await ipcManager.invoke('get_llm_config')) as Config
+  config.value = tmpConfig
 }
 async function saveConfig() {
   try {
-    const tmpConfig: Config = new Config(config.value);
+    const tmpConfig: Config = new Config(config.value)
     const result = await ipcManager.invoke('save_llm_config', {
       config: tmpConfig,
-    });
-    ElMessage.success(`保存成功: ${JSON.stringify(result)}`);
+    })
+    ElMessage.success(`保存成功: ${JSON.stringify(result)}`)
   } catch (error) {
-    ElMessage.error(JSON.stringify(error));
+    ElMessage.error(JSON.stringify(error))
   }
 }
 function resetConfig() {
-  config.value = initial.value;
+  config.value = initial.value
 }
 
 async function reloadConfig() {
-  const tmpConfig: Config = new Config(config.value);
-  await ipcManager.invoke('reload_llm_config', { config: tmpConfig });
-  ElMessage.success('重载成功');
+  const tmpConfig: Config = new Config(config.value)
+  await ipcManager.invoke('reload_llm_config', { config: tmpConfig })
+  ElMessage.success('重载成功')
 }
 
 onMounted(() => {
-  getConfig();
-});
+  getConfig()
+})
 </script>
 
 <style scoped>

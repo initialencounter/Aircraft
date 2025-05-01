@@ -19,22 +19,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useLogStore, type LogStore } from '../stores/logs';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useLogStore, type LogStore } from '../stores/logs'
 
-const BUFFER_SIZE = 1000; // 一次显示的日志数量
-const scrollerRef = ref<HTMLElement | null>(null);
+const BUFFER_SIZE = 1000 // 一次显示的日志数量
+const scrollerRef = ref<HTMLElement | null>(null)
 const visibleLogs = computed(() => {
-  return [...logStore.logHistory].reverse().slice(0, BUFFER_SIZE);
-});
+  return [...logStore.logHistory].reverse().slice(0, BUFFER_SIZE)
+})
 
-const logStore: LogStore = useLogStore();
+const logStore: LogStore = useLogStore()
 onMounted(() => {
-  logStore.startGetLog();
-});
+  logStore.startGetLog()
+})
 onBeforeUnmount(() => {
-  logStore.stopGetLog();
-});
+  logStore.stopGetLog()
+})
 </script>
 
 <style scoped>

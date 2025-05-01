@@ -1,7 +1,10 @@
-import { Context, Service } from "cordis";
-import type AircraftRs from "../../../bindings/node";
-import path from "path";
+import path from 'path'
 import { fileURLToPath } from 'node:url'
+
+import type { Context } from 'cordis'
+import { Service } from 'cordis'
+
+import type AircraftRs from '../../../bindings/node'
 
 declare module 'cordis' {
   interface Context {
@@ -14,10 +17,9 @@ declare module 'cordis' {
   }
 }
 
-
 class RustBindings extends Service {
-  bindings: typeof AircraftRs;
-  bindingsPath: string;
+  bindings: typeof AircraftRs
+  bindingsPath: string
   constructor(ctx: Context) {
     super(ctx, 'bindings')
     const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -25,9 +27,12 @@ class RustBindings extends Service {
     const isDev = process.env.NODE_ENV === 'development'
     this.bindingsPath = path.join(
       APP_ROOT,
-      `${isDev ? '../' : ''}bindings/node/index.js`)
+      `${isDev ? '../' : ''}bindings/node/index.js`
+    )
     ctx.on('ready', async () => {
-      this.bindings = await import(`file://${this.bindingsPath}`) as typeof AircraftRs;
+      this.bindings = (await import(
+        `file://${this.bindingsPath}`
+      )) as typeof AircraftRs
       ctx.emit('bindings-ready')
     })
   }

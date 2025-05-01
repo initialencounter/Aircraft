@@ -1,6 +1,7 @@
-import { Context, Service } from 'cordis'
-import { globalShortcut, ipcMain } from 'electron'
-import type { } from '../service/win'
+import type { Context } from 'cordis'
+import { Service } from 'cordis'
+import { globalShortcut } from 'electron'
+import type {} from '../service/win'
 
 declare module 'cordis' {
   interface Context {

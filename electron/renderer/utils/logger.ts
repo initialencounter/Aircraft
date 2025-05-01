@@ -1,9 +1,8 @@
 import { isTauri, invoke } from '@tauri-apps/api/core'
-let is_electron = !isTauri()
+const is_electron = !isTauri()
 
 class Logger {
-  constructor() {
-  }
+  constructor() {}
   info(...args: any[]) {
     if (is_electron) {
       console.log(...args)
@@ -20,4 +19,4 @@ class Logger {
   }
 }
 
-export const logger = new Logger();
+export const logger = new Logger()

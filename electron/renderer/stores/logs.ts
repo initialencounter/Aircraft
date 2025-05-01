@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+
 import { ipcManager } from '../utils/ipcManager'
 
 interface LogState {
@@ -25,7 +26,7 @@ export const useLogStore = defineStore('logs', {
     startGetLog(): void {
       if (this.logTimer) return
       this.logTimer = window.setInterval(async () => {
-        let logs = await this.getServerLogs()
+        const logs = await this.getServerLogs()
         if (logs.length) {
           this.logHistory.push(...logs)
         }
@@ -37,7 +38,7 @@ export const useLogStore = defineStore('logs', {
         this.logTimer = null
       }
     },
-  }
+  },
 })
 
-export type LogStore = ReturnType<typeof useLogStore> 
+export type LogStore = ReturnType<typeof useLogStore>

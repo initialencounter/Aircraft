@@ -12,7 +12,7 @@
   text-align: center;
 }
 
-.close-icon{
+.close-icon {
   position: absolute;
   height: 40px;
   width: 40px;
@@ -20,7 +20,7 @@
   top: 0;
   background: transparent;
 }
-.close-icon:hover{
+.close-icon:hover {
   cursor: pointer;
   opacity: 0.6;
 }

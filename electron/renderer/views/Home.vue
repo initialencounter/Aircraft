@@ -20,22 +20,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue';
-import { useAuthStore, type AuthStore } from '../stores/auth';
-import { useListenStore, type ListenStore } from '../stores/isListen';
-import { useMaskStore } from '../stores/mask';
+import { onMounted, onBeforeUnmount } from 'vue'
+import { useAuthStore, type AuthStore } from '../stores/auth'
+import { useListenStore, type ListenStore } from '../stores/isListen'
+import { useMaskStore } from '../stores/mask'
 
-const authStore: AuthStore = useAuthStore();
-const listenStore: ListenStore = useListenStore();
-const maskStore = useMaskStore();
+const authStore: AuthStore = useAuthStore()
+const listenStore: ListenStore = useListenStore()
+const maskStore = useMaskStore()
 
 onMounted(() => {
-  authStore.startPolling();
-  listenStore.startPolling();
-});
+  authStore.startPolling()
+  listenStore.startPolling()
+})
 
 onBeforeUnmount(() => {
-  authStore.stopPolling();
-  listenStore.stopPolling();
-});
+  authStore.stopPolling()
+  listenStore.stopPolling()
+})
 </script>

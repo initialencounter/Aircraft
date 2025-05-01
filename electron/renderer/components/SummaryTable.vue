@@ -101,16 +101,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { SummaryData } from '../types';
+import { ref, computed } from 'vue'
+import { SummaryData } from '../types'
 
 const props = defineProps<{
-  data: SummaryData;
-}>();
+  data: SummaryData
+}>()
 
 interface TestItem {
-  name: string;
-  result: boolean;
+  name: string
+  result: boolean
 }
 
 const tests = ref<TestItem[]>([
@@ -122,15 +122,15 @@ const tests = ref<TestItem[]>([
   { name: 'T.6: 撞击/挤压', result: props.data.test6 },
   { name: 'T.7: 过度充电', result: props.data.test7 },
   { name: 'T.8: 强制放电', result: props.data.test8 },
-]);
+])
 
 const testRows = computed(() => {
-  const rows: TestItem[][] = [];
+  const rows: TestItem[][] = []
   for (let i = 0; i < tests.value.length; i += 3) {
-    rows.push(tests.value.slice(i, i + 3));
+    rows.push(tests.value.slice(i, i + 3))
   }
-  return rows;
-});
+  return rows
+})
 </script>
 
 <style scoped>

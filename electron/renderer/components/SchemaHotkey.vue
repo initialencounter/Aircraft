@@ -15,23 +15,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import Schema from 'schemastery';
-import { ElMessage } from 'element-plus';
-import { ipcManager } from '../utils/ipcManager';
+import { ref, onMounted } from 'vue'
+import Schema from 'schemastery'
+import { ElMessage } from 'element-plus'
+import { ipcManager } from '../utils/ipcManager'
 
 interface Config {
-  doc_enable: boolean;
-  doc_key: string;
-  upload_enable: boolean;
-  upload_key: string;
-  copy_enable: boolean;
-  copy_key: string;
-  docx_enable: boolean;
-  docx_key: string;
-  inspector: string;
-  signature_width: number;
-  signature_height: number;
+  doc_enable: boolean
+  doc_key: string
+  upload_enable: boolean
+  upload_key: string
+  copy_enable: boolean
+  copy_key: string
+  docx_enable: boolean
+  docx_key: string
+  inspector: string
+  signature_width: number
+  signature_height: number
 }
 
 const Config = Schema.object({
@@ -50,7 +50,7 @@ const Config = Schema.object({
   inspector: Schema.string().description('检验员').default(''),
   signature_width: Schema.number().description('签名宽度').default(5.58),
   signature_height: Schema.number().description('签名高度').default(1.73),
-}).description('快捷键设置');
+}).description('快捷键设置')
 
 const config = ref<Config>({
   doc_enable: false,
@@ -64,7 +64,7 @@ const config = ref<Config>({
   inspector: '',
   signature_width: 5.58,
   signature_height: 1.73,
-});
+})
 const initial = ref<Config>({
   doc_enable: false,
   doc_key: 'ctrl+shift+d',
@@ -77,40 +77,40 @@ const initial = ref<Config>({
   inspector: '',
   signature_width: 5.58,
   signature_height: 1.73,
-});
+})
 
 async function getConfig() {
-  config.value = (await ipcManager.invoke('get_hotkey_config')) as Config;
+  config.value = (await ipcManager.invoke('get_hotkey_config')) as Config
 }
 async function saveConfig() {
   try {
-    const tmpConfig: Config = new Config(config.value);
+    const tmpConfig: Config = new Config(config.value)
     const result = await ipcManager.invoke('save_hotkey_config', {
       config: tmpConfig,
-    });
-    ElMessage.success(`保存成功: ${JSON.stringify(result)}`);
+    })
+    ElMessage.success(`保存成功: ${JSON.stringify(result)}`)
   } catch (error) {
-    ElMessage.error(JSON.stringify(error));
+    ElMessage.error(JSON.stringify(error))
   }
 }
 function resetConfig() {
-  config.value = initial.value;
+  config.value = initial.value
 }
 
 async function reloadConfig() {
-  const tmpConfig: Config = new Config(config.value);
-  await ipcManager.invoke('reload_hotkey_listener', { config: tmpConfig });
-  ElMessage.success('重载成功');
+  const tmpConfig: Config = new Config(config.value)
+  await ipcManager.invoke('reload_hotkey_listener', { config: tmpConfig })
+  ElMessage.success('重载成功')
 }
 
 async function stopHotkeyListener() {
-  await ipcManager.invoke('stop_hotkey_listener');
-  ElMessage.success('停止成功');
+  await ipcManager.invoke('stop_hotkey_listener')
+  ElMessage.success('停止成功')
 }
 
 onMounted(() => {
-  getConfig();
-});
+  getConfig()
+})
 </script>
 
 <style scoped>

@@ -1,8 +1,11 @@
-import { Context, Service } from 'cordis'
-import type { } from '../service/app'
-import { BrowserWindow, shell } from 'electron'
 import path from 'path'
-import { BaseConfig } from '../../types'
+
+import type { Context } from 'cordis'
+import { Service } from 'cordis'
+import type {} from '../service/app'
+import { BrowserWindow, shell } from 'electron'
+
+import type { BaseConfig } from '../../types'
 
 declare module 'cordis' {
   interface Context {
@@ -39,9 +42,13 @@ class Window extends Service {
         // contextIsolation: false,
       },
     })
-    if (this.ctx.app.VITE_DEV_SERVER_URL) { // #298
+    if (this.ctx.app.VITE_DEV_SERVER_URL) {
+      // #298
       this.win?.loadURL(this.ctx.app.VITE_DEV_SERVER_URL)
-      this.ctx.logger.info('VITE_DEV_SERVER_URL', this.ctx.app.VITE_DEV_SERVER_URL)
+      this.ctx.logger.info(
+        'VITE_DEV_SERVER_URL',
+        this.ctx.app.VITE_DEV_SERVER_URL
+      )
       // Open devTool if the app is not packaged
       // this.win?.webContents.openDevTools()
     } else {
@@ -50,7 +57,10 @@ class Window extends Service {
 
     // Test actively push message to the Electron-Renderer
     this.win?.webContents.on('did-finish-load', () => {
-      this.win?.webContents.send('main-process-message', new Date().toLocaleString())
+      this.win?.webContents.send(
+        'main-process-message',
+        new Date().toLocaleString()
+      )
     })
 
     // Make all links open with the browser, not with the application
@@ -58,7 +68,6 @@ class Window extends Service {
       if (url.startsWith('https:')) shell.openExternal(url)
       return { action: 'deny' }
     })
-
   }
 }
 

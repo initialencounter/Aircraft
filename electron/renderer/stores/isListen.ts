@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { isTauri } from '@tauri-apps/api/core'
-import { ipcManager } from '../utils/ipcManager';
+
+import { ipcManager } from '../utils/ipcManager'
 
 interface AuthState {
   isListening: boolean
@@ -34,8 +35,8 @@ export const useListenStore = defineStore('isListen', {
         this.timer = null
       }
     },
-  }
+  },
 })
 
 // 导出 store 类型，以便在组件中使用
-export type ListenStore = ReturnType<typeof useListenStore> 
+export type ListenStore = ReturnType<typeof useListenStore>

@@ -1,7 +1,9 @@
 // https://github.com/koishijs/webui plugins/logger/src/file.ts
-import { FileHandle, open } from 'fs/promises'
-import { Logger } from 'cordis'
+import type { FileHandle } from 'fs/promises'
+import { open } from 'fs/promises'
 import { Buffer } from 'buffer'
+
+import type { Logger } from 'cordis'
 
 export class FileWriter {
   public data: Logger.Record[]
@@ -10,7 +12,10 @@ export class FileWriter {
 
   private temp: Logger.Record[] = []
 
-  constructor(public date: string, public path: string) {
+  constructor(
+    public date: string,
+    public path: string
+  ) {
     this.task = open(path, 'a+').then(async (handle) => {
       const buffer = await handle.readFile()
       this.data = this.parse(new TextDecoder().decode(buffer))
@@ -23,7 +28,9 @@ export class FileWriter {
   flush() {
     if (!this.temp.length) return
     this.task = this.task.then(async (handle) => {
-      const content = Buffer.from(this.temp.map((record) => JSON.stringify(record) + '\n').join(''))
+      const content = Buffer.from(
+        this.temp.map((record) => JSON.stringify(record) + '\n').join('')
+      )
       this.data.push(...this.temp)
       this.temp = []
       await handle.write(content)
@@ -33,11 +40,14 @@ export class FileWriter {
   }
 
   parse(text: string) {
-    return text.split('\n').map((line) => {
-      try {
-        return JSON.parse(line)
-      } catch { }
-    }).filter(Boolean)
+    return text
+      .split('\n')
+      .map((line) => {
+        try {
+          return JSON.parse(line)
+        } catch {}
+      })
+      .filter(Boolean)
   }
 
   async read() {

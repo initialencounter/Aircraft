@@ -1,20 +1,21 @@
 import { defineStore } from 'pinia'
-import { ipcManager } from '../utils/ipcManager';
+
+import { ipcManager } from '../utils/ipcManager'
 interface MaskState {
-  isUnlocked: boolean;
-  secretCode: string;
+  isUnlocked: boolean
+  secretCode: string
 }
 
 export interface BaseConfig {
-  auto_start: boolean;
-  silent_start: boolean;
-  nothing: string;
+  auto_start: boolean
+  silent_start: boolean
+  nothing: string
 }
 
 export const useMaskStore = defineStore('mask', {
   state: (): MaskState => ({
     isUnlocked: false,
-    secretCode: 'aircraft' // 设置你的暗号
+    secretCode: 'aircraft', // 设置你的暗号
   }),
 
   actions: {
@@ -28,7 +29,7 @@ export const useMaskStore = defineStore('mask', {
       if (this.isUnlocked) {
         return true
       }
-      let baseConfig = await ipcManager.invoke('get_base_config');
+      const baseConfig = await ipcManager.invoke('get_base_config')
       if (baseConfig.nothing === this.secretCode) {
         this.isUnlocked = true
         return true
@@ -38,4 +39,4 @@ export const useMaskStore = defineStore('mask', {
   },
 })
 
-export type MaskStore = ReturnType<typeof useMaskStore> 
+export type MaskStore = ReturnType<typeof useMaskStore>

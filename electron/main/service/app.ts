@@ -1,9 +1,11 @@
-import { Context, Service, Logger } from 'cordis'
-import Electron from 'electron'
 import os from 'node:os'
 import path from 'path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
+
+import Electron from 'electron'
+import type { Context } from 'cordis'
+import { Service, Logger } from 'cordis'
 
 declare module 'cordis' {
   interface Context {
@@ -50,7 +52,8 @@ class App extends Service {
     if (os.release().startsWith('6.1')) this.app.disableHardwareAcceleration()
 
     // Set application name for Windows 10+ notifications
-    if (process.platform === 'win32') this.app.setAppUserModelId(this.app.getName())
+    if (process.platform === 'win32')
+      this.app.setAppUserModelId(this.app.getName())
 
     if (!this.app.requestSingleInstanceLock()) {
       this.app.quit()

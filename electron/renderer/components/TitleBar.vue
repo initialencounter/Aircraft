@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { ipcManager } from '../utils/ipcManager';
+import { ipcManager } from '../utils/ipcManager'
 defineProps<{
-  link: string;
-  avatar: string;
-}>();
+  link: string
+  avatar: string
+}>()
 
 const minimizeWindow = () => {
-  ipcManager.invoke('minimize_window');
-};
+  ipcManager.invoke('minimize_window')
+}
 
 const hideWindow = () => {
-  ipcManager.invoke('hide_window');
-};
+  ipcManager.invoke('hide_window')
+}
 </script>
 
 <template>

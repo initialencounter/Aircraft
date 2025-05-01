@@ -1,4 +1,4 @@
-@use "sass:meta";
+@use 'sass:meta';
 @import './base.css';
 
 #app {
@@ -33,7 +33,6 @@ a,
   }
 }
 
-
 @include meta.load-css('element.scss');
 
 :root {
@@ -50,14 +49,14 @@ a,
   }
 }
 
-.el-button{
+.el-button {
   --el-button-border-color: #414148;
   --el-button-hover-bg-color: #252529;
   --el-button-hover-border-color: #519f1f;
   background-color: #313136;
 }
 
-.el-input{
+.el-input {
   --el-input-border-color: rgba(82, 82, 89, 0.8);
   --el-input-bg-color: #313136;
   --el-input-hover-border-color: #519f1f;
@@ -69,6 +68,6 @@ a,
   --el-switch-off-color: #4c4c4c;
 }
 
-.el-popover{
+.el-popover {
   --el-popup-bg-color: #000000;
 }

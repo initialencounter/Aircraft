@@ -1,9 +1,11 @@
-import { Tray, Menu, BrowserWindow } from 'electron'
 import path from 'path'
-import { Context, Service } from 'cordis'
-import type { } from '../service/app'
-import type { } from '../service/win'
-import type { } from '@cordisjs/plugin-http'
+
+import { Tray, Menu, BrowserWindow } from 'electron'
+import type { Context } from 'cordis'
+import { Service } from 'cordis'
+import type {} from '../service/app'
+import type {} from '../service/win'
+import type {} from '@cordisjs/plugin-http'
 
 declare module 'cordis' {
   interface Context {
@@ -19,7 +21,7 @@ class CustomTray extends Service {
   }
   createTray() {
     if (!this.ctx.app.VITE_PUBLIC) {
-      this.ctx.logger.error('VITE_PUBLIC is not set');
+      this.ctx.logger.error('VITE_PUBLIC is not set')
     }
     const icon = path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico')
     this.tray = new Tray(icon)
@@ -44,20 +46,22 @@ class CustomTray extends Service {
           new BrowserWindow({
             icon: icon,
             show: true,
-          }).loadURL('https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助')
-        }
+          }).loadURL(
+            'https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助'
+          )
+        },
       },
       {
         label: '退出(X)',
         click: () => {
           this.ctx.app.app.quit()
-        }
+        },
       },
       {
         label: '隐藏(H)',
         click: () => {
           this.ctx.win.win?.hide()
-        }
+        },
       },
 
       {
@@ -67,7 +71,7 @@ class CustomTray extends Service {
             icon: icon,
             show: true,
           }).loadURL('https://github.com/initialencounter/Aircraft')
-        }
+        },
       },
       {
         label: '检查更新(U)',
@@ -75,8 +79,10 @@ class CustomTray extends Service {
           new BrowserWindow({
             icon: icon,
             show: true,
-          }).loadURL('https://github.com/initialencounter/Aircraft/releases/latest')
-        }
+          }).loadURL(
+            'https://github.com/initialencounter/Aircraft/releases/latest'
+          )
+        },
       },
     ])
     this.tray.setContextMenu(contextMenu)

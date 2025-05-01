@@ -95,41 +95,41 @@ export default {
     return {
       weight: null,
       height: null,
-    };
+    }
   },
   computed: {
     // 按层数计算
     layerCount() {
-      if (!this.height) return 0;
-      let layers = 3000 / this.height;
+      if (!this.height) return 0
+      let layers = 3000 / this.height
       if (Number.isInteger(layers)) {
-        return layers - 1;
+        return layers - 1
       }
-      return Math.floor(layers);
+      return Math.floor(layers)
     },
     loadByLayer() {
-      return this.layerCount * this.weight;
+      return this.layerCount * this.weight
     },
     loadByLayerNewton() {
-      return this.loadByLayer * 9.8;
+      return this.loadByLayer * 9.8
     },
 
     // 按高度计算
     heightBasedLayer() {
-      if (!this.height) return 0;
-      return 3000 / this.height - 1;
+      if (!this.height) return 0
+      return 3000 / this.height - 1
     },
     loadByHeight() {
-      return this.heightBasedLayer * this.weight;
+      return this.heightBasedLayer * this.weight
     },
     loadByHeightNewton() {
-      return this.loadByHeight * 9.8;
+      return this.loadByHeight * 9.8
     },
   },
   methods: {
     formatNumber(num, fixed = 3) {
-      if (!num) return '0';
-      const result = String(num.toFixed(fixed));
+      if (!num) return '0'
+      const result = String(num.toFixed(fixed))
       // 如果小数点后都是0，则转为整数
       if (
         result.endsWith('.0000') ||
@@ -141,12 +141,12 @@ export default {
           .replace('.0000', '')
           .replace('.000', '')
           .replace('.00', '')
-          .replace('.0', '');
+          .replace('.0', '')
       }
-      return result;
+      return result
     },
   },
-};
+}
 </script>
 
 <style scoped>

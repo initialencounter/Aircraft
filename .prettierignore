@@ -1,0 +1,11 @@
+.vscode
+headless
+node_modules
+pdf-parser
+share
+src-tauri
+summary-rs
+target
+dist
+dist-electron
+*.log

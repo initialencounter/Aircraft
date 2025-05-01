@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import TitleBar from './components/TitleBar.vue';
-import { Event } from '@tauri-apps/api/event';
-import SideBar from './components/SideBar.vue';
-import { ipcManager } from './utils/ipcManager';
+import TitleBar from './components/TitleBar.vue'
+import { Event } from '@tauri-apps/api/event'
+import SideBar from './components/SideBar.vue'
+import { ipcManager } from './utils/ipcManager'
 
 interface Link {
-  link: string;
+  link: string
 }
 
 ipcManager.on('open_link', (data: Event<Link>): void => {
-  window.open(data.payload.link);
-});
+  window.open(data.payload.link)
+})
 </script>
 
 <template>
