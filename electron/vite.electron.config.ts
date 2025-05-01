@@ -41,6 +41,14 @@ export default defineConfig(({ command }) => {
                 // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
                 // Of course, this is not absolute, just this way is relatively simple. :)
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                onwarn(warning, warn) {
+                  if (warning.code === 'EVAL' &&
+                    (warning.id?.includes('file-type/core.js') ||
+                      warning.id?.includes('depd/index.js'))) {
+                    return
+                  }
+                  warn(warning)
+                },
               },
             },
           },
@@ -56,6 +64,14 @@ export default defineConfig(({ command }) => {
               outDir: 'dist-electron/preload',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                onwarn(warning, warn) {
+                  if (warning.code === 'EVAL' &&
+                    (warning.id?.includes('file-type/core.js') ||
+                      warning.id?.includes('depd/index.js'))) {
+                    return
+                  }
+                  warn(warning)
+                },
               },
             },
           },

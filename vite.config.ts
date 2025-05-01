@@ -47,6 +47,15 @@ export default defineConfig(async () => ({
   build: {
     rollupOptions: {
       input: path.join(__dirname, 'electron/index.html'),
+      onwarn(warning, warn) {
+        // 忽略 eval 相关警告
+        if (warning.code === 'EVAL' &&
+          (warning.id?.includes('file-type/core.js') ||
+            warning.id?.includes('depd/index.js'))) {
+          return
+        }
+        warn(warning)
+      },
     }
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
