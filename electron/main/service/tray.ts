@@ -21,7 +21,8 @@ class CustomTray extends Service {
     if (!this.ctx.app.VITE_PUBLIC) {
       this.ctx.logger.error('VITE_PUBLIC is not set');
     }
-    this.tray = new Tray(path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'))
+    const icon = path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico')
+    this.tray = new Tray(icon)
     this.tray.setToolTip('Aircraft')
     this.tray.on('click', () => {
       if (this.ctx.win.win?.isVisible()) {
@@ -41,7 +42,7 @@ class CustomTray extends Service {
         label: '帮助(H)',
         click: () => {
           new BrowserWindow({
-            icon: path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'),
+            icon: icon,
             show: true,
           }).loadURL('https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助')
         }
@@ -63,7 +64,7 @@ class CustomTray extends Service {
         label: '关于(A)',
         click: () => {
           new BrowserWindow({
-            icon: path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'),
+            icon: icon,
             show: true,
           }).loadURL('https://github.com/initialencounter/Aircraft')
         }
@@ -72,7 +73,7 @@ class CustomTray extends Service {
         label: '检查更新(U)',
         click: async () => {
           new BrowserWindow({
-            icon: path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'),
+            icon: icon,
             show: true,
           }).loadURL('https://github.com/initialencounter/Aircraft/releases/latest')
         }

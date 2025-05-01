@@ -2,25 +2,21 @@
   "name": "electron.initialencounter.aircraft",
   "private": true,
   "version": "0.6.0",
+  "description": "Aircraft electron app",
+  "author": {
+    "name": "InitialEncounter"
+  },
   "main": "dist-electron/main/index.js",
-  "workspaces": [
-    "electron",
-    "bindings/node"
-  ],
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://127.0.0.1:3344/"
     }
   },
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:electron": "cd electron && chcp 65001 && vite -c vite.electron.config.ts",
-    "build:electron": "cd electron && vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "start": "chcp 65001 && vite -c vite.electron.config.ts",
+    "build": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never"
   },
+  "type": "module",
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
     "@maikolib/vite-plugin-yaml": "^1.1.0",
@@ -37,7 +33,7 @@
     "@types/spark-md5": "^3.0.5",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vueuse/core": "^11.2.0",
-    "electron": "^34.0.0",
+    "electron": "34.0.0",
     "electron-builder": "^25.1.8",
     "element-plus": "^2.8.7",
     "markdown-vue": "^1.0.3",
@@ -65,7 +61,6 @@
     "cordis": "^3.18.1",
     "cors": "^2.8.5",
     "electron-log": "^5.2.4",
-    "express": "^4.21.2",
     "koa-compose": "^4.1.0",
     "multer": "^1.4.5-lts.2",
     "reggol": "^1.7.1",

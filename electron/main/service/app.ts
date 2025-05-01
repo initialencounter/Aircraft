@@ -25,6 +25,7 @@ class App extends Service {
   preload: string
   indexHtml: string
   logger: Logger
+  ICON_PATH: string
   constructor(ctx: Context) {
     super(ctx, 'app')
     this.require = createRequire(import.meta.url)

@@ -23,8 +23,8 @@ export default defineConfig(async () => ({
   },
   optimizeDeps: {
     include: [
-      'cordis', 
-      'electron-store', 
+      'cordis',
+      'electron-store',
       'schemastery-vue',
       'element-plus',
       'vue-i18n',
@@ -40,6 +40,14 @@ export default defineConfig(async () => ({
     esbuildOptions: {
       target: 'esnext', // 使用更现代的目标
     },
+  },
+  // 指定项目根目录
+  root: path.join(__dirname, 'electron'),
+
+  build: {
+    rollupOptions: {
+      input: path.join(__dirname, 'electron/index.html'),
+    }
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

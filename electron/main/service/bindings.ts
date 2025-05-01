@@ -22,7 +22,10 @@ class RustBindings extends Service {
     super(ctx, 'bindings')
     const __dirname = path.dirname(fileURLToPath(import.meta.url))
     const APP_ROOT = path.join(__dirname, '../..')
-    this.bindingsPath = path.join(APP_ROOT, 'bindings/node/index.js')
+    const isDev = process.env.NODE_ENV === 'development'
+    this.bindingsPath = path.join(
+      APP_ROOT,
+      `${isDev ? '../' : ''}bindings/node/index.js`)
     ctx.on('ready', async () => {
       this.bindings = await import(`file://${this.bindingsPath}`) as typeof AircraftRs;
       ctx.emit('bindings-ready')

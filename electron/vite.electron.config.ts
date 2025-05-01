@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron/simple'
-import pkg from './package.json'
+import pkg from '../package.json'
 import yaml from "@maikolib/vite-plugin-yaml";
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
@@ -11,15 +11,18 @@ export default defineConfig(({ command }) => {
   const isServe = command === 'serve'
   const isBuild = command === 'build'
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG
-
+  const mainEntry = 'main/index.ts'
+  const preloadEntry = 'preload/index.ts'
+  const root = __dirname
   return {
+    root,
     plugins: [
       vue(),
       yaml(),
       electron({
         main: {
           // Shortcut of `build.lib.entry`
-          entry: 'electron/main/index.ts',
+          entry: mainEntry,
           onstart({ startup }) {
             if (process.env.VSCODE_DEBUG) {
               console.log(/* For `.vscode/.debug.script.mjs` */'[startup] Electron App')
@@ -45,7 +48,7 @@ export default defineConfig(({ command }) => {
         preload: {
           // Shortcut of `build.rollupOptions.input`.
           // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
-          input: 'electron/preload/index.ts',
+          input: preloadEntry,
           vite: {
             build: {
               sourcemap: sourcemap ? 'inline' : undefined, // #332
@@ -96,15 +99,20 @@ export default defineConfig(({ command }) => {
         host: url.hostname,
         port: +url.port,
         watch: {
+          included: [
+            "src/**",
+            "electron/**",
+            "public/**",
+          ],
           ignored: [
             "**/.yarn/**",
-            "**/.vscode/*",
+            "**/.vscode/**",
             "**/bindings/**",
             "**/dist/**",
             "**/dist-electron/**",
             "**/elctron/**",
             "**/headless/**",
-            "**/logs**",
+            "**/logs/**",
             "**/node_modules/**",
             "**/pdf-parser/**",
             "**/release/**",
