@@ -1,17 +1,11 @@
 {
   "name": "electron.initialencounter.aircraft",
-  "private": true,
   "version": "0.6.0",
   "description": "Aircraft electron app",
   "author": {
     "name": "InitialEncounter"
   },
   "main": "dist-electron/main/index.js",
-  "debug": {
-    "env": {
-      "VITE_DEV_SERVER_URL": "http://127.0.0.1:3344/"
-    }
-  },
   "scripts": {
     "start": "chcp 65001 && vite -c vite.electron.config.ts",
     "build": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never"
@@ -47,15 +41,15 @@
     "vue-tsc": "^2.2.8"
   },
   "dependencies": {
-    "@cordisjs/plugin-http": "^0.6.3",
-    "@cordisjs/plugin-server": "^0.2.5",
     "@koa/cors": "^5.0.0",
-    "@koa/multer": "^3.0.2",
     "auto-launch": "^5.0.6",
     "cordis": "^3.18.1",
     "koa-compose": "^4.1.0",
     "multer": "^1.4.5-lts.2",
     "reggol": "^1.7.1",
+    "@cordisjs/plugin-server": "^0.2.5",
+    "@cordisjs/plugin-http": "^0.6.3",
+    "@koa/multer": "^3.0.2",
     "spark-md5": "^3.0.2"
   },
   "overrides": {
