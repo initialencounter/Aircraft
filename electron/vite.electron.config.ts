@@ -105,7 +105,6 @@ export default defineConfig(({ command }) => {
             "public/**",
           ],
           ignored: [
-            "**/.yarn/**",
             "**/.vscode/**",
             "**/bindings/**",
             "**/dist/**",
