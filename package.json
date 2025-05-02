@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "workspaces": [
+    "packages/*",
     "electron",
     "bindings/node"
   ],
@@ -38,6 +39,7 @@
     "yakumo-upgrade": "^0.3.6"
   },
   "dependencies": {
+    "@aircraft/renderer": "workspace:*",
     "@cordisjs/plugin-http": "^0.6.3",
     "@cordisjs/plugin-server": "^0.2.5",
     "@koa/cors": "^5.0.0",

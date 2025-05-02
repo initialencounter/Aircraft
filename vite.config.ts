@@ -31,8 +31,6 @@ export default defineConfig(async () => ({
       '@element-plus/icons-vue',
     ],
   },
-  // 指定项目根目录
-  root: path.join(__dirname, 'electron'),
 
   build: {
     rollupOptions: {
@@ -66,5 +64,23 @@ export default defineConfig(async () => ({
           port: 1421,
         }
       : undefined,
+    watch: {
+      ignored: [
+        '**/.vscode/**',
+        '**/bindings/**',
+        '**/dist/**',
+        '**/dist-electron/**',
+        '**/elctron/**',
+        '**/headless/**',
+        '**/logs/**',
+        '**/node_modules/**',
+        '**/pdf-parser/**',
+        '**/release/**',
+        '**/share/**',
+        '**/src-tauri/**',
+        '**/target/**',
+        '**/summary-rs/**',
+      ],
+    },
   },
 }))

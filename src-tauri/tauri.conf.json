@@ -4,10 +4,10 @@
   "version": "0.6.0",
   "identifier": "com.initialencounter.aircraft",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "yarn build",
+    "frontendDist": "../electron/dist"
   },
   "app": {
     "windows": [

@@ -24,7 +24,8 @@
     /* Type Declarations */
     "typeRoots": ["./node_modules/@types", "./types"],
     "paths": {
-      "schemastery-vue": ["./types/schemastery-vue.d.ts"]
+      "schemastery-vue": ["./types/schemastery-vue.d.ts"],
+      "@aircraft/renderer": ["./packages/renderer/src"]
     }
   },
   "include": [
