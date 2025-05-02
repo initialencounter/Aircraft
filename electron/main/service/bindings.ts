@@ -1,10 +1,7 @@
-import path from 'path'
-import { fileURLToPath } from 'node:url'
-
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
 
-import type AircraftRs from '../../../bindings/node'
+import type AircraftRs from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
@@ -13,28 +10,17 @@ declare module 'cordis' {
   interface Events {
     'electron-ready': () => void
     'electron-dispose': () => void
-    'bindings-ready': () => void
   }
 }
 
 class RustBindings extends Service {
+  static inject = ['app']
   bindings: typeof AircraftRs
   bindingsPath: string
   constructor(ctx: Context) {
     super(ctx, 'bindings')
-    const __dirname = path.dirname(fileURLToPath(import.meta.url))
-    const APP_ROOT = path.join(__dirname, '../..')
-    const isDev = process.env.NODE_ENV === 'development'
-    this.bindingsPath = path.join(
-      APP_ROOT,
-      `${isDev ? '../' : ''}bindings/node/index.js`
-    )
-    ctx.on('ready', async () => {
-      this.bindings = (await import(
-        `file://${this.bindingsPath}`
-      )) as typeof AircraftRs
-      ctx.emit('bindings-ready')
-    })
+    //@ts-ignore
+    this.bindings = this.ctx.app.require('aircraft-rs')
   }
 }
 

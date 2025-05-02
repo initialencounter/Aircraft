@@ -35,6 +35,7 @@
     "@cordisjs/plugin-server": "^0.2.5",
     "@koa/cors": "^5.0.0",
     "@koa/multer": "^3.1.0",
+    "aircraft-rs": "workspace:*",
     "auto-launch": "^5.0.6",
     "cordis": "^3.18.1",
     "koa-compose": "^4.2.0",

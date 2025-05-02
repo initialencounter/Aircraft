@@ -10,9 +10,6 @@ use pdf_parser::uploader::FileManager;
 use serde::{Deserialize, Serialize};
 use summary_rs::{parse_docx_table, parse_docx_text, read_docx_content};
 
-#[napi(js_name = "AircraftRs")]
-pub struct AircraftRs {}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GoodsInfo {
@@ -20,6 +17,9 @@ struct GoodsInfo {
   name: String,
   labels: Vec<String>,
 }
+
+#[napi(js_name = "AircraftRs")]
+pub struct AircraftRs {}
 
 #[napi]
 impl AircraftRs {
@@ -67,12 +67,12 @@ impl AircraftRs {
 }
 
 #[napi(js_name = "FileManager")]
-pub struct FileManagerInstance {
+pub struct JsFileManager {
   manager: FileManager,
 }
 
 #[napi]
-impl FileManagerInstance {
+impl JsFileManager {
   #[napi(constructor)]
   pub fn new(base_url: String, api_key: String, model: String) -> Self {
     let manager = FileManager::new(LLMConfig {

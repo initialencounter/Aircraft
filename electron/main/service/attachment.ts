@@ -6,7 +6,7 @@ import { Service } from 'cordis'
 import type {} from '@cordisjs/plugin-http'
 import type {} from '@cordisjs/plugin-server'
 import type {} from '../service/bindings'
-import type { AircraftRs } from '../../../bindings/node'
+import type { AircraftRs } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
@@ -19,9 +19,7 @@ class Attachment extends Service {
   private bindings: AircraftRs
   constructor(ctx: Context) {
     super(ctx, 'attachment')
-    ctx.on('bindings-ready', () => {
-      this.bindings = new ctx.bindings.bindings.AircraftRs()
-    })
+    this.bindings = new ctx.bindings.bindings.AircraftRs()
   }
 
   async getAttachmentInfo(

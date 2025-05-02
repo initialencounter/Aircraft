@@ -4,8 +4,8 @@ import { Service } from 'cordis'
 import type {} from '@cordisjs/plugin-http'
 import type {} from '@cordisjs/plugin-server'
 import type {} from '../service/bindings'
+import type { FileManager } from 'aircraft-rs'
 import type { LLMConfig } from '../../types'
-import type { FileManager } from '../../../bindings/node'
 
 import type { ConfigManager } from './config'
 
@@ -21,14 +21,12 @@ class LLM extends Service {
   private bindings: FileManager
   constructor(ctx: Context) {
     super(ctx, 'llm')
-    ctx.on('bindings-ready', () => {
-      const llmConfig = ctx.configManager.getConfig<'llm'>('llm')
-      this.bindings = new ctx.bindings.bindings.FileManager(
-        llmConfig.base_url,
-        llmConfig.api_key,
-        llmConfig.model
-      )
-    })
+    const llmConfig = ctx.configManager.getConfig<'llm'>('llm')
+    this.bindings = new ctx.bindings.bindings.FileManager(
+      llmConfig.base_url,
+      llmConfig.api_key,
+      llmConfig.model
+    )
   }
   /**
    * 重载配置

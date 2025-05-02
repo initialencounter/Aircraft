@@ -7,6 +7,7 @@ import SchemaBase from '../components/SchemaBase.vue'
 import SchemaHotkey from '../components/SchemaHotkey.vue'
 import Logs from '../views/Logs.vue'
 import Blake2 from '../views/Blake2.vue'
+//@ts-ignore
 import Stack from '../views/Stack.vue'
 import SchemaLLM from '../components/SchemaLLM.vue'
 import PdfParse from '../views/PdfParse.vue'

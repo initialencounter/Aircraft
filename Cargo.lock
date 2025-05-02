@@ -97,18 +97,14 @@ dependencies = [
 name = "aircraft-rs"
 version = "0.0.0"
 dependencies = [
- "lazy_static",
  "napi",
  "napi-build",
  "napi-derive",
  "pdf-parser",
- "regex",
  "serde",
  "serde_json",
  "share",
  "summary-rs",
- "tokio",
- "warp",
 ]
 
 [[package]]
@@ -3391,23 +3387,25 @@ dependencies = [
 
 [[package]]
 name = "napi"
-version = "2.16.13"
+version = "2.16.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "214f07a80874bb96a8433b3cdfc84980d56c7b02e1a0d7ba4ba0db5cef785e2b"
+checksum = "55740c4ae1d8696773c78fdafd5d0e5fe9bc9f1b071c7ba493ba5c413a9184f3"
 dependencies = [
  "bitflags 2.6.0",
  "ctor",
  "napi-derive",
  "napi-sys",
  "once_cell",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 
 [[package]]
 name = "napi-build"
-version = "2.1.4"
+version = "2.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db836caddef23662b94e16bf1f26c40eceb09d6aee5d5b06a7ac199320b69b19"
+checksum = "e28acfa557c083f6e254a786e01ba253fc56f18ee000afcd4f79af735f73a6da"
 
 [[package]]
 name = "napi-derive"
