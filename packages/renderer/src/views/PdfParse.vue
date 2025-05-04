@@ -1,147 +1,69 @@
-<script lang="ts" setup>
+<script lang="ts" setup xmlns="">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
 import { ref } from 'vue'
-import { Event } from '@tauri-apps/api/event'
 import { ipcManager } from '../utils/ipcManager'
 import summaryTable from '../components/SummaryTable.vue'
-import type { SummaryData } from '../types'
-import { isTauri } from '@tauri-apps/api/core'
+import type { SummaryFromLLM } from '../types'
 import { ElMessage } from 'element-plus'
+import FileDropzone from '../components/FileDropzone.vue'
+import { checkSummaryFromLLM } from '../utils/llm'
+import { convertSummaryInfo2SummaryFromLLM } from '../utils/convertSummaryInfo2SummaryFromLLM'
+import { useSummaryStore } from '../stores/summary'
+import { SummaryInfo } from 'aircraft-rs'
+import { Loading } from '@element-plus/icons-vue'
+interface ParseReportFiles {
+  pdf: File
+  docx: File
+}
+const summaryStore = useSummaryStore()
 
-const is_tauri = isTauri()
-const loading = ref(false) // 添加loading状态变量
-const parseResult = ref<SummaryData>({
-  /**制造商或生产工厂中文名称*/
-  manufacturerCName: '',
-
-  /**制造商或生产工厂英文名称*/
-  manufacturerEName: '',
-
-  /**测试单位 Test Lab*/
-  testLab: '',
-
-  /**电池中文名称*/
-  cnName: '',
-
-  /**电池英文名称*/
-  enName: '',
-
-  /**电池类型
-   * 锂离子电芯：不含电路保护板的单电芯电池，判断方法：T1的测试数量为10个，T7为不适用
-   * 单电芯锂离子电池：含电路保护板单电芯电池，判断方法：T1的测试数量为10个,电芯的组合方式为1S1P
-   * 锂离子电池：多个电芯组成的电池，判断方法：T1的测试数量为8个或4个
-   * 锂金属电芯：单电芯锂金属电池，判断方法：T1的测试数量为10个，T7为不适用
-   * 锂金属电池：多个电芯组成的锂金属电池，判断方法：T7为不适用，T1的测试数量为8个或4个
-   */
-  classification: '锂离子电池',
-
-  /**电池型号*/
-  type: '',
-
-  /**电池商标*/
-  trademark: '',
-
-  /**电池电压，单位：V*/
-  voltage: 0,
-
-  /**电池容量，单位：mAh*/
-  capacity: 0,
-
-  /**电池瓦时，单位：Wh
-   * 如果是锂金属电池则无需填写
-   */
-  watt: 0,
-
-  /**电池颜色*/
-  color: '',
-
-  /**电池形状*/
-  shape: '',
-
-  /**单块电池质量，单位：g
-   * 如果报告中没有写明，则需要从T1原始数据中取一个平均值或最大值
-   */
-  mass: 0,
-
-  /**锂含量，单位：g
-   * 如果是锂离子电池则无需填写
-   */
-  licontent: 0,
-
-  /**UN38.3测试报告编号*/
-  testReportNo: '',
-
-  /** UN38.3测试报告签发日期签发日期
-   * 格式为：yyyy-MM-dd，如果日期为2021.01.01，则填需要转为2021-01-01
-   */
-  testDate: '',
-
-  /** UN38.3测试报告测试标准或试验依据Test Method
-   * 版本号和修订号有区别的，不要弄错了
-   * 没有修订号的，不要写修订号，这个经常容易弄错，请仔细核对
-   */
-  testManual: '第8版',
-
-  /**
-   * T.1：高度模拟 Altitude Simulation(通过true, 不适用/未通过false)
-   */
-  test1: true,
-
-  /**T.2：温度试验 Thermal Test*/
-  test2: true,
-
-  /**T.3：振动 Vibration*/
-  test3: true,
-
-  /**T.4：冲击 Shock*/
-  test4: true,
-
-  /**T.5：外部短路 External Short Circuit*/
-  test5: true,
-
-  /**T.6：撞击/挤压 Impact/Crush */
-  test6: true,
-
-  /**T.7：过度充电 vercharge*/
-  test7: false,
-
-  /**T.8：T.8：强制放电 Forced Discharge*/
-  test8: true,
-})
-
-const rawText = ref('')
-ipcManager.invoke('switch_drag_to_blake2', { value: false })
-ipcManager.on('pdf_reader_result', (data: Event<string>): void => {
-  loading.value = false // 收到结果后关闭loading
-  try {
-    parseResult.value = JSON.parse(data.payload) as SummaryData
-  } catch (e) {
-    rawText.value = data.payload
-  }
-})
-
-if (!is_tauri) {
-  document.ondragover = dragleaveEvent
-  document.ondragenter = dragleaveEvent
-  document.ondragleave = dragleaveEvent
-  document.ondrop = dropEvent
+const loading = ref(false)
+const labelPosition = ref('summary')
+const verifyResult = ref<string[]>(summaryStore.result)
+const parseResult = ref<SummaryFromLLM>(summaryStore.pdf)
+const llmResult = ref<SummaryFromLLM>(summaryStore.docx)
+document.oncontextmenu = function () {
+  return false
 }
 
-function dragleaveEvent(event: DragEvent) {
-  event.stopPropagation()
-  event.preventDefault()
-}
+const handleFilesChange = (_files: File[]) => {}
 
-async function dropEvent(event: DragEvent) {
-  event.stopPropagation()
-  event.preventDefault()
-  const files = event.dataTransfer!.files
+const handleFileSelect = (_file: File) => {}
+
+const handleFileRemove = (_file: File) => {}
+
+const handleParseReport = async (files: ParseReportFiles) => {
   loading.value = true // 开始处理文件时显示loading
-  const buf = await files[0].arrayBuffer()
   try {
-    const res = await ipcManager.invoke('summary_report', buf)
-    parseResult.value = JSON.parse(res)
+    const pdfDataUrl = await fileToBase64(files.pdf)
+    const docxDataUrl = await fileToBase64(files.docx)
+    if (!pdfDataUrl || !docxDataUrl) {
+      ElMessage.error('文件解析失败')
+      loading.value = false
+      return
+    }
+    const pdfBase64 = pdfDataUrl.split(',')[1]
+    const docxBase64 = docxDataUrl.split(',')[1]
+    const pdfRes: SummaryFromLLM = JSON.parse(
+      await ipcManager.invoke('get_report_summary_by_buffer', {
+        base64String: pdfBase64,
+      })
+    )
+    const docxRes: SummaryInfo = await ipcManager.invoke(
+      'get_summary_info_by_buffer',
+      { base64String: docxBase64 }
+    )
+
+    llmResult.value = pdfRes as SummaryFromLLM
+    summaryStore.setPdf(llmResult.value)
+    console.log(docxRes, 'docxRes')
+    parseResult.value = convertSummaryInfo2SummaryFromLLM(docxRes)
+    summaryStore.setDocx(parseResult.value)
+
+    let result = checkSummaryFromLLM(pdfRes, docxRes)
+    verifyResult.value = result.map((item) => item.result)
+    summaryStore.setResult(verifyResult.value)
   } catch (e) {
     ElMessage.error('解析失败' + e)
     console.log('解析失败', e)
@@ -150,19 +72,57 @@ async function dropEvent(event: DragEvent) {
   }
 }
 
-document.oncontextmenu = function () {
-  return false
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const base64String = reader.result as string
+      resolve(base64String)
+    }
+
+    reader.onerror = (error) => {
+      reject(error)
+    }
+
+    reader.readAsDataURL(file)
+  })
 }
 </script>
 
 <template>
   <!-- 头部 -->
-  <h1 class="noSelectTitle" data-tauri-drag-region style="font-size: 24px"></h1>
+  <h1 class="noSelectTitle" style="font-size: 24px"></h1>
   <!-- 内容区 -->
+  <FileDropzone
+    accept=".pdf,.docx"
+    :multiple="true"
+    :maxSize="20"
+    :maxFiles="5"
+    @files-change="handleFilesChange"
+    @file-select="handleFileSelect"
+    @file-remove="handleFileRemove"
+    @parse-report="handleParseReport"
+  />
+  <el-radio-group v-model="labelPosition">
+    <el-radio value="result">验证结果</el-radio>
+    <el-radio value="summary">概要</el-radio>
+    <el-radio value="UN38.3">UN38.3报告</el-radio>
+  </el-radio-group>
   <br />
-  请拖拽UN报告到此次区域
-  <summaryTable :data="parseResult"></summaryTable>
-
+  <k-markdown
+    v-if="labelPosition === 'result'"
+    :source="'- ' + verifyResult.join('\n- ')"
+  ></k-markdown>
+  <summaryTable
+    v-if="labelPosition === 'summary'"
+    :data="parseResult"
+  ></summaryTable>
+  <summaryTable
+    v-if="labelPosition === 'UN38.3'"
+    :data="llmResult"
+    :isUN38="true"
+  ></summaryTable>
   <!-- 添加遮罩层 -->
   <div class="loading-mask" v-if="loading" @dblclick="loading = false">
     <div class="loading-content">

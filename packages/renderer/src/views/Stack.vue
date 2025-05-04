@@ -8,10 +8,10 @@
           <label>包装件毛重 (kg)</label>
           <div class="input-wrapper">
             <input
-              type="number"
               v-model="weight"
-              step="0.01"
               placeholder="请输入重量"
+              step="0.01"
+              type="number"
             />
             <span class="unit">kg</span>
           </div>
@@ -21,17 +21,17 @@
           <label>包装件高度 (mm)</label>
           <div class="input-wrapper">
             <input
-              type="number"
               v-model="height"
-              step="0.1"
               placeholder="请输入高度"
+              step="0.1"
+              type="number"
             />
             <span class="unit">mm</span>
           </div>
         </div>
       </div>
 
-      <div class="results" v-if="height && weight">
+      <div v-if="height && weight" class="results">
         <div class="result-group">
           <h3>按层数计算</h3>
           <div class="result-item">
@@ -88,64 +88,71 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Stack',
-  data() {
-    return {
-      weight: null,
-      height: null,
-    }
-  },
-  computed: {
-    // 按层数计算
-    layerCount() {
-      if (!this.height) return 0
-      let layers = 3000 / this.height
-      if (Number.isInteger(layers)) {
-        return layers - 1
-      }
-      return Math.floor(layers)
-    },
-    loadByLayer() {
-      return this.layerCount * this.weight
-    },
-    loadByLayerNewton() {
-      return this.loadByLayer * 9.8
-    },
+<script lang="ts" setup>
+import { computed, ref, watch } from 'vue'
+import { useStackStore } from '../stores/stack.ts'
 
-    // 按高度计算
-    heightBasedLayer() {
-      if (!this.height) return 0
-      return 3000 / this.height - 1
-    },
-    loadByHeight() {
-      return this.heightBasedLayer * this.weight
-    },
-    loadByHeightNewton() {
-      return this.loadByHeight * 9.8
-    },
-  },
-  methods: {
-    formatNumber(num, fixed = 3) {
-      if (!num) return '0'
-      const result = String(num.toFixed(fixed))
-      // 如果小数点后都是0，则转为整数
-      if (
-        result.endsWith('.0000') ||
-        result.endsWith('.000') ||
-        result.endsWith('.00') ||
-        result.endsWith('.0')
-      ) {
-        return result
-          .replace('.0000', '')
-          .replace('.000', '')
-          .replace('.00', '')
-          .replace('.0', '')
-      }
-      return result
-    },
-  },
+const stackStore = useStackStore()
+const weight = ref<number | null>(stackStore.weight)
+const height = ref<number | null>(stackStore.height)
+
+watch(weight, (newVal: number) => {
+  stackStore.setWeight(newVal)
+})
+
+watch(height, (newVal: number) => {
+  stackStore.setHeight(newVal)
+})
+
+// 按层数计算
+const layerCount = computed(() => {
+  if (!height.value) return 0
+  let layers = 3000 / height.value
+  if (Number.isInteger(layers)) {
+    return layers - 1
+  }
+  return Math.floor(layers)
+})
+
+const loadByLayer = computed(() => {
+  return (layerCount.value || 0) * (weight.value || 0)
+})
+
+const loadByLayerNewton = computed(() => {
+  return loadByLayer.value * 9.8
+})
+
+// 按高度计算
+const heightBasedLayer = computed(() => {
+  if (!height.value) return 0
+  return 3000 / height.value - 1
+})
+
+const loadByHeight = computed(() => {
+  return heightBasedLayer.value * (weight.value || 0)
+})
+
+const loadByHeightNewton = computed(() => {
+  return loadByHeight.value * 9.8
+})
+
+const formatNumber = (num: number, fixed = 3) => {
+  if (!num) return '0'
+  const result = String(num.toFixed(fixed))
+  // 如果小数点后都是0，则转为整数
+  if (
+    result.endsWith('.0000') ||
+    result.endsWith('.000') ||
+    result.endsWith('.00') ||
+    result.endsWith('.0')
+  ) {
+    return result
+      .replace('.0000', '')
+      .replace('.000', '')
+      .replace('.00', '')
+      .replace('.0', '')
+  }
+  return result
 }
 </script>
 
@@ -196,8 +203,7 @@ export default {
 
 .input-wrapper input {
   width: 100%;
-  padding: 12px;
-  padding-right: 40px;
+  padding: 12px 40px 12px 12px;
   border: 2px solid #404040;
   border-radius: 8px;
   background-color: #333;

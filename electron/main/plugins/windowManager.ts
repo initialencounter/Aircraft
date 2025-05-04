@@ -22,7 +22,7 @@ class WindowManager {
     ctx.app.app.whenReady().then(async () => {
       ctx.emit('electron-ready')
       const baseConfig = ctx.configManager.getConfig('base') as BaseConfig
-      ctx.win.createWindow(baseConfig)
+      await ctx.win.createWindow(baseConfig)
       ctx.tray.createTray()
     })
 

@@ -76,7 +76,7 @@ class CustomTray extends Service {
       {
         label: '检查更新(U)',
         click: async () => {
-          new BrowserWindow({
+          await new BrowserWindow({
             icon: icon,
             show: true,
           }).loadURL(

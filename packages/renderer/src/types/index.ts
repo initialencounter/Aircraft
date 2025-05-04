@@ -1,19 +1,14 @@
-type FileTileMap = FileTile[]
-
-interface FileTile {
-  name: string
+export interface FileItem {
+  file: File
+  size: string
   lastModified: string
-  md5: string
-  path: string
-  color: string
-  focus: boolean
+  additionValue?: string
+  type: string
+  icon: string
+  bgColor?: string
 }
 
-interface Link {
-  link: string
-}
-
-interface SummaryData {
+export interface SummaryFromLLM {
   /**制造商或生产工厂中文名称*/
   manufacturerCName: string | null
 
@@ -128,5 +123,3 @@ interface SummaryData {
   /**T.8：T.8：强制放电 Forced Discharge*/
   test8: boolean
 }
-
-export type { FileTileMap, FileTile, Link, SummaryData }

@@ -6,12 +6,9 @@ use std::env;
 lazy_static! {
     static ref IMAGE_BYTES: Vec<u8> = {
         let signature_path = get_signature_path().unwrap();
-        let bytes = match std::fs::read(signature_path) {
-            Ok(bytes) => bytes,
-            Err(_) => {
+        let bytes = std::fs::read(signature_path).unwrap_or_else(|_| {
                 vec![]
-            }
-        };
+            });
         bytes
     };
 }

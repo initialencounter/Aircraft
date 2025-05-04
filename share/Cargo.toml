@@ -16,15 +16,15 @@ native-dialog = "0.7.0"
 reqwest = {version = "0.12.8", features = ["blocking", "json", "multipart", "cookies", "stream"] }
 copypasta = "0.10.1"
 enigo = "0.2.1"
-summary-rs = {version = "0.1.2", path = "../summary-rs"}
-pdf-parser = {version = "0.1.0", path = "../pdf-parser"}
-ort = "2.0.0-rc.9"
-ndarray = "0.16.1"
-image = "0.25.4"
-pdf = "0.9.0"
-fax = "0.2.4"
 flextrek = "0.2.2"
 anyhow = "1.0.95"
 clipboard-rs = "0.2.2"
 futures-util = "0.3.31"
 bytes = "1.10.1"
+napi = { version = "2.12.2", default-features = false, features = ["napi4", "async", "serde-json"] }
+napi-derive = "2.12.2"
+pdf = "0.9.0"
+fax = "0.2.4"
+pdf-extract = "0.8.2"
+quick-xml = "0.37.1"
+zip = "2.2.1"

@@ -59,7 +59,7 @@ impl HttpClient {
         log_tx: Sender<LogMessage>,
         confirm_fn: fn(&str, &str) -> bool,
     ) -> Self {
-        let client = reqwest::Client::builder()
+        let client = Client::builder()
             .cookie_store(true)
             .build()
             .unwrap();
@@ -220,7 +220,7 @@ impl HttpClient {
             .text("dir", dir)
             .text("fileType", file_type.to_string())
             .text("typeId", project_id.to_string())
-            .text("refesh", "true")
+            .text("refresh", "true")
             .text("allowedFileTypes", "pdf")
             .text("checkpdf", "true")
             .part("file", blob);

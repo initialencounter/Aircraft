@@ -1,11 +1,11 @@
 use crate::command::{get_hotkey_config, get_llm_config, get_server_config};
-use crate::server_manager::ServerManager;
-use pdf_parser::uploader::FileManager;
-use share::hotkey_manager::HotkeyManager;
+use share::manager::server_manager::ServerManager;
+use share::pdf_parser::uploader::FileManager;
+use share::manager::hotkey_manager::HotkeyManager;
 use share::logger::Logger;
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::{path::PathBuf, sync::Arc, sync::Mutex};
 use tauri::{App, Manager};
+use tokio::sync::Mutex as AsyncMutex;
 
 pub fn apply(app: &mut App) {
     // 获取 app_data 目录
@@ -26,12 +26,15 @@ pub fn apply(app: &mut App) {
     let log_tx = logger.lock().unwrap().log_tx.clone();
     app.manage(logger);
     let server_config = get_server_config(app.handle().clone());
-    let server_manager = ServerManager::new(server_config, log_tx, app.handle().clone());
+    let llm_config = get_llm_config(app.handle().clone());
+    let llm_config_clone = llm_config.clone();
+    let server_manager = ServerManager::new(server_config, log_tx, llm_config_clone);
+    server_manager.start();
     app.manage(server_manager);
     let hotkey_config = get_hotkey_config(app.handle().clone());
     let hotkey_manager = HotkeyManager::new(hotkey_config);
     hotkey_manager.start();
     app.manage(hotkey_manager);
     let llm_config = get_llm_config(app.handle().clone());
-    app.manage(Arc::new(Mutex::new(FileManager::new(llm_config))));
+    app.manage(Arc::new(AsyncMutex::new(FileManager::new(llm_config))));
 }

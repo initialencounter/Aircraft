@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
+import {defineStore} from 'pinia'
 
-import { ipcManager } from '../utils/ipcManager'
+import {ipcManager} from '../utils/ipcManager'
 
 interface LogState {
   logHistory: LogMessage[]
@@ -20,8 +20,7 @@ export const useLogStore = defineStore('logs', {
   }),
   actions: {
     async getServerLogs(): Promise<LogMessage[]> {
-      const logs = await ipcManager.invoke('get_server_logs')
-      return logs
+      return await ipcManager.invoke('get_server_logs')
     },
     startGetLog(): void {
       if (this.logTimer) return

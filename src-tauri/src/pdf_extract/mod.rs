@@ -61,7 +61,7 @@ async fn handle_parse_file(app: &AppHandle, path: String) -> Option<String> {
     let pdf_read_result = read_pdf(&path, false);
     let manager = app.state::<Arc<Mutex<FileManager>>>();
 
-    match pdf_read_result {
+    return match pdf_read_result {
         Ok(pdf_read_result) => {
             let mut res = PdfReadResult {
                 content: pdf_read_result.text.clone(),
@@ -78,9 +78,9 @@ async fn handle_parse_file(app: &AppHandle, path: String) -> Option<String> {
                     .await
                     .unwrap();
             }
-            return Some(serde_json::to_string(&res).unwrap());
+            Some(serde_json::to_string(&res).unwrap())
         }
-        Err(_e) => return None,
+        Err(_e) => None,
     }
 }
 

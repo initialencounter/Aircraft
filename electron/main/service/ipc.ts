@@ -3,10 +3,7 @@ import { Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
 
 import type { Config as ConfigType } from '../../types'
-import type {} from '../service/config'
-import type {} from '../service/win'
-import type {} from '../service/llm'
-import { formatLogMessage } from '../service/logger'
+import { formatLogMessage } from './logger'
 
 declare module 'cordis' {
   interface Context {
@@ -19,7 +16,14 @@ declare module 'cordis' {
 }
 
 class Ipc extends Service {
-  static inject = ['app', 'win', 'configManager', 'loggerService', 'llm']
+  static inject = [
+    'app',
+    'win',
+    'configManager',
+    'loggerService',
+    'llm',
+    'bindings',
+  ]
   constructor(ctx: Context) {
     super(ctx, 'ipc')
     ctx.on('electron-ready', () => {
@@ -70,15 +74,16 @@ class Ipc extends Service {
         return this.ctx.configManager.getConfig(key)
       })
     })
-    ipcMain.handle('switch_drag_to_blake2', async () => {
-      this.ctx.logger.info('switch_drag_to_blake2 called')
-    })
     ipcMain.handle('get_hotkey_config', async () => {
       this.ctx.logger.info('get_hotkey_config called')
     })
-    ipcMain.handle('summary_report', async (_, data: ArrayBuffer) => {
-      const res = await this.ctx.llm.uploadLLMFiles(Buffer.from(data))
-      return res
+    ipcMain.handle('get_report_summary_by_buffer', async (_, data: string) => {
+      return await this.ctx.llm.uploadLLMFiles(Buffer.from(data, 'base64'))
+    })
+    ipcMain.handle('get_summary_info_by_buffer', async (_, data: string) => {
+      return await this.ctx.attachment.getSummaryInfoByBuffer(
+        Buffer.from(data, 'base64')
+      )
     })
   }
 }

@@ -1,6 +1,5 @@
 import { Context } from 'cordis'
 import Undios from '@cordisjs/plugin-http'
-import Router from '@cordisjs/plugin-server'
 
 import { Attachment } from './service/attachment'
 import { App } from './service/app'
@@ -18,10 +17,6 @@ import { LLM } from './service/llm'
 
 const context = new Context()
 context.plugin(Undios)
-context.plugin(Router, {
-  port: 25455,
-  host: '0.0.0.0',
-})
 context.plugin(RustBindings)
 context.plugin(Attachment)
 context.plugin(App)

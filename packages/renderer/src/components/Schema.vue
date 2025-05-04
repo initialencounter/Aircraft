@@ -20,48 +20,44 @@ import { ref, onMounted } from 'vue'
 import Schema from 'schemastery'
 import { ElMessage } from 'element-plus'
 import { ipcManager } from '../utils/ipcManager'
+import { ServerConfig } from 'aircraft-rs'
 
-interface Config {
-  base_url: string
-  username: string
-  password: string
-  port: number
-  debug: boolean
-  log_enabled: boolean
-}
-
-const Config = Schema.object({
-  base_url: Schema.string().description('登录域名').default('https://'),
+const Config: Schema<ServerConfig> = Schema.object({
+  baseUrl: Schema.string().description('登录域名').default('https://'),
   username: Schema.string().description('用户名').default(''),
   password: Schema.string().description('密码').role('secret').default(''),
   port: Schema.number().description('端口').default(25455),
   debug: Schema.boolean().description('调试模式').default(true),
-  log_enabled: Schema.boolean().description('日志记录').default(true),
+  logEnabled: Schema.boolean().description('日志记录').default(true),
 }).description('服务设置')
 
-const config = ref<Config>({
-  base_url: 'https://',
+const config = ref<ServerConfig>({
+  baseUrl: 'https://',
   username: '',
   password: '',
   port: 25455,
   debug: false,
-  log_enabled: false,
+  logEnabled: false,
 })
-const initial = ref<Config>({
-  base_url: 'https://',
+const initial = ref<ServerConfig>({
+  baseUrl: 'https://',
   username: '',
   password: '',
   port: 25455,
   debug: false,
-  log_enabled: false,
+  logEnabled: false,
 })
 
 async function getConfig() {
-  config.value = (await ipcManager.invoke('get_server_config')) as Config
+  config.value = (await ipcManager.invoke('get_server_config')) as ServerConfig
+  console.log(
+    'config',
+    (await ipcManager.invoke('get_server_config')) as ServerConfig
+  )
 }
 async function saveConfig() {
   try {
-    const tmpConfig: Config = new Config(config.value)
+    const tmpConfig: ServerConfig = new Config(config.value)
     const result = await ipcManager.invoke('save_server_config', {
       config: tmpConfig,
     })
@@ -75,7 +71,7 @@ function resetConfig() {
 }
 
 async function reloadConfig() {
-  const tmpConfig: Config = new Config(config.value)
+  const tmpConfig: ServerConfig = new Config(config.value)
   await ipcManager.invoke('reload_config', { config: tmpConfig })
   ElMessage.success('重载成功')
 }

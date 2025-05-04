@@ -126,7 +126,7 @@ fn get_clip_text() -> Option<String> {
 }
 
 fn check_project_no(project_no: &str) -> bool {
-    return PROJECT_NO_REGEX.is_match(project_no);
+    PROJECT_NO_REGEX.is_match(project_no)
 }
 
 pub async fn copy_file_to_here(target_dir: String) {

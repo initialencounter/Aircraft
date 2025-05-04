@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import Electron from 'electron'
 import type { Context } from 'cordis'
-import { Service, Logger } from 'cordis'
+import { Service } from 'cordis'
 
 declare module 'cordis' {
   interface Context {
@@ -26,8 +26,6 @@ class App extends Service {
   APP_CONFIG_PATH: string
   preload: string
   indexHtml: string
-  logger: Logger
-  ICON_PATH: string
   constructor(ctx: Context) {
     super(ctx, 'app')
     this.require = createRequire(import.meta.url)
@@ -59,7 +57,6 @@ class App extends Service {
       this.app.quit()
       process.exit(0)
     }
-    this.logger = new Logger('app')
   }
 }
 

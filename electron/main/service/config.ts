@@ -48,12 +48,12 @@ class ConfigManager extends Service {
   getDefaultConfig() {
     return {
       server: {
-        base_url: '',
+        baseUrl: '',
         username: '',
         password: '',
         port: 25455,
         debug: false,
-        log_enabled: false,
+        logEnabled: false,
       },
       base: {
         auto_start: false,
@@ -61,8 +61,8 @@ class ConfigManager extends Service {
         nothing: '',
       },
       llm: {
-        base_url: '',
-        api_key: '',
+        baseUrl: '',
+        apiKey: '',
         model: '',
       },
     }

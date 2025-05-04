@@ -36,4 +36,24 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   return { r, g, b }
 }
 
+// 格式化文件大小
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// 获取文件图标
+export const getFileIcon = (fileType: string): string => {
+  if (fileType.startsWith('image/')) return 'image'
+  if (fileType.startsWith('video/')) return 'video'
+  if (fileType.startsWith('audio/')) return 'audio'
+  if (fileType === 'application/pdf') return 'pdf'
+  if (fileType.includes('word') || fileType.includes('document')) return 'word'
+  if (fileType.includes('sheet') || fileType.includes('excel')) return 'excel'
+  return 'document'
+}
+
 export { formatTimestamp, calculateColorBrightness }

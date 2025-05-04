@@ -1,6 +1,5 @@
 import type { Context } from 'cordis'
 import AutoLaunch from 'auto-launch'
-import type {} from '../service/win'
 
 declare module 'cordis' {
   interface Events {
@@ -11,19 +10,20 @@ declare module 'cordis' {
 class Launch {
   static inject = ['app']
   launch: AutoLaunch
+
   constructor(ctx: Context) {
-    ctx.on('auto-launch-switch', (enable, isHidden) => {
+    ctx.on('auto-launch-switch', async (enable, isHidden) => {
       const launch = new AutoLaunch({
         name: 'aircraft-electron',
         path: ctx.app.app.getPath('exe'),
         isHidden,
       })
       if (enable) {
-        launch.enable()
+        await launch.enable()
       } else {
-        launch.isEnabled().then((isEnabled) => {
+        launch.isEnabled().then(async (isEnabled) => {
           if (isEnabled) {
-            launch.disable()
+            await launch.disable()
           }
         })
       }

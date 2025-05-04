@@ -27,16 +27,6 @@ tauri-plugin-autostart = "2.0.1"
 reqwest = {version = "0.12.8", features = ["blocking", "json", "multipart", "cookies"] }
 tokio = { version = "1.41.0", features = ["full"] }
 chrono = "0.4.38"
-copypasta = "0.10.1"
-enigo = "0.2.1"
-lazy_static = "1.5.0"
-regex = "1.11.1"
-warp = "0.3.7"
-colored = "2.1.0"
 tauri-plugin-store = "2.1.0"
-zip = "2.2.1"
-summary-rs = {version = "0.1.2", path = "../summary-rs"}
-blake2 = "0.10.6"
-hex = "0.4.3"
 share = { path = "../share" }
-pdf-parser = {version = "0.1.0", path = "../pdf-parser"}
+base64 = "0.22.1"

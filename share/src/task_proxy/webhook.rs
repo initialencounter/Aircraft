@@ -1,15 +1,13 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
-use crate::logger::LogMessage;
+use crate::pdf_parser::read::read_pdf_u8;
+use crate::pdf_parser::uploader::FileManager;
 use bytes::BufMut;
 use futures_util::StreamExt;
-use pdf_parser::read::read_pdf_u8;
-use pdf_parser::uploader::FileManager;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
@@ -37,7 +35,6 @@ struct DirectoryInfo {
 
 pub fn apply_webhook(
     port: u16,
-    log_tx: Sender<LogMessage>,
     client: Arc<Mutex<HttpClient>>,
     file_manager: Arc<Mutex<FileManager>>,
 ) -> JoinHandle<()> {
@@ -102,29 +99,24 @@ pub fn apply_webhook(
                 }
             },
         );
-    let log_tx_clone = log_tx.clone();
-    let get_summary_info =
-        warp::get()
-            .and(warp::path("get-attachment-info"))
-            .and(warp::path::param::<String>())
-            .and(warp::query::<HashMap<String, String>>())
-            .and(warp::any().map(move || log_tx_clone.clone()))
-            .then(
-                |project_no: String,
-                 params: HashMap<String, String>,
-                 log_tx: Sender<LogMessage>| async move {
-                    // 从 params 中获取 label 参数
-                    let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
-                    let is_965 = params.get("is_965").map(|s| s.as_str()).unwrap_or("0") == "1";
-                    let return_label = label == "1";
-                    match get_attachment_info(project_no, log_tx, return_label, is_965).await {
-                        Ok(summary_info) => warp::reply::json(&summary_info),
-                        Err(e) => warp::reply::json(&CustomError {
-                            message: format!("获取项目信息失败: {}", e),
-                        }),
-                    }
-                },
-            );
+    let get_summary_info = warp::get()
+        .and(warp::path("get-attachment-info"))
+        .and(warp::path::param::<String>())
+        .and(warp::query::<HashMap<String, String>>())
+        .then(
+            |project_no: String, params: HashMap<String, String>| async move {
+                // 从 params 中获取 label 参数
+                let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
+                let is_965 = params.get("is_965").map(|s| s.as_str()).unwrap_or("0") == "1";
+                let return_label = label == "1";
+                match get_attachment_info(project_no, return_label, is_965).await {
+                    Ok(summary_info) => warp::reply::json(&summary_info),
+                    Err(e) => warp::reply::json(&CustomError {
+                        message: format!("获取项目信息失败: {}", e),
+                    }),
+                }
+            },
+        );
 
     let llm_files_handle = warp::post()
         .and(warp::path("upload-llm-files"))
@@ -162,7 +154,7 @@ pub fn apply_webhook(
 // 自定义错误类型，处理可能的错误（需实现 Reject）
 #[derive(Debug)]
 struct UploadError;
-impl warp::reject::Reject for UploadError {}
+impl Reject for UploadError {}
 
 async fn handle_upload(
     mut form: FormData,
@@ -178,7 +170,7 @@ async fn handle_upload(
                 .ok_or_else(|| warp::reject::custom(UploadError))?
                 .to_string();
 
-            let file_data: Vec<u8> = convert_file_part_to_vecu8(part).await;
+            let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
             let mut file_content = match read_pdf_u8(file_data.clone()) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
@@ -187,15 +179,14 @@ async fn handle_upload(
                 }
             };
             if file_content.trim().is_empty() {
-                file_content = match file_manager.lock().await.get_u8_text(filename, file_data).await {
-                    Ok(text) => {
-                        text
-                    }
-                    Err(e) => {
-                        println!("Error: OCR {:?}", e);
-                        "".to_string()
-                    }
-                };
+                file_content = file_manager
+                    .lock()
+                    .await
+                    .get_u8_text(filename, file_data)
+                    .await.unwrap_or_else(|e| {
+                    println!("Error: OCR {:?}", e);
+                    "".to_string()
+                });
             }
             file_contents.push(file_content);
         }
@@ -207,16 +198,14 @@ async fn handle_upload(
         .await;
 
     match res {
-        Ok(json) => {
-            Ok(warp::reply::json(&json))
-        }
+        Ok(json) => Ok(warp::reply::json(&json)),
         Err(e) => Ok(warp::reply::json(&CustomError {
             message: format!("获取项目信息失败: {}", e),
         })),
     }
 }
 
-async fn convert_file_part_to_vecu8(mut warp_part: warp::multipart::Part) -> Vec<u8> {
+async fn convert_file_part_to_vec_u8(mut warp_part: warp::multipart::Part) -> Vec<u8> {
     let mut file_data: Vec<u8> = Vec::new();
 
     // field.data() only returns a piece of the content, you should call over it until it replies None

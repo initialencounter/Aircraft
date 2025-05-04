@@ -1,11 +1,11 @@
+use crate::command::get_base_config;
+use crate::utils::{check_update, hide_or_show, restart};
+use crate::{menu, Link};
 use std::env;
-use tauri::{App, AppHandle, Wry, Emitter, Manager, WindowEvent};
 use tauri::menu::{MenuBuilder, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
+use tauri::{App, AppHandle, Emitter, Manager, WindowEvent, Wry};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use crate::command::{self as cmd, get_base_config};
-use crate::{menu, Link};
-use crate::utils::{check_update, hide_or_show, restart};
 
 pub fn handle_hide_or_show(app: &AppHandle<Wry>, hide: &MenuItem<Wry>) {
     let window = app.get_webview_window("main").unwrap();
@@ -73,7 +73,7 @@ pub fn handle_setup(app: &mut App) {
         })
         .build(app).unwrap();
     // 静默启动
-    let base_config = cmd::get_base_config(app.handle().clone());
+    let base_config = get_base_config(app.handle().clone());
     if base_config.silent_start {
         if let Some(window) = app.get_webview_window("main") {
             window.hide().unwrap();

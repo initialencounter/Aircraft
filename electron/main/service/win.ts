@@ -19,7 +19,7 @@ class Window extends Service {
   constructor(ctx: Context) {
     super(ctx, 'win')
   }
-  createWindow(config: BaseConfig) {
+  async createWindow(config: BaseConfig) {
     this.ctx.logger.info('createWindow')
     this.win = new BrowserWindow({
       title: 'Aircraft',
@@ -44,7 +44,7 @@ class Window extends Service {
     })
     if (this.ctx.app.VITE_DEV_SERVER_URL) {
       // #298
-      this.win?.loadURL(this.ctx.app.VITE_DEV_SERVER_URL)
+      await this.win?.loadURL(this.ctx.app.VITE_DEV_SERVER_URL)
       this.ctx.logger.info(
         'VITE_DEV_SERVER_URL',
         this.ctx.app.VITE_DEV_SERVER_URL
@@ -52,7 +52,7 @@ class Window extends Service {
       // Open devTool if the app is not packaged
       // this.win?.webContents.openDevTools()
     } else {
-      this.win?.loadFile(this.ctx.app.indexHtml)
+      await this.win?.loadFile(this.ctx.app.indexHtml)
     }
 
     // Test actively push message to the Electron-Renderer

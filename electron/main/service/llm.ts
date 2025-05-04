@@ -1,11 +1,6 @@
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
-
-import type {} from '@cordisjs/plugin-http'
-import type {} from '@cordisjs/plugin-server'
-import type {} from '../service/bindings'
-import type { FileManager } from 'aircraft-rs'
-import type { LLMConfig } from '../../types'
+import type { FileManager, LlmConfig } from 'aircraft-rs'
 
 import type { ConfigManager } from './config'
 
@@ -23,8 +18,8 @@ class LLM extends Service {
     super(ctx, 'llm')
     const llmConfig = ctx.configManager.getConfig<'llm'>('llm')
     this.bindings = new ctx.bindings.bindings.FileManager(
-      llmConfig.base_url,
-      llmConfig.api_key,
+      llmConfig.baseUrl,
+      llmConfig.apiKey,
       llmConfig.model
     )
   }
@@ -32,10 +27,10 @@ class LLM extends Service {
    * 重载配置
    * @param llmConfig
    */
-  async reload(llmConfig: LLMConfig) {
+  async reload(llmConfig: LlmConfig) {
     await this.bindings.reload(
-      llmConfig.base_url,
-      llmConfig.api_key,
+      llmConfig.baseUrl,
+      llmConfig.apiKey,
       llmConfig.model
     )
   }
@@ -61,8 +56,7 @@ class LLM extends Service {
     if (!pdfText.trim().length) {
       throw new Error('PDF解析失败')
     }
-    const res = await this.bindings.chatWithAiFastAndCheap([pdfText])
-    return res
+    return await this.bindings.chatWithAiFastAndCheap([pdfText])
   }
 }
 

@@ -6,7 +6,7 @@ import Schema from '../components/Schema.vue'
 import SchemaBase from '../components/SchemaBase.vue'
 import SchemaHotkey from '../components/SchemaHotkey.vue'
 import Logs from '../views/Logs.vue'
-import Blake2 from '../views/Blake2.vue'
+import Md5Checker from '../views/Md5checker.vue'
 //@ts-ignore
 import Stack from '../views/Stack.vue'
 import SchemaLLM from '../components/SchemaLLM.vue'
@@ -42,8 +42,8 @@ const router = createRouter({
     },
     {
       path: '/blake2',
-      name: 'Blake2',
-      component: Blake2,
+      name: 'Md5Checker',
+      component: Md5Checker,
     },
     {
       path: '/stack',

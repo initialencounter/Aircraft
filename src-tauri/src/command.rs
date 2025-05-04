@@ -1,19 +1,22 @@
-use pdf_parser::types::LLMConfig;
-use pdf_parser::uploader::FileManager;
+use share::pdf_parser::read::read_pdf_u8;
+use share::types::LLMConfig;
+use share::pdf_parser::uploader::FileManager;
 use serde_json::json;
 use std::path::Path;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
+use base64::prelude::*;
 use tauri::Manager;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
+use tokio::sync::Mutex as AsyncMutex;
 
-use crate::blake2::DRAG_TO_BLAKE2;
-use crate::server_manager::ServerManager;
-use share::hotkey_manager::HotkeyManager;
+use share::manager::server_manager::ServerManager;
+use share::manager::hotkey_manager::HotkeyManager;
 use share::logger::{LogMessage, Logger};
 use share::task_proxy::LOGIN_STATUS;
 use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
+use share::summary_rs::{get_summary_info_by_buffer as get_summary_info_by_u8, SummaryInfo};
 
 // 获取登录状态
 #[tauri::command]
@@ -36,10 +39,7 @@ pub async fn save_server_config(app: tauri::AppHandle, config: ServerConfig) -> 
 pub fn get_server_config(app: tauri::AppHandle) -> ServerConfig {
     let store = app.store(&Path::new("config.json")).unwrap();
     match store.get("server") {
-        Some(data) => match serde_json::from_value(data) {
-            Ok(config) => config,
-            Err(_) => ServerConfig::default(),
-        },
+        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| ServerConfig::default()),
         None => ServerConfig::default(),
     }
 }
@@ -51,8 +51,15 @@ pub async fn reload_config(
     state: tauri::State<'_, ServerManager>,
     config: ServerConfig,
 ) -> Result<(), String> {
-    let _ = save_server_config(app, config.clone()).await;
-    state.reload(config).await;
+    let _ = save_server_config(app.clone(), config.clone()).await;
+    let llm_config: LLMConfig = {
+        let store = app.store(&Path::new("config.json")).unwrap();
+        match store.get("llm") {
+            Some(data) => serde_json::from_value(data).unwrap_or_else(|_| LLMConfig::default()),
+            None => LLMConfig::default(),
+        }
+    };
+    state.reload(config, llm_config);
     Ok(())
 }
 
@@ -84,10 +91,7 @@ pub fn set_auto_start(app: tauri::AppHandle, auto_start: bool) -> Result<(), Str
 pub fn get_base_config(app: tauri::AppHandle) -> BaseConfig {
     let store = app.store(&Path::new("config.json")).unwrap();
     match store.get("base") {
-        Some(data) => match serde_json::from_value(data) {
-            Ok(config) => config,
-            Err(_) => BaseConfig::default(),
-        },
+        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| BaseConfig::default()),
         None => BaseConfig::default(),
     }
 }
@@ -123,10 +127,7 @@ pub fn write_log(logger: tauri::State<'_, Arc<Mutex<Logger>>>, level: &str, mess
 pub fn get_hotkey_config(app: tauri::AppHandle) -> HotkeyConfig {
     let store = app.store(&Path::new("config.json")).unwrap();
     match store.get("hotkey") {
-        Some(data) => match serde_json::from_value(data) {
-            Ok(config) => config,
-            Err(_) => HotkeyConfig::default(),
-        },
+        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| HotkeyConfig::default()),
         None => HotkeyConfig::default(),
     }
 }
@@ -136,10 +137,7 @@ pub fn get_hotkey_config(app: tauri::AppHandle) -> HotkeyConfig {
 pub fn get_llm_config(app: tauri::AppHandle) -> LLMConfig {
     let store = app.store(&Path::new("config.json")).unwrap();
     match store.get("llm") {
-        Some(data) => match serde_json::from_value(data) {
-            Ok(config) => config,
-            Err(_) => LLMConfig::default(),
-        },
+        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| LLMConfig::default()),
         None => LLMConfig::default(),
     }
 }
@@ -227,20 +225,15 @@ pub fn hide_window(app: tauri::AppHandle) {
 }
 
 #[tauri::command]
-pub fn switch_drag_to_blake2(value: bool) {
-    DRAG_TO_BLAKE2.store(value, Ordering::Relaxed);
-}
-
-#[tauri::command]
-pub fn reload_llm_config(
+pub async fn reload_llm_config(
     app: tauri::AppHandle,
-    state: tauri::State<'_, Arc<Mutex<FileManager>>>,
+    state: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,
     config: LLMConfig,
 ) -> Result<(), String> {
     let store = app.store(&Path::new("config.json")).unwrap();
     store.set("llm", json!(config.clone()));
     store.save().map_err(|e| e.to_string())?;
-    state.lock().unwrap().reload(config);
+    state.lock().await.reload(config);
     Ok(())
 }
 
@@ -250,4 +243,45 @@ pub fn save_llm_config(app: tauri::AppHandle, config: LLMConfig) -> Result<(), S
     store.set("llm", json!(config.clone()));
     store.save().map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_summary_info_by_buffer(base64_string: String) -> Result<SummaryInfo, String> {
+    let buffer = BASE64_STANDARD.decode(base64_string).map_err(|e| e.to_string())?;
+    get_summary_info_by_u8(buffer)
+        .map_err(|e| e.to_string())
+        .map(|summary_info| summary_info)
+}
+
+#[tauri::command]
+pub async fn get_report_summary_by_buffer(
+    state: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,
+    base64_string: String
+) -> Result<String, String> {
+    let buffer = BASE64_STANDARD.decode(base64_string).map_err(|e| e.to_string())?;
+    let mut pdf_text = match read_pdf_u8(buffer.clone()) {
+        Ok(pdf_read_result) => pdf_read_result.text,
+        Err(_) => String::new(),
+    };
+    if pdf_text.trim().is_empty() {
+        let base_url = state.lock().await.base_url.clone();
+        
+        if base_url != "https://api.deepseek.com" {
+            // 在单独的作用域中获取锁，调用异步函数并等待结果
+            pdf_text = {
+                // 创建临时变量保存要传递给异步调用的数据
+                let file_name = "UN38.3测试报告.pdf".to_string();
+                let buffer_clone = buffer.clone();
+
+                state.lock().await.get_u8_text(file_name, buffer_clone).await.unwrap()
+            };
+        }
+    }
+    if pdf_text.trim().is_empty() {
+        return Err("".to_string());
+    }
+
+    let summary = state.lock().await.chat_with_ai_fast_and_cheap(vec![pdf_text]).await.unwrap();
+
+    Ok(summary)
 }

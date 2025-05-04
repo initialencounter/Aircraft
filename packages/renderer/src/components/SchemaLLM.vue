@@ -13,43 +13,37 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import {onMounted, ref} from 'vue'
 import Schema from 'schemastery'
-import { ElMessage } from 'element-plus'
-import { ipcManager } from '../utils/ipcManager'
+import {ElMessage} from 'element-plus'
+import {ipcManager} from '../utils/ipcManager'
+import {LlmConfig} from 'aircraft-rs'
 
-interface Config {
-  base_url: string
-  api_key: string
-  model: string
-}
-
-const Config = Schema.object({
-  base_url: Schema.string()
+const Config: Schema<LlmConfig> = Schema.object({
+  baseUrl: Schema.string()
     .description('平台接口域名')
     .default('https://api.moonshot.cn/v1'),
-  api_key: Schema.string().description('API key').role('secret').default(''),
+  apiKey: Schema.string().description('API key').role('secret').default(''),
   model: Schema.string().description('模型').default('moonshot-v1-128k'),
 }).description('服务设置')
 
-const config = ref<Config>({
-  base_url: 'https://api.moonshot.cn/v1',
-  api_key: '',
+const config = ref<LlmConfig>({
+  baseUrl: 'https://api.moonshot.cn/v1',
+  apiKey: '',
   model: 'moonshot-v1-128k',
 })
-const initial = ref<Config>({
-  base_url: 'https://api.moonshot.cn/v1',
-  api_key: '',
+const initial = ref<LlmConfig>({
+  baseUrl: 'https://api.moonshot.cn/v1',
+  apiKey: '',
   model: 'moonshot-v1-128k',
 })
 
 async function getConfig() {
-  let tmpConfig = (await ipcManager.invoke('get_llm_config')) as Config
-  config.value = tmpConfig
+  config.value = (await ipcManager.invoke('get_llm_config')) as LlmConfig
 }
 async function saveConfig() {
   try {
-    const tmpConfig: Config = new Config(config.value)
+    const tmpConfig: LlmConfig = new Config(config.value)
     const result = await ipcManager.invoke('save_llm_config', {
       config: tmpConfig,
     })
@@ -63,7 +57,7 @@ function resetConfig() {
 }
 
 async function reloadConfig() {
-  const tmpConfig: Config = new Config(config.value)
+  const tmpConfig: LlmConfig = new Config(config.value)
   await ipcManager.invoke('reload_llm_config', { config: tmpConfig })
   ElMessage.success('重载成功')
 }

@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useMaskStore } from '../stores/mask'
-import {
-  House,
-  Setting,
-  Document,
-  Box,
-  MoonNight,
-} from '@element-plus/icons-vue'
-import { isTauri } from '@tauri-apps/api/core'
+import {computed, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {useMaskStore} from '../stores/mask'
+import {Box, Document, House, MoonNight, Setting,} from '@element-plus/icons-vue'
+import {isTauri} from '@tauri-apps/api/core'
 import Clip from '../assets/svg/Clip.vue'
 
 const router = useRouter()
@@ -20,17 +14,14 @@ const activeIndex = ref('1')
 const visibleMenuItems = computed(() => {
   return menuItems.filter((item) => {
     // 如果需要解锁且未解锁，则不显示该菜单项
-    if (item.requiresUnlock && !maskStore.isUnlocked) {
-      return false
-    }
-    return true
+    return !(item.requiresUnlock && !maskStore.isUnlocked);
   })
 })
 
 const is_electron = !isTauri()
 
 const menuItems = [
-  { index: '1', path: '/', label: '首页', icon: House, requiresUnlock: false },
+  {index: '1', path: '/', label: '首页', icon: House, requiresUnlock: false},
   {
     index: '2',
     path: '/schema',
@@ -99,18 +90,18 @@ const handleSelect = (index: string) => {
 
 <template>
   <el-menu
-    :default-active="activeIndex"
-    class="sidebar-menu"
-    @select="handleSelect"
+      :default-active="activeIndex"
+      class="sidebar-menu"
+      @select="handleSelect"
   >
     <el-menu-item
-      class="sidebar-menu-item"
-      v-for="item in visibleMenuItems"
-      :key="item.index"
-      :index="item.index"
+        class="sidebar-menu-item"
+        v-for="item in visibleMenuItems"
+        :key="item.index"
+        :index="item.index"
     >
       <el-icon>
-        <component :is="item.icon" />
+        <component :is="item.icon"/>
       </el-icon>
       <span>{{ item.label }}</span>
     </el-menu-item>

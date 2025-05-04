@@ -75,25 +75,25 @@ class LoggerService extends Service {
     const loader = ctx.get('loader')
     const target: Logger.Target = {
       colors: 3,
-      record: (record: Logger.Record) => {
+      record: async (record: Logger.Record) => {
         ipcMain.emit('logger:push', formatLogMessage(record))
         this.tempLogs.push(record)
         record.meta ||= {}
         const date = new Date(record.timestamp).toISOString().slice(0, 10)
         if (this.writer.date !== date) {
-          this.writer.close()
+          await this.writer.close()
           this.files[date] = [1]
-          this.createFile(date, 1)
+          await this.createFile(date, 1)
         }
         this.writer.write(record)
         buffer.push(record)
         update()
         if (this.writer.size >= config.maxSize) {
-          this.writer.close()
+          await this.writer.close()
           const index = Math.max(...(this.files[date] ?? [0])) + 1
           this.files[date] ??= []
           this.files[date].push(index)
-          this.createFile(date, index)
+          await this.createFile(date, index)
         }
       },
     }

@@ -6,12 +6,6 @@ interface MaskState {
   secretCode: string
 }
 
-export interface BaseConfig {
-  auto_start: boolean
-  silent_start: boolean
-  nothing: string
-}
-
 export const useMaskStore = defineStore('mask', {
   state: (): MaskState => ({
     isUnlocked: false,
@@ -39,4 +33,3 @@ export const useMaskStore = defineStore('mask', {
   },
 })
 
-export type MaskStore = ReturnType<typeof useMaskStore>

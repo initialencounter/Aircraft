@@ -36,17 +36,17 @@
             <td class="label">型号 Type</td>
             <td>{{ data.type }}</td>
             <td class="label">商标 Trademark</td>
-            <td>{{ data.trademark }}</td>
+            <td>{{ data.trademark ?? '/' }}</td>
           </tr>
           <tr>
             <td class="label">额定电压<br />Normal Voltage</td>
-            <td>{{ data.voltage }}</td>
+            <td>{{ data.voltage ? data.voltage + 'V' : '/' }}</td>
             <td class="label">额定容量<br />Rated Capacity</td>
-            <td>{{ data.capacity }}</td>
+            <td>{{ data.capacity ? data.capacity + 'mAh' : '/' }}</td>
           </tr>
           <tr>
             <td class="label">额定能量<br />Watt-hour rating</td>
-            <td>{{ data.watt }}</td>
+            <td>{{ data.watt ? data.watt + 'Wh' : '不适用 N/A' }}</td>
             <td class="label">外观<br />Appearance</td>
             <td>{{ data.color }}{{ data.shape }}</td>
           </tr>
@@ -102,10 +102,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { SummaryData } from '../types'
+import { SummaryFromLLM } from '../types'
 
 const props = defineProps<{
-  data: SummaryData
+  data: SummaryFromLLM
 }>()
 
 interface TestItem {
@@ -135,7 +135,7 @@ const testRows = computed(() => {
 
 <style scoped>
 .container {
-  font-family: 'Calibri';
+  font-family: 'Calibri',sans-serif;
 }
 
 h3 {

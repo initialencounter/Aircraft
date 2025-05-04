@@ -17,16 +17,16 @@ import { ipcManager } from '../utils/ipcManager'
 import { useMaskStore } from '../stores/mask'
 
 export interface BaseConfig {
-  auto_start: boolean
-  silent_start: boolean
+  autoStart: boolean
+  silentStart: boolean
   nothing: string
 }
 
 const maskStore = useMaskStore()
 
-const BaseConfig = Schema.object({
-  auto_start: Schema.boolean().description('开机自启').default(false),
-  silent_start: Schema.boolean().description('静默启动').default(false),
+const BaseConfig: Schema<BaseConfig> = Schema.object({
+  autoStart: Schema.boolean().description('开机自启').default(false),
+  silentStart: Schema.boolean().description('静默启动').default(false),
   nothing: Schema.string()
     .description('这里什么也没有')
     .default('')
@@ -34,13 +34,13 @@ const BaseConfig = Schema.object({
 })
 
 const config = ref<BaseConfig>({
-  auto_start: false,
-  silent_start: false,
+  autoStart: false,
+  silentStart: false,
   nothing: '',
 })
 const initial = ref<BaseConfig>({
-  auto_start: false,
-  silent_start: false,
+  autoStart: false,
+  silentStart: false,
   nothing: '',
 })
 
