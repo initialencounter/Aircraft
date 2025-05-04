@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
-import {useRouter} from 'vue-router'
-import {useMaskStore} from '../stores/mask'
-import {Box, Document, House, MoonNight, Setting,} from '@element-plus/icons-vue'
-import {isTauri} from '@tauri-apps/api/core'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useMaskStore } from '../stores/mask'
+import {
+  Box,
+  Document,
+  House,
+  MoonNight,
+  Setting,
+} from '@element-plus/icons-vue'
 import Clip from '../assets/svg/Clip.vue'
 
 const router = useRouter()
@@ -14,34 +19,38 @@ const activeIndex = ref('1')
 const visibleMenuItems = computed(() => {
   return menuItems.filter((item) => {
     // 如果需要解锁且未解锁，则不显示该菜单项
-    return !(item.requiresUnlock && !maskStore.isUnlocked);
+    return !(item.requiresUnlock && !maskStore.isUnlocked)
   })
 })
 
-const is_electron = !isTauri()
-
 const menuItems = [
-  {index: '1', path: '/', label: '首页', icon: House, requiresUnlock: false},
+  {
+    index: '1',
+    path: '/',
+    label: '堆码计算',
+    icon: Box,
+    requiresUnlock: false,
+  },
   {
     index: '2',
-    path: '/schema',
-    label: '服务设置',
-    icon: Setting,
+    path: '/summary_parse',
+    label: '概要解析',
+    icon: MoonNight,
     requiresUnlock: false,
   },
   {
     index: '3',
-    path: '/schema_base',
-    label: '基础设置',
-    icon: Setting,
+    path: '/blake2',
+    label: 'BLAKE2',
+    icon: Clip,
     requiresUnlock: false,
   },
   {
     index: '4',
-    path: '/schema_hotkey',
-    label: '快捷键设置',
+    path: '/schema',
+    label: '设置',
     icon: Setting,
-    requiresUnlock: is_electron,
+    requiresUnlock: false,
   },
   {
     index: '5',
@@ -52,30 +61,9 @@ const menuItems = [
   },
   {
     index: '6',
-    path: '/blake2',
-    label: 'BLAKE2',
-    icon: Clip,
-    requiresUnlock: false,
-  },
-  {
-    index: '7',
-    path: '/stack',
-    label: '堆码计算',
-    icon: Box,
-    requiresUnlock: false,
-  },
-  {
-    index: '8',
-    path: '/summary_parse',
-    label: '概要',
-    icon: MoonNight,
-    requiresUnlock: false,
-  },
-  {
-    index: '9',
-    path: '/llm_config',
-    label: '大模型配置',
-    icon: Setting,
+    path: '/home',
+    label: '首页',
+    icon: House,
     requiresUnlock: false,
   },
 ]
@@ -90,18 +78,18 @@ const handleSelect = (index: string) => {
 
 <template>
   <el-menu
-      :default-active="activeIndex"
-      class="sidebar-menu"
-      @select="handleSelect"
+    :default-active="activeIndex"
+    class="sidebar-menu"
+    @select="handleSelect"
   >
     <el-menu-item
-        class="sidebar-menu-item"
-        v-for="item in visibleMenuItems"
-        :key="item.index"
-        :index="item.index"
+      class="sidebar-menu-item"
+      v-for="item in visibleMenuItems"
+      :key="item.index"
+      :index="item.index"
     >
       <el-icon>
-        <component :is="item.icon"/>
+        <component :is="item.icon" />
       </el-icon>
       <span>{{ item.label }}</span>
     </el-menu-item>

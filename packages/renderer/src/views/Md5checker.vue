@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import {onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import SparkMD5 from 'spark-md5'
 import { ElMessage } from 'element-plus'
 import FileList from '../components/FileList.vue'
 import { FileItem } from '../types'
 import { formatFileSize, formatTimestamp, getFileIcon } from '../utils/utils.ts'
-import {FileItemStore} from "../stores/fileItem.ts";
+import { FileItemStore } from '../stores/fileItem.ts'
 
 // forked from https://www.zhihu.com/question/26744174/answer/2468892079
 let colorList = [
@@ -95,10 +95,12 @@ const processFiles = (newFiles: File[]) => {
 
     file_list.value.push(fileItem)
   }
+  // @ts-ignore
   fileItemStore[name] = file_list
 }
 
 // 处理手动选择文件
+//@ts-ignore
 const handleSelectFiles = () => {
   fileInputRef.value?.click()
 }

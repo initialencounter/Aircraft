@@ -9,56 +9,91 @@
   <el-button class="schema-button" type="primary" @click="resetConfig"
     >重置</el-button
   >
-  <el-button class="schema-button" type="primary" @click="stopServer"
-    >停止服务</el-button
-  >
-  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
+  <k-form v-model="config" :schema="ConfigSchema" :initial="initial"></k-form>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
-import Schema from 'schemastery'
 import { ElMessage } from 'element-plus'
 import { ipcManager } from '../utils/ipcManager'
-import { ServerConfig } from 'aircraft-rs'
+import { Config, ConfigSchema } from '../schema'
 
-const Config: Schema<ServerConfig> = Schema.object({
-  baseUrl: Schema.string().description('登录域名').default('https://'),
-  username: Schema.string().description('用户名').default(''),
-  password: Schema.string().description('密码').role('secret').default(''),
-  port: Schema.number().description('端口').default(25455),
-  debug: Schema.boolean().description('调试模式').default(true),
-  logEnabled: Schema.boolean().description('日志记录').default(true),
-}).description('服务设置')
-
-const config = ref<ServerConfig>({
-  baseUrl: 'https://',
-  username: '',
-  password: '',
-  port: 25455,
-  debug: false,
-  logEnabled: false,
+const config = ref<Config>({
+  server: {
+    baseUrl: 'https://',
+    username: '',
+    password: '',
+    port: 25455,
+    debug: false,
+    logEnabled: false,
+  },
+  base: {
+    autoStart: false,
+    silentStart: false,
+    nothing: '',
+  },
+  hotkey: {
+    docEnable: false,
+    docKey: 'ctrl+shift+d',
+    copyEnable: false,
+    copyKey: 'ctrl+shift+z',
+    uploadEnable: false,
+    uploadKey: 'ctrl+shift+u',
+    docxEnable: false,
+    docxKey: 'ctrl+shift+x',
+    inspector: '',
+    signatureWidth: 5.58,
+    signatureHeight: 1.73,
+  },
+  llm: {
+    baseUrl: 'https://api.moonshot.cn/v1',
+    apiKey: '',
+    model: 'moonshot-v1-128k',
+  },
 })
-const initial = ref<ServerConfig>({
-  baseUrl: 'https://',
-  username: '',
-  password: '',
-  port: 25455,
-  debug: false,
-  logEnabled: false,
+const initial = ref<Config>({
+  server: {
+    baseUrl: 'https://',
+    username: '',
+    password: '',
+    port: 25455,
+    debug: false,
+    logEnabled: false,
+  },
+  base: {
+    autoStart: false,
+    silentStart: false,
+    nothing: '',
+  },
+  hotkey: {
+    docEnable: false,
+    docKey: 'ctrl+shift+d',
+    copyEnable: false,
+    copyKey: 'ctrl+shift+z',
+    uploadEnable: false,
+    uploadKey: 'ctrl+shift+u',
+    docxEnable: false,
+    docxKey: 'ctrl+shift+x',
+    inspector: '',
+    signatureWidth: 5.58,
+    signatureHeight: 1.73,
+  },
+  llm: {
+    baseUrl: 'https://api.moonshot.cn/v1',
+    apiKey: '',
+    model: 'moonshot-v1-128k',
+  },
 })
 
 async function getConfig() {
-  config.value = (await ipcManager.invoke('get_server_config')) as ServerConfig
-  console.log(
-    'config',
-    (await ipcManager.invoke('get_server_config')) as ServerConfig
-  )
+  const appConfig = await ipcManager.invoke('get_config')
+  config.value = appConfig
+  config.value.llm.apiKey = appConfig.llm.apiKey
 }
 async function saveConfig() {
   try {
-    const tmpConfig: ServerConfig = new Config(config.value)
-    const result = await ipcManager.invoke('save_server_config', {
+    const tmpConfig: Config = new ConfigSchema(config.value)
+    const result = await ipcManager.invoke('save_config', {
       config: tmpConfig,
     })
     ElMessage.success(`保存成功: ${JSON.stringify(result)}`)
@@ -66,19 +101,15 @@ async function saveConfig() {
     ElMessage.error(JSON.stringify(error))
   }
 }
+
 function resetConfig() {
   config.value = initial.value
 }
 
 async function reloadConfig() {
-  const tmpConfig: ServerConfig = new Config(config.value)
+  const tmpConfig: Config = new ConfigSchema(config.value)
   await ipcManager.invoke('reload_config', { config: tmpConfig })
   ElMessage.success('重载成功')
-}
-
-async function stopServer() {
-  await ipcManager.invoke('stop_server')
-  ElMessage.success('停止成功')
 }
 
 onMounted(() => {

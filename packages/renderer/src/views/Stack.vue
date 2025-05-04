@@ -96,10 +96,12 @@ const stackStore = useStackStore()
 const weight = ref<number | null>(stackStore.weight)
 const height = ref<number | null>(stackStore.height)
 
+//@ts-ignore
 watch(weight, (newVal: number) => {
   stackStore.setWeight(newVal)
 })
 
+//@ts-ignore
 watch(height, (newVal: number) => {
   stackStore.setHeight(newVal)
 })

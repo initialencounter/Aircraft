@@ -1,22 +1,22 @@
-use share::pdf_parser::read::read_pdf_u8;
-use share::types::LLMConfig;
-use share::pdf_parser::uploader::FileManager;
+use base64::prelude::*;
 use serde_json::json;
+use share::pdf_parser::read::read_pdf_u8;
+use share::pdf_parser::uploader::FileManager;
+use share::types::{Config, LLMConfig};
 use std::path::Path;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
-use base64::prelude::*;
 use tauri::Manager;
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::Mutex as AsyncMutex;
 
-use share::manager::server_manager::ServerManager;
-use share::manager::hotkey_manager::HotkeyManager;
 use share::logger::{LogMessage, Logger};
+use share::manager::hotkey_manager::HotkeyManager;
+use share::manager::server_manager::ServerManager;
+use share::summary_rs::{get_summary_info_by_buffer as get_summary_info_by_u8, SummaryInfo};
 use share::task_proxy::LOGIN_STATUS;
 use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
-use share::summary_rs::{get_summary_info_by_buffer as get_summary_info_by_u8, SummaryInfo};
 
 // 获取登录状态
 #[tauri::command]
@@ -46,7 +46,7 @@ pub fn get_server_config(app: tauri::AppHandle) -> ServerConfig {
 
 // 保存配置, 并重启服务器
 #[tauri::command]
-pub async fn reload_config(
+pub async fn reload_server_config(
     app: tauri::AppHandle,
     state: tauri::State<'_, ServerManager>,
     config: ServerConfig,
@@ -59,7 +59,7 @@ pub async fn reload_config(
             None => LLMConfig::default(),
         }
     };
-    state.reload(config, llm_config);
+    state.reload(config, llm_config).await;
     Ok(())
 }
 
@@ -247,7 +247,9 @@ pub fn save_llm_config(app: tauri::AppHandle, config: LLMConfig) -> Result<(), S
 
 #[tauri::command]
 pub fn get_summary_info_by_buffer(base64_string: String) -> Result<SummaryInfo, String> {
-    let buffer = BASE64_STANDARD.decode(base64_string).map_err(|e| e.to_string())?;
+    let buffer = BASE64_STANDARD
+        .decode(base64_string)
+        .map_err(|e| e.to_string())?;
     get_summary_info_by_u8(buffer)
         .map_err(|e| e.to_string())
         .map(|summary_info| summary_info)
@@ -256,16 +258,18 @@ pub fn get_summary_info_by_buffer(base64_string: String) -> Result<SummaryInfo, 
 #[tauri::command]
 pub async fn get_report_summary_by_buffer(
     state: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,
-    base64_string: String
+    base64_string: String,
 ) -> Result<String, String> {
-    let buffer = BASE64_STANDARD.decode(base64_string).map_err(|e| e.to_string())?;
+    let buffer = BASE64_STANDARD
+        .decode(base64_string)
+        .map_err(|e| e.to_string())?;
     let mut pdf_text = match read_pdf_u8(buffer.clone()) {
         Ok(pdf_read_result) => pdf_read_result.text,
         Err(_) => String::new(),
     };
     if pdf_text.trim().is_empty() {
         let base_url = state.lock().await.base_url.clone();
-        
+
         if base_url != "https://api.deepseek.com" {
             // 在单独的作用域中获取锁，调用异步函数并等待结果
             pdf_text = {
@@ -273,7 +277,12 @@ pub async fn get_report_summary_by_buffer(
                 let file_name = "UN38.3测试报告.pdf".to_string();
                 let buffer_clone = buffer.clone();
 
-                state.lock().await.get_u8_text(file_name, buffer_clone).await.unwrap()
+                state
+                    .lock()
+                    .await
+                    .get_u8_text(file_name, buffer_clone)
+                    .await
+                    .unwrap()
             };
         }
     }
@@ -281,7 +290,82 @@ pub async fn get_report_summary_by_buffer(
         return Err("".to_string());
     }
 
-    let summary = state.lock().await.chat_with_ai_fast_and_cheap(vec![pdf_text]).await.unwrap();
+    let summary = state
+        .lock()
+        .await
+        .chat_with_ai_fast_and_cheap(vec![pdf_text])
+        .await
+        .unwrap();
 
     Ok(summary)
+}
+
+
+// 保存配置
+#[tauri::command]
+pub async fn save_config(app: tauri::AppHandle, config: Config) -> Result<(), String> {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    store.set("server", json!(config.server.clone()));
+    store.set("llm", json!(config.llm.clone()));
+    store.set("base", json!(config.base.clone()));
+    store.set("hotkey", json!(config.hotkey.clone()));
+    store.save().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// 获取配置
+#[tauri::command]
+pub fn get_config(app: tauri::AppHandle) -> Config {
+    let store = app.store(&Path::new("config.json")).unwrap();
+    Config {
+        server: store
+            .get("server")
+            .and_then(|data| serde_json::from_value(data).ok())
+            .unwrap_or_else(|| ServerConfig::default()),
+        llm: store
+            .get("llm")
+            .and_then(|data| serde_json::from_value(data).ok())
+            .unwrap_or_else(|| LLMConfig::default()),
+        base: store
+            .get("base")
+            .and_then(|data| serde_json::from_value(data).ok())
+            .unwrap_or_else(|| BaseConfig::default()),
+        hotkey: store
+            .get("hotkey")
+            .and_then(|data| serde_json::from_value(data).ok())
+            .unwrap_or_else(|| HotkeyConfig::default()),
+    }
+}
+
+// 保存配置, 并重启服务器
+#[tauri::command]
+pub async fn reload_config(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, ServerManager>,
+    hotkey_state: tauri::State<'_, HotkeyManager>,
+    file_manager: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,
+    config: Config,
+) -> Result<(), String> {
+    let old_config = Config {
+        server: state.config.lock().unwrap().clone(),
+        llm: state.llm_config.lock().unwrap().clone(),
+        base: get_base_config(app.clone()),
+        hotkey: hotkey_state.config.lock().unwrap().clone(),
+    };
+    if old_config.server != config.server {
+        state.reload(config.server.clone(), config.llm.clone()).await;
+    }
+    if old_config.llm != config.llm {
+        file_manager.lock().await.reload(config.llm.clone());
+    }
+    if old_config.hotkey != config.hotkey {
+        hotkey_state.stop();
+        hotkey_state.save_config(config.hotkey.clone());
+        hotkey_state.start();
+    }
+    if old_config.base != config.base {
+        set_auto_start(app.clone(), config.base.auto_start)?;
+    }
+    let _ = save_config(app.clone(), config.clone()).await;
+    Ok(())
 }

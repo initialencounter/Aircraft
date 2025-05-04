@@ -3,20 +3,17 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { useMaskStore } from '../stores/mask'
 import Home from '../views/Home.vue'
 import Schema from '../components/Schema.vue'
-import SchemaBase from '../components/SchemaBase.vue'
-import SchemaHotkey from '../components/SchemaHotkey.vue'
 import Logs from '../views/Logs.vue'
 import Md5Checker from '../views/Md5checker.vue'
 //@ts-ignore
 import Stack from '../views/Stack.vue'
-import SchemaLLM from '../components/SchemaLLM.vue'
 import PdfParse from '../views/PdfParse.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     {
-      path: '/',
+      path: '/home',
       name: 'Home',
       component: Home,
     },
@@ -24,16 +21,6 @@ const router = createRouter({
       path: '/schema',
       name: 'Schema',
       component: Schema,
-    },
-    {
-      path: '/schema_base',
-      name: 'SchemaBase',
-      component: SchemaBase,
-    },
-    {
-      path: '/schema_hotkey',
-      name: 'SchemaHotkey',
-      component: SchemaHotkey,
     },
     {
       path: '/logs',
@@ -46,7 +33,7 @@ const router = createRouter({
       component: Md5Checker,
     },
     {
-      path: '/stack',
+      path: '/',
       name: 'Stack',
       component: Stack,
     },
@@ -54,11 +41,6 @@ const router = createRouter({
       path: '/summary_parse',
       name: 'Pdf Parse',
       component: PdfParse,
-    },
-    {
-      path: '/llm_config',
-      name: 'LLM Config',
-      component: SchemaLLM,
     },
   ],
 })

@@ -2,7 +2,7 @@ use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
 #[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct BaseConfig {
     // 暗号
@@ -22,7 +22,7 @@ impl BaseConfig {
 }
 
 #[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ServerConfig {
     pub base_url: String,
@@ -47,7 +47,7 @@ impl ServerConfig {
 }
 
 #[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct HotkeyConfig {
     pub doc_enable: bool,
@@ -82,7 +82,7 @@ impl HotkeyConfig {
 
 
 #[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct LLMConfig {
     pub base_url: String,
@@ -96,6 +96,27 @@ impl LLMConfig {
             base_url: "https://api.moonshot.cn/v1".to_string(),
             api_key: "".to_string(),
             model: "moonshot-v1-128k".to_string(),
+        }
+    }
+}
+
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Config {
+    pub base: BaseConfig,
+    pub server: ServerConfig,
+    pub hotkey: HotkeyConfig,
+    pub llm: LLMConfig,
+}
+
+impl Config {
+    pub fn default() -> Self {
+        Config {
+            base: BaseConfig::default(),
+            server: ServerConfig::default(),
+            hotkey: HotkeyConfig::default(),
+            llm: LLMConfig::default(),
         }
     }
 }

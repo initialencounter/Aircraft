@@ -1,11 +1,10 @@
-import type { Context } from 'cordis'
+import { Logger, type Context } from 'cordis'
 import { BrowserWindow, Menu } from 'electron'
 
 import type {} from '../service/tray'
 import type {} from '../service/win'
 import type {} from '../service/app'
 import type {} from '../service/config'
-import type { BaseConfig } from '../../types'
 
 declare module 'cordis' {
   interface Events {
@@ -14,14 +13,16 @@ declare module 'cordis' {
   }
 }
 
+export const logger = new Logger('win')
+
 class WindowManager {
   static inject = ['app', 'win', 'tray', 'configManager']
   constructor(ctx: Context) {
-    ctx.logger.info('WindowManager initializing')
+    logger.info('WindowManager initializing')
     // 创建窗口
     ctx.app.app.whenReady().then(async () => {
       ctx.emit('electron-ready')
-      const baseConfig = ctx.configManager.getConfig('base') as BaseConfig
+      const baseConfig = ctx.configManager.getConfig().base
       await ctx.win.createWindow(baseConfig)
       ctx.tray.createTray()
     })
@@ -59,7 +60,7 @@ class WindowManager {
       if (allWindows.length) {
         allWindows[0].focus()
       } else {
-        const baseConfig = ctx.configManager.getConfig('base') as BaseConfig
+        const baseConfig = ctx.configManager.getConfig().base
         ctx.win.createWindow(baseConfig)
       }
     })

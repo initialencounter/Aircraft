@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { FileItem } from '../types'
+import type { FileItem } from '../types'
 
 interface FileItemState {
   [key: string]: FileItem[]

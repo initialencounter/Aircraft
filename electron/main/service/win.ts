@@ -1,17 +1,19 @@
 import path from 'path'
 
 import type { Context } from 'cordis'
-import { Service } from 'cordis'
+import { Logger, Service } from 'cordis'
 import type {} from '../service/app'
 import { BrowserWindow, shell } from 'electron'
 
-import type { BaseConfig } from '../../types'
+import type { BaseConfig } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
     win: Window
   }
 }
+
+export const logger = new Logger('win')
 
 class Window extends Service {
   static inject = ['app']
@@ -20,13 +22,12 @@ class Window extends Service {
     super(ctx, 'win')
   }
   async createWindow(config: BaseConfig) {
-    this.ctx.logger.info('createWindow')
     this.win = new BrowserWindow({
       title: 'Aircraft',
       icon: path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico'),
       frame: false,
       transparent: true,
-      show: !config.silent_start,
+      show: !config.silentStart,
       titleBarStyle: 'hidden',
       alwaysOnTop: true,
       webPreferences: {
@@ -45,10 +46,7 @@ class Window extends Service {
     if (this.ctx.app.VITE_DEV_SERVER_URL) {
       // #298
       await this.win?.loadURL(this.ctx.app.VITE_DEV_SERVER_URL)
-      this.ctx.logger.info(
-        'VITE_DEV_SERVER_URL',
-        this.ctx.app.VITE_DEV_SERVER_URL
-      )
+      logger.info('VITE_DEV_SERVER_URL', this.ctx.app.VITE_DEV_SERVER_URL)
       // Open devTool if the app is not packaged
       // this.win?.webContents.openDevTools()
     } else {

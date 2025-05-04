@@ -127,7 +127,7 @@ fn extract_json(input: &str) -> Option<String> {
 pub struct FileManager {
     pub client: Client,
     pub base_url: String,
-    api_key: String,
+    pub api_key: String,
     pub model: String,
 }
 impl FileManager {
@@ -142,7 +142,6 @@ impl FileManager {
     }
 
     pub fn reload(&mut self, config: LLMConfig) {
-        println!("reload");
         self.base_url = config.base_url;
         self.api_key = config.api_key;
         self.model = config.model;

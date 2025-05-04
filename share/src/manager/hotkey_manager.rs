@@ -12,7 +12,7 @@ pub struct HotkeyManager {
     upload_handle: Mutex<Option<HotkeyHandle>>,
     docx_handle: Mutex<Option<HotkeyHandle>>,
     key_proxy_handle: Mutex<Option<HotkeyHandle>>,
-    config: Mutex<HotkeyConfig>,
+    pub config: Mutex<HotkeyConfig>,
 }
 
 

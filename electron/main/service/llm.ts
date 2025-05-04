@@ -1,6 +1,11 @@
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
-import type { FileManager, LlmConfig } from 'aircraft-rs'
+import type {
+  FileManager,
+  HotkeyConfig,
+  LlmConfig,
+  ServerConfig,
+} from 'aircraft-rs'
 
 import type { ConfigManager } from './config'
 
@@ -9,6 +14,11 @@ declare module 'cordis' {
     llm: LLM
     configManager: ConfigManager
   }
+  interface Events {
+    'reload-server': (serverConfig: ServerConfig, llmConfig: LlmConfig) => void
+    'reload-llm': (llmConfig: LlmConfig) => void
+    'reload-hotkey': (hotkey: HotkeyConfig) => void
+  }
 }
 
 class LLM extends Service {
@@ -16,12 +26,15 @@ class LLM extends Service {
   private bindings: FileManager
   constructor(ctx: Context) {
     super(ctx, 'llm')
-    const llmConfig = ctx.configManager.getConfig<'llm'>('llm')
-    this.bindings = new ctx.bindings.bindings.FileManager(
+    const llmConfig = ctx.configManager.getConfig().llm
+    this.bindings = new ctx.bindings.native.FileManager(
       llmConfig.baseUrl,
       llmConfig.apiKey,
       llmConfig.model
     )
+    ctx.on('reload-llm', (llmConfig) => {
+      this.reload(llmConfig)
+    })
   }
   /**
    * 重载配置

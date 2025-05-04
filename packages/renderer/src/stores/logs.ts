@@ -1,6 +1,6 @@
-import {defineStore} from 'pinia'
+import { defineStore } from 'pinia'
 
-import {ipcManager} from '../utils/ipcManager'
+import { ipcManager } from '../utils/ipcManager'
 
 interface LogState {
   logHistory: LogMessage[]

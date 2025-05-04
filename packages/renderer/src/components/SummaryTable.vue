@@ -135,7 +135,7 @@ const testRows = computed(() => {
 
 <style scoped>
 .container {
-  font-family: 'Calibri',sans-serif;
+  font-family: 'Calibri', sans-serif;
 }
 
 h3 {

@@ -3,16 +3,16 @@
 #[macro_use]
 extern crate napi_derive;
 
-use share::logger::Logger;
 use share::attachment_parser::{get_attachment_info as get_attachment_info_rs, AttachmentInfo};
+use share::logger::Logger;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
 use share::pdf_parser::parse::parse_good_file;
-use share::pdf_parser::types::GoodsInfo;
 use share::pdf_parser::read::{read_pdf, read_pdf_u8, PdfReadResult};
+use share::pdf_parser::types::GoodsInfo;
 use share::pdf_parser::uploader::FileManager;
 use share::summary_rs::{get_summary_info_by_buffer, get_summary_info_by_path, SummaryInfo};
-use share::types::LLMConfig;
+use share::types::{Config, LLMConfig};
 use share::types::{HotkeyConfig, ServerConfig};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -26,7 +26,7 @@ pub struct AircraftRs {
 #[napi]
 impl AircraftRs {
   #[napi(constructor)]
-  pub fn new(app_log_dir: String, config: ServerConfig, llm_config: LLMConfig) -> Self {
+  pub fn new(app_log_dir: String, config: ServerConfig, llm_config: LLMConfig, hotkey_config: HotkeyConfig) -> Self {
     let logger = Arc::new(Mutex::new(Logger::new(
       PathBuf::from(app_log_dir),
       "aircraft", // app数据目录
@@ -34,7 +34,6 @@ impl AircraftRs {
       true,
     )));
     let log_tx = logger.lock().unwrap().log_tx.clone();
-    let hotkey_config = HotkeyConfig::default();
     Self {
       server_manager: ServerManager::new(config, log_tx, llm_config),
       hotkey_manager: HotkeyManager::new(hotkey_config),
@@ -53,8 +52,12 @@ impl AircraftRs {
   }
 
   #[napi]
-  pub fn reload_server(&self, server_config: ServerConfig, llm_config: LLMConfig) -> napi::Result<()> {
-    self.server_manager.reload(server_config, llm_config);
+  pub async fn reload_server(
+    &self,
+    server_config: ServerConfig,
+    llm_config: LLMConfig,
+  ) -> napi::Result<()> {
+    self.server_manager.reload(server_config, llm_config).await;
     Ok(())
   }
 
@@ -70,8 +73,9 @@ impl AircraftRs {
   }
 
   #[napi]
-  pub fn reload_hotkey(&self) -> napi::Result<()> {
+  pub fn reload_hotkey(&self, config: HotkeyConfig) -> napi::Result<()> {
     self.stop_hotkey()?;
+    self.hotkey_manager.save_config(config);
     self.start_hotkey()?;
     Ok(())
   }
@@ -122,7 +126,11 @@ impl AircraftRs {
   }
 
   #[napi]
-  pub async fn get_attachment_info(&self, project_no: String, is_965: bool)->napi::Result<AttachmentInfo> {
+  pub async fn get_attachment_info(
+    &self,
+    project_no: String,
+    is_965: bool,
+  ) -> napi::Result<AttachmentInfo> {
     let attachment = get_attachment_info_rs(project_no, false, is_965).await;
     match attachment {
       Ok(attachment) => Ok(attachment),
@@ -133,6 +141,24 @@ impl AircraftRs {
         ))
       }
     }
+  }
+
+  #[napi]
+  pub fn get_current_server_config(&self) -> napi::Result<ServerConfig> {
+    let config = self.server_manager.config.lock().unwrap().clone();
+    Ok(config)
+  }
+
+  #[napi]
+  pub fn get_current_llm_config(&self) -> napi::Result<LLMConfig> {
+    let llm_config = self.server_manager.llm_config.lock().unwrap().clone();
+    Ok(llm_config)
+  }
+
+  #[napi]
+  pub fn get_current_hotkey_config(&self) -> napi::Result<HotkeyConfig> {
+    let hotkey_config = self.hotkey_manager.config.lock().unwrap().clone();
+    Ok(hotkey_config)
   }
 }
 
@@ -198,4 +224,10 @@ impl JsFileManager {
     let res: PdfReadResult = read_pdf_u8(buffer).unwrap();
     Ok(res.text)
   }
+}
+
+#[napi]
+pub fn get_default_config() -> napi::Result<Config> {
+  let config = Config::default();
+  Ok(config)
 }

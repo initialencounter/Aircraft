@@ -2,25 +2,25 @@ import type { Context } from 'cordis'
 import { Service } from 'cordis'
 
 import type AircraftRs from 'aircraft-rs'
+import type { Config } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
     bindings: RustBindings
   }
   interface Events {
-    'electron-ready': () => void
-    'electron-dispose': () => void
+    'get-default-config'(): Config
   }
 }
 
 class RustBindings extends Service {
   static inject = ['app']
-  bindings: typeof AircraftRs
+  native: typeof AircraftRs
   bindingsPath: string
   constructor(ctx: Context) {
     super(ctx, 'bindings')
     //@ts-ignore
-    this.bindings = this.ctx.app.require('aircraft-rs')
+    this.native = this.ctx.app.require('aircraft-rs')
   }
 }
 

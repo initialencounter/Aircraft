@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import {onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ElMessage} from 'element-plus'
-import {formatFileSize, formatTimestamp, getFileIcon} from '../utils/utils'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { formatFileSize, formatTimestamp, getFileIcon } from '../utils/utils'
 import FileList from './FileList.vue'
-import {FileItem} from '../types'
-import {FileItemStore} from "../stores/fileItem.ts";
+import { FileItem } from '../types'
+import { FileItemStore } from '../stores/fileItem.ts'
 
 const props = defineProps({
   accept: {
@@ -179,8 +179,8 @@ const processFiles = (newFiles: File[]) => {
   // 添加有效文件
   files.value = [...files.value, ...validFiles]
   emit(
-      'files-change',
-      files.value.map((item) => item.file)
+    'files-change',
+    files.value.map((item) => item.file)
   )
 
   if (validFiles.length > 0) {
@@ -238,37 +238,37 @@ onBeforeUnmount(() => {
   <div class="file-dropzone-container">
     <!-- 文件输入框（隐藏） -->
     <input
-        ref="fileInputRef"
-        :accept="accept"
-        :multiple="multiple"
-        class="file-input"
-        type="file"
-        @change="handleFileInputChange"
+      ref="fileInputRef"
+      :accept="accept"
+      :multiple="multiple"
+      class="file-input"
+      type="file"
+      @change="handleFileInputChange"
     />
 
     <!-- 拖拽区 -->
     <div
-        ref="dropzoneRef"
-        :class="{ 'is-dragging': isDragging }"
-        class="file-dropzone"
+      ref="dropzoneRef"
+      :class="{ 'is-dragging': isDragging }"
+      class="file-dropzone"
     >
       <!-- 文件列表 -->
       <div v-if="files.length > -1" class="file-list">
         <div class="file-list-header">
           <span>已添加 {{ files.length }} 个文件</span>
           <el-button size="small" type="danger" @click="handleSelectFiles"
-          >手动选择文件
+            >手动选择文件
           </el-button>
           <el-button size="small" type="danger" @click="handleParseReport"
-          >比较UN报告与概要
+            >比较UN报告与概要
           </el-button>
           <el-button size="small" type="danger" @click="handleClearFiles"
-          >清空所有文件
+            >清空所有文件
           </el-button>
         </div>
         <FileList
-            v-model="files"
-            empty-text="请拖拽UN报告和概要到此处"
+          v-model="files"
+          empty-text="请拖拽UN报告和概要到此处"
         ></FileList>
       </div>
     </div>

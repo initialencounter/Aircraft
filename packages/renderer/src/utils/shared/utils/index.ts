@@ -48,9 +48,4 @@ function matchBatteryWeight(describe: string) {
   return weight
 }
 
-export {
-  matchWattHour,
-  matchVoltage,
-  matchCapacity,
-  matchBatteryWeight,
-}
+export { matchWattHour, matchVoltage, matchCapacity, matchBatteryWeight }

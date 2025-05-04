@@ -57,7 +57,6 @@ const handleParseReport = async (files: ParseReportFiles) => {
 
     llmResult.value = pdfRes as SummaryFromLLM
     summaryStore.setPdf(llmResult.value)
-    console.log(docxRes, 'docxRes')
     parseResult.value = convertSummaryInfo2SummaryFromLLM(docxRes)
     summaryStore.setDocx(parseResult.value)
 
@@ -66,7 +65,6 @@ const handleParseReport = async (files: ParseReportFiles) => {
     summaryStore.setResult(verifyResult.value)
   } catch (e) {
     ElMessage.error('解析失败' + e)
-    console.log('解析失败', e)
   } finally {
     loading.value = false // 无论成功或失败都关闭loading
   }

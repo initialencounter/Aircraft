@@ -34,8 +34,12 @@ pub async fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             cmd::get_login_status,
+            cmd::get_config,
+            cmd::save_config,
+            cmd::reload_config,
             cmd::get_server_config,
             cmd::save_server_config,
+            cmd::reload_server_config,
             cmd::reload_config,
             cmd::restart_server,
             cmd::stop_server,

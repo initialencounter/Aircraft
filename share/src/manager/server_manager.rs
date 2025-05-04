@@ -11,8 +11,8 @@ use crate::types::ServerConfig;
 
 pub struct ServerManager {
     handle: Mutex<Option<JoinHandle<()>>>,
-    config: Mutex<ServerConfig>,
-    llm_config:  Mutex<LLMConfig>,
+    pub config: Mutex<ServerConfig>,
+    pub llm_config:  Mutex<LLMConfig>,
     shutdown_tx: Mutex<watch::Sender<bool>>,
     log_tx: Sender<LogMessage>,
 }
@@ -65,9 +65,11 @@ impl ServerManager {
         *self.llm_config.lock().unwrap() = llm_config;
     }
 
-    pub fn reload(&self, config: ServerConfig, llm_config: LLMConfig) {
+    pub async fn reload(&self, config: ServerConfig, llm_config: LLMConfig) {
         self.stop();
+        tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
         self.update_config(config, llm_config);
+        tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
         self.start();
     }
 }

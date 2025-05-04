@@ -2,7 +2,6 @@ import type { Context } from 'cordis'
 import { Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
 
-import type { Config as ConfigType } from '../../types'
 import { formatLogMessage } from './logger'
 
 declare module 'cordis' {
@@ -22,6 +21,7 @@ class Ipc extends Service {
     'configManager',
     'loggerService',
     'llm',
+    'core',
     'bindings',
   ]
   constructor(ctx: Context) {
@@ -65,26 +65,32 @@ class Ipc extends Service {
       const logs = this.ctx.loggerService.tryGetLogs()
       return logs.map(formatLogMessage)
     })
-    const configKey: (keyof ConfigType)[] = ['base', 'server', 'llm']
-    configKey.forEach((key) => {
-      ipcMain.handle(`save_${key}_config`, async (_, config) => {
-        this.ctx.configManager.saveConfig(config, key)
-      })
-      ipcMain.handle(`get_${key}_config`, async () => {
-        return this.ctx.configManager.getConfig(key)
-      })
+    ipcMain.handle(`save_config`, async (_, { config }) => {
+      this.ctx.configManager.saveConfig(config)
     })
-    ipcMain.handle('get_hotkey_config', async () => {
-      this.ctx.logger.info('get_hotkey_config called')
+    ipcMain.handle(`get_config`, async () => {
+      return this.ctx.configManager.getConfig()
     })
-    ipcMain.handle('get_report_summary_by_buffer', async (_, data: string) => {
-      return await this.ctx.llm.uploadLLMFiles(Buffer.from(data, 'base64'))
+    ipcMain.handle('reload_config', async (_, { config }) => {
+      this.ctx.configManager.reloadConfig(config)
     })
-    ipcMain.handle('get_summary_info_by_buffer', async (_, data: string) => {
-      return await this.ctx.attachment.getSummaryInfoByBuffer(
-        Buffer.from(data, 'base64')
-      )
-    })
+
+    ipcMain.handle(
+      'get_report_summary_by_buffer',
+      async (_, { base64String }) => {
+        return await this.ctx.llm.uploadLLMFiles(
+          Buffer.from(base64String, 'base64')
+        )
+      }
+    )
+    ipcMain.handle(
+      'get_summary_info_by_buffer',
+      async (_, { base64String }) => {
+        return await this.ctx.core.getSummaryInfoByBuffer(
+          Buffer.from(base64String, 'base64')
+        )
+      }
+    )
   }
 }
 

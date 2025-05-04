@@ -5,8 +5,9 @@ import path from 'path'
 import type { Context } from 'cordis'
 import { Service, Logger } from 'cordis'
 
-import type { BaseConfig, Config as ConfigType } from '../../types/index'
 import type {} from '../service/app'
+import type { Config } from 'aircraft-rs'
+import { ConfigSchema } from '@aircraft/renderer/src/schema'
 
 declare module 'cordis' {
   interface Context {
@@ -17,15 +18,31 @@ declare module 'cordis' {
   }
 }
 
+export function shallowEqual(obj1: any, obj2: any) {
+  const keys1 = Object.keys(obj1)
+  const keys2 = Object.keys(obj2)
+
+  if (keys1.length !== keys2.length) {
+    return false
+  }
+
+  for (const key of keys1) {
+    if (obj1[key] !== obj2[key]) {
+      return false
+    }
+  }
+
+  return true
+}
+
 const logger = new Logger('configManager')
 
 class ConfigManager extends Service {
-  static inject = ['app']
+  static inject = ['app', 'bindings', 'core']
   configFilePath: string
   constructor(ctx: Context) {
     super(ctx, 'configManager')
     this.configFilePath = path.join(this.ctx.app.APP_CONFIG_PATH, 'config.json')
-    this.ctx.logger.info('configFilePath', this.configFilePath)
     ctx.on('ready', () => {
       logger.info('configManager initializing')
       this.init()
@@ -43,54 +60,64 @@ class ConfigManager extends Service {
         logger.error('config file create error', error)
       }
     }
-    logger.success('config init success')
   }
   getDefaultConfig() {
-    return {
-      server: {
-        baseUrl: '',
-        username: '',
-        password: '',
-        port: 25455,
-        debug: false,
-        logEnabled: false,
-      },
-      base: {
-        auto_start: false,
-        silent_start: false,
-        nothing: '',
-      },
-      llm: {
-        baseUrl: '',
-        apiKey: '',
-        model: '',
-      },
-    }
+    return this.ctx.bindings.native.getDefaultConfig()
   }
-  getConfig<T extends keyof ConfigType>(configName: T): ConfigType[T] {
-    let config: ConfigType
+  getConfig(): Config {
+    let config: Config
     try {
-      config = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
+      const rawConfig = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
+      config = new ConfigSchema(rawConfig)
     } catch (error) {
       logger.error('config file parse error', error)
       config = this.getDefaultConfig()
     }
-    return config[configName] ?? this.getDefaultConfig()[configName]
+    return config
   }
-  saveConfig<T extends keyof ConfigType>(config: ConfigType[T], configName: T) {
+  saveConfig(config: Config) {
     try {
-      const oldConfig: ConfigType = JSON.parse(
-        readFileSync(this.configFilePath, 'utf-8')
-      )
-      oldConfig[configName] = config['config']
-      if (configName === 'base') {
-        this.ctx.emit(
-          'auto-launch-switch',
-          (config['config'] as BaseConfig).auto_start,
-          (config['config'] as BaseConfig).silent_start
-        )
+      writeFileSync(this.configFilePath, JSON.stringify(config, null, 2))
+    } catch (error) {
+      logger.error('config file save error', error)
+    }
+  }
+  reloadConfig(config: Config) {
+    try {
+      const currentServerConfig = this.ctx.core.bindings.getCurrentServerConfig()
+      if (!shallowEqual(currentServerConfig, config.server)) {
+        this.ctx.emit('reload-server', config.server, config.llm)
       }
-      writeFileSync(this.configFilePath, JSON.stringify(oldConfig, null, 2))
+    } catch (error) {
+      logger.error('Server config file reload error', error)
+    }
+    try {
+      const currentLlmConfig = this.ctx.core.bindings.getCurrentLlmConfig()
+      if (!shallowEqual(currentLlmConfig, config.llm)) {
+        this.ctx.emit('reload-llm', config.llm)
+      }
+    } catch (error) {
+      logger.error('LLM config file reload error', error)
+    }
+    try {
+      const currentHotkeyConfig = this.ctx.core.bindings.getCurrentHotkeyConfig()
+      if (!shallowEqual(currentHotkeyConfig, config.hotkey)) {
+        this.ctx.emit('reload-hotkey', config.hotkey)
+      }
+    } catch (error) {
+      logger.error('Hotkey config file save error', error)
+    }
+    try {
+      this.ctx.emit(
+        'auto-launch-switch',
+        config.base.autoStart,
+        config.base.silentStart
+      )
+    } catch (error) {
+      logger.error('base file reload error', error)
+    }
+    try {
+      this.saveConfig(config)
     } catch (error) {
       logger.error('config file save error', error)
     }
