@@ -60,7 +60,7 @@ jobs:
           zip -q -r lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip packages/wxt/.output/chrome-mv3
       - name: zip firefox extension
         run: |
-          web-ext sign --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} --channel unlisted -s .output/firefox-mv3
+          web-ext sign --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} --channel unlisted -s packages/wxt/.output/firefox-mv3
           mv web-ext-artifacts/*.xpi lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
       - name: Release
         uses: softprops/action-gh-release@v2
