@@ -11,7 +11,6 @@
   },
   "type": "module",
   "devDependencies": {
-    "aircraft-rs": "workspace:*",
     "@electron/fuses": "^1.8.0",
     "@maikolib/vite-plugin-yaml": "^1.1.1",
     "@tauri-apps/api": "^2",
@@ -21,6 +20,7 @@
     "@types/spark-md5": "^3.0.5",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vueuse/core": "^11.3.0",
+    "aircraft-rs": "workspace:*",
     "element-plus": "^2.9.9",
     "markdown-vue": "^1.0.3",
     "pinia": "^2.3.1",

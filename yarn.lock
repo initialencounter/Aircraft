@@ -25,6 +25,7 @@ __metadata:
     "@types/spark-md5": "npm:^3.0.5"
     "@vitejs/plugin-vue": "npm:^5.2.3"
     "@vueuse/core": "npm:^11.3.0"
+    aircraft-rs: "workspace:*"
     element-plus: "npm:^2.9.9"
     markdown-vue: "npm:^1.0.3"
     pinia: "npm:^2.3.1"
@@ -2390,6 +2391,7 @@ __metadata:
     reggol: "npm:^1.7.1"
     vite: "npm:^6.3.4"
     vue: "npm:^3.5.13"
+    vue-tsc: "npm:^2.2.10"
     yakumo: "npm:^1.0.0"
     yakumo-upgrade: "npm:^0.3.6"
   languageName: unknown
