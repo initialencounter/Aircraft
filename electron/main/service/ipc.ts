@@ -59,8 +59,7 @@ class Ipc extends Service {
       this.ctx.win.win?.hide()
       this.ctx.logger.info('hide window')
     })
-    // 修改用于开机自启的 ipcMain 处理程序
-    this.ctx.logger.info('get_base_config called')
+
     ipcMain.handle('get_server_logs', async () => {
       const logs = this.ctx.loggerService.tryGetLogs()
       return logs.map(formatLogMessage)
