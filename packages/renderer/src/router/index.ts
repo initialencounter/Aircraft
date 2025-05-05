@@ -33,7 +33,7 @@ const router = createRouter({
       component: Md5Checker,
     },
     {
-      path: '/',
+      path: '/stack',
       name: 'Stack',
       component: Stack,
     },
