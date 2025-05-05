@@ -62,10 +62,15 @@ jobs:
         run: |
           web-ext sign --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} --channel unlisted -s packages/wxt/.output/firefox-mv3
           mv web-ext-artifacts/*.xpi lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      
+      - name: upload chrome
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
-            lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
-          name: 'Lims ${{ steps.get_version.outputs.VERSION }}'
+          name: lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
+          path: lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
+
+      - name: upload firefox
+        uses: actions/upload-artifact@v4
+        with:
+          name: lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
+          path: lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
