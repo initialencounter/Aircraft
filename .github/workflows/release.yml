@@ -54,7 +54,6 @@ jobs:
       - name: Build bindings
         run: |
           cd bindings/node
-          yarn
           yarn build
           cd ../../
           yarn build:v
