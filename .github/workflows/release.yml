@@ -69,7 +69,6 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             target/release/bundle/msi/aircraft_${{ env.version }}_x64_zh-CN.msi
