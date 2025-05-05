@@ -12,6 +12,7 @@
               placeholder="请输入重量"
               step="0.01"
               type="number"
+              @focus="($event.target as HTMLInputElement)?.select()"
             />
             <span class="unit">kg</span>
           </div>
@@ -25,13 +26,14 @@
               placeholder="请输入高度"
               step="0.1"
               type="number"
+              @focus="($event.target as HTMLInputElement)?.select()"
             />
             <span class="unit">mm</span>
           </div>
         </div>
       </div>
 
-      <div v-if="height && weight" class="results">
+      <div class="results">
         <div class="result-group">
           <h3>按层数计算</h3>
           <div class="result-item">
