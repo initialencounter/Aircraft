@@ -25,7 +25,7 @@ function loadImage(dataUrl: string): Promise<HTMLImageElement> {
     const img = new Image();
     img.src = dataUrl;
     img.onload = () => resolve(img);
-    img.onerror = (e) => reject(new Error('图片加载失败'));
+    img.onerror = (_e) => reject(new Error('图片加载失败'));
   });
 }
 
@@ -79,7 +79,7 @@ async function copyCanvasToClipboard(canvas: HTMLCanvasElement) {
           new ClipboardItem({ 'image/png': blob })
         ]);
         resolve();
-      } catch (error) {
+      } catch {
         reject(new Error('剪贴板写入失败'));
       }
     }, 'image/png');
@@ -93,7 +93,7 @@ async function getImageRect(): Promise<number[]> {
   if (!tr1) return []
   if (!tr2) return []
   if (!span1) return []
-  let iframeRect: DOMRect = await getIframeRect()
+  const iframeRect: DOMRect = await getIframeRect()
   const tr1Rect = tr1.getBoundingClientRect()
   const tr2Rect = tr2.getBoundingClientRect()
   const span1Rect = span1.getBoundingClientRect()
@@ -125,7 +125,7 @@ function startSyncInterval() {
 }
 
 function addShotListener(Qmsg: QmsgType) {
-  let itemCName = document.querySelector("#entrustEditForm")
+  const itemCName = document.querySelector("#entrustEditForm")
   console.log(itemCName, 'itemCName')
   if (!itemCName) return
   itemCName.addEventListener('dblclick', () => {getNameScreenShot(Qmsg)})

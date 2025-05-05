@@ -1,5 +1,5 @@
-import { parseDate, sleep } from "@/share/utils";
-import { getQmsg } from '@/share/qmsg'
+import { parseDate, sleep } from '../share/utils'
+import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 
 interface Task {
@@ -35,117 +35,47 @@ interface User {
   userName: string
 }
 
-interface EntrustList {
-  rows: EntrustRow[];
-  total: number;
-}
-
-interface EntrustRow {
-  amount?: number;
-  category?: null;
-  checkLocation?: null;
-  checkLocationName?: string;
-  contractId?: null;
-  createdBy?: null;
-  createdDate?: string;
-  destination?: null;
-  displayStatus?: string;
-  editStatus?: number;
-  entrustNo?: string;
-  freezed?: string;
-  id?: string;
-  images?: null;
-  itemAttachFile?: null;
-  itemBrand?: null;
-  itemCName?: string;
-  itemColor?: null;
-  itemDanger?: boolean;
-  itemDangerReason?: null;
-  itemDesc?: null;
-  itemEName?: null;
-  itemFlashPoint?: null;
-  itemMeltingPoint?: null;
-  itemNameChanged?: boolean;
-  itemOtherAttachFileDetail?: null;
-  itemSampleHandle?: number;
-  itemSampleHandleOther?: null;
-  itemSendSample?: number;
-  itemSmell?: null;
-  itemSpec?: null;
-  itemStatus?: null;
-  manufacturersCName?: null;
-  manufacturersEName?: null;
-  market?: string;
-  modifiedBy?: null;
-  modifiedDate?: null;
-  nextYear?: boolean;
-  owner?: null;
-  ownerName?: null;
-  paymentCompany?: null;
-  paymentCompanyContact?: null;
-  paymentCompanyContactName?: null;
-  paymentCompanyName?: null;
-  payStatus?: number;
-  payType?: number;
-  pieces?: null;
-  principal?: string;
-  principalContact?: null;
-  principalContactName?: null;
-  principalEName?: null;
-  principalExhort?: number;
-  principalExhortDetail?: null;
-  principalName?: string;
-  projectId?: string;
-  projectNo?: string;
-  repeat?: string;
-  reportCopy?: number;
-  reportCreated?: boolean;
-  reportLocation?: null;
-  reportLocationName?: string;
-  reportPrinted?: boolean;
-  reportType?: number;
-  reportWay?: number;
-  sampleReceived?: boolean;
-  serviceType?: number;
-  submitDate?: null;
-  systemId?: null;
-  techRemark?: null;
-  trustee?: null;
-  trusteeName?: null;
-  waybillNo?: null;
-  webSignature?: boolean;
-  webWt?: boolean;
-}
-
 export default defineContentScript({
-  runAt: 'document_end', matches: [
-    'https://*/sales/entrust/list'
-  ],
-  allFrames: true, async main() {
+  runAt: 'document_end',
+  matches: ['https://*/sales/entrust/list'],
+  allFrames: true,
+  async main() {
     entrypoint()
-  }
-});
+  },
+})
 
 async function entrypoint() {
   const Qmsg = getQmsg()
   let globalAssignUser = ''
   let globalCheckAssignUser = true
-  let hiddenTimeEntrustList: number | null = null;
+  let hiddenTimeEntrustList: number | null = null
 
-  chrome.storage.local.get(['assignUser', 'nextYearColor', 'nextYearBgColor', 'onekeyAssign', 'checkAssignUser', 'showInspectFormLink', 'freshHotkey', 'autoRefreshDuration'], async function (data) {
-    if (!(data.freshHotkey === false)) {
-      listenFreshHotkeyEntrustList()
-      listenVisibilityChangeEntrustList(data?.autoRefreshDuration ?? 10000)
+  chrome.storage.local.get(
+    [
+      'assignUser',
+      'nextYearColor',
+      'nextYearBgColor',
+      'onekeyAssign',
+      'checkAssignUser',
+      'showInspectFormLink',
+      'freshHotkey',
+      'autoRefreshDuration',
+    ],
+    async function (data) {
+      if (!(data.freshHotkey === false)) {
+        listenFreshHotkeyEntrustList()
+        listenVisibilityChangeEntrustList(data?.autoRefreshDuration ?? 10000)
+      }
+      const assignUser = data.assignUser as string
+      globalAssignUser = assignUser
+      globalCheckAssignUser = data.checkAssignUser !== false
+      console.log('一键分配脚本运行中...', data)
+      if (!(data.onekeyAssign === false)) await insertElement(assignUser)
+      if (!(data.showInspectFormLink === false)) observeItemNumberList1()
+      // 设置下一年报告颜色
+      removeOrange(data.nextYearColor ?? '', data.nextYearBgColor ?? '#76EEC6')
     }
-    const assignUser = data.assignUser as string
-    globalAssignUser = assignUser
-    globalCheckAssignUser = data.checkAssignUser === false ? false : true
-    console.log('一键分配脚本运行中...', data)
-    if (!(data.onekeyAssign === false)) await insertElement(assignUser)
-    if (!(data.showInspectFormLink === false)) observeItemNumberList1()
-    // 设置下一年报告颜色
-    removeOrange(data.nextYearColor ?? '', data.nextYearBgColor ?? '#76EEC6')
-  })
+  )
 
   // function
 
@@ -153,9 +83,11 @@ async function entrypoint() {
     const checkboxes = document.querySelectorAll(
       'input[type="checkbox"]'
     ) as NodeListOf<HTMLInputElement>
-    const filteredCheckboxes = Array.from(checkboxes).filter(function (checkbox) {
-      return checkbox.checked
-    })
+    const filteredCheckboxes = Array.from(checkboxes).filter(
+      function (checkbox) {
+        return checkbox.checked
+      }
+    )
     return filteredCheckboxes.map(function (checkbox) {
       return checkbox.value
     })
@@ -175,13 +107,12 @@ async function entrypoint() {
       `https://${window.location.host}/rest/flow/task/users/inspect`
     )
     if (!response.ok) return []
-    const users: User[] = await response.json()
-    return users
+    return await response.json()
   }
 
   async function assignSelectId(uid: string) {
     if (uid === '2c91808478367c2801788230b248470e' && globalCheckAssignUser) {
-      let res = confirm('确定主检员是正确的吗？')
+      const res = confirm('确定主检员是正确的吗？')
       if (!res) return
     }
     const ids = getIds()
@@ -200,7 +131,6 @@ async function entrypoint() {
     doFreshEntrustList()
   }
 
-
   async function ReceiveSubmit(
     ids: string[],
     task: 'receive' | 'submit'
@@ -212,10 +142,10 @@ async function entrypoint() {
       {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include', // 包含 cookies
-        body: JSON.stringify(ids)
+        body: JSON.stringify(ids),
       }
     )
     if (!response.ok) {
@@ -237,7 +167,7 @@ async function entrypoint() {
       `https://${window.location.host}/rest/flow/task/get/assignInspect?projectStartDate=${startDate}&projectEndDate=${date}&projectState=0&page=1&rows=10`,
       {
         method: 'GET',
-        credentials: 'include' // 包含 cookies
+        credentials: 'include', // 包含 cookies
       }
     )
     if (!response.ok) {
@@ -245,14 +175,13 @@ async function entrypoint() {
       return []
     }
     const data = await response.json()
-    const taskIds = data['rows']
+    return data['rows']
       .filter(function (row: Task) {
         for (let i = 0; i < ids.length; i++) {
           if (row['entrustId'] === ids[i]) return true
         }
       })
       .map((item: Task) => item.id)
-    return taskIds
   }
 
   async function assignTask(taskIds: string[], uid: string) {
@@ -260,17 +189,17 @@ async function entrypoint() {
     if (!uid) return
     const body = {
       userId: uid,
-      taskIds: taskIds
+      taskIds: taskIds,
     }
     const response = await fetch(
       `https://${window.location.host}/rest/flow/task/do/assignInspect`,
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include', // 包含 cookies
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       }
     )
     if (!response.ok) {
@@ -313,7 +242,8 @@ async function entrypoint() {
     select.style.width = '120px'
     select.style.height = '26px'
     select.style.border = '1px solid #bbb'
-    select.style.background = 'linear-gradient(to bottom,#ffffff 0,#e6e6e6 100%)'
+    select.style.background =
+      'linear-gradient(to bottom,#ffffff 0,#e6e6e6 100%)'
     select.className = 'easyui-linkbutton l-btn l-btn-small'
     select.setAttribute('textboxname', 'systemId')
     select.setAttribute('comboname', 'systemId')
@@ -349,11 +279,15 @@ async function entrypoint() {
       if (nextYearColor === undefined) nextYearColor = ''
       if (nextYearBgColor === undefined) nextYearBgColor = '#76EEC6'
       for (var i = 0; i < 10; i++) {
-        const target = document.querySelector(`#datagrid-row-r1-1-${i}`) as HTMLElement
+        const target = document.querySelector(
+          `#datagrid-row-r1-1-${i}`
+        ) as HTMLElement
         if (target.style.color !== 'orange') continue
         target.style.color = nextYearColor
         target.style.backgroundColor = nextYearBgColor
-        const target2 = document.querySelector(`#datagrid-row-r1-2-${i}`) as HTMLElement
+        const target2 = document.querySelector(
+          `#datagrid-row-r1-2-${i}`
+        ) as HTMLElement
         target2.style.color = nextYearColor
         target2.style.backgroundColor = nextYearBgColor
       }
@@ -365,14 +299,18 @@ async function entrypoint() {
   async function insertInspectFormLink(length1: number) {
     for (let i = 0; i < length1; i++) {
       const projectNo = globalItemNumberList1[i]
-      const itemCNameElement = document.querySelector(`#datagrid-row-r1-2-${i} > td:nth-child(3) > div`) as HTMLDivElement
+      const itemCNameElement = document.querySelector(
+        `#datagrid-row-r1-2-${i} > td:nth-child(3) > div`
+      ) as HTMLDivElement
       if (!itemCNameElement) {
         continue
       }
       if (itemCNameElement.innerHTML === '') {
         continue
       }
-      const operateElement = document.querySelector(`#datagrid-row-r1-2-${i} > td:nth-child(14) > div`) as HTMLAnchorElement
+      const operateElement = document.querySelector(
+        `#datagrid-row-r1-2-${i} > td:nth-child(14) > div`
+      ) as HTMLAnchorElement
       if (operateElement) {
         if (operateElement.innerHTML.includes('检验单')) {
           continue
@@ -385,7 +323,7 @@ async function entrypoint() {
         operateElement.appendChild(document.createTextNode(' '))
         operateElement.appendChild(inspectElement)
       }
-      let itemCName = itemCNameElement.innerHTML
+      const itemCName = itemCNameElement.innerHTML
       itemCNameElement.innerHTML = ''
       const inspectElement0 = document.createElement('a')
       inspectElement0.role = 'button'
@@ -414,7 +352,9 @@ async function entrypoint() {
     const dataGridRows = gridElement.childNodes.length
     const itemNumberList1: string[] = []
     for (let i = 0; i < dataGridRows; i++) {
-      const itemNumberElement = document.querySelector(`#datagrid-row-r1-1-${i} > td:nth-child(3) > div > a`) as HTMLAnchorElement
+      const itemNumberElement = document.querySelector(
+        `#datagrid-row-r1-1-${i} > td:nth-child(3) > div > a`
+      ) as HTMLAnchorElement
       if (itemNumberElement) itemNumberList1.push(itemNumberElement.innerText)
     }
     globalItemNumberList1 = itemNumberList1
@@ -443,7 +383,9 @@ async function entrypoint() {
   }
 
   function doFreshEntrustList() {
-    const refreshButton = document.querySelector('body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a') as HTMLAnchorElement
+    const refreshButton = document.querySelector(
+      'body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a'
+    ) as HTMLAnchorElement
     if (refreshButton) refreshButton.click()
   }
 
@@ -451,18 +393,20 @@ async function entrypoint() {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         // 页面隐藏时记录时间
-        hiddenTimeEntrustList = Date.now();
+        hiddenTimeEntrustList = Date.now()
       } else if (hiddenTimeEntrustList) {
         // 页面显示时，检查是否超过10秒
-        const hiddenDuration = Date.now() - hiddenTimeEntrustList;
-        if (hiddenDuration >= autoRefreshDuration) { // 10秒 = 10000毫秒
-          doFreshEntrustList();
+        const hiddenDuration = Date.now() - hiddenTimeEntrustList
+        if (hiddenDuration >= autoRefreshDuration) {
+          // 10秒 = 10000毫秒
+          doFreshEntrustList()
           console.log('离开页面10秒，刷新列表')
         }
-        hiddenTimeEntrustList = null;
+        hiddenTimeEntrustList = null
       }
-    });
+    })
   }
+
   interface LinkParams {
     systemId: string
     projectId: string
@@ -470,7 +414,10 @@ async function entrypoint() {
     category: string
     from: 'query'
   }
-  async function getCategory(projectNo: string): Promise<LinkParams | undefined> {
+
+  async function getCategory(
+    projectNo: string
+  ): Promise<LinkParams | undefined> {
     if (!projectNo) return undefined
     try {
       const [startDate, endDate] = parseDate(projectNo)
@@ -478,71 +425,69 @@ async function entrypoint() {
         `https://${window.location.host}/rest/inspect/query?projectNo=${projectNo}&startDate=${startDate}&endDate=${endDate}&page=1&rows=10`,
         {
           method: 'GET',
-          credentials: 'include' // 包含 cookies
+          credentials: 'include', // 包含 cookies
         }
       )
       if (!response.ok) {
         console.log('请求失败1')
         return undefined
       }
-      const { rows }: QueryResultData =
-        await response.json()
+      const { rows }: QueryResultData = await response.json()
       if (rows.length < 1) return undefined
       return {
         systemId: rows[0]['systemId'],
         projectId: rows[0]['projectId'],
         entrustId: rows[0]['entrustId'],
         category: rows[0]['category'],
-        from: 'query'
+        from: 'query',
       } as LinkParams
-    } catch (error) {
+    } catch {
       console.log('请求失败2')
       return undefined
     }
   }
 
-
   interface QueryResultData {
-    rows: QueryResultDataRow[];
-    total: number;
+    rows: QueryResultDataRow[]
+    total: number
   }
 
   interface QueryResultDataRow {
-    according?: string;
-    appraiseDate?: string;
-    appraiser?: string;
-    appraiserName?: string;
-    attchmentFiles?: string[];
-    category?: string;
-    checkDate?: string;
-    checked?: boolean;
-    checker?: string;
-    checkerName?: string;
-    checkLocation?: string;
-    checkLocationName?: string;
-    classOrDiv?: string;
-    component?: null;
-    conclusions?: number;
-    createdBy?: string;
-    createdByName?: string;
-    createdDate?: string;
-    editStatus?: number;
-    entrustId?: string;
-    id?: string;
-    itemCName?: string;
-    itemEName?: string;
-    market?: string;
-    modifiedBy?: string;
-    modifiedByName?: string;
-    modifiedDate?: string;
-    pg?: string;
-    principalName?: string;
-    projectId?: string;
-    projectNo?: string;
-    psn?: string;
-    repeat?: boolean;
-    systemId?: string;
-    unno?: string;
+    according?: string
+    appraiseDate?: string
+    appraiser?: string
+    appraiserName?: string
+    attchmentFiles?: string[]
+    category?: string
+    checkDate?: string
+    checked?: boolean
+    checker?: string
+    checkerName?: string
+    checkLocation?: string
+    checkLocationName?: string
+    classOrDiv?: string
+    component?: null
+    conclusions?: number
+    createdBy?: string
+    createdByName?: string
+    createdDate?: string
+    editStatus?: number
+    entrustId?: string
+    id?: string
+    itemCName?: string
+    itemEName?: string
+    market?: string
+    modifiedBy?: string
+    modifiedByName?: string
+    modifiedDate?: string
+    pg?: string
+    principalName?: string
+    projectId?: string
+    projectNo?: string
+    psn?: string
+    repeat?: boolean
+    systemId?: string
+    unno?: string
   }
 
   async function openWindow(projectNo: string) {
@@ -552,11 +497,10 @@ async function entrypoint() {
       projectId: linkParams.projectId,
       entrustId: linkParams.entrustId,
       category: linkParams.category,
-      from: linkParams.from
+      from: linkParams.from,
     })
-    let link = `/${linkParams.systemId}/inspect?${params.toString()}`
+    const link = `/${linkParams.systemId}/inspect?${params.toString()}`
     console.log(link)
     window.open(link, '_blank')
   }
-
 }

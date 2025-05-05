@@ -3,7 +3,7 @@ import { Service } from 'cordis'
 import type {
   FileManager,
   HotkeyConfig,
-  LlmConfig,
+  LLMConfig,
   ServerConfig,
 } from 'aircraft-rs'
 
@@ -15,8 +15,8 @@ declare module 'cordis' {
     configManager: ConfigManager
   }
   interface Events {
-    'reload-server': (serverConfig: ServerConfig, llmConfig: LlmConfig) => void
-    'reload-llm': (llmConfig: LlmConfig) => void
+    'reload-server': (serverConfig: ServerConfig, llmConfig: LLMConfig) => void
+    'reload-llm': (llmConfig: LLMConfig) => void
     'reload-hotkey': (hotkey: HotkeyConfig) => void
   }
 }
@@ -40,7 +40,7 @@ class LLM extends Service {
    * 重载配置
    * @param llmConfig
    */
-  async reload(llmConfig: LlmConfig) {
+  async reload(llmConfig: LLMConfig) {
     await this.bindings.reload(
       llmConfig.baseUrl,
       llmConfig.apiKey,

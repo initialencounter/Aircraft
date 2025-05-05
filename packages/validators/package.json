@@ -1,0 +1,18 @@
+{
+  "name": "@aircraft/validators",
+  "version": "0.6.0",
+  "description": "Aircraft renderer package",
+  "author": {
+    "name": "InitialEncounter"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@vueuse/core": "^11.3.0",
+    "aircraft-rs": "workspace:*",
+    "typescript": "^5.9.0-dev.20250501"
+  }
+}

@@ -17,6 +17,9 @@ export default [
       'target/**',
       '**/dist/**',
       '**/dist-electron/**',
+      '**/chrome-data/**',
+      '**/.output/**',
+      '**/.wxt/**',
     ],
   },
   {

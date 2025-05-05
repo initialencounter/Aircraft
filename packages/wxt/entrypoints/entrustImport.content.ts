@@ -1,14 +1,13 @@
-import { getClipboardText, sleep } from "@/share/utils";
+import { getClipboardText, sleep } from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: [
-    'https://*/sales/entrust/dict/main?callback=entrust_dict_callback'
-  ],
-  allFrames: true, async main() {
-    entrypoint()
-  }
-});
+  matches: ['https://*/sales/entrust/dict/main?callback=entrust_dict_callback'],
+  allFrames: true,
+  async main() {
+    await entrypoint()
+  },
+})
 
 async function entrypoint() {
   chrome.storage.local.get(['autoImport'], async function (result) {
@@ -21,22 +20,28 @@ async function entrypoint() {
   })
 
   async function autoImport() {
-    let projectNo = (await getClipboardText()).replace(/[^0-9A-Z]/g, '')
+    const projectNo = (await getClipboardText()).replace(/[^0-9A-Z]/g, '')
     console.log('项目编号：', projectNo)
     if (!projectNo) {
       console.log('没有项目编号，退出脚本')
       return
     }
-    const projectNoInput = document.querySelector('#projectNo') as HTMLInputElement
+    const projectNoInput = document.querySelector(
+      '#projectNo'
+    ) as HTMLInputElement
     if (projectNoInput) {
       projectNoInput.value = projectNo
     }
-    const searchBtn = document.querySelector('#toolbar > p:nth-child(2) > a:nth-child(5)') as HTMLAnchorElement
+    const searchBtn = document.querySelector(
+      '#toolbar > p:nth-child(2) > a:nth-child(5)'
+    ) as HTMLAnchorElement
     if (searchBtn) {
       searchBtn.click()
     }
-    let handle = setInterval(() => {
-      const row1 = document.querySelector('body > div > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-body > table > tbody > tr:nth-child(1)')
+    const handle = setInterval(() => {
+      const row1 = document.querySelector(
+        'body > div > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-body > table > tbody > tr:nth-child(1)'
+      )
       if (row1) {
         row1.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
         clearInterval(handle)

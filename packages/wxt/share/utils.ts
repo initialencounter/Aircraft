@@ -108,16 +108,6 @@ async function getClipboardText() {
   }
 }
 
-function checkProjectNo(projectNo: string) {
-  if (projectNo.indexOf(getSystemId()) == -1) {
-    return false
-  }
-  if (!parseDate(projectNo)[0]) {
-    return false
-  }
-  return true
-}
-
 function getMonthsAgoProjectNo() {
   const currentDate = new Date()
   currentDate.setMonth(currentDate.getMonth() - 1)
@@ -131,7 +121,7 @@ async function getLocalConfig() {
       LocalConfig[key] = data[key]
     }
   })
-  sleep(100)
+  await sleep(100)
   return LocalConfig
 }
 
@@ -150,5 +140,5 @@ function getSystemId() {
 }
 export {
   LocalConfig, getLocalConfig, getCategory, getSystemId, checkDate, parseDate, sleep,
-  setProjectNoToClipText, getClipboardText, checkProjectNo, getMonthsAgoProjectNo
+  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo
 }

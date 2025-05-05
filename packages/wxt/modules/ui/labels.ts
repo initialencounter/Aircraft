@@ -1,21 +1,35 @@
 import { LABEL_IMG } from '../../share/label'
-import type { LocalConfig } from '@/share/utils'
+import type { LocalConfig } from '../../share/utils'
 
 /**
  * 创建标签选择UI
  */
 export function createLabelSelectionUI(localConfig: typeof LocalConfig): void {
   console.log('localConfig3', JSON.stringify(localConfig, null, 2))
-  console.log('localConfig:', localConfig, 'localConfig.enableLabelCheckManual',localConfig.enableLabelCheckManual)
-  if (!(localConfig.enableLabelCheckManual)) return
-  const LABELS = ['lims-verify-label-9', 'lims-verify-label-9A', 'lims-verify-label-CAO', 'lims-verify-label-bty']
-  const panel = document.querySelector('body > div.panel.easyui-fluid > div.easyui-panel.panel-body > div') as HTMLDivElement
-  
+  console.log(
+    'localConfig:',
+    localConfig,
+    'localConfig.enableLabelCheckManual',
+    localConfig.enableLabelCheckManual
+  )
+  if (!localConfig.enableLabelCheckManual) return
+  const LABELS = [
+    'lims-verify-label-9',
+    'lims-verify-label-9A',
+    'lims-verify-label-CAO',
+    'lims-verify-label-bty',
+  ]
+  const panel = document.querySelector(
+    'body > div.panel.easyui-fluid > div.easyui-panel.panel-body > div'
+  ) as HTMLDivElement
+
   if (!panel) return
-  
-  let imagePosition = document.querySelector('#batteryInspectForm > div > div:nth-child(5) > table')
+
+  const imagePosition = document.querySelector(
+    '#batteryInspectForm > div > div:nth-child(5) > table'
+  )
   if (!imagePosition) return
-  
+
   const container = document.createElement('div')
   Object.assign(container.style, {
     id: 'lims-verify-label-container',
@@ -25,14 +39,17 @@ export function createLabelSelectionUI(localConfig: typeof LocalConfig): void {
     'flex-direction': 'row',
     position: 'absolute',
   })
-  
-  let y = imagePosition.getBoundingClientRect().y
+
+  const y = imagePosition.getBoundingClientRect().y
   container.style.top = y + 'px'
-  
+
   // 动态调整位置
   setInterval(() => {
-    let width = imagePosition.getBoundingClientRect().width
-    let x = imagePosition.getBoundingClientRect().x + width - container.getBoundingClientRect().width
+    const width = imagePosition.getBoundingClientRect().width
+    const x =
+      imagePosition.getBoundingClientRect().x +
+      width -
+      container.getBoundingClientRect().width
     container.style.left = x + 'px'
   }, 200)
 
@@ -40,7 +57,7 @@ export function createLabelSelectionUI(localConfig: typeof LocalConfig): void {
   for (let i = 0; i < 4; i++) {
     container.appendChild(createImageItem(i, LABELS))
   }
-  
+
   document.body.appendChild(container)
 }
 
@@ -58,9 +75,9 @@ function createImageItem(num: number, LABELS: string[]): HTMLImageElement {
     opacity: '0.5',
     transition: 'all 0.3s',
     margin: '5px',
-    border: '5px solid transparent' // 初始时设置透明边框
+    border: '5px solid transparent', // 初始时设置透明边框
   })
-  
+
   img.src = LABEL_IMG[num]
   img.dataset.selected = 'false'
   img.dataset.id = LABELS[num]

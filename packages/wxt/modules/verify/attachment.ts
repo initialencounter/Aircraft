@@ -1,9 +1,17 @@
-import { getAttachmentFiles, getEntrustData, parseEntrust, getProjectAttachmentInfo } from '../utils/api'
+import type {
+  AttachmentInfo,
+  EntrustData,
+  PekData,
+  SekData,
+} from '@aircraft/validators'
 import { getCurrentProjectNo } from '../utils/helpers'
-import type { PekData, SekData } from '../../Validators/shared/types/index'
-import type { AttachmentInfo } from '../../Validators/shared/types/attachment'
-import type { EntrustModelDocx } from '../../Validators/shared/types/entrust'
-import { LocalConfig } from '@/share/utils'
+import {
+  getAttachmentFiles,
+  getEntrustData,
+  getProjectAttachmentInfo,
+  parseEntrust,
+} from '../utils/api'
+import type { LocalConfig } from '../../share/utils'
 
 /**
  * 检查附件文件
@@ -30,7 +38,7 @@ export async function checkAttachmentFile(
  * 检查所有附件文件
  */
 export async function checkAttachmentFiles(
-  projectNo: string, 
+  projectNo: string,
   projectId: string
 ): Promise<Array<{ ok: boolean; result: string }>> {
   const check1 = await checkAttachmentFile('goodsfile', projectNo, projectId)
@@ -52,23 +60,24 @@ export async function checkAttachment(
     if (!projectNo) return []
     let is_965 = false
     if (systemId === 'pek') {
-      is_965 = (dataFromForm as PekData).inspectionItem1 == 0
+      is_965 = (dataFromForm as PekData).inspectionItem1 === 0
     } else {
       is_965 = (dataFromForm as SekData).otherDescribe === '540'
     }
-    
-    const attachmentInfo: AttachmentInfo | null = await getProjectAttachmentInfo(projectNo, is_965, localConfig)
+
+    const attachmentInfo: AttachmentInfo | null =
+      await getProjectAttachmentInfo(projectNo, is_965, localConfig)
     console.log(attachmentInfo, 'attachmentInfo')
-    if (!attachmentInfo) return [{ ok: false, result: '无法获取本地的图片概要' }]
-    
+    if (!attachmentInfo)
+      return [{ ok: false, result: '无法获取本地的图片概要' }]
+
     if (!localConfig.enableLabelCheck) {
       attachmentInfo.goods.labels = ['pass']
     }
-    
-    
+
     const entrustDataText = await getEntrustData()
     const entrustData = parseEntrust(entrustDataText)
-    
+
     return checkSummary(systemId, dataFromForm, attachmentInfo, entrustData)
   } catch (e) {
     console.log(e)
@@ -82,12 +91,20 @@ export async function checkAttachment(
 export function checkSummary(
   systemId: 'pek' | 'sek',
   dataFromForm: PekData | SekData,
-  attachmentInfo: AttachmentInfo, 
-  entrustData: EntrustModelDocx
+  attachmentInfo: AttachmentInfo,
+  entrustData: EntrustData
 ): Array<{ ok: boolean; result: string }> {
   if (systemId === 'pek') {
-    return window.checkPekAttachment(dataFromForm as PekData, attachmentInfo, entrustData)
+    return window.checkPekAttachment(
+      dataFromForm as PekData,
+      attachmentInfo,
+      entrustData
+    )
   } else {
-    return window.checkSekAttachment(dataFromForm as SekData, attachmentInfo, entrustData)
+    return window.checkSekAttachment(
+      dataFromForm as SekData,
+      attachmentInfo,
+      entrustData
+    )
   }
 }

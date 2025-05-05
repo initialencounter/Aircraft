@@ -3,7 +3,7 @@ import type {
   ServerConfig,
   BaseConfig,
   HotkeyConfig,
-  LlmConfig,
+  LLMConfig,
 } from 'aircraft-rs'
 
 export const ServerConfigSchema: Schema<ServerConfig> = Schema.object({
@@ -40,7 +40,7 @@ export const HotkeyConfigSchema: Schema<HotkeyConfig> = Schema.object({
   signatureHeight: Schema.number().description('签名高度').default(1.73),
 }).description('快捷键设置')
 
-export const LlmConfigSchema: Schema<LlmConfig> = Schema.object({
+export const LlmConfigSchema: Schema<LLMConfig> = Schema.object({
   baseUrl: Schema.string()
     .description('平台接口域名')
     .default('https://api.moonshot.cn/v1'),
@@ -51,7 +51,7 @@ export const LlmConfigSchema: Schema<LlmConfig> = Schema.object({
 export interface Config {
   base: BaseConfig
   server: ServerConfig
-  llm: LlmConfig
+  llm: LLMConfig
   hotkey: HotkeyConfig
 }
 

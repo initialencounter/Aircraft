@@ -1,18 +1,21 @@
-import { checkDate, getClipboardText, getLocalConfig, parseDate, sleep } from "@/share/utils";
+import {
+  checkDate,
+  getClipboardText,
+  getLocalConfig,
+  parseDate,
+  sleep,
+} from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: [
-    'https://*/inspect/query/main',
-  ],
+  matches: ['https://*/inspect/query/main'],
   allFrames: true,
   async main() {
-    entrypoint()
-  }
-});
+    await entrypoint()
+  },
+})
 
-
-async function entrypoint(){
+async function entrypoint() {
   const localConfig = await getLocalConfig()
   await sleep(400)
   if (localConfig.enableSetQueryProjectNo === false) {
@@ -71,5 +74,4 @@ async function entrypoint(){
     ).value = projectNo
     document.removeEventListener('click', handleQueryBtnClick)
   }
-  
 }

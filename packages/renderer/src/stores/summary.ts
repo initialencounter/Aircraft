@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { SummaryFromLLM } from '../types'
+import type { SummaryFromLLM } from '@aircraft/validators/src/shared/types'
 
 interface SummaryState {
   result: string[]

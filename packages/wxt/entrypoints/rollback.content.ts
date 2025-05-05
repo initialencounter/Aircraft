@@ -1,61 +1,67 @@
-import { getQmsg } from '@/share/qmsg'
+import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { sleep } from '@/share/utils';
+import { sleep } from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: [
-    'https://*/flow/inspect/inspect/main',
-  ],
+  matches: ['https://*/flow/inspect/inspect/main'],
   allFrames: true,
   async main() {
-    entrypoint()
-  }
-});
+    await entrypoint()
+  },
+})
 
 async function entrypoint() {
   const Qmsg = getQmsg()
-  let hiddenTimeInspectList: number | null = null;
-  chrome.storage.local.get(['onekeyRollback', 'nextYearColor', 'nextYearBgColor', 'freshHotkey', 'autoRefreshDuration'], async function (result) {
-    if (!(result.freshHotkey === false)) {
-      listenFreshHotkeyInspectList()
-      listenVisibilityChangeInspectList(result?.autoRefreshDuration ?? 10000)
+  let hiddenTimeInspectList: number | null = null
+  chrome.storage.local.get(
+    [
+      'onekeyRollback',
+      'nextYearColor',
+      'nextYearBgColor',
+      'freshHotkey',
+      'autoRefreshDuration',
+    ],
+    async function (result) {
+      if (!(result.freshHotkey === false)) {
+        await listenFreshHotkeyInspectList()
+        listenVisibilityChangeInspectList(result?.autoRefreshDuration ?? 10000)
+      }
+      removeOrangeRollBack(
+        result.nextYearColor ?? '',
+        result.nextYearBgColor ?? '#76EEC6'
+      )
+      await sleep(500)
+      // 替换橘黄色
+      if (result.onekeyRollback === false) {
+        console.log('未启用一键退回，退出脚本')
+        return
+      }
+      observeInspectList()
     }
-    removeOrangeRollBack(result.nextYearColor ?? '', result.nextYearBgColor ?? '#76EEC6')
-    await sleep(500)
-    // 替换橘黄色
-    if (result.onekeyRollback === false) {
-      console.log('未启用一键退回，退出脚本')
-      return
-    }
-    observeInspectList()
-  })
+  )
 
   // function
 
   async function rollback(taskId: string): Promise<boolean> {
     const body = {
       taskId: taskId,
-      reason: ''
+      reason: '',
     }
     const response = await fetch(
       `https://${window.location.host}/rest/flow/task/rollback`,
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include', // 包含 cookies
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       }
     )
     if (!response.ok) return false
     const data = await response.json()
-    if (data.result === 'success') {
-      return true
-    } else {
-      return false
-    }
+    return data.result === 'success'
   }
 
   async function rollbackOneKey(taskId: string) {
@@ -90,7 +96,7 @@ async function entrypoint() {
       `https://${window.location.host}/rest/flow/task/get/inspect?projectStartDate=${startDate}&projectEndDate=${date}&projectState=0&page=1&rows=10`,
       {
         method: 'GET',
-        credentials: 'include' // 包含 cookies
+        credentials: 'include', // 包含 cookies
       }
     )
     if (!response.ok) {
@@ -105,6 +111,7 @@ async function entrypoint() {
       .map((item: Task) => item.projectId)
     return projectIds[0]
   }
+
   // 分配页面
   async function getTaskIdByProjectId(projectId: string) {
     if (!projectId) return ''
@@ -116,7 +123,7 @@ async function entrypoint() {
       `https://${window.location.host}/rest/flow/task/get/assignInspect?projectStartDate=${startDate}&projectEndDate=${date}&projectState=0&page=1&rows=10`,
       {
         method: 'GET',
-        credentials: 'include' // 包含 cookies
+        credentials: 'include', // 包含 cookies
       }
     )
     if (!response.ok) {
@@ -133,8 +140,8 @@ async function entrypoint() {
   }
 
   function insertRollbackButton() {
-    const targets = document.getElementById('datagrid-row-r1-2-0')?.parentElement
-      ?.children
+    const targets = document.getElementById('datagrid-row-r1-2-0')
+      ?.parentElement?.children
     if (!targets) return false
     for (let i = 0; i < targets.length; i++) {
       const len = targets[i].children.length
@@ -158,10 +165,15 @@ async function entrypoint() {
     }
   }
 
-  function removeOrangeRollBack(nextYearColor: string, nextYearBgColor: string) {
+  function removeOrangeRollBack(
+    nextYearColor: string,
+    nextYearBgColor: string
+  ) {
     setInterval(() => {
-      for (var i = 0; i < 10; i++) {
-        const targets = document.querySelector(`#datagrid-row-r1-2-${i}`) as HTMLTableRowElement
+      for (let i = 0; i < 10; i++) {
+        const targets = document.querySelector(
+          `#datagrid-row-r1-2-${i}`
+        ) as HTMLTableRowElement
         if (targets) {
           if (targets.style.color !== 'orange') continue
           targets.style.color = nextYearColor
@@ -170,7 +182,6 @@ async function entrypoint() {
       }
     }, 100)
   }
-
 
   async function listenFreshHotkeyInspectList() {
     console.log('监听刷新快捷键')
@@ -187,7 +198,9 @@ async function entrypoint() {
   }
 
   function doFreshInspectList() {
-    const refreshButton = document.querySelector('body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a') as HTMLAnchorElement
+    const refreshButton = document.querySelector(
+      'body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a'
+    ) as HTMLAnchorElement
     if (refreshButton) refreshButton.click()
   }
 
@@ -195,17 +208,18 @@ async function entrypoint() {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         // 页面隐藏时记录时间
-        hiddenTimeInspectList = Date.now();
+        hiddenTimeInspectList = Date.now()
       } else if (hiddenTimeInspectList) {
         // 页面显示时，检查是否超过10秒
-        const hiddenDuration = Date.now() - hiddenTimeInspectList;
-        if (hiddenDuration >= autoRefreshDuration) { // 10秒 = 10000毫秒
-          doFreshInspectList();
+        const hiddenDuration = Date.now() - hiddenTimeInspectList
+        if (hiddenDuration >= autoRefreshDuration) {
+          // 10秒 = 10000毫秒
+          doFreshInspectList()
           console.log('离开页面10秒，刷新列表')
         }
-        hiddenTimeInspectList = null;
+        hiddenTimeInspectList = null
       }
-    });
+    })
   }
 
   interface Task {

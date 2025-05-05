@@ -1,17 +1,37 @@
-import { checkSummaryFromLLM, checkSekAttachment, checkPekAttachment, checkSekBtyType, checkPekBtyType } from '../Validators'
-import type { PekData, SekData } from '../Validators/shared/types/index'
-import type { AttachmentInfo, SummaryFromLLM, SummaryInfo } from '../Validators/shared/types/attachment'
-import type { EntrustModelDocx } from '../Validators/shared/types/entrust'
+import type {
+  AttachmentInfo,
+  EntrustData,
+  PekData,
+  SekData,
+  SummaryFromLLM,
+  SummaryInfo,
+} from '@aircraft/validators'
+import {
+  checkPekAttachment,
+  checkPekBtyType,
+  checkSekAttachment,
+  checkSekBtyType,
+  checkSummaryFromLLM,
+} from '@aircraft/validators'
 import '../assets/message.min.css'
 
 // 工具函数和辅助方法
-import { sleep, getCurrentProjectId, getCurrentProjectNo, getSystemId, preventDefault } from '../modules/utils/helpers'
-import { configKeys, getCategory, getLocalConfig, LocalConfig } from '@/share/utils'
-import { getNotification } from '../modules/utils/helpers'
+import {
+  getCurrentProjectId,
+  getCurrentProjectNo,
+  getNotification,
+  getSystemId,
+  preventDefault,
+  sleep,
+} from '../modules/utils/helpers'
+import { getCategory, getLocalConfig } from '../share/utils'
 
 // UI 相关
-import { createVerifyButtons, updateVerifyButtonStatus } from '../modules/ui/buttons'
-import { createMask, showMask, hideMask } from '../modules/ui/mask'
+import {
+  createVerifyButtons,
+  updateVerifyButtonStatus,
+} from '../modules/ui/buttons'
+import { createMask, hideMask, showMask } from '../modules/ui/mask'
 import { createLabelSelectionUI } from '../modules/ui/labels'
 
 // 验证相关
@@ -20,11 +40,39 @@ import { handleFileDrop } from '../modules/verify/llm'
 
 // 声明全局函数
 declare global {
-  function checkPekBtyType(data: PekData): Array<{ ok: boolean; result: string }>
-  function checkSekBtyType(data: SekData): Array<{ ok: boolean; result: string }>
-  function checkPekAttachment(data: PekData, attachmentInfo: AttachmentInfo, entrustData: EntrustModelDocx): Array<{ ok: boolean; result: string }>
-  function checkSekAttachment(data: SekData, attachmentInfo: AttachmentInfo, entrustData: EntrustModelDocx): Array<{ ok: boolean; result: string }>
-  function checkSummaryFromLLM(summaryFromLLM: SummaryFromLLM, summaryInfo: SummaryInfo): Array<{ ok: boolean; result: string }>
+  function checkPekBtyType(
+    data: PekData
+  ): Array<{ ok: boolean; result: string }>
+
+  function checkSekBtyType(
+    data: SekData
+  ): Array<{ ok: boolean; result: string }>
+
+  function checkPekAttachment(
+    data: PekData,
+    attachmentInfo: AttachmentInfo,
+    entrustData: EntrustData
+  ): Array<{
+    ok: boolean
+    result: string
+  }>
+
+  function checkSekAttachment(
+    data: SekData,
+    attachmentInfo: AttachmentInfo,
+    entrustData: EntrustData
+  ): Array<{
+    ok: boolean
+    result: string
+  }>
+
+  function checkSummaryFromLLM(
+    summaryFromLLM: SummaryFromLLM,
+    summaryInfo: SummaryInfo
+  ): Array<{
+    ok: boolean
+    result: string
+  }>
 }
 
 export default defineContentScript({
@@ -33,7 +81,7 @@ export default defineContentScript({
     'https://*/rek/inspect*',
     'https://*/aek/inspect*',
     'https://*/sek/inspect*',
-    'https://*/pek/inspect*'
+    'https://*/pek/inspect*',
   ],
   allFrames: true,
   async main() {
@@ -56,7 +104,7 @@ export default defineContentScript({
     // 如果不是电池类别或未启用验证，则退出
     if (category !== 'battery') return
     console.log('localConfig2', JSON.stringify(localConfig, null, 2))
-    if (localConfig.verify === false) {
+    if (!localConfig.verify) {
       console.log('未启用验证，退出脚本')
       return
     }
@@ -72,7 +120,9 @@ export default defineContentScript({
     document.ondragover = preventDefault
     document.ondragenter = preventDefault
     document.ondragleave = preventDefault
-    document.ondrop = (event) => handleFileDrop(event, systemId, showMask, hideMask, localConfig)
+    document.ondrop = (event) =>
+      handleFileDrop(event, systemId, showMask, hideMask, localConfig)
+
     /**
      * 验证处理函数
      */
@@ -90,7 +140,12 @@ export default defineContentScript({
       }
 
       // 执行验证
-      const result = await verifyFormData(systemId, currentProjectId, projectNo, localConfig)
+      const result = await verifyFormData(
+        systemId,
+        currentProjectId,
+        projectNo,
+        localConfig
+      )
 
       if (!result.length) {
         updateVerifyButtonStatus(true)
@@ -101,8 +156,8 @@ export default defineContentScript({
       updateVerifyButtonStatus(false)
       Qmsg.warning('初步验证未通过' + JSON.stringify(result, null, 2), {
         showClose: true,
-        timeout: 4000
+        timeout: 4000,
       })
     }
-  }
+  },
 })

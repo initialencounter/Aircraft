@@ -3,8 +3,8 @@
 layout: home
 
 hero:
-  name: "Lims"
-  text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+  name: 'Lims'
+  text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
   tagline: v2.0.1
   actions:
     - theme: brand
@@ -33,4 +33,3 @@ features:
   - title: 表单验证
     details: 强大的规则匹配
 ---
-

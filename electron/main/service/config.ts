@@ -84,7 +84,8 @@ class ConfigManager extends Service {
   }
   reloadConfig(config: Config) {
     try {
-      const currentServerConfig = this.ctx.core.bindings.getCurrentServerConfig()
+      const currentServerConfig =
+        this.ctx.core.bindings.getCurrentServerConfig()
       if (!shallowEqual(currentServerConfig, config.server)) {
         this.ctx.emit('reload-server', config.server, config.llm)
       }
@@ -100,7 +101,8 @@ class ConfigManager extends Service {
       logger.error('LLM config file reload error', error)
     }
     try {
-      const currentHotkeyConfig = this.ctx.core.bindings.getCurrentHotkeyConfig()
+      const currentHotkeyConfig =
+        this.ctx.core.bindings.getCurrentHotkeyConfig()
       if (!shallowEqual(currentHotkeyConfig, config.hotkey)) {
         this.ctx.emit('reload-hotkey', config.hotkey)
       }

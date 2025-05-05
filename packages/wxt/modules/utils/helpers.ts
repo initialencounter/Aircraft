@@ -1,10 +1,10 @@
-import { getQmsg } from '@/share/qmsg'
+import { getQmsg } from '../../share/qmsg'
 
 /**
  * 创建一个延时函数，用于异步操作的等待
  */
 export async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -25,7 +25,9 @@ export function getHost(): string {
  * 获取当前项目编号
  */
 export function getCurrentProjectNo(): string | null {
-  const projectNoElement = document.getElementById('projectNo') as HTMLInputElement
+  const projectNoElement = document.getElementById(
+    'projectNo'
+  ) as HTMLInputElement
   if (!projectNoElement) return null
   const projectNo = projectNoElement.innerHTML
   if (!projectNo) return null

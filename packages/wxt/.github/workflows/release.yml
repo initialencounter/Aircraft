@@ -34,7 +34,7 @@ jobs:
         run: |
           npm run build
           npm run build:firefox
-      
+
       - name: Build docs
         run: |
           npm run docs:build

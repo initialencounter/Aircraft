@@ -1,19 +1,16 @@
-import { startSyncInterval } from "@/share/screenshot";
-import { sleep } from "@/share/utils";
+import { startSyncInterval } from '../share/screenshot'
+import { sleep } from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: [
-    'https://*/'
-  ],
+  matches: ['https://*/'],
   allFrames: true,
   async main() {
-    entrypoint()
-  }
-});
+    await entrypoint()
+  },
+})
 
-
-function entrypoint(){
-  sleep(500)
+async function entrypoint() {
+  await sleep(500)
   startSyncInterval()
 }

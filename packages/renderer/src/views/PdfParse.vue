@@ -4,11 +4,11 @@
 import { ref } from 'vue'
 import { ipcManager } from '../utils/ipcManager'
 import summaryTable from '../components/SummaryTable.vue'
-import type { SummaryFromLLM } from '../types'
+import type { SummaryFromLLM } from '@aircraft/validators'
 import { ElMessage } from 'element-plus'
 import FileDropzone from '../components/FileDropzone.vue'
-import { checkSummaryFromLLM } from '../utils/llm'
-import { convertSummaryInfo2SummaryFromLLM } from '../utils/convertSummaryInfo2SummaryFromLLM'
+import { checkSummaryFromLLM } from '@aircraft/validators'
+import { convertSummaryInfo2SummaryFromLLM } from '@aircraft/validators/src/shared/utils'
 import { useSummaryStore } from '../stores/summary'
 import { SummaryInfo } from 'aircraft-rs'
 import { Loading } from '@element-plus/icons-vue'
@@ -64,6 +64,7 @@ const handleParseReport = async (files: ParseReportFiles) => {
     verifyResult.value = result.map((item) => item.result)
     summaryStore.setResult(verifyResult.value)
   } catch (e) {
+    console.log(e)
     ElMessage.error('解析失败' + e)
   } finally {
     loading.value = false // 无论成功或失败都关闭loading

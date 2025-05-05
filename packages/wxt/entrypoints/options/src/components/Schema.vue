@@ -20,7 +20,7 @@
     <template #footer>
       <textarea
         v-model="importText"
-        style="width: 100%;"
+        style="width: 100%"
         :rows="6"
         type="textarea"
         placeholder="请输入您要导入的配置信息"
@@ -51,13 +51,13 @@ const saveConfig = () => {
     ElMessage({
       message: '保存成功',
       type: 'success',
-      plain: true
+      plain: true,
     })
   } catch (error) {
     ElMessage({
       message: '保存失败，请检查配置',
       type: 'error',
-      plain: true
+      plain: true,
     })
     return
   }
@@ -66,10 +66,13 @@ const saveConfig = () => {
 const config = ref<Config>({})
 const initial = ref<Config>({})
 
-chrome.storage.local.get((Object.keys(new Config())) as (keyof Config)[], (data: Config) => {
-  initial.value = JSON.parse(JSON.stringify(data))
-  config.value = JSON.parse(JSON.stringify(data))
-})
+chrome.storage.local.get(
+  Object.keys(new Config()) as (keyof Config)[],
+  (data: Config) => {
+    initial.value = JSON.parse(JSON.stringify(data))
+    config.value = JSON.parse(JSON.stringify(data))
+  }
+)
 
 const submitForm = async () => {
   saveConfig()
@@ -85,7 +88,7 @@ const exportConfig = () => {
   ElMessage({
     message: '导出成功，配置信息已复制到剪贴板，请妥善保存',
     type: 'success',
-    plain: true
+    plain: true,
   })
 }
 
@@ -100,13 +103,13 @@ const importConfig = () => {
     ElMessage({
       message: '导入成功',
       type: 'success',
-      plain: true
+      plain: true,
     })
   } catch (error) {
     ElMessage({
       message: '导入失败，请检查剪切板中是否存在配置信息',
       type: 'error',
-      plain: true
+      plain: true,
     })
   }
 }

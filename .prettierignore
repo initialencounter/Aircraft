@@ -9,3 +9,5 @@ target
 dist
 dist-electron
 *.log
+packages/wxt/chrome-data
+packages/wxt/.output

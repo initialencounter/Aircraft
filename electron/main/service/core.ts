@@ -10,7 +10,7 @@ import type {
   AircraftRs,
   AttachmentInfo,
   HotkeyConfig,
-  LlmConfig,
+  LLMConfig,
   ServerConfig,
   SummaryInfo,
 } from 'aircraft-rs'
@@ -20,8 +20,8 @@ declare module 'cordis' {
     core: AircraftCore
   }
   interface Events {
-    'reload-server': (serverConfig: ServerConfig, llmConfig: LlmConfig) => void
-    'reload-llm': (llmConfig: LlmConfig) => void
+    'reload-server': (serverConfig: ServerConfig, llmConfig: LLMConfig) => void
+    'reload-llm': (llmConfig: LLMConfig) => void
     'reload-hotkey': (hotkey: HotkeyConfig) => void
   }
 }

@@ -1,29 +1,27 @@
+import type { PekData, SekData, SummaryFromLLM } from '@aircraft/validators'
 import { getProjectAttachmentInfo } from '../utils/api'
-import { getCurrentProjectNo } from '../utils/helpers'
+import { getCurrentProjectNo, getNotification } from '../utils/helpers'
 import { getFormData } from '../utils/form'
-import { getNotification } from '../utils/helpers'
-import type { SummaryFromLLM } from '../../Validators/shared/types/attachment'
-import type { PekData, SekData } from '../../Validators/shared/types/index'
-import type { LocalConfig } from '@/share/utils'
+import type { LocalConfig } from '../../share/utils'
 
 /**
  * 处理文件拖放事件
  */
 export async function handleFileDrop(
-  event: DragEvent, 
+  event: DragEvent,
   systemId: 'pek' | 'sek',
-  showMask: () => void, 
+  showMask: () => void,
   hideMask: () => void,
   localConfig: typeof LocalConfig
 ): Promise<void> {
   event.stopPropagation()
   event.preventDefault()
-  
+
   const fileList = event.dataTransfer!.files
   if (fileList.length === 0) {
     return
   }
-  
+
   showMask()
   const filesData: FileData[] = []
 
@@ -38,25 +36,25 @@ export async function handleFileDrop(
         filesData.push({
           name: file.name,
           type: file.type,
-          data: Array.from(uint8Array)
+          data: Array.from(uint8Array),
         })
         resolve()
       }
       reader.readAsArrayBuffer(file)
     })
   }
-  
+
   const response = await chrome.runtime.sendMessage({
     action: 'uploadLLMFiles',
     aircraftServer: localConfig.aircraftServer,
     files: filesData,
   })
-  
+
   let summaryFromLLM = JSON.parse(response)
   if (typeof summaryFromLLM !== 'object') {
     summaryFromLLM = JSON.parse(summaryFromLLM)
   }
-  
+
   console.log('summaryFromLLM', summaryFromLLM)
   await llmChecker(summaryFromLLM, systemId, localConfig)
   hideMask()
@@ -66,50 +64,56 @@ export async function handleFileDrop(
  * LLM验证器
  */
 export async function llmChecker(
-  summaryFromLLM: SummaryFromLLM, 
+  summaryFromLLM: SummaryFromLLM,
   systemId: 'pek' | 'sek',
   localConfig: typeof LocalConfig
 ): Promise<void> {
   const Qmsg = getNotification()
   const projectNo = getCurrentProjectNo()
   if (!projectNo) return
-  
+
   let dataFromForm = null
   let is_965 = false
-  
+
   if (systemId === 'pek') {
     dataFromForm = getFormData<PekData>(systemId)
-    is_965 = dataFromForm.inspectionItem1 == 0
+    is_965 = dataFromForm.inspectionItem1 === 0
   } else {
     dataFromForm = getFormData<SekData>(systemId)
     is_965 = dataFromForm.otherDescribe === '540'
   }
-  
-  const attachmentInfo = await getProjectAttachmentInfo(projectNo, is_965, localConfig)
+
+  const attachmentInfo = await getProjectAttachmentInfo(
+    projectNo,
+    is_965,
+    localConfig
+  )
   if (!attachmentInfo) return
-  
-  let summaryInfo = attachmentInfo.summary
-  let result = window.checkSummaryFromLLM(summaryFromLLM, summaryInfo)
-  
-  let panelTitle = document.querySelector("body > div.panel.easyui-fluid > div.panel-header > div.panel-title") as HTMLDivElement
-  
+
+  const summaryInfo = attachmentInfo.summary
+  const result = window.checkSummaryFromLLM(summaryFromLLM, summaryInfo)
+
+  const panelTitle = document.querySelector(
+    'body > div.panel.easyui-fluid > div.panel-header > div.panel-title'
+  ) as HTMLDivElement
+
   if (!result.length) {
     Qmsg.success('LLM验证通过', { timeout: 500 })
     if (panelTitle) {
       panelTitle.innerText = 'LLM验证通过'
-      panelTitle.style.color = "#238636"
+      panelTitle.style.color = '#238636'
     }
     return
   }
-  
+
   if (panelTitle) {
     panelTitle.innerText = 'LLM验证未通过'
-    panelTitle.style.color = "#fa5e55"
+    panelTitle.style.color = '#fa5e55'
   }
-  
+
   Qmsg.warning('LLM验证未通过' + JSON.stringify(result, null, 2), {
     showClose: true,
-    timeout: 4000
+    timeout: 4000,
   })
 }
 

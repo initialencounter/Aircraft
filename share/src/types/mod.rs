@@ -80,8 +80,7 @@ impl HotkeyConfig {
     }
 }
 
-
-#[napi(object)]
+#[napi(js_name="LLMConfig", object)]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct LLMConfig {

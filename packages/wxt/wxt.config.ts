@@ -1,5 +1,5 @@
-import { defineConfig } from 'wxt';
-import yaml from '@maikolib/vite-plugin-yaml';
+import { defineConfig } from 'wxt'
+import yaml from '@maikolib/vite-plugin-yaml'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -8,13 +8,11 @@ export default defineConfig({
     css: {
       preprocessorOptions: {
         scss: {
-          api: "modern-compiler",
+          api: 'modern-compiler',
         },
       },
     },
-    plugins: [
-      yaml(),
-    ],
+    plugins: [yaml()],
   }),
   modules: ['@wxt-dev/module-vue'],
   entrypointsDir: './entrypoints',
@@ -25,20 +23,18 @@ export default defineConfig({
     browser_specific_settings: {
       gecko: {
         id: '{3f8b9a12-a64d-48d8-bb5c-8d9f4e9322b2}',
-      }
+      },
     },
     icons: {
-      '48': 'icon/lims.png'
+      '48': 'icon/lims.png',
     },
     permissions: [
       'activeTab',
       'clipboardWrite',
       'scripting',
       'storage',
-      'contextMenus'
+      'contextMenus',
     ],
-    host_permissions: [
-      '<all_urls>'
-    ],
+    host_permissions: ['<all_urls>'],
   },
-});
+})

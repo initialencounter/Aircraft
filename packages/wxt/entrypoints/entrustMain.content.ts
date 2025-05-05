@@ -1,8 +1,7 @@
-import { getLocalConfig, sleep } from "@/share/utils";
-import { getQmsg } from '@/share/qmsg'
+import { getLocalConfig, sleep } from '../share/utils'
+import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { addShotListener, startSyncInterval } from "@/share/screenshot";
-
+import { addShotListener, startSyncInterval } from '../share/screenshot'
 
 interface Task {
   assignee: string
@@ -38,58 +37,57 @@ interface User {
 }
 
 export interface EntrustFormData {
-  amount: string;
-  category: string;
-  checkLocation: string;
-  destination: string;
-  id: string;
-  itemBrand: string;
-  itemCName: string;
-  itemColor: string;
-  itemDanger: string;
-  itemDangerReason: string;
-  itemDesc: string;
-  itemEName: string;
-  itemFlashPoint: string;
-  itemMeltingPoint: string;
-  itemOtherAttachFileDetail: string;
-  itemSampleHandle: string;
-  itemSampleHandleOther: string;
-  itemSendSample: string;
-  itemSmell: string;
-  itemSpec: string;
-  itemStatus: string;
-  manufacturersCName: string;
-  manufacturersEName: string;
-  market: string;
-  nextYear: string;
-  paymentCompany: string;
-  paymentCompanyContact: string;
-  payType: string;
-  pieces: string;
-  principal: string;
-  principalContact: string;
-  principalExhort: string;
-  principalExhortDetail: string;
-  reportCopy: string;
-  reportLocation: string;
-  reportWay: string;
-  serviceType: string;
-  systemId: string;
-  trustee: string;
-  waybillNo: string;
-  webWt: string;
+  amount: string
+  category: string
+  checkLocation: string
+  destination: string
+  id: string
+  itemBrand: string
+  itemCName: string
+  itemColor: string
+  itemDanger: string
+  itemDangerReason: string
+  itemDesc: string
+  itemEName: string
+  itemFlashPoint: string
+  itemMeltingPoint: string
+  itemOtherAttachFileDetail: string
+  itemSampleHandle: string
+  itemSampleHandleOther: string
+  itemSendSample: string
+  itemSmell: string
+  itemSpec: string
+  itemStatus: string
+  manufacturersCName: string
+  manufacturersEName: string
+  market: string
+  nextYear: string
+  paymentCompany: string
+  paymentCompanyContact: string
+  payType: string
+  pieces: string
+  principal: string
+  principalContact: string
+  principalExhort: string
+  principalExhortDetail: string
+  reportCopy: string
+  reportLocation: string
+  reportWay: string
+  serviceType: string
+  systemId: string
+  trustee: string
+  waybillNo: string
+  webWt: string
 }
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: [
-    'https://*/sales/entrust/main'
-  ],
-  allFrames: true, async main() {
+  matches: ['https://*/sales/entrust/main'],
+  allFrames: true,
+  async main() {
     entrypoint()
-  }
-});
+  },
+})
 
 async function entrypoint() {
   let assignRunning = false
@@ -111,13 +109,17 @@ async function entrypoint() {
   startFollow()
   addShotListener(Qmsg)
   startSyncInterval()
-  chrome.storage.local.get(['assignUser', 'saveAndAssign', 'checkAssignUser'], async function (data) {
-    const assignUser = data.assignUser as string
-    globalAssignUser = assignUser
-    globalCheckAssignUser = data.checkAssignUser === false ? false : true
-    console.log('保存并分配脚本运行中...', data)
-    if (!(data.saveAndAssign === false)) await insertSaveAndAssignButton(assignUser)
-  })
+  chrome.storage.local.get(
+    ['assignUser', 'saveAndAssign', 'checkAssignUser'],
+    async function (data) {
+      const assignUser = data.assignUser as string
+      globalAssignUser = assignUser
+      globalCheckAssignUser = data.checkAssignUser === false ? false : true
+      console.log('保存并分配脚本运行中...', data)
+      if (!(data.saveAndAssign === false))
+        await insertSaveAndAssignButton(assignUser)
+    }
+  )
 
   // function
 
@@ -173,7 +175,9 @@ async function entrypoint() {
   }
 
   async function setAmount(moneyDefault: string = '') {
-    let money = (moneyDefault !== '' ? moneyDefault : localConfig.amount).slice()
+    const money = (
+      moneyDefault !== '' ? moneyDefault : localConfig.amount
+    ).slice()
     await sleep(200)
     const target = document.querySelectorAll(
       'input[type="hidden"][class="textbox-value"][name="amount"]'
@@ -214,7 +218,8 @@ async function entrypoint() {
     select.style.width = '120px'
     select.style.height = '26px'
     select.style.border = '1px solid #bbb'
-    select.style.background = 'linear-gradient(to bottom,#ffffff 0,#e6e6e6 100%)'
+    select.style.background =
+      'linear-gradient(to bottom,#ffffff 0,#e6e6e6 100%)'
     select.className = 'easyui-linkbutton l-btn l-btn-small'
     select.setAttribute('textboxname', 'systemId')
     select.setAttribute('comboname', 'systemId')
@@ -245,36 +250,40 @@ async function entrypoint() {
   }
 
   function getEntrustFormData(): EntrustFormData | undefined {
-    const formElement = document.forms[0] as HTMLFormElement;
+    const formElement = document.forms[0] as HTMLFormElement
     if (!formElement) return
     // 获取表单数据
-    const formData = new FormData(formElement);
-    const data: Partial<EntrustFormData> = {};
+    const formData = new FormData(formElement)
+    const data: Partial<EntrustFormData> = {}
 
     // 遍历 FormData 并构建数据对象
     formData.forEach((value, name) => {
       if (data[name as keyof Partial<EntrustFormData>]) {
         // 如果已存在该字段，添加逗号并附加新值
-        data[name as keyof Partial<EntrustFormData>] = (data[name as keyof Partial<EntrustFormData>] + `,${value}`) as EntrustFormData[keyof EntrustFormData];
+        data[name as keyof Partial<EntrustFormData>] = (data[
+          name as keyof Partial<EntrustFormData>
+        ] + `,${value}`) as EntrustFormData[keyof EntrustFormData]
       } else {
         // 如果是新字段，直接赋值
-        data[name as keyof Partial<EntrustFormData>] = value as EntrustFormData[keyof EntrustFormData];
+        data[name as keyof Partial<EntrustFormData>] =
+          value as EntrustFormData[keyof EntrustFormData]
       }
     })
-    var errorContents = [];
-    if (isEmpty(data.itemCName)) errorContents.push('物品中文名称不能为空');
-    if (isEmpty(data.itemEName)) errorContents.push('物品英文名称不能为空');
-
+    var errorContents = []
+    if (isEmpty(data.itemCName)) errorContents.push('物品中文名称不能为空')
+    if (isEmpty(data.itemEName)) errorContents.push('物品英文名称不能为空')
 
     if (isEmpty(data.principalContact) || isEmpty(data.principal)) {
-      errorContents.push('委托方不能为空');
+      errorContents.push('委托方不能为空')
     }
 
-    var category = data.category;
+    var category = data.category
 
     if (category === 'battery' || category === 'sodium') {
-      if (isEmpty(data.manufacturersCName)) errorContents.push('物品种类为电池类时：生产厂家中文不能为空');
-      if (isEmpty(data.manufacturersEName)) errorContents.push('物品种类为电池时类：生产厂家英文不能为空');
+      if (isEmpty(data.manufacturersCName))
+        errorContents.push('物品种类为电池类时：生产厂家中文不能为空')
+      if (isEmpty(data.manufacturersEName))
+        errorContents.push('物品种类为电池时类：生产厂家英文不能为空')
     }
 
     if (errorContents.length > 0) {
@@ -323,10 +332,10 @@ async function entrypoint() {
         return
       }
       if (globalAssignUser !== selectUid) {
-        chrome.storage.local.set({ assignUser: selectUid })
+        await chrome.storage.local.set({ assignUser: selectUid })
         globalAssignUser = selectUid
       }
-      let data: EntrustFormData | undefined = getEntrustFormData()
+      const data: EntrustFormData | undefined = getEntrustFormData()
       if (!data) {
         assignRunning = false
         hideMask()
@@ -357,10 +366,10 @@ async function entrypoint() {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include', // 包含 cookies
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       }
     )
     if (!response.ok) {
@@ -375,7 +384,7 @@ async function entrypoint() {
 
   async function okAssignTask(id: string, uid: string) {
     if (uid === '2c91808478367c2801788230b248470e' && globalCheckAssignUser) {
-      let res = confirm('确定主检员是正确的吗？')
+      const res = confirm('确定主检员是正确的吗？')
       if (!res) return
     }
     console.log('okAssignTask:', id)
@@ -402,10 +411,10 @@ async function entrypoint() {
       {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include', // 包含 cookies
-        body: JSON.stringify(ids)
+        body: JSON.stringify(ids),
       }
     )
     if (!response.ok) {
@@ -427,7 +436,7 @@ async function entrypoint() {
       `https://${window.location.host}/rest/flow/task/get/assignInspect?projectStartDate=${startDate}&projectEndDate=${date}&projectState=0&page=1&rows=10`,
       {
         method: 'GET',
-        credentials: 'include' // 包含 cookies
+        credentials: 'include', // 包含 cookies
       }
     )
     if (!response.ok) {
@@ -435,14 +444,13 @@ async function entrypoint() {
       return []
     }
     const data = await response.json()
-    const taskIds = data['rows']
+    return data['rows']
       .filter(function (row: Task) {
         for (let i = 0; i < ids.length; i++) {
           if (row['entrustId'] === ids[i]) return true
         }
       })
       .map((item: Task) => item.id)
-    return taskIds
   }
 
   async function assignTask(taskIds: string[], uid: string) {
@@ -450,17 +458,17 @@ async function entrypoint() {
     if (!uid) return
     const body = {
       userId: uid,
-      taskIds: taskIds
+      taskIds: taskIds,
     }
     const response = await fetch(
       `https://${window.location.host}/rest/flow/task/do/assignInspect`,
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         credentials: 'include', // 包含 cookies
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       }
     )
     if (!response.ok) {
@@ -477,7 +485,9 @@ async function entrypoint() {
   }
 
   function insertReloadButton() {
-    const parentElement = document.querySelector('body > div.panel.easyui-fluid > div.easyui-panel.panel-body')
+    const parentElement = document.querySelector(
+      'body > div.panel.easyui-fluid > div.easyui-panel.panel-body'
+    )
     if (!parentElement) return
     const bottomElement = document.createElement('div')
     bottomElement.id = 'entrustBottomFollower'
@@ -490,7 +500,7 @@ async function entrypoint() {
     reloadButton.dataset.options = 'width:120'
     reloadButton.style.width = '118.4px'
     reloadButton.innerHTML = `
-      <span class='l-btn-left' style='margin-top: 0px;'>
+      <span class='l-btn-left' style='margin-top: 0;'>
         <span class='l-btn-text'>刷新页面</span>
       </span>
       `
@@ -547,27 +557,30 @@ async function entrypoint() {
 
   function updatePosition(target: HTMLElement, follower: HTMLElement) {
     const update = () => {
-      const targetRect = target.getBoundingClientRect();
-      follower.style.left = targetRect.left + 'px';
-      animationFrameId = requestAnimationFrame(update);
-    };
+      const targetRect = target.getBoundingClientRect()
+      follower.style.left = targetRect.left + 'px'
+      animationFrameId = requestAnimationFrame(update)
+    }
 
-    let animationFrameId = requestAnimationFrame(update);
+    let animationFrameId = requestAnimationFrame(update)
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }
-
-  function startFollow() {
-    const target = document.querySelector('#entrustEditForm > table > tbody') as HTMLElement;
-    const follower = document.querySelector('#entrustBottomFollower') as HTMLElement;
-
-    if (target && follower) {
-      const cleanup = updatePosition(target, follower);
-
-      window.addEventListener('unload', cleanup);
+      cancelAnimationFrame(animationFrameId)
     }
   }
 
+  function startFollow() {
+    const target = document.querySelector(
+      '#entrustEditForm > table > tbody'
+    ) as HTMLElement
+    const follower = document.querySelector(
+      '#entrustBottomFollower'
+    ) as HTMLElement
+
+    if (target && follower) {
+      const cleanup = updatePosition(target, follower)
+
+      window.addEventListener('unload', cleanup)
+    }
+  }
 }

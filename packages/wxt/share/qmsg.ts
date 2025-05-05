@@ -60,17 +60,17 @@ function getQmsg() {
 
 
   // assign 兼容处理
-  if (typeof Object.assign != 'function') {
+  if (typeof Object.assign !== 'function') {
     Object.assign = function (target: any) {
-      if (target == null) {
+      if (target === null) {
         throw new TypeError('Cannot convert undefined or null to object');
       }
 
       target = Object(target);
       for (let index = 1; index < arguments.length; index++) {
-        let source = arguments[index];
-        if (source != null) {
-          for (let key in source) {
+        const source = arguments[index];
+        if (source !== null) {
+          for (const key in source) {
             if (Object.prototype.hasOwnProperty.call(source, key)) {
               target[key] = source[key];
             }
@@ -82,13 +82,13 @@ function getQmsg() {
   };
 
   // 'classList' 兼容处理
-  let isClsList = 'classList' in HTMLElement.prototype;
+  const isClsList = 'classList' in HTMLElement.prototype;
   if (!isClsList) {
     Object.defineProperty(HTMLElement.prototype, 'classList', {
       get: function () {
         // add, remove ,contains,toggle
         // this  - > 
-        let _self = this;
+        const _self = this;
         return {
           add: function (cls: string) {
             if (!this.contains(cls)) {
@@ -97,13 +97,13 @@ function getQmsg() {
           },
           remove: function (cls: string) {
             if (this.contains(cls)) {
-              let reg = new RegExp(cls);
+              const reg = new RegExp(cls);
               _self.className = _self.className.replace(reg, '');
             }
           },
           contains: function (cls: string) {
-            let index = _self.className.indexOf(cls);
-            return index != -1 ? true : false;
+            const index = _self.className.indexOf(cls);
+            return index !== -1 ? true : false;
           },
           toggle: function (cls: string) {
             if (this.contains(cls)) {
@@ -200,7 +200,7 @@ function getQmsg() {
    * @param {Object} opts 配置参数，参考DEFAULTS
    */
   function Msg(this: MsgInstance, opts: Partial<MsgSettings>) {
-    let oMsg = this;
+    const oMsg = this;
     oMsg.settings = Object.assign({}, DEFAULTS, opts || {});
     oMsg.id = Qmsg.instanceCount;
     let timeout = oMsg.settings.timeout;
@@ -208,14 +208,14 @@ function getQmsg() {
     oMsg.timeout = timeout;
     oMsg.settings.timeout = timeout;
     oMsg.timer = null;
-    let $elem = document.createElement("div");
-    let $svg = ICONS[oMsg.settings.type as keyof typeof ICONS || 'info'];
+    const $elem = document.createElement("div");
+    const $svg = ICONS[oMsg.settings.type as keyof typeof ICONS || 'info'];
     let contentClassName = namespacify("content-" + (oMsg.settings.type || 'info'));
     contentClassName += oMsg.settings.showClose ? ' ' + namespacify('content-with-close') : '';
-    let content = oMsg.settings.content || '';
-    let $closeSvg = ICONS['close'];
-    let $closeIcon = oMsg.settings.showClose ? '<i class="qmsg-icon qmsg-icon-close">' + $closeSvg + '</i>' : '';
-    let $span = document.createElement("span");
+    const content = oMsg.settings.content || '';
+    const $closeSvg = ICONS['close'];
+    const $closeIcon = oMsg.settings.showClose ? '<i class="qmsg-icon qmsg-icon-close">' + $closeSvg + '</i>' : '';
+    const $span = document.createElement("span");
     if (oMsg.settings.html) {
       $span.innerHTML = content;
     } else {
@@ -245,8 +245,8 @@ function getQmsg() {
       }.bind($elem));
     }
     $elem.addEventListener("animationend", function (this: MsgInstance, e: AnimationEvent) {   // 监听动画完成
-      let target = e.target as HTMLElement, animationName = e.animationName;
-      if (animationName == STATES['closing']) {
+      const target = e.target as HTMLElement, animationName = e.animationName;
+      if (animationName === STATES['closing']) {
         clearInterval(this.timer);
         this.destroy();
       }
@@ -254,7 +254,7 @@ function getQmsg() {
       target.style.webkitAnimationName = '';
     }.bind(oMsg));
     if (oMsg.settings.autoClose) { // 自动关闭
-      let intvMs = 10; // 定时器频率
+      const intvMs = 10; // 定时器频率
       oMsg.timer = setInterval(function (this: MsgInstance) {
         this.timeout -= intvMs;
         if (this.timeout <= 0) {
@@ -266,7 +266,7 @@ function getQmsg() {
         clearInterval(this.timer);
       }.bind(oMsg));
       oMsg.$elem.addEventListener('mouseout', function (this: MsgInstance) {
-        if (this.state != 'closing') { // 状态为关闭则不重启定时器
+        if (this.state !== 'closing') { // 状态为关闭则不重启定时器
           this.timer = setInterval(function (this: MsgInstance) {
             this.timeout -= intvMs;
             if (this.timeout <= 0) {
@@ -304,7 +304,7 @@ function getQmsg() {
     } else {
       Qmsg.remove(this.id);
     }
-    let callback = this.settings.onClose;
+    const callback = this.settings.onClose;
     if (callback && callback instanceof Function) {
       callback.call(this);
     }
@@ -315,9 +315,9 @@ function getQmsg() {
    * @private
    */
   function setMsgCount(oMsg: MsgInstance) {
-    let countClassName = namespacify('count');
-    let $content = oMsg.$elem.querySelector("." + namespacify('content')) as HTMLElement,
-      $count = $content.querySelector('.' + countClassName) as HTMLElement;
+    const countClassName = namespacify('count');
+    const $content = oMsg.$elem.querySelector("." + namespacify('content')) as HTMLElement;
+    let $count = $content.querySelector('.' + countClassName) as HTMLElement;
     if (!$count) {
       $count = document.createElement("span");
       $count.classList.add(countClassName);
@@ -336,7 +336,7 @@ function getQmsg() {
    * @private
    */
   function mergeArgs(txt: string | Partial<MsgSettings>, config?: Partial<MsgSettings>): MsgSettings {
-    let opts = Object.assign({}, DEFAULTS);
+    const opts = Object.assign({}, DEFAULTS);
     if (arguments.length === 0) {
       return opts;
     }
