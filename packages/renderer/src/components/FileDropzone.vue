@@ -286,7 +286,6 @@ onBeforeUnmount(() => {
 }
 
 .file-dropzone {
-  border: 2px dashed #606266;
   border-radius: 8px;
   padding: 30px;
   text-align: center;
