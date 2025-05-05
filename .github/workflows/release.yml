@@ -49,9 +49,7 @@ jobs:
 
       - name: yarn install
         run: |
-          corepack enable
-          yarn set version stable
-          yarn install
+          yarn install --frozen-lockfile
 
       - name: Build bindings
         run: |
@@ -59,15 +57,15 @@ jobs:
           yarn
           yarn build
           cd ../../
+          yarn build:v
 
       - name: Build electron
         run: |
-          yarn
-          yarn build:electron
+          yarn build:el
 
       - name: Build Tauri-lite
         run: |
-          yarn tauri build
+          yarn build:t
 
       - name: Release
         uses: softprops/action-gh-release@v2

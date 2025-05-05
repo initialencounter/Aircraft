@@ -18,6 +18,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "dev:t": "tauri dev",
     "build:t": "tauri build",
+    "build:v": "cd packages/validators && yarn build",
+    "build:w": "cd packages/wxt && yarn build && yarn build:firefox",
     "preview": "vite preview",
     "tauri": "tauri",
     "set-proxy": "npm config set registry https://registry.npmmirror.com",
