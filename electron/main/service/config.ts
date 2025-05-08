@@ -44,20 +44,20 @@ class ConfigManager extends Service {
     super(ctx, 'configManager')
     this.configFilePath = path.join(this.ctx.app.APP_CONFIG_PATH, 'config.json')
     ctx.on('ready', () => {
-      logger.info('configManager initializing')
+      ctx.emit('write-log', 'INFO', 'configManager initializing')
       this.init()
     })
   }
   init() {
     if (!existsSync(this.configFilePath)) {
-      logger.warn('config file not found, creating new config file')
+      this.ctx.emit('write-log', 'WARN', 'config file not found, creating new config file')
       try {
         writeFileSync(
           this.configFilePath,
           JSON.stringify(this.getDefaultConfig())
         )
       } catch (error) {
-        logger.error('config file create error', error)
+        this.ctx.emit('write-log', 'ERROR', 'config file create error')
       }
     }
   }
@@ -70,7 +70,7 @@ class ConfigManager extends Service {
       const rawConfig = JSON.parse(readFileSync(this.configFilePath, 'utf-8'))
       config = new ConfigSchema(rawConfig)
     } catch (error) {
-      logger.error('config file parse error', error)
+      this.ctx.emit('write-log', 'ERROR', 'config file parse error' + error)
       config = this.getDefaultConfig()
     }
     return config
@@ -79,7 +79,7 @@ class ConfigManager extends Service {
     try {
       writeFileSync(this.configFilePath, JSON.stringify(config, null, 2))
     } catch (error) {
-      logger.error('config file save error', error)
+      this.ctx.emit('write-log', 'ERROR', 'config file save error' + error)
     }
   }
   reloadConfig(config: Config) {
@@ -90,7 +90,7 @@ class ConfigManager extends Service {
         this.ctx.emit('reload-server', config.server, config.llm)
       }
     } catch (error) {
-      logger.error('Server config file reload error', error)
+      this.ctx.emit('write-log', 'ERROR', 'Server config file reload error' + error)
     }
     try {
       const currentLlmConfig = this.ctx.core.bindings.getCurrentLlmConfig()
@@ -98,7 +98,7 @@ class ConfigManager extends Service {
         this.ctx.emit('reload-llm', config.llm)
       }
     } catch (error) {
-      logger.error('LLM config file reload error', error)
+      this.ctx.emit('write-log', 'ERROR', 'LLM config file reload error' + error)
     }
     try {
       const currentHotkeyConfig =
@@ -107,7 +107,7 @@ class ConfigManager extends Service {
         this.ctx.emit('reload-hotkey', config.hotkey)
       }
     } catch (error) {
-      logger.error('Hotkey config file save error', error)
+      this.ctx.emit('write-log', 'ERROR', 'Hotkey config file save error' + error)
     }
     try {
       this.ctx.emit(
@@ -116,12 +116,12 @@ class ConfigManager extends Service {
         config.base.silentStart
       )
     } catch (error) {
-      logger.error('base file reload error', error)
+      this.ctx.emit('write-log', 'ERROR', 'base file reload error'+error)
     }
     try {
       this.saveConfig(config)
     } catch (error) {
-      logger.error('config file save error', error)
+      this.ctx.emit('write-log', 'ERROR', 'config file save error')
     }
   }
 }

@@ -18,7 +18,7 @@ export const logger = new Logger('win')
 class WindowManager {
   static inject = ['app', 'win', 'tray', 'configManager']
   constructor(ctx: Context) {
-    logger.info('WindowManager initializing')
+    ctx.emit('write-log', 'INFO', 'WindowManager initializing')
     // 创建窗口
     ctx.app.app.whenReady().then(async () => {
       ctx.emit('electron-ready')

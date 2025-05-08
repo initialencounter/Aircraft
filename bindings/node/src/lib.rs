@@ -4,7 +4,7 @@
 extern crate napi_derive;
 
 use share::attachment_parser::{get_attachment_info as get_attachment_info_rs, AttachmentInfo};
-use share::logger::Logger;
+use share::logger::{LogMessage, Logger};
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
 use share::pdf_parser::parse::parse_good_file;
@@ -16,11 +16,14 @@ use share::types::{Config, LLMConfig};
 use share::types::{HotkeyConfig, ServerConfig};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::sync::mpsc::Sender;
 
 #[napi(js_name = "AircraftRs")]
 pub struct AircraftRs {
   server_manager: ServerManager,
   hotkey_manager: HotkeyManager,
+  log_tx: Sender<LogMessage>,
+  logger: Arc<Mutex<Logger>>,
 }
 
 #[napi]
@@ -35,8 +38,10 @@ impl AircraftRs {
     )));
     let log_tx = logger.lock().unwrap().log_tx.clone();
     Self {
-      server_manager: ServerManager::new(config, log_tx, llm_config),
+      server_manager: ServerManager::new(config, log_tx.clone(), llm_config),
       hotkey_manager: HotkeyManager::new(hotkey_config),
+      log_tx,
+      logger,
     }
   }
   #[napi]
@@ -159,6 +164,18 @@ impl AircraftRs {
   pub fn get_current_hotkey_config(&self) -> napi::Result<HotkeyConfig> {
     let hotkey_config = self.hotkey_manager.config.lock().unwrap().clone();
     Ok(hotkey_config)
+  }
+
+  #[napi]
+  pub fn write_log(&self, log: LogMessage) -> napi::Result<()> {
+    self.log_tx.send(log).unwrap();
+    Ok(())
+  }
+
+  #[napi]
+  pub fn try_get_logs(&self) -> napi::Result<Vec<LogMessage>> {
+    let logs = self.logger.lock().unwrap().try_get_logs();
+    Ok(logs)
   }
 }
 

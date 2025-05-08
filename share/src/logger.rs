@@ -1,6 +1,8 @@
 use chrono::Local;
 use colored::*;
+use napi_derive::napi;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::io::{BufRead, BufReader};
@@ -8,7 +10,9 @@ use std::path::PathBuf;
 use std::sync::mpsc::{self, Sender};
 use std::sync::{Arc, Mutex};
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct LogMessage {
     pub time_stamp: String,
     pub level: String,

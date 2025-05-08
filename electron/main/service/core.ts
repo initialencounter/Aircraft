@@ -3,14 +3,15 @@ import { resolve } from 'path'
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
 
-import type {} from '@cordisjs/plugin-http'
-import type {} from '@cordisjs/plugin-server'
-import type {} from '../service/bindings'
+import type { } from '@cordisjs/plugin-http'
+import type { } from '@cordisjs/plugin-server'
+import type { } from '../service/bindings'
 import type {
   AircraftRs,
   AttachmentInfo,
   HotkeyConfig,
   LLMConfig,
+  LogMessage,
   ServerConfig,
   SummaryInfo,
 } from 'aircraft-rs'
@@ -23,6 +24,7 @@ declare module 'cordis' {
     'reload-server': (serverConfig: ServerConfig, llmConfig: LLMConfig) => void
     'reload-llm': (llmConfig: LLMConfig) => void
     'reload-hotkey': (hotkey: HotkeyConfig) => void
+    'write-log': (level: string, message: string) => void
   }
 }
 
@@ -46,11 +48,11 @@ class AircraftCore extends Service {
     })
 
     ctx.on('reload-server', async (serverConfig, llmConfig) => {
-      ctx.logger.info('Reloading Server Config...')
+      ctx.emit('write-log', 'INFO', 'Reloading Server Config...')
       this.bindings.reloadServer(serverConfig, llmConfig)
     })
     ctx.on('reload-hotkey', async (hotkey: HotkeyConfig) => {
-      ctx.logger.info('Reloading Hotkey Config...')
+      ctx.emit('write-log', 'INFO', 'Reloading Hotkey Config...')
       this.bindings.reloadHotkey(hotkey)
     })
   }

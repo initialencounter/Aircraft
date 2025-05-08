@@ -2,8 +2,6 @@ import type { Context } from 'cordis'
 import { Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
 
-import { formatLogMessage } from './logger'
-
 declare module 'cordis' {
   interface Context {
     ipc: Ipc
@@ -31,7 +29,7 @@ class Ipc extends Service {
     })
   }
   registerIpc() {
-    this.ctx.logger.info('registerIpc')
+    this.ctx.emit('write-log', 'INFO', 'registerIpc')
     // New window example arg: new windows url
     ipcMain.handle('open-win', (_, arg) => {
       this.ctx.win.win = new BrowserWindow({
@@ -52,17 +50,16 @@ class Ipc extends Service {
     })
     ipcMain.handle('minimize_window', () => {
       this.ctx.win.win?.minimize()
-      this.ctx.logger.info('minimize window')
+      this.ctx.emit('write-log', 'INFO', 'minimize window')
     })
 
     ipcMain.handle('hide_window', () => {
       this.ctx.win.win?.hide()
-      this.ctx.logger.info('hide window')
+      this.ctx.emit('write-log', 'INFO', 'hide window')
     })
 
     ipcMain.handle('get_server_logs', async () => {
-      const logs = this.ctx.loggerService.tryGetLogs()
-      return logs.map(formatLogMessage)
+      return this.ctx.loggerService.tryGetLogs()
     })
     ipcMain.handle(`save_config`, async (_, { config }) => {
       this.ctx.configManager.saveConfig(config)

@@ -35,9 +35,9 @@ class Hotkey extends Service {
     })
 
     if (!success) {
-      this.ctx.logger.error('hotkey register failed')
+      this.ctx.emit('write-log', 'ERROR', 'hotkey register failed')
     } else {
-      this.ctx.logger.info('hotkey register success')
+      this.ctx.emit('write-log', 'INFO', 'hotkey register success')
     }
   }
 }

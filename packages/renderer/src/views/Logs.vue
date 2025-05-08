@@ -2,7 +2,7 @@
   <div class="scroller" ref="scrollerRef">
     <div v-for="item in visibleLogs">
       <div class="log-item">
-        <span class="log-timestamp">[{{ item.time_stamp }}]</span>
+        <span class="log-timestamp">[{{ item.timeStamp }}]</span>
         <span
           class="log-level"
           :class="{

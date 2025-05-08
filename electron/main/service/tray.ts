@@ -21,7 +21,7 @@ class CustomTray extends Service {
   }
   createTray() {
     if (!this.ctx.app.VITE_PUBLIC) {
-      this.ctx.logger.error('VITE_PUBLIC is not set')
+      this.ctx.emit('write-log', 'ERROR', 'VITE_PUBLIC is not set')
     }
     const icon = path.join(this.ctx.app.VITE_PUBLIC, 'favicon.ico')
     this.tray = new Tray(icon)
