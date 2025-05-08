@@ -1,7 +1,7 @@
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
-import type { } from './app'
-import { LogMessage } from 'aircraft-rs'
+import type {} from './app'
+import type { LogMessage } from 'aircraft-rs'
 
 export const name = 'logger'
 

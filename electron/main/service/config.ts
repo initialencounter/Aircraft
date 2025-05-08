@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 import path from 'path'
 
 import type { Context } from 'cordis'
-import { Service, Logger } from 'cordis'
+import { Service } from 'cordis'
 
 import type {} from '../service/app'
 import type { Config } from 'aircraft-rs'
@@ -35,8 +35,6 @@ export function shallowEqual(obj1: any, obj2: any) {
   return true
 }
 
-const logger = new Logger('configManager')
-
 class ConfigManager extends Service {
   static inject = ['app', 'bindings', 'core']
   configFilePath: string
@@ -50,14 +48,18 @@ class ConfigManager extends Service {
   }
   init() {
     if (!existsSync(this.configFilePath)) {
-      this.ctx.emit('write-log', 'WARN', 'config file not found, creating new config file')
+      this.ctx.emit(
+        'write-log',
+        'WARN',
+        'config file not found, creating new config file'
+      )
       try {
         writeFileSync(
           this.configFilePath,
           JSON.stringify(this.getDefaultConfig())
         )
       } catch (error) {
-        this.ctx.emit('write-log', 'ERROR', 'config file create error')
+        this.ctx.emit('write-log', 'ERROR', 'config file create error' + error)
       }
     }
   }
@@ -90,7 +92,11 @@ class ConfigManager extends Service {
         this.ctx.emit('reload-server', config.server, config.llm)
       }
     } catch (error) {
-      this.ctx.emit('write-log', 'ERROR', 'Server config file reload error' + error)
+      this.ctx.emit(
+        'write-log',
+        'ERROR',
+        'Server config file reload error' + error
+      )
     }
     try {
       const currentLlmConfig = this.ctx.core.bindings.getCurrentLlmConfig()
@@ -98,7 +104,11 @@ class ConfigManager extends Service {
         this.ctx.emit('reload-llm', config.llm)
       }
     } catch (error) {
-      this.ctx.emit('write-log', 'ERROR', 'LLM config file reload error' + error)
+      this.ctx.emit(
+        'write-log',
+        'ERROR',
+        'LLM config file reload error' + error
+      )
     }
     try {
       const currentHotkeyConfig =
@@ -107,7 +117,11 @@ class ConfigManager extends Service {
         this.ctx.emit('reload-hotkey', config.hotkey)
       }
     } catch (error) {
-      this.ctx.emit('write-log', 'ERROR', 'Hotkey config file save error' + error)
+      this.ctx.emit(
+        'write-log',
+        'ERROR',
+        'Hotkey config file save error' + error
+      )
     }
     try {
       this.ctx.emit(
@@ -116,12 +130,12 @@ class ConfigManager extends Service {
         config.base.silentStart
       )
     } catch (error) {
-      this.ctx.emit('write-log', 'ERROR', 'base file reload error'+error)
+      this.ctx.emit('write-log', 'ERROR', 'base file reload error' + error)
     }
     try {
       this.saveConfig(config)
     } catch (error) {
-      this.ctx.emit('write-log', 'ERROR', 'config file save error')
+      this.ctx.emit('write-log', 'ERROR', 'config file save error' + error)
     }
   }
 }
