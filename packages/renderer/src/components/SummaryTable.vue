@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { SummaryFromLLM } from '@aircraft/validators';
+import { SummaryFromLLM } from '@aircraft/validators'
 import { ref, computed } from 'vue'
 
 const props = defineProps<{

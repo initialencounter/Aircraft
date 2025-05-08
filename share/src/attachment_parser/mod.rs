@@ -1,8 +1,7 @@
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
-use crate::hotkey_handler::copy::search;
-use crate::hotkey_handler::SearchResult;
+use crate::hotkey_handler::copy::{search, SearchResult};
 use crate::pdf_parser::parse::parse_good_file;
 use crate::pdf_parser::read::read_pdf;
 use crate::pdf_parser::types::GoodsInfo;

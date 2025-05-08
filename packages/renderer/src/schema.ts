@@ -25,19 +25,12 @@ export const BaseConfigSchema: Schema<BaseConfig> = Schema.object({
 }).description('基础设置')
 
 export const HotkeyConfigSchema: Schema<HotkeyConfig> = Schema.object({
-  docEnable: Schema.boolean().description('开启doc写入').default(false),
-  docKey: Schema.string().description('doc写入快捷键').default(''),
   uploadEnable: Schema.boolean()
     .description('开启上传资料快捷键')
     .default(false),
   uploadKey: Schema.string().description('上传资料快捷键').default(''),
   copyEnable: Schema.boolean().description('开启复制快捷键').default(false),
   copyKey: Schema.string().description('复制快捷键').default(''),
-  docxEnable: Schema.boolean().description('开启docx替换快捷键').default(false),
-  docxKey: Schema.string().description('docx替换快捷键').default(''),
-  inspector: Schema.string().description('检验员').default(''),
-  signatureWidth: Schema.number().description('签名宽度').default(5.58),
-  signatureHeight: Schema.number().description('签名高度').default(1.73),
 }).description('快捷键设置')
 
 export const LlmConfigSchema: Schema<LLMConfig> = Schema.object({

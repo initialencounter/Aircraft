@@ -2,7 +2,7 @@
   "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "@aircraft/validators": ["../validators/src/index.ts"],
+      "@aircraft/validators": ["../validators/src/index.ts"]
     }
   }
 }

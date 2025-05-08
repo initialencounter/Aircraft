@@ -62,7 +62,7 @@ jobs:
         run: |
           web-ext sign --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} --channel unlisted -s packages/wxt/.output/firefox-mv3
           mv web-ext-artifacts/*.xpi lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
-      
+
       - name: upload chrome
         uses: actions/upload-artifact@v4
         with:

@@ -7,13 +7,13 @@ import type {
   SummaryFromLLM,
   SummaryInfo,
 } from '../types'
+import { removeNonChineseCharacters } from '../../summary/checkColor'
 import {
   matchDeviceModel,
   matchDeviceName,
-  matchDeviceTrademark, matchTestManual,
+  matchDeviceTrademark,
+  matchTestManual,
 } from './matchDevice'
-
-import { removeNonChineseCharacters } from '../../summary/checkColor'
 
 function matchWattHour(projectName: string) {
   const matches = [...projectName.matchAll(/\s(\d+\.?\d+)[Kk]?[Ww][Hh]/g)]
@@ -346,7 +346,6 @@ export function convertSummaryInfo2SummaryFromLLM(
     test8: data.test8.includes('通过'),
   }
 }
-
 
 export {
   matchWattHour,
