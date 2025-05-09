@@ -1,16 +1,11 @@
 import { defineStore } from 'pinia'
 
+import type { LogMessage } from 'aircraft-rs'
 import { ipcManager } from '../utils/ipcManager'
 
 interface LogState {
   logHistory: LogMessage[]
   logTimer: number | null
-}
-
-interface LogMessage {
-  time_stamp: string
-  level: string
-  message: string
 }
 
 export const useLogStore = defineStore('logs', {
