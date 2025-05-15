@@ -258,7 +258,6 @@ async function entrypoint() {
 
   async function importClassification() {
     console.log('导入分类脚本运行中...')
-    await sleep(200)
     const importBtn = document.getElementById('importBtn0')
     if (importBtn) {
       importBtn.addEventListener('click', classification)
