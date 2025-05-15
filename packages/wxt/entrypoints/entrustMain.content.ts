@@ -179,18 +179,17 @@ async function entrypoint() {
       moneyDefault !== '' ? moneyDefault : localConfig.amount
     ).slice()
     await sleep(200)
-    const target = document.querySelectorAll(
-      'input[type="hidden"][class="textbox-value"][name="amount"]'
-    )[0] as HTMLInputElement
-    if (target) {
-      target.value = money
+    const hiddenInput = document.querySelector('#amount') as HTMLInputElement
+    if (hiddenInput) {
+      hiddenInput.value = '500.00';
     }
-    const targetShows = document.querySelectorAll(
-      'input[type="text"][class="textbox-text validatebox-text"][autocomplete="off"]'
-    )
-    const targetShow = targetShows[6] as HTMLInputElement
-    if (targetShow) {
-      targetShow.value = '￥' + money
+    const valueInput = document.querySelector("#amount")?.parentElement?.children[1].children[1] as HTMLInputElement
+    if (valueInput) {
+      valueInput.value = money
+    }
+    const textInput = document.querySelector("#amount")?.parentElement?.children[1].children[0] as HTMLInputElement
+    if (textInput) {
+      textInput.value = '￥' + money
     }
   }
 
