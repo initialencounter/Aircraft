@@ -5,6 +5,9 @@ import yaml from '@maikolib/vite-plugin-yaml'
 export default defineConfig({
   manifestVersion: 3,
   vite: () => ({
+    build: {
+      minify: false,
+    },
     css: {
       preprocessorOptions: {
         scss: {
@@ -18,7 +21,7 @@ export default defineConfig({
   entrypointsDir: './entrypoints',
   manifest: {
     name: 'lims',
-    version: '2.0.4',
+    version: '2.0.5',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
     browser_specific_settings: {
       gecko: {
