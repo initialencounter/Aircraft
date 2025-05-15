@@ -188,7 +188,7 @@ async function entrypoint() {
     const targetShows = document.querySelectorAll(
       'input[type="text"][class="textbox-text validatebox-text"][autocomplete="off"]'
     )
-    const targetShow = targetShows[targetShows.length - 1] as HTMLInputElement
+    const targetShow = targetShows[6] as HTMLInputElement
     if (targetShow) {
       targetShow.value = '￥' + money
     }
