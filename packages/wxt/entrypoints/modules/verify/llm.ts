@@ -2,7 +2,7 @@ import type { PekData, SekData, SummaryFromLLM } from '@aircraft/validators'
 import { getProjectAttachmentInfo } from '../utils/api'
 import { getCurrentProjectNo, getNotification } from '../utils/helpers'
 import { getFormData } from '../utils/form'
-import type { LocalConfig } from '../../share/utils'
+import type { LocalConfig } from '../../../share/utils'
 
 /**
  * 处理文件拖放事件

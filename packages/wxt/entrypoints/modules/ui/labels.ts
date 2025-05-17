@@ -1,5 +1,5 @@
-import { LABEL_IMG } from '../../share/label'
-import type { LocalConfig } from '../../share/utils'
+import { LABEL_IMG } from '../../../share/label'
+import type { LocalConfig } from '../../../share/utils'
 
 /**
  * 创建标签选择UI

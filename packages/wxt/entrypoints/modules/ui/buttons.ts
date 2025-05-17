@@ -1,5 +1,5 @@
 import { isInspectPage } from '../utils/helpers'
-import type { LocalConfig } from '../../share/utils'
+import type { LocalConfig } from '../../../share/utils'
 
 /**
  * 创建验证按钮

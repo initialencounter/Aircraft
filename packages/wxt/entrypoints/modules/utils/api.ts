@@ -4,7 +4,7 @@ import type {
   PekData,
   SekData,
 } from '@aircraft/validators'
-import type { LocalConfig } from '../../share/utils'
+import type { LocalConfig } from '../../../share/utils'
 import { getHost } from './helpers'
 
 /**

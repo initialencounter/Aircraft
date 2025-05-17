@@ -1,4 +1,4 @@
-import { getQmsg } from '../../share/qmsg'
+import { getQmsg } from '../../../share/qmsg'
 
 /**
  * 创建一个延时函数，用于异步操作的等待

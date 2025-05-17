@@ -3,7 +3,7 @@ import {
   PekTypeTransMap,
   SekFullData,
   SekTypeTransMap,
-} from '../../share/const'
+} from '../../../share/const'
 import { getCurrentProjectNo } from './helpers'
 
 /**

@@ -11,7 +11,7 @@ import {
   getProjectAttachmentInfo,
   parseEntrust,
 } from '../utils/api'
-import type { LocalConfig } from '../../share/utils'
+import type { LocalConfig } from '../../../share/utils'
 
 /**
  * 检查附件文件

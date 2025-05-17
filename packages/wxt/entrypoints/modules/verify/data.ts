@@ -2,7 +2,7 @@ import type { PekData, SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
 import { getData } from '../utils/api'
 import { getHost } from '../utils/helpers'
-import type { LocalConfig } from '../../share/utils'
+import type { LocalConfig } from '../../../share/utils'
 import { checkAttachment, checkAttachmentFiles } from './attachment'
 import { checkLabelManual } from './label'
 

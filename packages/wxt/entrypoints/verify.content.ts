@@ -16,6 +16,7 @@ import {
 import '../assets/message.min.css'
 
 // 工具函数和辅助方法
+import { getCategory, getLocalConfig } from '../share/utils'
 import {
   getCurrentProjectId,
   getCurrentProjectNo,
@@ -23,20 +24,19 @@ import {
   getSystemId,
   preventDefault,
   sleep,
-} from '../modules/utils/helpers'
-import { getCategory, getLocalConfig } from '../share/utils'
+} from './modules/utils/helpers'
 
 // UI 相关
 import {
   createVerifyButtons,
   updateVerifyButtonStatus,
-} from '../modules/ui/buttons'
-import { createMask, hideMask, showMask } from '../modules/ui/mask'
-import { createLabelSelectionUI } from '../modules/ui/labels'
+} from './modules/ui/buttons'
+import { createMask, hideMask, showMask } from './modules/ui/mask'
+import { createLabelSelectionUI } from './modules/ui/labels'
 
 // 验证相关
-import { verifyFormData } from '../modules/verify/data'
-import { handleFileDrop } from '../modules/verify/llm'
+import { verifyFormData } from './modules/verify/data'
+import { handleFileDrop } from './modules/verify/llm'
 
 // 声明全局函数
 declare global {

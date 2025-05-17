@@ -2,6 +2,9 @@ import { getLocalConfig, sleep } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { addShotListener, startSyncInterval } from '../share/screenshot'
+import type { EntrustFormData } from './modules/amount/types'
+import { startListenAmount } from './modules/amount'
+import { getFormData } from './modules/amount'
 
 interface Task {
   assignee: string
@@ -36,49 +39,7 @@ interface User {
   userName: string
 }
 
-export interface EntrustFormData {
-  amount: string
-  category: string
-  checkLocation: string
-  destination: string
-  id: string
-  itemBrand: string
-  itemCName: string
-  itemColor: string
-  itemDanger: string
-  itemDangerReason: string
-  itemDesc: string
-  itemEName: string
-  itemFlashPoint: string
-  itemMeltingPoint: string
-  itemOtherAttachFileDetail: string
-  itemSampleHandle: string
-  itemSampleHandleOther: string
-  itemSendSample: string
-  itemSmell: string
-  itemSpec: string
-  itemStatus: string
-  manufacturersCName: string
-  manufacturersEName: string
-  market: string
-  nextYear: string
-  paymentCompany: string
-  paymentCompanyContact: string
-  payType: string
-  pieces: string
-  principal: string
-  principalContact: string
-  principalExhort: string
-  principalExhortDetail: string
-  reportCopy: string
-  reportLocation: string
-  reportWay: string
-  serviceType: string
-  systemId: string
-  trustee: string
-  waybillNo: string
-  webWt: string
-}
+let immediatePayManual = false
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -109,6 +70,7 @@ async function entrypoint() {
   startFollow()
   addShotListener(Qmsg)
   startSyncInterval()
+  startListenAmount(localConfig.amount)
   chrome.storage.local.get(
     ['assignUser', 'saveAndAssign', 'checkAssignUser'],
     async function (data) {
@@ -124,7 +86,22 @@ async function entrypoint() {
   // function
 
   function setAmountListener() {
-    setAmount()
+    const immediatePayButton = document.getElementById(
+      'immediatePay'
+    ) as HTMLInputElement
+    if (immediatePayButton) {
+      immediatePayButton.addEventListener('click', function () {
+        immediatePayManual = true
+      })
+    }
+    const importButton = document.querySelector(
+      '#importbutton'
+    ) as HTMLAnchorElement
+    if (importButton) {
+      importButton.addEventListener('click', function () {
+        immediatePayManual = false
+      })
+    }
     const paymentCompanyText = document.getElementById(
       'txt_paymentCompanyContact'
     )
@@ -134,7 +111,6 @@ async function entrypoint() {
         for (const mutation of mutationsList) {
           if (mutation.type === 'childList') {
             console.log('A child node has been added or removed.')
-            setAmount()
             setTagNextYear()
             setMoonPay()
           }
@@ -143,26 +119,6 @@ async function entrypoint() {
       const observer = new MutationObserver(callback)
       observer.observe(paymentCompanyText, config)
     }
-    const pekSystemButton = document.getElementById('_easyui_combobox_i1_0')
-    if (pekSystemButton)
-      pekSystemButton.addEventListener('click', () => {
-        setAmount()
-      })
-    const sekSystemButton = document.getElementById('_easyui_combobox_i1_1')
-    if (sekSystemButton)
-      sekSystemButton.addEventListener('click', () => {
-        setAmount()
-      })
-    const aekSystemButton = document.getElementById('_easyui_combobox_i1_2')
-    if (aekSystemButton)
-      aekSystemButton.addEventListener('click', () => {
-        setAmount()
-      })
-    const rekSystemButton = document.getElementById('_easyui_combobox_i1_3')
-    if (rekSystemButton)
-      rekSystemButton.addEventListener('click', () => {
-        setAmount()
-      })
   }
 
   function setCategory() {
@@ -174,27 +130,10 @@ async function entrypoint() {
     }
   }
 
-  async function setAmount(moneyDefault: string = '') {
-    const money = (
-      moneyDefault !== '' ? moneyDefault : localConfig.amount
-    ).slice()
-    await sleep(200)
-    const hiddenInput = document.querySelector('#amount') as HTMLInputElement
-    if (hiddenInput) {
-      hiddenInput.value = '500.00';
-    }
-    const valueInput = document.querySelector("#amount")?.parentElement?.children[1].children[1] as HTMLInputElement
-    if (valueInput) {
-      valueInput.value = money
-    }
-    const textInput = document.querySelector("#amount")?.parentElement?.children[1].children[0] as HTMLInputElement
-    if (textInput) {
-      textInput.value = '￥' + money
-    }
-  }
-
   function setMoonPay() {
     if (localConfig.moonPay === false) return
+    // 判断用户是不是手动选择的月结，如果是则取消
+    if (immediatePayManual) return
     const target = document.getElementById('monthPay') as HTMLInputElement
     if (target) {
       target.click()
@@ -249,25 +188,8 @@ async function entrypoint() {
   }
 
   function getEntrustFormData(): EntrustFormData | undefined {
-    const formElement = document.forms[0] as HTMLFormElement
-    if (!formElement) return
-    // 获取表单数据
-    const formData = new FormData(formElement)
-    const data: Partial<EntrustFormData> = {}
-
-    // 遍历 FormData 并构建数据对象
-    formData.forEach((value, name) => {
-      if (data[name as keyof Partial<EntrustFormData>]) {
-        // 如果已存在该字段，添加逗号并附加新值
-        data[name as keyof Partial<EntrustFormData>] = (data[
-          name as keyof Partial<EntrustFormData>
-        ] + `,${value}`) as EntrustFormData[keyof EntrustFormData]
-      } else {
-        // 如果是新字段，直接赋值
-        data[name as keyof Partial<EntrustFormData>] =
-          value as EntrustFormData[keyof EntrustFormData]
-      }
-    })
+    const data = getFormData()
+    if (!data) return
     var errorContents = []
     if (isEmpty(data.itemCName)) errorContents.push('物品中文名称不能为空')
     if (isEmpty(data.itemEName)) errorContents.push('物品英文名称不能为空')
