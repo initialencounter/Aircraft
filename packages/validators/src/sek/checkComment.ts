@@ -14,6 +14,7 @@ const commentUNMap = {
 
 export function checkComment(
   comment: string,
+  commentExtra: string | null,
   projectNo: string,
   conclusions: number,
   otherDescribe: string
@@ -43,6 +44,12 @@ export function checkComment(
       result.push({
         ok: false,
         result: '非限制性物品，备注应为：根据IMDG CODE特殊规定188不受限制。',
+      })
+    }
+    if (commentExtra !== '188') {
+      result.push({
+        ok: false,
+        result: '非限制性物品，特殊规定应为：188',
       })
     }
   }

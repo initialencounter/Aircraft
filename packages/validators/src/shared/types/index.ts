@@ -162,7 +162,7 @@ export interface SekData {
   checkLocationName: string
   classOrDiv: string
   comment: string
-  commentExtra: null
+  commentExtra: string | null
   conclusions: number
   createdBy: string
   createdDate: string

@@ -48,6 +48,8 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
     remarks,
     // 备注
     comment,
+    // 特殊规定
+    commentExtra,
     // 技术备注
     market,
     // 危险性
@@ -184,7 +186,15 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
   // 注意事项
   result.push(...checkReMark(remarks, projectNo, otherDescribe))
   // 备注
-  result.push(...checkComment(comment, projectNo, conclusions, otherDescribe))
+  result.push(
+    ...checkComment(
+      comment,
+      commentExtra,
+      projectNo,
+      conclusions,
+      otherDescribe
+    )
+  )
   // 结论
   result.push(
     ...conclusionsCheck(
