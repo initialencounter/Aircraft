@@ -31,6 +31,8 @@ class CustomTray extends Service {
         this.ctx.win.win?.hide()
       } else {
         this.ctx.win.win?.show()
+        if (this.ctx.win.win?.isMinimized()) 
+          this.ctx.win.win?.restore()
       }
     })
     const contextMenu = Menu.buildFromTemplate([

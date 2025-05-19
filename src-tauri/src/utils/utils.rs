@@ -45,6 +45,9 @@ pub fn hide_or_show<'a>(window: WebviewWindow) -> &'a str {
             .set_always_on_top(true)
             .expect("Failed to set window as topmost");
         window.show().unwrap();
+        if window.is_minimized().unwrap() {
+            window.unminimize().unwrap();
+        }
         "隐藏(H)"
     }
 }
