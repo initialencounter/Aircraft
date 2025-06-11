@@ -49,11 +49,20 @@ impl ServerConfig {
 #[napi(object)]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub struct CustomHotkey {
+    pub hotkey: String,
+    pub cmd: String,
+}
+
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct HotkeyConfig {
     pub upload_enable: bool,
     pub upload_key: String,
     pub copy_enable: bool,
     pub copy_key: String,
+    pub custom_hotkey: Vec<CustomHotkey>
 }
 impl HotkeyConfig {
     pub fn default() -> Self {
@@ -62,6 +71,7 @@ impl HotkeyConfig {
             upload_key: "ctrl+shift+u".to_string(),
             copy_enable: false,
             copy_key: "ctrl+shift+z".to_string(),
+            custom_hotkey: vec![],
         }
     }
 }

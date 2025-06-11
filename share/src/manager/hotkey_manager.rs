@@ -49,6 +49,14 @@ impl HotkeyManager {
                 },
             ));
         }
+        for hotkey in config.custom_hotkey {
+            listen(hotkey.hotkey, move || {
+                let cmd = hotkey.cmd.clone();
+                async move {
+                    let _ = std::process::Command::new(&cmd).spawn();
+                }
+            });
+        }
         self.is_running
             .store(true, std::sync::atomic::Ordering::Relaxed);
     }
