@@ -1,14 +1,16 @@
 <!-- App.vue -->
 <template>
-  <el-button class="schema-button" type="primary" @click="reloadConfig"
-    >重载配置</el-button
-  >
-  <el-button class="schema-button" type="primary" @click="saveConfig"
-    >保存配置</el-button
-  >
-  <el-button class="schema-button" type="primary" @click="resetConfig"
-    >重置</el-button
-  >
+  <div class="fixed-element">
+    <el-button class="schema-button" type="primary" @click="reloadConfig"
+      >重载配置</el-button
+    >
+    <el-button class="schema-button" type="primary" @click="saveConfig"
+      >保存配置</el-button
+    >
+    <el-button class="schema-button" type="primary" @click="resetConfig"
+      >重置</el-button
+    >
+  </div>
   <k-form v-model="config" :schema="ConfigSchema" :initial="initial"></k-form>
   <!-- 添加遮罩层 - 现在相对于容器定位 -->
   <div class="loading-mask" v-if="loading" @dblclick="loading = false">
@@ -127,6 +129,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.fixed-element {
+  position: fixed;
+  z-index: 999;
+}
 .schema-button {
   background-color: #1e1e20;
 }
