@@ -4,6 +4,7 @@ import type {
   BaseConfig,
   HotkeyConfig,
   LLMConfig,
+  CustomHotkey,
 } from 'aircraft-rs'
 
 export const ServerConfigSchema: Schema<ServerConfig> = Schema.object({
@@ -24,6 +25,11 @@ export const BaseConfigSchema: Schema<BaseConfig> = Schema.object({
     .hidden(true),
 }).description('基础设置')
 
+const CustomHotkey: Schema<CustomHotkey> = Schema.object({
+  hotkey: Schema.string().description('快捷键').default(''),
+  cmd: Schema.string().description('命令').default(''),
+})
+
 export const HotkeyConfigSchema: Schema<HotkeyConfig> = Schema.object({
   uploadEnable: Schema.boolean()
     .description('开启上传资料快捷键')
@@ -31,6 +37,7 @@ export const HotkeyConfigSchema: Schema<HotkeyConfig> = Schema.object({
   uploadKey: Schema.string().description('上传资料快捷键').default(''),
   copyEnable: Schema.boolean().description('开启复制快捷键').default(false),
   copyKey: Schema.string().description('复制快捷键').default(''),
+  customHotkey: Schema.array(CustomHotkey).default([]).description('自定义快捷键')
 }).description('快捷键设置')
 
 export const LlmConfigSchema: Schema<LLMConfig> = Schema.object({

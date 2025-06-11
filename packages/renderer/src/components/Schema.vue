@@ -37,6 +37,7 @@ const config = ref<Config>({
     copyKey: 'ctrl+shift+z',
     uploadEnable: false,
     uploadKey: 'ctrl+shift+u',
+    customHotkey: [],
   },
   llm: {
     baseUrl: 'https://api.moonshot.cn/v1',
@@ -63,6 +64,7 @@ const initial = ref<Config>({
     copyKey: 'ctrl+shift+z',
     uploadEnable: false,
     uploadKey: 'ctrl+shift+u',
+    customHotkey: [],
   },
   llm: {
     baseUrl: 'https://api.moonshot.cn/v1',
