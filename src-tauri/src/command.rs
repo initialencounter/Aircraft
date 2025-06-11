@@ -300,7 +300,6 @@ pub async fn get_report_summary_by_buffer(
     Ok(summary)
 }
 
-
 // 保存配置
 #[tauri::command]
 pub async fn save_config(app: tauri::AppHandle, config: Config) -> Result<(), String> {
@@ -346,26 +345,18 @@ pub async fn reload_config(
     file_manager: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,
     config: Config,
 ) -> Result<(), String> {
-    let old_config = Config {
-        server: state.config.lock().unwrap().clone(),
-        llm: state.llm_config.lock().unwrap().clone(),
-        base: get_base_config(app.clone()),
-        hotkey: hotkey_state.config.lock().unwrap().clone(),
-    };
-    if old_config.server != config.server {
-        state.reload(config.server.clone(), config.llm.clone()).await;
-    }
-    if old_config.llm != config.llm {
-        file_manager.lock().await.reload(config.llm.clone());
-    }
-    if old_config.hotkey != config.hotkey {
-        hotkey_state.stop();
-        hotkey_state.save_config(config.hotkey.clone());
-        hotkey_state.start();
-    }
-    if old_config.base != config.base {
-        set_auto_start(app.clone(), config.base.auto_start)?;
-    }
+    state
+        .reload(config.server.clone(), config.llm.clone())
+        .await;
+
+    file_manager.lock().await.reload(config.llm.clone());
+
+    hotkey_state.stop();
+    hotkey_state.save_config(config.hotkey.clone());
+    hotkey_state.start();
+
+    set_auto_start(app.clone(), config.base.auto_start)?;
+
     let _ = save_config(app.clone(), config.clone()).await;
     Ok(())
 }

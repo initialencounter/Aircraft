@@ -5,7 +5,7 @@ import path from 'path'
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
 
-import type {} from '../service/app'
+import type { } from '../service/app'
 import type { Config } from 'aircraft-rs'
 import { ConfigSchema } from '@aircraft/renderer/src/schema'
 
@@ -85,53 +85,14 @@ class ConfigManager extends Service {
     }
   }
   reloadConfig(config: Config) {
-    try {
-      const currentServerConfig =
-        this.ctx.core.bindings.getCurrentServerConfig()
-      if (!shallowEqual(currentServerConfig, config.server)) {
-        this.ctx.emit('reload-server', config.server, config.llm)
-      }
-    } catch (error) {
-      this.ctx.emit(
-        'write-log',
-        'ERROR',
-        'Server config file reload error' + error
-      )
-    }
-    try {
-      const currentLlmConfig = this.ctx.core.bindings.getCurrentLlmConfig()
-      if (!shallowEqual(currentLlmConfig, config.llm)) {
-        this.ctx.emit('reload-llm', config.llm)
-      }
-    } catch (error) {
-      this.ctx.emit(
-        'write-log',
-        'ERROR',
-        'LLM config file reload error' + error
-      )
-    }
-    try {
-      const currentHotkeyConfig =
-        this.ctx.core.bindings.getCurrentHotkeyConfig()
-      if (!shallowEqual(currentHotkeyConfig, config.hotkey)) {
-        this.ctx.emit('reload-hotkey', config.hotkey)
-      }
-    } catch (error) {
-      this.ctx.emit(
-        'write-log',
-        'ERROR',
-        'Hotkey config file save error' + error
-      )
-    }
-    try {
-      this.ctx.emit(
-        'auto-launch-switch',
-        config.base.autoStart,
-        config.base.silentStart
-      )
-    } catch (error) {
-      this.ctx.emit('write-log', 'ERROR', 'base file reload error' + error)
-    }
+    this.ctx.emit('reload-llm', config.llm)
+    this.ctx.emit('reload-hotkey', config.hotkey)
+    this.ctx.emit('reload-server', config.server, config.llm)
+    this.ctx.emit(
+      'auto-launch-switch',
+      config.base.autoStart,
+      config.base.silentStart
+    )
     try {
       this.saveConfig(config)
     } catch (error) {
