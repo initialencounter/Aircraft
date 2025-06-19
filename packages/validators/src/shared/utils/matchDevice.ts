@@ -53,13 +53,13 @@ function fetchLastRegexMatch(rawText: string, reg: RegExp) {
 }
 
 export function match967BatteryNumber(sourceText: string): number {
-  const batteryNumRegex = /内置\s*(\d+)\s*块电池/
+  const batteryNumRegex = /内置\s*(\d+)\s*块电[池芯]/
   const batteryMatch = sourceText.match(batteryNumRegex)
   return batteryMatch ? parseInt(batteryMatch[1], 10) : 0
 }
 
 export function match966BatteryNumber(sourceText: string): number {
-  const batteryNumRegex = /与\s*(\d+)\s*块电池包装在一起/
+  const batteryNumRegex = /与\s*(\d+)\s*块电[池芯]包装在一起/
   const batteryMatch = sourceText.match(batteryNumRegex)
   return batteryMatch ? parseInt(batteryMatch[1], 10) : 0
 }
