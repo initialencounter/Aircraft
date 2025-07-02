@@ -274,7 +274,8 @@ async function entrypoint() {
     let projectNo = await getClipboardText()
     projectNo = projectNo.replace(/[^0-9A-Z]/g, '')
     const qProjectNo = document.getElementById('qProjectNo') as HTMLInputElement
-    const currentProjectNo = qProjectNo.value
+    const projectNoSpan = document.getElementById('projectNo')
+    const currentProjectNo = projectNoSpan?.innerText
     if (
       projectNo.startsWith(systemId) &&
       projectNo.length === 17 &&
