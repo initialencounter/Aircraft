@@ -80,7 +80,7 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
   // 电芯
   const isCell: boolean = getIsCell(btyType)
   // 包装类型 0 965 1 966 2 967
-  const inspectionItem1 = String(currentData['inspectionItem1']) as
+  const otherDescribe2Pek = otherDescribe.slice(2) as
     | '0'
     | '1'
     | '2'
@@ -127,7 +127,7 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
       capacity,
       wattHour,
       wattHourFromName,
-      inspectionItem1
+      otherDescribe2Pek
     )
   )
   // 包装与其他描述验证
