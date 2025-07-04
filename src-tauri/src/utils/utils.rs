@@ -36,18 +36,16 @@ pub fn check_update(flag: String) -> String {
     release.tag_name
 }
 
-pub fn hide_or_show<'a>(window: WebviewWindow) -> &'a str {
-    if window.is_visible().unwrap() {
-        window.hide().unwrap();
-        "显示(S)"
-    } else {
-        window
-            .set_always_on_top(true)
-            .expect("Failed to set window as topmost");
-        window.show().unwrap();
-        if window.is_minimized().unwrap() {
-            window.unminimize().unwrap();
+pub fn hide_or_show(window: WebviewWindow) {
+    if window.is_visible().unwrap_or_default() {
+        if window.is_minimized().unwrap_or_default() {
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+        } else {
+            let _ = window.hide();
         }
-        "隐藏(H)"
-    }
+    } else {
+        let _ = window.show();
+        let _ = window.set_focus();
+    }  
 }

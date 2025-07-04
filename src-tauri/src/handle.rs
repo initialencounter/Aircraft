@@ -2,16 +2,11 @@ use crate::command::get_base_config;
 use crate::utils::{check_update, hide_or_show, restart};
 use crate::{menu, Link};
 use std::env;
-use tauri::menu::{MenuBuilder, MenuItem, PredefinedMenuItem};
+use tauri::menu::{MenuBuilder, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::{App, AppHandle, Emitter, Manager, WindowEvent, Wry};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
-pub fn handle_hide_or_show(app: &AppHandle<Wry>, hide: &MenuItem<Wry>) {
-    let window = app.get_webview_window("main").unwrap();
-    let title = hide_or_show(window);
-    hide.set_text(title).expect("Failed to set tray text");
-}
 
 pub fn handle_tray_icon_event(tray: &TrayIcon, event: &TrayIconEvent) {
     if let TrayIconEvent::Click {
@@ -42,7 +37,7 @@ pub fn handle_menu_event_update(app: &AppHandle<Wry>) {
 }
 
 pub fn handle_setup(app: &mut App) {
-    let [help_, quit, hide, about, update, restart_] = menu::create_menu_item(app);
+    let [help_, quit, about, update, restart_] = menu::create_menu_item(app);
     let tray_menu = MenuBuilder::new(app)
         .items(&[
             &help_,
@@ -51,7 +46,6 @@ pub fn handle_setup(app: &mut App) {
             &PredefinedMenuItem::separator(app).unwrap(),
             &restart_, 
             &PredefinedMenuItem::separator(app).unwrap(),
-            &hide,
             &quit]) // insert the menu items here
         .build()
         .unwrap();
@@ -62,7 +56,6 @@ pub fn handle_setup(app: &mut App) {
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "help" => app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助".to_string() })).unwrap(),
             "quit" => app.exit(0),
-            "hide" => handle_hide_or_show(&app, &hide),
             "restart" => restart(),
             "about" => app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft".to_string() })).unwrap(),
             "update" => handle_menu_event_update(&app),
