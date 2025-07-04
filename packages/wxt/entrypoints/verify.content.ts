@@ -123,6 +123,15 @@ export default defineContentScript({
     document.ondrop = (event) =>
       handleFileDrop(event, systemId, showMask, hideMask, localConfig)
 
+    const span = document.createElement('span')
+    span.className = 'l-btn-text'
+    span.innerHTML = '验证'
+    const img = document.createElement('img')
+    img.src = chrome.runtime.getURL('/loading.gif')
+    img.className = 'l-btn-icon'
+    img.style.width = '16px'
+    img.style.height = '16px'
+    img.id = 'loadingImg'
     /**
      * 验证处理函数
      */
@@ -138,26 +147,42 @@ export default defineContentScript({
         Qmsg.warning('获取项目编号失败')
         return
       }
+      const tempHtml = document.getElementById('lims-verifyButton-icon')!.innerHTML
+      let result: Array<{
+        ok: boolean;
+        result: string;
+      }> = [];
+      try {
+        document.getElementById('lims-verifyButton-icon')!.innerHTML = ''
+        document.getElementById('lims-verifyButton-icon')?.appendChild(span)
+        document.getElementById('lims-verifyButton-icon')?.appendChild(img)
+        // 执行验证
+        result = await verifyFormData(
+          systemId,
+          currentProjectId,
+          projectNo,
+          localConfig
+        )
 
-      // 执行验证
-      const result = await verifyFormData(
-        systemId,
-        currentProjectId,
-        projectNo,
-        localConfig
-      )
+      } catch (e) {
+        console.error('验证处理出错:', e)
+        Qmsg.error('验证处理出错，请稍后重试', { timeout: 3000 })
+      } finally {
+        document.getElementById('lims-verifyButton-icon')!.innerHTML = tempHtml
+        if (!result.length) {
+          updateVerifyButtonStatus('#54a124')
+          Qmsg.success('初步验证通过', { timeout: 500 })
+          return
+        }
 
-      if (!result.length) {
-        updateVerifyButtonStatus(true)
-        Qmsg.success('初步验证通过', { timeout: 500 })
-        return
+        updateVerifyButtonStatus('#fa5e55')
+        Qmsg.warning('初步验证未通过' + JSON.stringify(result, null, 2), {
+          showClose: true,
+          timeout: 4000,
+        })
+        document.getElementById('lims-verifyButton-icon')!.removeChild(span)
+        document.getElementById('lims-verifyButton-icon')?.removeChild(img)
       }
-
-      updateVerifyButtonStatus(false)
-      Qmsg.warning('初步验证未通过' + JSON.stringify(result, null, 2), {
-        showClose: true,
-        timeout: 4000,
-      })
     }
   },
 })
