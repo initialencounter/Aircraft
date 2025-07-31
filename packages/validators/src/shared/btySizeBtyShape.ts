@@ -33,5 +33,25 @@ export function btySizeBtyShape(
       ]
     }
   }
+  if ([
+    '8aad92b65aae82c3015ab094788a0026',
+    '8aad92b65d7a7078015d7e1bb1a2245d',
+    '521',
+    '2c9180838b90642e018bf132f37f5a60',
+  ].includes(btyShape)) {
+    if (
+      !btySize.includes('Φ') &&
+      !btySize.includes('φ') &&
+      !btySize.includes('Ø') &&
+      !btySize.includes('ø')
+    ) {
+      return [
+        {
+          ok: false,
+          result: '圆形电池缺少符号，应包含 Φ φ Ø ø',
+        },
+      ]
+    }
+  }
   return []
 }
