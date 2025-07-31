@@ -9,6 +9,7 @@ import { voltageBtyType } from './voltageBtyType'
 import { wattHourCalculate } from './wattHourCalculate'
 import { checkDevice } from './checkDevice'
 import { bytNumsCalculate } from './bytNumsCalculate'
+import { checkEnergyDensity } from './energyDensity'
 
 /**
  * 基础检测
@@ -75,5 +76,7 @@ export function baseCheck(
   result.push(
     ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1)
   )
+  // 电池能量密度验证
+  result.push(...checkEnergyDensity(wattHour, batteryWeight))
   return result
 }
