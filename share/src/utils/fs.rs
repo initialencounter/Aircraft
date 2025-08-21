@@ -77,8 +77,8 @@ pub fn match_file(dir: &PathBuf) -> Vec<RawFileInfo> {
     file_list
 }
 
-pub fn prepare_file_info(file_info: RawFileInfo) -> Option<FileInfo> {
-    let path = file_info.file_path;
+pub fn prepare_file_info(file_info: &RawFileInfo) -> Option<FileInfo> {
+    let path = &file_info.file_path;
     let file_name = path.file_name()?.to_str()?.to_string();
 
     // 获取 pdf 文件大小
@@ -98,7 +98,7 @@ pub fn prepare_file_info(file_info: RawFileInfo) -> Option<FileInfo> {
     }
     .to_string();
     Some(FileInfo {
-        project_no: file_info.project_no,
+        project_no: file_info.project_no.clone(),
         file_id,
         file_buffer,
         file_name,

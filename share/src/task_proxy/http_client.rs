@@ -263,6 +263,16 @@ impl HttpClient {
             &format!("开始从 {} 上传文件", path.to_str().unwrap()),
         )
         .await;
+        let raw_file_info = match_file(&path);
+        self.post_raw_file(raw_file_info).await
+    }
+
+    pub async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
+        let raw_file_info = match_file_list(file_list);
+        self.post_raw_file(raw_file_info).await
+    }
+
+    pub async fn post_raw_file(&self, raw_file_info: Vec<RawFileInfo>) -> Vec<String> {
         let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
         if !LOGIN_STATUS.load(Ordering::Relaxed) {
             (self.confirm_fn)(
@@ -274,7 +284,7 @@ impl HttpClient {
             );
             return Vec::new();
         }
-        let raw_file_info = match_file(&path);
+
         let message = build_confirmation_message(&raw_file_info);
 
         if !(self.confirm_fn)("警告", &message) {
@@ -282,32 +292,29 @@ impl HttpClient {
         }
 
         let mut uploaded_files = Vec::new();
-        for file_info in raw_file_info {
-            let result = self.process_single_file(file_info).await;
-            if let Ok(file_name) = result {
-                uploaded_files.push(file_name);
-            }
+        let mut upload_failed_files = Vec::new();
+        for file_info in &raw_file_info {
+            match self.process_single_file(file_info).await {
+                Ok(file_name) => uploaded_files.push(file_name),
+                Err(e) => {
+                    upload_failed_files.push(format!(
+                        "文件 {} : {}",
+                        file_info.file_name.clone(),
+                        e.to_string()
+                    ));
+                }
+            };
         }
         self.log("INFO", &format!("上传的文件: {:?}", uploaded_files))
             .await;
-        uploaded_files
-    }
-    pub async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
-        let raw_file_list = match_file_list(file_list);
-        let message = build_confirmation_message(&raw_file_list);
-        if !(self.confirm_fn)("警告", &message) {
-            return Vec::new();
-        }
-        let mut uploaded_files = Vec::new();
-        for file_info in raw_file_list {
-            let result = self.process_single_file(file_info).await;
-            if let Ok(file_name) = result {
-                uploaded_files.push(file_name);
-            }
+        if !upload_failed_files.is_empty() {
+            let message = format!("以下文件上传失败：\n{}", upload_failed_files.join("\n"));
+            (self.confirm_fn)("警告", &message);
         }
         uploaded_files
     }
-    async fn process_single_file(&self, file_info: RawFileInfo) -> Result<String> {
+
+    async fn process_single_file(&self, file_info: &RawFileInfo) -> Result<String> {
         let Some(file_info) = prepare_file_info(file_info) else {
             return Err("准备文件信息失败".into());
         };
@@ -316,7 +323,12 @@ impl HttpClient {
         if self.debug {
             project_id = "123456AAAAAAAAAAAAAAAA".to_string();
         } else {
-            project_id = self.get_project_id(&file_info.project_no).await?;
+            match self.get_project_id(&file_info.project_no).await {
+                Ok(id) => project_id = id,
+                Err(e) => {
+                    return Err(e);
+                }
+            };
         }
 
         self.post_file(
