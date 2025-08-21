@@ -15,8 +15,8 @@ use share::summary_rs::{get_summary_info_by_buffer, get_summary_info_by_path, Su
 use share::types::{Config, LLMConfig};
 use share::types::{HotkeyConfig, ServerConfig};
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
 
 #[napi(js_name = "AircraftRs")]
 pub struct AircraftRs {
@@ -29,7 +29,12 @@ pub struct AircraftRs {
 #[napi]
 impl AircraftRs {
   #[napi(constructor)]
-  pub fn new(app_log_dir: String, config: ServerConfig, llm_config: LLMConfig, hotkey_config: HotkeyConfig) -> Self {
+  pub fn new(
+    app_log_dir: String,
+    config: ServerConfig,
+    llm_config: LLMConfig,
+    hotkey_config: HotkeyConfig,
+  ) -> Self {
     let logger = Arc::new(Mutex::new(Logger::new(
       PathBuf::from(app_log_dir),
       "aircraft", // app数据目录

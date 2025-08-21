@@ -7,18 +7,15 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
     let mut summary = SummaryInfo::default();
     for (index, item) in content.iter().enumerate() {
         // 标题
-        if item.contains("概要") && item.contains("Test Summary")
-        {
+        if item.contains("概要") && item.contains("Test Summary") {
             summary.title = item.clone().split("项目编号").next().unwrap().to_string();
         }
         // 项目编号
-        if item.contains("项目编号")
-        {
+        if item.contains("项目编号") {
             summary.project_no = match_project_no(&item);
         }
         // 测试报告签发日期
-        if item.contains("测试标准")
-        {
+        if item.contains("测试标准") {
             summary.test_date = content[index - 1].clone();
         }
         let field_mappings = HashMap::from([

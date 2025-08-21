@@ -183,10 +183,11 @@ async fn handle_upload(
                     .lock()
                     .await
                     .get_u8_text(filename, file_data)
-                    .await.unwrap_or_else(|e| {
-                    println!("Error: OCR {:?}", e);
-                    "".to_string()
-                });
+                    .await
+                    .unwrap_or_else(|e| {
+                        println!("Error: OCR {:?}", e);
+                        "".to_string()
+                    });
             }
             file_contents.push(file_content);
         }

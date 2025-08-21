@@ -1,7 +1,7 @@
 use crate::logger::LogMessage;
-use http_client::HttpClient;
-use crate::types::LLMConfig;
 use crate::pdf_parser::uploader::FileManager;
+use crate::types::LLMConfig;
+use http_client::HttpClient;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;

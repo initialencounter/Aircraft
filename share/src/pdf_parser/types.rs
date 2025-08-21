@@ -1,5 +1,5 @@
 use napi_derive::napi;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[napi(object)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -1,3 +1,4 @@
+use crate::utils::popup_message;
 use copypasta::{ClipboardContext, ClipboardProvider};
 use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
 use lazy_static::lazy_static;
@@ -7,7 +8,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
 use std::env;
-use crate::utils::popup_message;
 use std::process::Command;
 
 lazy_static! {
@@ -68,18 +68,18 @@ async fn send_task(request_body: &serde_json::Value) -> Result<()> {
     Ok(())
 }
 
-
 fn get_clip_text() -> Result<String> {
-    let mut ctx: ClipboardContext = ClipboardContext::new()
-        .map_err(|e| format!("无法访问剪贴板: {}", e))?;
-    let clip_text = ctx.get_contents()
+    let mut ctx: ClipboardContext =
+        ClipboardContext::new().map_err(|e| format!("无法访问剪贴板: {}", e))?;
+    let clip_text = ctx
+        .get_contents()
         .map_err(|e| format!("无法获取剪贴板内容: {}", e))?;
     Ok(clip_text)
 }
 
 async fn get_project_info(project_no: &str) -> Result<QueryResult> {
     let client = Client::new();
-    
+
     let response = client
         .get(format!(
             "http://localhost:25455/get-project-info/{}",
@@ -126,20 +126,17 @@ pub async fn write_doc(target_dir: String) -> Result<()> {
             };
             let is_power_bank =
                 item_c_name.contains("移动电源") || item_c_name.contains("储能电源");
-                
-            let exe_path = env::current_exe()
-                .map_err(|e| format!("无法获取执行路径: {}", e))?;
-            let parent_path = exe_path.parent()
-                .ok_or("无法获取父目录")?;
-            let source_path = parent_path.join("image.doc")
+
+            let exe_path = env::current_exe().map_err(|e| format!("无法获取执行路径: {}", e))?;
+            let parent_path = exe_path.parent().ok_or("无法获取父目录")?;
+            let source_path = parent_path
+                .join("image.doc")
                 .to_str()
                 .ok_or("路径转换失败")?
                 .to_string();
-                
-            let en_name = item_e_name.split(" ")
-                .nth(1)
-                .ok_or("无法解析英文名称")?;
-                
+
+            let en_name = item_e_name.split(" ").nth(1).ok_or("无法解析英文名称")?;
+
             let request_body = json!({
                 "source_path": source_path,
                 "save_dir": target_dir,
@@ -149,7 +146,7 @@ pub async fn write_doc(target_dir: String) -> Result<()> {
                 "is_power_bank": is_power_bank,
                 "en_name": en_name
             });
-            
+
             match send_task(&request_body).await {
                 Ok(_) => {
                     simulate_f5_press();

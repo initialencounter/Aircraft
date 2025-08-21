@@ -1,5 +1,5 @@
-use std::{env, path::PathBuf};
 use share::types::ServerConfig;
+use std::{env, path::PathBuf};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 

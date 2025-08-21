@@ -8,7 +8,6 @@ lazy_static! {
         Regex::new(r"项目编号[：:]{1}\s?([PSAR]EKGZ[0-9]{12})\s+").unwrap();
 }
 
-
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 fn parse_goods_name(pdf_text: Vec<&str>, is_965: bool) -> String {
@@ -16,37 +15,36 @@ fn parse_goods_name(pdf_text: Vec<&str>, is_965: bool) -> String {
     let package_index = find_package_index(pdf_text.clone());
     let pdf_text = pdf_text[0..package_index].to_vec();
     if is_965 {
-        for i in 3..pdf_text.len()-1 {
+        for i in 3..pdf_text.len() - 1 {
             if pdf_text[i].contains("物品名称") {
                 let item_c_name = pdf_text[i].replace("物品名称:", "");
                 let item_c_name = item_c_name.replace("物品名称： ", "");
                 let item_c_name = item_c_name.replace("物品名称:", "");
                 let item_c_name = item_c_name.replace("物品名称：", "");
                 let item_c_name = item_c_name.trim();
-                goods_name = format!("{}{}",goods_name, item_c_name);
-            }else {
-                goods_name = format!("{}{}",goods_name, pdf_text[i]);
+                goods_name = format!("{}{}", goods_name, item_c_name);
+            } else {
+                goods_name = format!("{}{}", goods_name, pdf_text[i]);
             }
         }
     } else {
-        for i in 3..pdf_text.len()-2 {
-            
+        for i in 3..pdf_text.len() - 2 {
             if pdf_text[i].contains("物品名称") {
                 let item_c_name = pdf_text[i].replace("物品名称:", "");
                 let item_c_name = item_c_name.replace("物品名称： ", "");
                 let item_c_name = item_c_name.replace("物品名称:", "");
                 let item_c_name = item_c_name.replace("物品名称：", "");
                 let item_c_name = item_c_name.trim();
-                goods_name = format!("{}{}",goods_name, item_c_name);
-            }else {
-                goods_name = format!("{}{}",goods_name, pdf_text[i]);
+                goods_name = format!("{}{}", goods_name, item_c_name);
+            } else {
+                goods_name = format!("{}{}", goods_name, pdf_text[i]);
             }
         }
     }
     goods_name.trim().to_string()
 }
 
-fn find_package_index(pdf_text: Vec<&str>) -> usize{
+fn find_package_index(pdf_text: Vec<&str>) -> usize {
     for i in 0..pdf_text.len() {
         if pdf_text[i].contains("包装件") {
             return i;

@@ -1,9 +1,9 @@
 pub mod attachment_parser;
 pub mod hotkey_handler;
 pub mod logger;
-pub mod task_proxy;
-pub mod utils;
 pub mod manager;
-pub mod types;
 pub mod pdf_parser;
 pub mod summary_rs;
+pub mod task_proxy;
+pub mod types;
+pub mod utils;

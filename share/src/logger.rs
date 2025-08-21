@@ -71,7 +71,7 @@ impl Logger {
         let file_clone = Arc::clone(&file);
         let temp_logs_clone = Arc::clone(&temp_logs);
         let enabled_clone = enabled;
-        
+
         tokio::spawn(async move {
             while let Ok(log) = receiver.recv() {
                 let now = Local::now();

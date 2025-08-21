@@ -59,10 +59,7 @@ impl HttpClient {
         log_tx: Sender<LogMessage>,
         confirm_fn: fn(&str, &str) -> bool,
     ) -> Self {
-        let client = Client::builder()
-            .cookie_store(true)
-            .build()
-            .unwrap();
+        let client = Client::builder().cookie_store(true).build().unwrap();
 
         HttpClient {
             client,

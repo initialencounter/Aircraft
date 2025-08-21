@@ -27,4 +27,3 @@ pub fn restart_program() {
     let _ = Command::new(current_exe).arg("--from-registry").spawn();
     std::process::exit(0);
 }
-

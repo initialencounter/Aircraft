@@ -1,6 +1,6 @@
+use crate::types::LLMConfig;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
-use crate::types::LLMConfig;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
@@ -8,11 +8,10 @@ use crate::logger::LogMessage;
 use crate::task_proxy::run as task_proxy_run;
 use crate::types::ServerConfig;
 
-
 pub struct ServerManager {
     handle: Mutex<Option<JoinHandle<()>>>,
     pub config: Mutex<ServerConfig>,
-    pub llm_config:  Mutex<LLMConfig>,
+    pub llm_config: Mutex<LLMConfig>,
     shutdown_tx: Mutex<watch::Sender<bool>>,
     log_tx: Sender<LogMessage>,
 }
@@ -36,7 +35,7 @@ impl ServerManager {
         let log_tx = self.log_tx.clone();
         *self.shutdown_tx.lock().unwrap() = shutdown_tx;
         let llm_config = self.llm_config.lock().unwrap().clone();
-        *self.handle.lock().unwrap() =  Some(tokio::spawn(async move {
+        *self.handle.lock().unwrap() = Some(tokio::spawn(async move {
             let _ = task_proxy_run(
                 config.base_url,
                 config.username,

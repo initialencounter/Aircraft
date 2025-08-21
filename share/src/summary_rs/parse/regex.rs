@@ -10,7 +10,7 @@ pub fn match_project_no(content: &str) -> String {
         .collect();
     if matches.is_empty() {
         "".to_string()
-    } else {  
+    } else {
         matches[0].to_string()
     }
 }

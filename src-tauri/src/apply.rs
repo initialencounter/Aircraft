@@ -1,8 +1,8 @@
 use crate::command::get_config;
+use share::logger::Logger;
+use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
 use share::pdf_parser::uploader::FileManager;
-use share::manager::hotkey_manager::HotkeyManager;
-use share::logger::Logger;
 use std::{path::PathBuf, sync::Arc, sync::Mutex};
 use tauri::{App, Manager};
 use tokio::sync::Mutex as AsyncMutex;

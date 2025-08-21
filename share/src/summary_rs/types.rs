@@ -1,5 +1,5 @@
 use napi_derive::napi;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[napi(object)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -60,7 +60,6 @@ pub struct SummaryInfo {
     pub test_report_no: String,
     /// 测试日期
     pub test_date: String,
-    
 
     /// 测试标准
     pub test_manual: String,

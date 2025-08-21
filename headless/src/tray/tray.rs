@@ -103,5 +103,7 @@ fn load_icon(buffer: &[u8]) -> Icon {
 
 fn open_app_dir() {
     let current_exe = env::current_exe().expect("无法获取当前执行文件路径");
-    let _ = Command::new("explorer").arg(current_exe.parent().unwrap()).spawn();
+    let _ = Command::new("explorer")
+        .arg(current_exe.parent().unwrap())
+        .spawn();
 }

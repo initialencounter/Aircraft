@@ -158,11 +158,15 @@ impl FileManager {
         self.upload_part(file_part).await
     }
 
-    pub async fn upload_u8(&self, filename: String, file_data: Vec<u8>) -> Result<String, Box<dyn Error>> {
+    pub async fn upload_u8(
+        &self,
+        filename: String,
+        file_data: Vec<u8>,
+    ) -> Result<String, Box<dyn Error>> {
         let file_part = reqwest::multipart::Part::bytes(file_data)
-        .file_name(filename) // Convert `file_path` to an owned `String`
-        .mime_str("application/pdf")
-        .unwrap();
+            .file_name(filename) // Convert `file_path` to an owned `String`
+            .mime_str("application/pdf")
+            .unwrap();
         self.upload_part(file_part).await
     }
 
@@ -190,7 +194,11 @@ impl FileManager {
     }
 
     /// 使用 API 上传文件并获取 OCR 内容
-    pub async fn get_u8_text(&self, filename: String, file_data: Vec<u8>) -> Result<String, Box<dyn Error>> {
+    pub async fn get_u8_text(
+        &self,
+        filename: String,
+        file_data: Vec<u8>,
+    ) -> Result<String, Box<dyn Error>> {
         let file_id = self.upload_u8(filename, file_data).await?;
         let text = self.content(&file_id).await?;
         self.delete(&file_id).await?;
@@ -416,7 +424,7 @@ export interface SummaryFromLLM {
             temperature: 0.3,
             response_format: ResponseFormat {
                 response_format_type: "json_object".to_string(),
-            }
+            },
         };
         let response = self
             .client
@@ -438,7 +446,10 @@ export interface SummaryFromLLM {
                 None => Err("chat/completions 提取 json 失败！".to_string())?,
             }
         } else {
-            Err(format!("chat/completions 请求失败！{}", response.text().await?))?
+            Err(format!(
+                "chat/completions 请求失败！{}",
+                response.text().await?
+            ))?
         }
     }
 }

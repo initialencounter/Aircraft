@@ -13,7 +13,7 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
                 let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-				// 处理 w:date 标签
+                // 处理 w:date 标签
                 if e.name().as_ref() == b"w:date" {
                     // 获取 fullDate 属性
                     if let Some(attr) = e.attributes().find(|a| {
@@ -21,18 +21,17 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                         a.key.as_ref() == b"w:fullDate"
                     }) {
                         match attr {
-							Ok(attr) => {
-								let date =  String::from_utf8_lossy(attr.value.as_ref());
-								if let Some(date_only) = date.split('T').next() {
-									last_text = date_only.to_string();
-									output.push(last_text.clone());
-								}
-							},
-							Err(e) => {
-								println!("{}", e);
-							}
-
-						}
+                            Ok(attr) => {
+                                let date = String::from_utf8_lossy(attr.value.as_ref());
+                                if let Some(date_only) = date.split('T').next() {
+                                    last_text = date_only.to_string();
+                                    output.push(last_text.clone());
+                                }
+                            }
+                            Err(e) => {
+                                println!("{}", e);
+                            }
+                        }
                     }
                 }
                 // 更新该标签的计数

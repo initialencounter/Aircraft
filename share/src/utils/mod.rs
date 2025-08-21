@@ -1,9 +1,9 @@
-pub mod fs;
 pub mod dialog;
+pub mod fs;
 
 use chrono::Local;
-pub use fs::*;
 pub use dialog::*;
+pub use fs::*;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -41,7 +41,6 @@ pub fn parse_date(date_text: &str) -> Result<(String, String)> {
         ))
     }
 }
-
 
 pub fn build_confirmation_message(raw_file_info: &[RawFileInfo]) -> String {
     let mut message = String::from("是否要上传这些文件?：\n");

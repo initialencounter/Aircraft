@@ -7,8 +7,6 @@ use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 
-
-
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 lazy_static! {
@@ -80,7 +78,12 @@ async fn match_file(dir: &PathBuf) -> Result<Vec<String>> {
     Ok(file_path_list)
 }
 
-pub async fn replace_docx(target_dir: String, inspector: &str, width: f32, height: f32) -> Result<()> {
+pub async fn replace_docx(
+    target_dir: String,
+    inspector: &str,
+    width: f32,
+    height: f32,
+) -> Result<()> {
     let file_list = match_file(&PathBuf::from(&target_dir)).await?;
     for path in file_list {
         let _ = modify_docx(&path, inspector, width, height);

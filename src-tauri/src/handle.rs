@@ -7,7 +7,6 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, Tray
 use tauri::{App, AppHandle, Emitter, Manager, WindowEvent, Wry};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
-
 pub fn handle_tray_icon_event(tray: &TrayIcon, event: &TrayIconEvent) {
     if let TrayIconEvent::Click {
         button: MouseButton::Left,
@@ -22,17 +21,31 @@ pub fn handle_tray_icon_event(tray: &TrayIcon, event: &TrayIconEvent) {
     }
 }
 
-
 pub fn handle_menu_event_update(app: &AppHandle<Wry>) {
     let current_version = format!("v{}", env!("CARGO_PKG_VERSION"));
     let latest = check_update(String::from("000"));
     if latest == "000" {
-        app.dialog().message("检查更新失败!").kind(MessageDialogKind::Error).show(|_| {});
+        app.dialog()
+            .message("检查更新失败!")
+            .kind(MessageDialogKind::Error)
+            .show(|_| {});
     } else if latest != current_version {
-        app.dialog().message(format!("发现新版本{}，是否前往", latest)).kind(MessageDialogKind::Info).show(|_| {});
-        app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft/releases/latest".to_string() })).unwrap();
+        app.dialog()
+            .message(format!("发现新版本{}，是否前往", latest))
+            .kind(MessageDialogKind::Info)
+            .show(|_| {});
+        app.emit(
+            "open_link",
+            Some(Link {
+                link: "https://github.com/initialencounter/Aircraft/releases/latest".to_string(),
+            }),
+        )
+        .unwrap();
     } else {
-        app.dialog().message("当前版本是最新版").kind(MessageDialogKind::Info).show(|_| {});
+        app.dialog()
+            .message("当前版本是最新版")
+            .kind(MessageDialogKind::Info)
+            .show(|_| {});
     }
 }
 
@@ -42,11 +55,12 @@ pub fn handle_setup(app: &mut App) {
         .items(&[
             &help_,
             &about,
-            &update, 
+            &update,
             &PredefinedMenuItem::separator(app).unwrap(),
-            &restart_, 
+            &restart_,
             &PredefinedMenuItem::separator(app).unwrap(),
-            &quit]) // insert the menu items here
+            &quit,
+        ]) // insert the menu items here
         .build()
         .unwrap();
     let _ = TrayIconBuilder::with_id("system-tray-1")
@@ -77,7 +91,7 @@ pub fn handle_setup(app: &mut App) {
     let window = app.get_webview_window("main").unwrap();
     let window_clone = window.clone();
     window.on_window_event(move |event| {
-        if let WindowEvent::CloseRequested  { api, .. } = event {
+        if let WindowEvent::CloseRequested { api, .. } = event {
             api.prevent_close();
             window_clone.hide().unwrap();
         }
