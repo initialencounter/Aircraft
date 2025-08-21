@@ -41,11 +41,13 @@ pub fn hide_or_show(window: WebviewWindow) {
         if window.is_minimized().unwrap_or_default() {
             let _ = window.unminimize();
             let _ = window.set_focus();
+            let _ = window.set_always_on_top(true);
         } else {
             let _ = window.hide();
         }
     } else {
         let _ = window.show();
         let _ = window.set_focus();
-    }  
+        let _ = window.set_always_on_top(true);
+    }
 }
