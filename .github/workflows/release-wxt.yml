@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'wxt-v*'
+      - "wxt-v*"
 
 permissions:
   contents: write
@@ -34,14 +34,14 @@ jobs:
         id: get_version
         shell: bash
         run: |
-          VERSION="v$(node -p "require('./packages/wxt/.output/chrome-mv3/manifest.json').version")"
+          VERSION="v$(grep -Po "version\s*:\s*['\"]\K[^'\"]+" packages/wxt/wxt.config.ts)"
           echo "版本: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          sed -i "s/wxt-v[0-9]\+\.[0-9]\+\.[0-9]\+/wxt-$VERSION/g; s/lims-v[0-9]\+\.[0-9]\+\.[0-9]\+/lims-$VERSION/g" packages/wxt/docs/quick_start.md
 
       - name: Build docs
         run: |
           cd packages/wxt
-
           yarn docs:build
           cd ../..
 
@@ -79,4 +79,4 @@ jobs:
           files: |
             lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
             lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
-          name: 'WXT ${{ steps.get_version.outputs.VERSION }}'
+          name: "WXT ${{ steps.get_version.outputs.VERSION }}"
