@@ -18,7 +18,7 @@ export function btyWeightCalculate(
     const abs = Math.abs(
       (expectedNetWeight - netWeightDisplay) / netWeightDisplay
     )
-    if (abs > 0.05 && btyCount > 1) {
+    if (abs > 0.05) {
       return [{ ok: false, result: '电池净重误差大于5%' }]
     }
   }
