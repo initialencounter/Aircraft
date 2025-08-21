@@ -5,7 +5,10 @@ export interface SummaryFromLLM {
   /**制造商或生产工厂英文名称*/
   manufacturerEName: string | null
 
-  /**测试单位 Test Lab*/
+  /**
+   * 测试单位 Test Lab
+   * 中文名称, 如果没有中文这个字段可以为null
+  */
   testLab: string | null
 
   /**电池中文名称*/
@@ -20,6 +23,7 @@ export interface SummaryFromLLM {
    * 锂离子电池：多个电芯组成的电池，判断方法：T1的测试数量为8个或4个
    * 锂金属电芯：单电芯锂金属电池，判断方法：T1的测试数量为10个，T7为不适用
    * 锂金属电池：多个电芯组成的锂金属电池，判断方法：T7为不适用，T1的测试数量为8个或4个
+   * !!!该字段经常出现错误，请仔细核对!!!
    */
   classification:
     | '锂离子电池'
