@@ -2,6 +2,9 @@ name: Release and deploy
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'wxt-v*'
 
 permissions:
   contents: write
@@ -26,26 +29,6 @@ jobs:
       - name: Install dependencies
         run: |
           yarn install --frozen-lockfile
-          npm i -g web-ext
-      - name: Build
-        run: |
-          yarn build:v
-          cd packages/wxt
-          yarn build
-          yarn build:firefox
-          cd ../..
-
-      - name: Build docs
-        run: |
-          cd packages/wxt
-          yarn docs:build
-          cd ../..
-
-      - name: Deploy Docs 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.4
-        with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: packages/wxt/docs/.vitepress/dist
 
       - name: Query version number
         id: get_version
@@ -55,23 +38,45 @@ jobs:
           echo "版本: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Build docs
+        run: |
+          cd packages/wxt
+
+          yarn docs:build
+          cd ../..
+
+      - name: Deploy Docs 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: packages/wxt/docs/.vitepress/dist
+
+      - name: Build
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          yarn build:v
+          cd packages/wxt
+          yarn build
+          yarn build:firefox
+          cd ../..
+
       - name: zip chrome extension
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           cd packages/wxt/.output/chrome-mv3 && zip -q -r ../../../../lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip .
           cd ../../../..
       - name: zip firefox extension
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
+          npm i -g web-ext
           web-ext sign --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} --api-secret ${{ secrets.FIREFOX_JWT_SECRET }} --channel unlisted -s packages/wxt/.output/firefox-mv3
           mv web-ext-artifacts/*.xpi lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
 
-      - name: upload chrome
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
-          path: lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
-
-      - name: upload firefox
-        uses: actions/upload-artifact@v4
-        with:
-          name: lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
-          path: lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
+          files: |
+            lims-${{ steps.get_version.outputs.VERSION }}.chrome.zip
+            lims-${{ steps.get_version.outputs.VERSION }}.firefox.xpi
+          name: 'WXT ${{ steps.get_version.outputs.VERSION }}'

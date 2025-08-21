@@ -16,7 +16,7 @@
 
 ### 下载并解压拓展
 
-[点我下载](https://ghp.ci/https://github.com/initialencounter/chrome-extensions/releases/download/v2.0.1/lims-v2.0.1.chrome.zip)👈下载地址。
+[点我下载](https://ghp.ci/https://github.com/initialencounter/Aircraft/releases/download/wxt-v2.0.7/lims-v2.0.7.chrome.zip)👈下载地址。
 
 ### 安装拓展
 
@@ -31,7 +31,7 @@
 
 ### 下载并解压拓展
 
-[点我下载](https://ghp.ci/https://github.com/initialencounter/chrome-extensions/releases/download/v2.0.1/lims-v2.0.1.firefox.xpi) 👈下载地址
+[点我下载](https://ghp.ci/https://github.com/initialencounter/Aircraft/releases/download/wxt-v2.0.7/lims-v2.0.7.firefox.xpi) 👈下载地址
 
 ### 安装拓展
 
