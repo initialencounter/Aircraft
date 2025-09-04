@@ -234,7 +234,6 @@ async function entrypoint() {
   </span>
   `
     assignButton.onclick = lims_onekey_assign_click
-    div.appendChild(assignButton)
 
     // select
     const select = document.createElement('select')
@@ -255,9 +254,9 @@ async function entrypoint() {
       select.appendChild(option)
     })
     if (await checkAssignUID(users, uid)) select.value = uid
-    div.appendChild(select)
-
-    targetParent.appendChild(div)
+    const button1 = targetParent.children[1].children[0] // 初验按钮
+    targetParent.children[1].insertBefore(assignButton, button1)
+    targetParent.children[1].insertBefore(select, button1)
     console.log('一键分配按钮插入成功')
   }
 
