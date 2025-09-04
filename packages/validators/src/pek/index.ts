@@ -19,6 +19,7 @@ import {
   pekIsDangerous,
   pkgInfoIsIA,
 } from '../shared/utils'
+import { activeStateWarn } from './activeStateWarn'
 import { conclusionsCheck } from './conclusionsCheck'
 import { dropStackTest } from './dropStackTest'
 import { IAIBCheck } from './IAIBCheck'
@@ -172,6 +173,8 @@ function checkPekBtyType(currentData: PekData): CheckResult[] {
   )
   // 电池净重限重
   result.push(...netWeighLimit(netWeight, pkgInfoSubType))
+  // 开启状态运输
+  result.push(...activeStateWarn(otherDescribe))
   // 荷电状态≤30%
   result.push(...stateOfCharge(pkgInfo, otherDescribe))
   // 其他描述是否为电芯或电池
