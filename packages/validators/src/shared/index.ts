@@ -10,6 +10,7 @@ import { wattHourCalculate } from './wattHourCalculate'
 import { checkDevice } from './checkDevice'
 import { bytNumsCalculate } from './bytNumsCalculate'
 import { checkEnergyDensity } from './energyDensity'
+import { checkNicotineContent } from './nicotineContent'
 
 /**
  * 基础检测
@@ -72,6 +73,8 @@ export function baseCheck(
   )
   // 设备名称、型号、商标验证
   result.push(...checkDevice(itemCName, itemEName, otherDescribeCAddition))
+  // 尼古丁体积分数验证
+  result.push(...checkNicotineContent(otherDescribeCAddition))
   // 电池数量验证
   result.push(
     ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1)
