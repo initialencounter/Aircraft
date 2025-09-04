@@ -1,17 +1,31 @@
 # 更新日志
 
+## [v2.0.8] - 2025-09-05
+
+### 修复
+
+- 分配按钮导致底栏页数跳转无法显示([0e8d1e0](https://github.com/initialencounter/Aircraft/commit/0e8d1e0d646abe3d3adbfb4c8f26274b96f39c81))
+- 无法加载验证等待动画([6e3884c](https://github.com/initialencounter/Aircraft/commit/6e3884ca09cd7b3e147961a762221ff9c0914345))
+
+### 新增
+
+- 勾选开启运输时警告([778e0b3](https://github.com/initialencounter/Aircraft/commit/778e0b3d2be5a670d325c17199fb5843ee0e4da4))
+- 5%尼古丁含量,质量体积分数验证([22073eb](https://github.com/initialencounter/Aircraft/commit/22073eb35b30b228e8065f42c1fd47498003e258))
+- 967该电[池/芯]已经做好防短路措施并已采取防止意外启动措施([2b83437](https://github.com/initialencounter/Aircraft/commit/2b83437a28a55952b5ef868798b1d72cd730d555))
+- 描述中电池质量单位g([c993888](https://github.com/initialencounter/Aircraft/commit/c993888fefa1aa9747294bbb98126bf0a2e9a029))
+
 ## [v2.0.7] - 2025-08-21
 
 ### 修复
 
-- 电池数量为1时，无法验证净重
-- 无法匹配单位mWh，mV,kV,kAh
-- 海运导入搜索自身编号
+- 电池数量为1时，无法验证净重([4087827](https://github.com/initialencounter/Aircraft/commit/4087827753e096560a6de2ed1699b40e7b5ba768))
+- 无法匹配单位mWh，mV,kV,kAh([208b29b](https://github.com/initialencounter/Aircraft/commit/208b29b965341b2cc03680599fb0b30225093abc))
+- 海运导入搜索自身编号([855b06c](https://github.com/initialencounter/Aircraft/commit/855b06c837b9f936f8d117e6adf4220ec5e76d07))
 
 ### 新增
 
-- 电池能量密度验证，最高不超过320Wh/kg
-- 圆形电池尺寸，直径符号验证
+- 电池能量密度验证，最高不超过320Wh/kg([45acdc4](https://github.com/initialencounter/Aircraft/commit/45acdc40b114bb982b202c48f1418ad4a2abf937))
+- 圆形电池尺寸，直径符号验证([4040212](https://github.com/initialencounter/Aircraft/commit/40402128b8142432f1482cd64ad666adcac845a7))
 
 ## [v2.0.6] - 2025-05-19
 
