@@ -12,6 +12,7 @@ import { bytNumsCalculate } from './bytNumsCalculate'
 import { checkEnergyDensity } from './energyDensity'
 import { checkNicotineContent } from './nicotineContent'
 import { containBatteryDesc } from './containBatteryDesc'
+import { descriptionFormat } from './descriptionFormat'
 
 /**
  * 基础检测
@@ -78,6 +79,8 @@ export function baseCheck(
   result.push(...checkNicotineContent(otherDescribeCAddition))
   // 967 防意外启动描述
   result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1))
+  // 描述格式验证
+  result.push(...descriptionFormat(otherDescribeCAddition))
   // 电池数量验证
   result.push(
     ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1)
