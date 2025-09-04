@@ -15,7 +15,7 @@
   "devDependencies": {
     "@vueuse/core": "^11.3.0",
     "aircraft-rs": "workspace:*",
-    "typescript": "^5.9.0-dev.20250501",
+    "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
 }
