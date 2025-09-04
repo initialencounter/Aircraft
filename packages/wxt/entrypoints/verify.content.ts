@@ -127,7 +127,7 @@ export default defineContentScript({
     span.className = 'l-btn-text'
     span.innerHTML = '验证'
     const img = document.createElement('img')
-    img.src = chrome.runtime.getURL('/loading.gif')
+    img.src = chrome.runtime.getURL('loading.gif')
     img.className = 'l-btn-icon'
     img.style.width = '16px'
     img.style.height = '16px'

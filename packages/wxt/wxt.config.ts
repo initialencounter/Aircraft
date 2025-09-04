@@ -23,6 +23,12 @@ export default defineConfig({
     name: 'lims',
     version: '2.0.7',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+    web_accessible_resources: [
+      {
+        resources: ['loading.gif'],
+        matches: ['<all_urls>'],
+      }
+    ],
     browser_specific_settings: {
       gecko: {
         id: '{3f8b9a12-a64d-48d8-bb5c-8d9f4e9322b2}',
