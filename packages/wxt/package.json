@@ -30,7 +30,6 @@
     "@vueuse/core": "^13.9.0",
     "@wxt-dev/module-vue": "^1.0.3",
     "aircraft-rs": "workspace:*",
-    "dotenv": "16.6.0",
     "element-plus": "^2.11.2",
     "markdown-vue": "^1.0.3",
     "npm-run-all2": "^7.0.2",
