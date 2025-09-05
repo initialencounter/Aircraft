@@ -21,6 +21,7 @@ export interface Config {
   amount?: string
   tagNextYear?: boolean
   customIcon?: boolean
+  dataCompare?: boolean
   onekeyAssign?: boolean
   onekeyRollback?: boolean
   nextYearColor?: string
@@ -139,6 +140,9 @@ export const Config: Schema<Config> = Schema.intersect([
       .default(true),
     customIcon: Schema.boolean()
       .description('自定义标签页图标（用更显眼的图标来区分空海运）')
+      .default(false),
+    dataCompare: Schema.boolean()
+      .description('启用海陆运数据对比功能（在检验单页面，点击表头即可将表单数据复制到剪切板, 再点击另一页面的对比按钮）')
       .default(false),
   }).description('样品检验-主界面'),
 
