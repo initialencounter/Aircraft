@@ -8,13 +8,6 @@ export default defineConfig({
     build: {
       minify: false,
     },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: 'modern-compiler',
-        },
-      },
-    },
     plugins: [yaml()],
   }),
   modules: ['@wxt-dev/module-vue'],

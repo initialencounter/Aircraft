@@ -21,7 +21,7 @@ export const useLogStore = defineStore('logs', {
       if (this.logTimer) return
       this.logTimer = window.setInterval(async () => {
         const logs = await this.getServerLogs()
-        if (logs.length) {
+        if (logs?.length) {
           this.logHistory.push(...logs)
         }
       }, 500)

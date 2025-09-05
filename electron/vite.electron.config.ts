@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 
 import { defineConfig } from 'vite'
+// @ts-ignore
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron/simple'
 import yaml from '@maikolib/vite-plugin-yaml'
@@ -71,9 +72,11 @@ export default defineConfig(({ command }) => {
               minify: isBuild,
               outDir: 'dist-electron/preload',
               rollupOptions: {
-                external: Object.keys(
-                  'dependencies' in pkg ? pkg.dependencies : {}
-                ),
+                external: [
+                  ...Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                  'bufferutil',
+                  'utf-8-validate'
+                ],
                 onwarn(warning, warn) {
                   if (
                     warning.code === 'EVAL' &&

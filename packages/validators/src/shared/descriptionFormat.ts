@@ -1,7 +1,6 @@
 import type { CheckResult } from './types'
 
 export function descriptionFormat(otherDescribeCAddition: string): CheckResult[] {
-  const results: CheckResult[] = []
   if (otherDescribeCAddition.includes('gg。')) {
     return [{
       ok: false,
