@@ -1,6 +1,13 @@
 import Schema from 'schemastery'
 
+interface ModelsWithFactory {
+  model: string
+  factory: string
+}
+
 export interface Config {
+  dangerousModels: string[]
+  dangerousModelsWithFactory: ModelsWithFactory[]
   enableCopyProjectNo?: boolean
   enableCopyProjectName?: boolean
   enablePreventCloseBeforeSave?: boolean
@@ -37,6 +44,11 @@ export interface Config {
   enableLabelCheck: boolean
   enableLabelCheckManual: boolean
 }
+
+const ModelsWithFactoryList: Schema<ModelsWithFactory> = Schema.object({
+  model: Schema.string().description('电池型号'),
+  factory: Schema.string().description('电池厂家'),
+})
 
 export const Config: Schema<Config> = Schema.intersect([
   // 业务受理 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -102,6 +114,21 @@ export const Config: Schema<Config> = Schema.intersect([
         '表单验证（仅限锂电池），验证规则详见[rule](https://lims.initenc.cn/rule.html)，欢迎补充'
       )
       .default(true),
+    dangerousModels: Schema.array(String)
+      .default([
+        '27100118P',
+        '28100118',
+        '624475ART',
+        '506795',
+        'INR18650-1.5Ah',
+        'P13001L',
+        '2998125',
+        'BL-18EI',
+      ])
+      .description('危险电池型号'),
+    dangerousModelsWithFactory: Schema.array(ModelsWithFactoryList)
+      .default([{ model: '18650', factory: '东莞倍创利电子科技有限公司' }])
+      .description('危险电池型号对应的厂家(常见的电池型号可以输入对应，只有型号和厂家都相同才会弹出提示)'),
     aircraftServer: Schema.string()
       .description('附件解析服务器地址')
       .default('http://127.0.0.1:25455'),
@@ -142,7 +169,9 @@ export const Config: Schema<Config> = Schema.intersect([
       .description('自定义标签页图标（用更显眼的图标来区分空海运）')
       .default(false),
     dataCompare: Schema.boolean()
-      .description('启用海陆运数据对比功能（在检验单页面，点击表头即可将表单数据复制到剪切板, 再点击另一页面的对比按钮）')
+      .description(
+        '启用海陆运数据对比功能（在检验单页面，点击表头即可将表单数据复制到剪切板, 再点击另一页面的对比按钮）'
+      )
       .default(false),
   }).description('样品检验-主界面'),
 

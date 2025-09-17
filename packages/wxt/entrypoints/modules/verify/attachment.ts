@@ -52,7 +52,8 @@ export async function checkAttachmentFiles(
 export async function checkAttachment(
   systemId: 'pek' | 'sek',
   dataFromForm: PekData | SekData,
-  localConfig: typeof LocalConfig
+  localConfig: typeof LocalConfig,
+  entrustData: EntrustData
 ): Promise<Array<{ ok: boolean; result: string }>> {
   if (localConfig.enableCheckAttachment === false) return []
   try {
@@ -74,9 +75,6 @@ export async function checkAttachment(
     if (!localConfig.enableLabelCheck) {
       attachmentInfo.goods.labels = ['pass']
     }
-
-    const entrustDataText = await getEntrustData()
-    const entrustData = parseEntrust(entrustDataText)
 
     return checkSummary(systemId, dataFromForm, attachmentInfo, entrustData)
   } catch (e) {

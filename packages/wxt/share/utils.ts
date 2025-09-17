@@ -1,4 +1,15 @@
 const LocalConfig = {
+  dangerousModels: [
+    '27100118P',
+    '28100118',
+    '624475ART',
+    '506795',
+    'INR18650-1.5Ah',
+    'P13001L',
+    '2998125',
+    'BL-18EI',
+  ],
+  dangerousModelsWithFactory:[{ model: '18650', factory: '东莞倍创利电子科技有限公司' }],
   customIcon: false,
   enableSetEntrust: true,
   enableCopyProjectNo: true,
@@ -27,6 +38,8 @@ const LocalConfig = {
 }
 
 export const configKeys: Array<keyof typeof LocalConfig> = [
+  'dangerousModels',
+  'dangerousModelsWithFactory',
   'customIcon',
   'enableSetEntrust',
   'enableCopyProjectNo',

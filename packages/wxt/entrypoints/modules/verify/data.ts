@@ -1,10 +1,12 @@
-import type { PekData, SekData } from '@aircraft/validators'
+import type { EntrustData, PekData, SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
 import { getData } from '../utils/api'
 import { getHost } from '../utils/helpers'
 import type { LocalConfig } from '../../../share/utils'
 import { checkAttachment, checkAttachmentFiles } from './attachment'
 import { checkLabelManual } from './label'
+import { getEntrustData, parseEntrust } from '../utils/api'
+import { checkModelWithFactory, checkModel } from './dangetousModel'
 
 /**
  * 验证表单数据
@@ -17,18 +19,46 @@ export async function verifyFormData(
 ): Promise<Array<{ ok: boolean; result: string }>> {
   let result = []
   let dataFromForm: PekData | SekData
-
+  let model: string
   if (systemId === 'pek') {
     dataFromForm = getFormData<PekData>(systemId)
+    model = dataFromForm.model
     result = window.checkPekBtyType(dataFromForm)
   } else {
     dataFromForm = getFormData<SekData>(systemId)
+    model = dataFromForm.btyKind
     result = window.checkSekBtyType(dataFromForm)
   }
 
   result.push(...(await checkAttachmentFiles(projectNo, projectId)))
 
-  result.push(...(await checkAttachment(systemId, dataFromForm, localConfig)))
+  let entrustData: null | EntrustData = null
+  try {
+    const entrustDataText = await getEntrustData()
+    entrustData = parseEntrust(entrustDataText)
+  } catch {
+    result.push({ ok: false, result: '获取系统委托方和制造商失败' })
+  }
+
+  if (entrustData) {
+    result.push(
+      ...checkModelWithFactory(
+        entrustData,
+        localConfig.dangerousModelsWithFactory,
+        model
+      )
+    )
+    result.push(
+      ...(await checkAttachment(
+        systemId,
+        dataFromForm,
+        localConfig,
+        entrustData
+      ))
+    )
+  }
+
+  result.push(...checkModel(localConfig.dangerousModels, model))
 
   if (localConfig.enableLabelCheckManual) {
     result.push(...checkLabelManual(systemId, dataFromForm))
