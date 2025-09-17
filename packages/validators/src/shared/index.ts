@@ -83,7 +83,7 @@ export function baseCheck(
   result.push(...descriptionFormat(otherDescribeCAddition))
   // 电池数量验证
   result.push(
-    ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1)
+    ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1, isChargeBoxOrRelated)
   )
   // 电池能量密度验证
   result.push(...checkEnergyDensity(wattHour, batteryWeight))

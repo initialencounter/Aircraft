@@ -15,8 +15,12 @@ import {
 export function bytNumsCalculate(
   btyCount: number,
   otherDescribeCAddition: string,
-  inspectionItem1: '0' | '1' | '2'
+  inspectionItem1: '0' | '1' | '2',
+  isChargeBoxOrRelated: boolean,
 ): CheckResult[] {
+  if (isChargeBoxOrRelated) {
+    return []
+  }
   // 单独运输
   if (inspectionItem1 === '0') {
     return []
