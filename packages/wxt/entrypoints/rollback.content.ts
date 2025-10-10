@@ -154,7 +154,6 @@ async function entrypoint() {
       const len = targets[i].children.length
       const target = targets[i].children[len - 1]
       insertOpenInNewTab(targets[i].children[0].children[0].children[0] as HTMLAnchorElement)
-      setProjectNoColor(targets[i].children[0].children[0].children[0] as HTMLAnchorElement)
       // 删除无用的列
       // targets[i].children[1].remove()
       const tmpInnerHTML = target.innerHTML
@@ -267,23 +266,5 @@ async function entrypoint() {
     if (openInNewTab === false) return
     element.target = '_blank'
     element.rel = 'noopener noreferrer'
-  }
-
-  function setProjectNoColor(element: HTMLAnchorElement) {
-    if (localConfig.customIcon === false) return
-    const color = getProjectNoColor(element.innerHTML)
-    element.style.color = color
-  }
-
-  function getProjectNoColor(projectNo: string){
-    if (projectNo.startsWith('P')){
-      return localConfig.pekProjectNoColor
-    }else if (projectNo.startsWith('S')){
-      return localConfig.sekProjectNoColor
-    }else if (projectNo.startsWith('A')){
-      return localConfig.aekProjectNoColor
-    }else {
-      return localConfig.rekProjectNoColor
-    }
   }
 }
