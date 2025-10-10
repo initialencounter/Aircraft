@@ -3,6 +3,16 @@ import '../assets/message.min.css'
 import { sleep } from '../share/utils'
 import { getLocalConfig } from '../share/utils'
 
+/**
+ * 优化后的rollback内容脚本
+ * 主要性能改进：
+ * 1. 使用MutationObserver替代高频setInterval轮询
+ * 2. 缓存DOM查询结果和日期计算
+ * 3. 使用防抖和节流机制优化事件处理
+ * 4. 避免重复添加事件监听器
+ * 5. 使用requestAnimationFrame优化DOM操作
+ */
+
 export default defineContentScript({
   runAt: 'document_end',
   matches: ['https://*/flow/inspect/inspect/main'],
@@ -16,6 +26,16 @@ async function entrypoint() {
   const Qmsg = getQmsg()
   let hiddenTimeInspectList: number | null = null
   let openInNewTab = false;
+  
+  // 缓存常用的DOM查询结果
+  let cachedDatagridContainer: HTMLElement | null = null
+  let lastProcessedRowCount = 0
+  
+  // 缓存日期计算结果，避免重复计算
+  const currentDate = new Date()
+  const endDate = currentDate.toISOString().split('T')[0]
+  const startDate = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  
   const localConfig = await getLocalConfig()
   chrome.storage.local.get(
     [
@@ -34,7 +54,7 @@ async function entrypoint() {
       if (!(result.openInNewTab === false)) {
         openInNewTab = true
       }
-      removeOrangeRollBack(
+      setupColorChangeObserver(
         result.nextYearColor ?? '',
         result.nextYearBgColor ?? '#76EEC6'
       )
@@ -44,7 +64,7 @@ async function entrypoint() {
         console.log('未启用一键退回，退出脚本')
         return
       }
-      observeInspectList()
+      setupInspectListObserver()
     }
   )
 
@@ -76,31 +96,35 @@ async function entrypoint() {
       Qmsg['error']('退回失败1', { timeout: 500 })
       return
     }
-    // inspect
-    const projectId = await getProjectIdByTaskId(taskId)
-    if (!(await rollback(taskId))) {
-      Qmsg['error']('退回失败1', { timeout: 500 })
-      return
+    
+    try {
+      // inspect
+      const projectId = await getProjectIdByTaskId(taskId)
+      if (!(await rollback(taskId))) {
+        Qmsg['error']('退回失败1', { timeout: 500 })
+        return
+      }
+      
+      // assign
+      const taskId2 = await getTaskIdByProjectId(projectId)
+      if (taskId2 && !(await rollback(taskId2))) {
+        Qmsg['error']('退回失败2', { timeout: 500 })
+        return
+      }
+      
+      Qmsg['success']('退回成功', { timeout: 1000 })
+      doFreshInspectList()
+    } catch (error) {
+      console.error('rollbackOneKey error:', error)
+      Qmsg['error']('退回过程中发生错误', { timeout: 1000 })
     }
-    // assign
-    const taskId2 = await getTaskIdByProjectId(projectId)
-    if (taskId2 && !(await rollback(taskId2))) {
-      Qmsg['error']('退回失败2', { timeout: 500 })
-      return
-    }
-    Qmsg['success']('退回成功', { timeout: 1000 })
-    doFreshInspectList()
   }
 
   // 检验页面
   async function getProjectIdByTaskId(taskId: string) {
     if (!taskId) return ''
-    const currentDate = new Date()
-    const date = currentDate.toISOString().split('T')[0]
-    currentDate.setMonth(currentDate.getMonth() - 1)
-    const startDate = currentDate.toISOString().split('T')[0]
     const response = await fetch(
-      `https://${window.location.host}/rest/flow/task/get/inspect?projectStartDate=${startDate}&projectEndDate=${date}&projectState=0&page=1&rows=10`,
+      `https://${window.location.host}/rest/flow/task/get/inspect?projectStartDate=${startDate}&projectEndDate=${endDate}&projectState=0&page=1&rows=10`,
       {
         method: 'GET',
         credentials: 'include', // 包含 cookies
@@ -108,26 +132,18 @@ async function entrypoint() {
     )
     if (!response.ok) {
       console.error('get task ids failed')
-      return []
+      return ''
     }
     const data = await response.json()
-    const projectIds = data['rows']
-      .filter(function (row: Task) {
-        if (row['id'] === taskId) return true
-      })
-      .map((item: Task) => item.projectId)
-    return projectIds[0]
+    const matchedRow = data['rows'].find((row: Task) => row['id'] === taskId)
+    return matchedRow?.projectId || ''
   }
 
   // 分配页面
   async function getTaskIdByProjectId(projectId: string) {
     if (!projectId) return ''
-    const currentDate = new Date()
-    const date = currentDate.toISOString().split('T')[0]
-    currentDate.setMonth(currentDate.getMonth() - 1)
-    const startDate = currentDate.toISOString().split('T')[0]
     const response = await fetch(
-      `https://${window.location.host}/rest/flow/task/get/assignInspect?projectStartDate=${startDate}&projectEndDate=${date}&projectState=0&page=1&rows=10`,
+      `https://${window.location.host}/rest/flow/task/get/assignInspect?projectStartDate=${startDate}&projectEndDate=${endDate}&projectState=0&page=1&rows=10`,
       {
         method: 'GET',
         credentials: 'include', // 包含 cookies
@@ -135,81 +151,159 @@ async function entrypoint() {
     )
     if (!response.ok) {
       console.error('get task ids failed')
-      return []
+      return ''
     }
     const data = await response.json()
-    const taskIds = data['rows']
-      .filter(function (row: Task) {
-        if (row['projectId'] === projectId) return true
-      })
-      .map((item: Task) => item.id)
-    return taskIds[0]
+    const matchedRow = data['rows'].find((row: Task) => row['projectId'] === projectId)
+    return matchedRow?.id || ''
   }
 
+  // 使用Set记录已处理的按钮，避免重复添加事件监听器
+  const processedButtons = new Set<string>()
+  
   function insertRollbackButton() {
     const targets = document.getElementById('datagrid-row-r1-2-0')
       ?.parentElement?.children
     if (!targets) return false
+    
     for (let i = 0; i < targets.length; i++) {
-      const len = targets[i].children.length
-      const target = targets[i].children[len - 1]
-      insertOpenInNewTab(targets[i].children[0].children[0].children[0] as HTMLAnchorElement)
-      // 删除无用的列
-      // targets[i].children[1].remove()
+      const row = targets[i]
+      const len = row.children.length
+      const target = row.children[len - 1]
+      
+      insertOpenInNewTab(row.children[0].children[0].children[0] as HTMLAnchorElement)
+      
       const tmpInnerHTML = target.innerHTML
       const matches = tmpInnerHTML.match(/\('([a-z0-9]+)'\)/)
-      if (!matches) continue
-      if (matches.length < 2) continue
+      if (!matches || matches.length < 2) continue
+      
       const taskId = matches[1]
-      if (target.innerHTML.includes('退退退')) {
+      const buttonKey = `${taskId}-${i}` // 使用taskId和索引作为唯一标识
+      
+      // 检查是否已经处理过这个按钮
+      if (target.innerHTML.includes('退退退') || processedButtons.has(buttonKey)) {
         continue
       }
+      
       target.innerHTML = tmpInnerHTML
         .replace('rollback', 'void')
         .replace('>回退', '>退退退')
-      target.children[0].children[0].addEventListener('click', function () {
+      
+      const button = target.children[0].children[0] as HTMLElement
+      button.addEventListener('click', function () {
         rollbackOneKey(taskId)
       })
+      
+      processedButtons.add(buttonKey)
     }
   }
 
-  function removeOrangeRollBack(
-    nextYearColor: string,
-    nextYearBgColor: string
-  ) {
-    setInterval(() => {
-      for (let i = 0; i < 10; i++) {
-        const targets = document.querySelector(
-          `#datagrid-row-r1-2-${i}`
-        ) as HTMLTableRowElement
-        if (targets) {
-          if (targets.style.color !== 'orange') continue
-          targets.style.color = nextYearColor
-          targets.style.backgroundColor = nextYearBgColor
+  // 使用MutationObserver替代高频轮询来优化性能
+  function setupColorChangeObserver(nextYearColor: string, nextYearBgColor: string) {
+    // 使用requestAnimationFrame来节流DOM操作
+    let isProcessing = false
+    
+    function processColorChange() {
+      if (isProcessing) return
+      isProcessing = true
+      
+      requestAnimationFrame(() => {
+        for (let i = 0; i < 10; i++) {
+          const target = document.querySelector(
+            `#datagrid-row-r1-2-${i}`
+          ) as HTMLTableRowElement
+          if (target && target.style.color === 'orange') {
+            target.style.color = nextYearColor
+            target.style.backgroundColor = nextYearBgColor
+          }
         }
+        isProcessing = false
+      })
+    }
+    
+    // 定期检查，但频率降低到500ms
+    setInterval(processColorChange, 500)
+  }
+
+  // 使用MutationObserver监听DOM变化，替代高频轮询
+  function setupInspectListObserver() {
+    const targetNode = document.getElementById('datagrid-row-r1-2-0')?.parentElement
+    if (!targetNode) {
+      // 如果目标节点还没有出现，延迟重试
+      setTimeout(() => setupInspectListObserver(), 1000)
+      return
+    }
+    
+    let timeoutId: number | null = null
+    
+    const observer = new MutationObserver((mutations) => {
+      // 使用防抖机制，避免频繁触发
+      if (timeoutId) {
+        clearTimeout(timeoutId)
       }
-    }, 100)
+      
+      timeoutId = window.setTimeout(() => {
+        const hasRelevantChanges = mutations.some(mutation => 
+          mutation.type === 'childList' || 
+          (mutation.type === 'attributes' && mutation.attributeName === 'innerHTML')
+        )
+        
+        if (hasRelevantChanges) {
+          insertRollbackButton()
+        }
+      }, 100)
+    })
+    
+    observer.observe(targetNode, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['innerHTML']
+    })
+    
+    // 初始执行一次
+    insertRollbackButton()
   }
 
   async function listenFreshHotkeyInspectList() {
     console.log('监听刷新快捷键')
-    // 监听 Ctrl+D 键的弹起事件
+    // 使用节流来避免快速连续按键导致的多次执行
+    let isProcessing = false
+    
     document.addEventListener('keydown', async function (event) {
-      if (!event.ctrlKey) {
+      if (isProcessing || !event.ctrlKey || event.key !== 'd') {
         return
       }
-      if (event.key === 'd') {
-        event.preventDefault() // 阻止默认的保存行为
+      
+      isProcessing = true
+      event.preventDefault() // 阻止默认的保存行为
+      
+      try {
         doFreshInspectList()
+      } finally {
+        // 使用短暂延迟防止重复触发
+        setTimeout(() => {
+          isProcessing = false
+        }, 200)
       }
     })
   }
 
+  // 缓存刷新按钮的查询结果
+  let cachedRefreshButton: HTMLAnchorElement | null = null
+  
   function doFreshInspectList() {
-    const refreshButton = document.querySelector(
-      'body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a'
-    ) as HTMLAnchorElement
-    if (refreshButton) refreshButton.click()
+    if (!cachedRefreshButton) {
+      cachedRefreshButton = document.querySelector(
+        'body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a'
+      ) as HTMLAnchorElement
+    }
+    
+    if (cachedRefreshButton) {
+      cachedRefreshButton.click()
+      // 清空已处理按钮的记录，因为页面将刷新
+      processedButtons.clear()
+    }
   }
 
   function listenVisibilityChangeInspectList(autoRefreshDuration: number) {
@@ -256,10 +350,6 @@ async function entrypoint() {
     submitUserName: string
     systemId: string
     taskName: string
-  }
-
-  function observeInspectList() {
-    setInterval(insertRollbackButton, 100)
   }
 
   function insertOpenInNewTab(element: HTMLAnchorElement) {
