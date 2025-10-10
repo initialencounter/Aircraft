@@ -14,8 +14,10 @@ export default defineContentScript({
 async function entrypoint() {
   const Qmsg = getQmsg()
   let hiddenTimeInspectList: number | null = null
+  let openInNewTab = false;
   chrome.storage.local.get(
     [
+      'openInNewTab',
       'onekeyRollback',
       'nextYearColor',
       'nextYearBgColor',
@@ -26,6 +28,9 @@ async function entrypoint() {
       if (!(result.freshHotkey === false)) {
         await listenFreshHotkeyInspectList()
         listenVisibilityChangeInspectList(result?.autoRefreshDuration ?? 10000)
+      }
+      if (!(result.openInNewTab === false)) {
+        openInNewTab = true
       }
       removeOrangeRollBack(
         result.nextYearColor ?? '',
@@ -146,6 +151,7 @@ async function entrypoint() {
     for (let i = 0; i < targets.length; i++) {
       const len = targets[i].children.length
       const target = targets[i].children[len - 1]
+      insertOpenInNewTab(targets[i].children[0].children[0].children[0] as HTMLAnchorElement)
       // 删除无用的列
       // targets[i].children[1].remove()
       const tmpInnerHTML = target.innerHTML
@@ -252,5 +258,11 @@ async function entrypoint() {
 
   function observeInspectList() {
     setInterval(insertRollbackButton, 100)
+  }
+
+  function insertOpenInNewTab(element: HTMLAnchorElement) {
+    if (openInNewTab === false) return
+    element.target = '_blank'
+    element.rel = 'noopener noreferrer'
   }
 }

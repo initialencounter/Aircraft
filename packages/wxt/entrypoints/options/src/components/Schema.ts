@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  openInNewTab: boolean
   dangerousModels: string[]
   dangerousModelsWithFactory: ModelsWithFactory[]
   enableCopyProjectNo?: boolean
@@ -98,6 +99,7 @@ export const Config: Schema<Config> = Schema.intersect([
   ]),
   // 样品检验 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({
+    openInNewTab: Schema.boolean().description('在新标签页打开网页').default(true),
     onekeyRollback: Schema.boolean().description('一键回退').default(true),
     freshHotkey: Schema.boolean()
       .description('刷新快捷键(ctrl+d)')

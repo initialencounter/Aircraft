@@ -1,4 +1,5 @@
 const LocalConfig = {
+  openInNewTab: true,
   dangerousModels: [
     '27100118P',
     '28100118',
@@ -38,6 +39,7 @@ const LocalConfig = {
 }
 
 export const configKeys: Array<keyof typeof LocalConfig> = [
+  'openInNewTab',
   'dangerousModels',
   'dangerousModelsWithFactory',
   'customIcon',
