@@ -6,6 +6,10 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  pekProjectNoColor: string
+  sekProjectNoColor: string
+  aekProjectNoColor: string
+  rekProjectNoColor: string
   openInNewTab: boolean
   dangerousModels: string[]
   dangerousModelsWithFactory: ModelsWithFactory[]
@@ -99,6 +103,7 @@ export const Config: Schema<Config> = Schema.intersect([
   ]),
   // 样品检验 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({
+
     openInNewTab: Schema.boolean().description('在新标签页打开网页').default(true),
     onekeyRollback: Schema.boolean().description('一键回退').default(true),
     freshHotkey: Schema.boolean()
@@ -176,6 +181,18 @@ export const Config: Schema<Config> = Schema.intersect([
       )
       .default(false),
   }).description('样品检验-主界面'),
+  Schema.union([
+    Schema.object({
+      customIcon: Schema.const(true),
+      pekProjectNoColor: Schema.string().description('空运编号字体颜色').default('#51a020'),
+      sekProjectNoColor: Schema.string().description('海运编号字体颜色').default('#3e8ed0'),
+      aekProjectNoColor: Schema.string().description('道路编号字体颜色').default('#8c1af6'),
+      rekProjectNoColor: Schema.string().description('铁路编号字体颜色').default('#ea3323'),
+    }),
+    Schema.object({
+      customIcon: Schema.const(false),
+    })
+  ]),
 
   // 样品检验-导入 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({

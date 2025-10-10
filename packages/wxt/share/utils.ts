@@ -1,4 +1,8 @@
 const LocalConfig = {
+  pekProjectNoColor: '#51a020',
+  sekProjectNoColor: '#3e8ed0',
+  aekProjectNoColor: '#8c1af6',
+  rekProjectNoColor: '#ea3323',
   openInNewTab: true,
   dangerousModels: [
     '27100118P',
@@ -39,6 +43,10 @@ const LocalConfig = {
 }
 
 export const configKeys: Array<keyof typeof LocalConfig> = [
+  'pekProjectNoColor',
+  'sekProjectNoColor',
+  'aekProjectNoColor',
+  'rekProjectNoColor',
   'openInNewTab',
   'dangerousModels',
   'dangerousModelsWithFactory',
@@ -153,7 +161,12 @@ function getSystemId() {
         ? 'REKGZ'
         : 'SEKGZ'
 }
+
+function formatHexColor(color: string){
+  if(color.startsWith('#')) return color.slice(1)
+}
+
 export {
   LocalConfig, getLocalConfig, getCategory, getSystemId, checkDate, parseDate, sleep,
-  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo
+  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor
 }
