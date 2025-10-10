@@ -4102,7 +4102,7 @@ __metadata:
     markdown-vue: "npm:^1.0.3"
     npm-run-all2: "npm:^7.0.2"
     sass-embedded: "npm:^1.92.0"
-    schemastery: "npm:^3.17.0"
+    schemastery: "npm:^3.17.1"
     schemastery-vue: "npm:^7.3.14"
     typescript: "npm:^5.9.2"
     vite: "npm:^7.1.4"
@@ -12697,6 +12697,15 @@ __metadata:
   dependencies:
     cosmokit: "npm:^1.7.2"
   checksum: 10c0/9df0b83a4987178424e219ba26893154cdeb2632ae71bdfbd139c6ea64475fa3f5eee562f53325182e58580049f3a3c9e4667558eb01b07a6c0c754bff919e19
+  languageName: node
+  linkType: hard
+
+"schemastery@npm:^3.17.1":
+  version: 3.17.1
+  resolution: "schemastery@npm:3.17.1"
+  dependencies:
+    cosmokit: "npm:^1.7.2"
+  checksum: 10c0/eb2c6d5a50c11d20024b4cd56e11afcd8861c18e46a36a07260001d10179eda100d2799da4916f8f9468c6f0bf52b9622241dd3f1f0dd38060c9adb6800a2536
   languageName: node
   linkType: hard
 

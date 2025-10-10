@@ -172,13 +172,13 @@ export const Config: Schema<Config> = Schema.intersect([
     enableImportHotKey: Schema.boolean()
       .description(`导入快捷键 （使用快捷键 *Ctrl + D* 将打开导入窗口）`)
       .default(true),
-    customIcon: Schema.boolean()
-      .description('自定义标签页图标（用更显眼的图标来区分空海运）')
-      .default(false),
     dataCompare: Schema.boolean()
       .description(
         '启用海陆运数据对比功能（在检验单页面，点击表头即可将表单数据复制到剪切板, 再点击另一页面的对比按钮）'
       )
+      .default(false),
+    customIcon: Schema.boolean()
+      .description('自定义空海运主题（用更显眼的图标或字体颜色来区分空海运）')
       .default(false),
   }).description('样品检验-主界面'),
   Schema.union([
@@ -208,7 +208,7 @@ export const Config: Schema<Config> = Schema.intersect([
   }).description('样品检验-导入-查询'),
   Schema.union([
     Schema.object({
-      autoProjectNoPreset: Schema.const(false),
+      autoProjectNoPreset: Schema.const(true),
       pekProjectNoPreset: Schema.string()
         .description(`手动设置空运检验单编号前缀`)
         .default('PEKGZ2024'),
@@ -223,7 +223,7 @@ export const Config: Schema<Config> = Schema.intersect([
         .default('REKGZ2024'),
     }),
     Schema.object({
-      autoProjectNoPreset: Schema.const(true),
+      autoProjectNoPreset: Schema.const(false),
     }),
   ]),
 
