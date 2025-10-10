@@ -49,6 +49,37 @@ async function entrypoint() {
   let globalAssignUser = ''
   let globalCheckAssignUser = true
   let hiddenTimeEntrustList: number | null = null
+  
+  // 缓存 DOM 元素引用和数据
+  const domCache = new Map<string, Element | null>()
+  const dataCache = new Map<string, any>()
+  
+  // 防抖函数
+  function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    delay: number
+  ): (...args: Parameters<T>) => void {
+    let timeoutId: number | undefined
+    return (...args: Parameters<T>) => {
+      clearTimeout(timeoutId)
+      timeoutId = window.setTimeout(() => func(...args), delay)
+    }
+  }
+
+  // 节流函数
+  function throttle<T extends (...args: any[]) => any>(
+    func: T,
+    delay: number
+  ): (...args: Parameters<T>) => void {
+    let lastExecTime = 0
+    return (...args: Parameters<T>) => {
+      const now = Date.now()
+      if (now - lastExecTime >= delay) {
+        lastExecTime = now
+        func(...args)
+      }
+    }
+  }
 
   chrome.storage.local.get(
     [
@@ -93,21 +124,35 @@ async function entrypoint() {
     })
   }
 
-  async function checkAssignUID(users: User[], uid: string) {
-    if (!uid) return false
-    if (!users.length) return false
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].userId === uid) return true
-    }
-    return false
+  async function checkAssignUID(users: User[], uid: string): Promise<boolean> {
+    if (!uid || !users.length) return false
+    // 使用 some 方法提高查找性能
+    return users.some(user => user.userId === uid)
   }
 
   async function getUsers(): Promise<User[]> {
-    const response = await fetch(
-      `https://${window.location.host}/rest/flow/task/users/inspect`
-    )
-    if (!response.ok) return []
-    return await response.json()
+    // 添加缓存机制，避免重复请求
+    const cacheKey = 'users_cache'
+    const cached = dataCache.get(cacheKey) as { data: User[], timestamp: number } | null
+    const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data
+    }
+
+    try {
+      const response = await fetch(
+        `https://${window.location.host}/rest/flow/task/users/inspect`
+      )
+      if (!response.ok) return []
+      
+      const users = await response.json()
+      dataCache.set(cacheKey, { data: users, timestamp: Date.now() })
+      return users
+    } catch (error) {
+      console.error('Failed to fetch users:', error)
+      return []
+    }
   }
 
   async function assignSelectId(uid: string) {
@@ -175,12 +220,10 @@ async function entrypoint() {
       return []
     }
     const data = await response.json()
+    // 使用 Set 提高查找性能，避免嵌套循环
+    const idsSet = new Set(ids)
     return data['rows']
-      .filter(function (row: Task) {
-        for (let i = 0; i < ids.length; i++) {
-          if (row['entrustId'] === ids[i]) return true
-        }
-      })
+      .filter((row: Task) => idsSet.has(row['entrustId']))
       .map((item: Task) => item.id)
   }
 
@@ -281,46 +324,93 @@ async function entrypoint() {
   }
 
   function removeOrange(nextYearColor: string, nextYearBgColor: string) {
-    setInterval(() => {
-      if (nextYearColor === undefined) nextYearColor = ''
-      if (nextYearBgColor === undefined) nextYearBgColor = '#76EEC6'
-      for (var i = 0; i < 10; i++) {
-        const target = document.querySelector(
-          `#datagrid-row-r1-1-${i}`
-        ) as HTMLElement
-        if (target.style.color !== 'orange') continue
-        target.style.color = nextYearColor
-        target.style.backgroundColor = nextYearBgColor
-        const target2 = document.querySelector(
-          `#datagrid-row-r1-2-${i}`
-        ) as HTMLElement
-        target2.style.color = nextYearColor
-        target2.style.backgroundColor = nextYearBgColor
+    // 使用 MutationObserver 替代轮询，性能更好
+    const observer = new MutationObserver((mutations) => {
+      let shouldUpdate = false
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' || mutation.type === 'attributes') {
+          shouldUpdate = true
+        }
+      })
+      
+      if (shouldUpdate) {
+        updateOrangeColors(nextYearColor || '', nextYearBgColor || '#76EEC6')
       }
-    }, 100)
+    })
+
+    // 观察数据网格的变化
+    const gridContainer = document.querySelector('#datagrid-row-r1-1-0')?.parentElement
+    if (gridContainer) {
+      observer.observe(gridContainer, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style']
+      })
+    }
+
+    // 初始执行一次
+    updateOrangeColors(nextYearColor || '', nextYearBgColor || '#76EEC6')
+  }
+
+  function updateOrangeColors(nextYearColor: string, nextYearBgColor: string) {
+    // 使用 requestAnimationFrame 优化 DOM 更新性能
+    requestAnimationFrame(() => {
+      // 批量查询所有相关元素，减少DOM查询次数
+      const rows1 = document.querySelectorAll('[id^="datagrid-row-r1-1-"]') as NodeListOf<HTMLElement>
+      const rows2 = document.querySelectorAll('[id^="datagrid-row-r1-2-"]') as NodeListOf<HTMLElement>
+      
+      for (let i = 0; i < Math.min(rows1.length, rows2.length); i++) {
+        const target1 = rows1[i]
+        const target2 = rows2[i]
+        
+        if (target1?.style.color === 'orange') {
+          target1.style.color = nextYearColor
+          target1.style.backgroundColor = nextYearBgColor
+        }
+        
+        if (target2?.style.color === 'orange') {
+          target2.style.color = nextYearColor
+          target2.style.backgroundColor = nextYearBgColor
+        }
+      }
+    })
   }
 
   let globalItemNumberList1: string[] = []
+  let processedRows = new Set<number>() // 记录已处理的行，避免重复处理
 
   async function insertInspectFormLink(length1: number) {
+    // 批量处理，减少DOM查询
+    const rowsToProcess = []
     for (let i = 0; i < length1; i++) {
+      if (processedRows.has(i)) continue // 跳过已处理的行
+      
       const projectNo = globalItemNumberList1[i]
-      const itemCNameElement = document.querySelector(
-        `#datagrid-row-r1-2-${i} > td:nth-child(3) > div`
-      ) as HTMLDivElement
-      if (!itemCNameElement) {
+      if (!projectNo) continue
+      
+      rowsToProcess.push({ index: i, projectNo })
+    }
+
+    // 批量查询DOM元素
+    const itemCNameElements = rowsToProcess.map(row => 
+      document.querySelector(`#datagrid-row-r1-2-${row.index} > td:nth-child(3) > div`) as HTMLDivElement
+    )
+    const operateElements = rowsToProcess.map(row => 
+      document.querySelector(`#datagrid-row-r1-2-${row.index} > td:nth-child(14) > div`) as HTMLAnchorElement
+    )
+
+    for (let j = 0; j < rowsToProcess.length; j++) {
+      const { index: i, projectNo } = rowsToProcess[j]
+      const itemCNameElement = itemCNameElements[j]
+      const operateElement = operateElements[j]
+
+      if (!itemCNameElement || itemCNameElement.innerHTML === '') {
         continue
       }
-      if (itemCNameElement.innerHTML === '') {
-        continue
-      }
-      const operateElement = document.querySelector(
-        `#datagrid-row-r1-2-${i} > td:nth-child(14) > div`
-      ) as HTMLAnchorElement
-      if (operateElement) {
-        if (operateElement.innerHTML.includes('检验单')) {
-          continue
-        }
+
+      // 处理操作列的检验单链接
+      if (operateElement && !operateElement.innerHTML.includes('检验单')) {
         const inspectElement = document.createElement('a')
         inspectElement.role = 'button'
         inspectElement.innerHTML = '检验单'
@@ -329,24 +419,32 @@ async function entrypoint() {
         operateElement.appendChild(document.createTextNode(' '))
         operateElement.appendChild(inspectElement)
       }
-      const itemCName = itemCNameElement.innerHTML
-      itemCNameElement.innerHTML = ''
-      const inspectElement0 = document.createElement('a')
-      inspectElement0.role = 'button'
-      inspectElement0.innerHTML = itemCName
-      inspectElement0.style.textDecoration = 'none'
-      inspectElement0.style.color = 'inherit'
-      itemCNameElement.onmouseover = () => {
-        inspectElement0.style.textDecoration = 'underline'
-        inspectElement0.style.color = 'blue'
-      }
-      itemCNameElement.onmouseout = () => {
+
+      // 处理项目名称列的链接
+      if (!itemCNameElement.querySelector('a')) { // 检查是否已经处理过
+        const itemCName = itemCNameElement.innerHTML
+        itemCNameElement.innerHTML = ''
+        const inspectElement0 = document.createElement('a')
+        inspectElement0.role = 'button'
+        inspectElement0.innerHTML = itemCName
         inspectElement0.style.textDecoration = 'none'
         inspectElement0.style.color = 'inherit'
+        
+        // 使用事件委托优化鼠标事件
+        itemCNameElement.addEventListener('mouseover', () => {
+          inspectElement0.style.textDecoration = 'underline'
+          inspectElement0.style.color = 'blue'
+        })
+        itemCNameElement.addEventListener('mouseout', () => {
+          inspectElement0.style.textDecoration = 'none'
+          inspectElement0.style.color = 'inherit'
+        })
+        itemCNameElement.addEventListener('click', () => openWindow(projectNo))
+        itemCNameElement.style.cursor = 'pointer'
+        itemCNameElement.appendChild(inspectElement0)
+        
+        processedRows.add(i) // 标记为已处理
       }
-      itemCNameElement.onclick = () => openWindow(globalItemNumberList1[i])
-      itemCNameElement.style.cursor = 'pointer'
-      itemCNameElement.appendChild(inspectElement0)
     }
   }
 
@@ -355,23 +453,58 @@ async function entrypoint() {
     if (!dataGridRow1) return []
     const gridElement = dataGridRow1.parentElement
     if (!gridElement) return []
-    const dataGridRows = gridElement.childNodes.length
-    const itemNumberList1: string[] = []
-    for (let i = 0; i < dataGridRows; i++) {
-      const itemNumberElement = document.querySelector(
-        `#datagrid-row-r1-1-${i} > td:nth-child(3) > div > a`
-      ) as HTMLAnchorElement
-      if (itemNumberElement) itemNumberList1.push(itemNumberElement.innerText)
+    
+    // 批量查询所有项目编号元素，减少DOM查询次数
+    const itemNumberElements = gridElement.querySelectorAll('[id^="datagrid-row-r1-1-"] td:nth-child(3) div a') as NodeListOf<HTMLAnchorElement>
+    const itemNumberList1 = Array.from(itemNumberElements).map(el => el.innerText).filter(Boolean)
+    
+    // 检查数据是否发生变化，如果没有变化就不更新
+    const hasChanged = itemNumberList1.length !== globalItemNumberList1.length || 
+      itemNumberList1.some((item, index) => item !== globalItemNumberList1[index])
+    
+    if (hasChanged) {
+      globalItemNumberList1 = itemNumberList1
+      processedRows.clear() // 清空已处理标记，因为数据已更新
     }
-    globalItemNumberList1 = itemNumberList1
+    
     return itemNumberList1
   }
 
   function observeItemNumberList1() {
-    setInterval(async () => {
-      updateGlobalItemNumberList1()
-      insertInspectFormLink(globalItemNumberList1.length)
-    }, 100)
+    let lastUpdateTime = 0
+    const THROTTLE_DELAY = 500 // 节流延迟，从100ms增加到500ms
+    
+    // 使用 MutationObserver 替代定时器
+    const observer = new MutationObserver((mutations) => {
+      const now = Date.now()
+      if (now - lastUpdateTime < THROTTLE_DELAY) return
+      
+      let shouldUpdate = false
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          shouldUpdate = true
+        }
+      })
+      
+      if (shouldUpdate) {
+        lastUpdateTime = now
+        updateGlobalItemNumberList1()
+        insertInspectFormLink(globalItemNumberList1.length)
+      }
+    })
+
+    // 监听数据网格变化
+    const gridContainer = document.querySelector('#datagrid-row-r1-1-0')?.parentElement
+    if (gridContainer) {
+      observer.observe(gridContainer, {
+        childList: true,
+        subtree: true
+      })
+    }
+
+    // 初始化执行一次
+    updateGlobalItemNumberList1()
+    insertInspectFormLink(globalItemNumberList1.length)
   }
 
   async function listenFreshHotkeyEntrustList() {
@@ -509,4 +642,15 @@ async function entrypoint() {
     console.log(link)
     window.open(link, '_blank')
   }
+
+  // 页面卸载时的清理工作
+  function cleanup() {
+    domCache.clear()
+    dataCache.clear()
+    processedRows.clear()
+  }
+
+  // 监听页面卸载
+  window.addEventListener('beforeunload', cleanup)
+  window.addEventListener('unload', cleanup)
 }
