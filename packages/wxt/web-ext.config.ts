@@ -4,6 +4,7 @@ import { defineWebExtConfig } from 'wxt'
 export default defineWebExtConfig({
   // On Windows, the path must be absolute
   chromiumProfile: resolve('./chrome-data'),
+  firefoxProfile: resolve('./.wxt/firefox-data'),
   keepProfileChanges: true,
   binaries: {
     chrome: 'C:\\Users\\29115\\AppData\\Local\\360ChromeX\\Chrome\\Application\\360ChromeX.exe',
