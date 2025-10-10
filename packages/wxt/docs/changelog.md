@@ -1,5 +1,13 @@
 # 更新日志
 
+## [v2.0.11] - 2025-10-10
+
+### 新增
+
+- 在新标签页打开检验单([9827b58](https://github.com/initialencounter/Aircraft/commit/9827b581fc0c8ebfc999adae44e3da2c0cf08d9f))
+- 自定义项目编号颜色
+
+
 ## [v2.0.10] - 2025-09-17
 
 ### 新增
