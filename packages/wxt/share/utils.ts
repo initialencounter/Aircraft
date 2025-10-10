@@ -1,4 +1,6 @@
-const LocalConfig = {
+import { Config } from "entrypoints/options/src/components/Schema"
+
+const LocalConfig: Config = {
   pekProjectNoColor: '#51a020',
   sekProjectNoColor: '#3e8ed0',
   aekProjectNoColor: '#8c1af6',
@@ -14,7 +16,7 @@ const LocalConfig = {
     '2998125',
     'BL-18EI',
   ],
-  dangerousModelsWithFactory:[{ model: '18650', factory: '东莞倍创利电子科技有限公司' }],
+  dangerousModelsWithFactory: [{ model: '18650', factory: '东莞倍创利电子科技有限公司' }],
   customIcon: false,
   enableSetEntrust: true,
   enableCopyProjectNo: true,
@@ -162,8 +164,8 @@ function getSystemId() {
         : 'SEKGZ'
 }
 
-function formatHexColor(color: string){
-  if(color.startsWith('#')) return color.slice(1)
+function formatHexColor(color: string) {
+  if (color.startsWith('#')) return color.slice(1)
 }
 
 export {
