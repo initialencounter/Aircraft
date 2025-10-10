@@ -6,10 +6,10 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
-  pekProjectNoColor: string
-  sekProjectNoColor: string
-  aekProjectNoColor: string
-  rekProjectNoColor: string
+  pekProjectNoColor?: string
+  sekProjectNoColor?: string
+  aekProjectNoColor?: string
+  rekProjectNoColor?: string
   openInNewTab: boolean
   dangerousModels: string[]
   dangerousModelsWithFactory: ModelsWithFactory[]
@@ -27,7 +27,7 @@ export interface Config {
   enableSetQueryProjectNo?: boolean
   enableSetImportClassification?: boolean
   enableDisplayEntrustEName?: boolean
-  enableSetEntrust?: boolean
+  enableSetEntrust: boolean
   category?: 0 | 1 | 2 | 3
   moonPay?: boolean
   amount?: string
