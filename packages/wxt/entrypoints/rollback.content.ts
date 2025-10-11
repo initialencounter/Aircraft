@@ -4,9 +4,9 @@ import { sleep } from '../share/utils'
 import { getLocalConfig } from '../share/utils'
 
 /**
- * 优化后的rollback内容脚本
- * 主要性能改进：
- * 1. 使用MutationObserver替代高频setInterval轮询
+ * rollback内容脚本
+ * 主要特性：
+ * 1. 使用setInterval轮询DOM变化
  * 2. 缓存DOM查询结果和日期计算
  * 3. 使用防抖和节流机制优化事件处理
  * 4. 避免重复添加事件监听器
@@ -198,7 +198,7 @@ async function entrypoint() {
     }
   }
 
-  // 使用MutationObserver替代高频轮询来优化性能
+  // 使用setInterval轮询DOM来优化性能
   function setupColorChangeObserver(nextYearColor: string, nextYearBgColor: string) {
     // 使用requestAnimationFrame来节流DOM操作
     let isProcessing = false
@@ -225,41 +225,12 @@ async function entrypoint() {
     setInterval(processColorChange, 500)
   }
 
-  // 使用MutationObserver监听DOM变化，替代高频轮询
+  // 使用setInterval轮询DOM变化，间隔200ms
   function setupInspectListObserver() {
-    const targetNode = document.getElementById('datagrid-row-r1-2-0')?.parentElement
-    if (!targetNode) {
-      // 如果目标节点还没有出现，延迟重试
-      setTimeout(() => setupInspectListObserver(), 1000)
-      return
-    }
-    
-    let timeoutId: number | null = null
-    
-    const observer = new MutationObserver((mutations) => {
-      // 使用防抖机制，避免频繁触发
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-      
-      timeoutId = window.setTimeout(() => {
-        const hasRelevantChanges = mutations.some(mutation => 
-          mutation.type === 'childList' || 
-          (mutation.type === 'attributes' && mutation.attributeName === 'innerHTML')
-        )
-        
-        if (hasRelevantChanges) {
-          insertRollbackButton()
-        }
-      }, 100)
-    })
-    
-    observer.observe(targetNode, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['innerHTML']
-    })
+    // 使用setInterval定期检查并插入按钮
+    setInterval(() => {
+      insertRollbackButton()
+    }, 200)
     
     // 初始执行一次
     insertRollbackButton()
