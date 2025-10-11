@@ -1,7 +1,6 @@
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { sleep } from '../share/utils'
-import { getLocalConfig } from '../share/utils'
 
 /**
  * rollback内容脚本
@@ -25,21 +24,14 @@ export default defineContentScript({
 async function entrypoint() {
   const Qmsg = getQmsg()
   let hiddenTimeInspectList: number | null = null
-  let openInNewTab = false;
-  
-  // 缓存常用的DOM查询结果
-  let cachedDatagridContainer: HTMLElement | null = null
-  let lastProcessedRowCount = 0
-  
+
   // 缓存日期计算结果，避免重复计算
   const currentDate = new Date()
   const endDate = currentDate.toISOString().split('T')[0]
   const startDate = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  
-  const localConfig = await getLocalConfig()
+
   chrome.storage.local.get(
     [
-      'openInNewTab',
       'onekeyRollback',
       'nextYearColor',
       'nextYearBgColor',
@@ -50,9 +42,6 @@ async function entrypoint() {
       if (!(result.freshHotkey === false)) {
         await listenFreshHotkeyInspectList()
         listenVisibilityChangeInspectList(result?.autoRefreshDuration ?? 10000)
-      }
-      if (!(result.openInNewTab === false)) {
-        openInNewTab = true
       }
       setupColorChangeObserver(
         result.nextYearColor ?? '',
@@ -96,7 +85,7 @@ async function entrypoint() {
       Qmsg['error']('退回失败1', { timeout: 500 })
       return
     }
-    
+
     try {
       // inspect
       const projectId = await getProjectIdByTaskId(taskId)
@@ -104,14 +93,14 @@ async function entrypoint() {
         Qmsg['error']('退回失败1', { timeout: 500 })
         return
       }
-      
+
       // assign
       const taskId2 = await getTaskIdByProjectId(projectId)
       if (taskId2 && !(await rollback(taskId2))) {
         Qmsg['error']('退回失败2', { timeout: 500 })
         return
       }
-      
+
       Qmsg['success']('退回成功', { timeout: 1000 })
       doFreshInspectList()
     } catch (error) {
@@ -158,35 +147,33 @@ async function entrypoint() {
     return matchedRow?.id || ''
   }
 
-  
+
   function insertRollbackButton() {
     const targets = document.getElementById('datagrid-row-r1-2-0')
       ?.parentElement?.children
     if (!targets) return false
-    
+
     for (let i = 0; i < targets.length; i++) {
       const row = targets[i]
       const len = row.children.length
       const target = row.children[len - 1]
-      
-      insertOpenInNewTab(row.children[0].children[0].children[0] as HTMLAnchorElement)
-      
+
       const tmpInnerHTML = target.innerHTML
       const matches = tmpInnerHTML.match(/\('([a-z0-9]+)'\)/)
       if (!matches || matches.length < 2) continue
-      
+
       const taskId = matches[1]
       const buttonKey = `${taskId}-${i}` // 使用taskId和索引作为唯一标识
-      
+
       // 检查是否已经处理过这个按钮
       if (target.innerHTML.includes('退退退')) {
         continue
       }
-      
+
       target.innerHTML = tmpInnerHTML
         .replace('rollback', 'void')
         .replace('>回退', '>退退退')
-      
+
       const button = target.children[0].children[0] as HTMLElement
       button.addEventListener('click', function () {
         rollbackOneKey(taskId)
@@ -198,11 +185,11 @@ async function entrypoint() {
   function setupColorChangeObserver(nextYearColor: string, nextYearBgColor: string) {
     // 使用requestAnimationFrame来节流DOM操作
     let isProcessing = false
-    
+
     function processColorChange() {
       if (isProcessing) return
       isProcessing = true
-      
+
       requestAnimationFrame(() => {
         for (let i = 0; i < 10; i++) {
           const target = document.querySelector(
@@ -216,7 +203,7 @@ async function entrypoint() {
         isProcessing = false
       })
     }
-    
+
     // 定期检查，但频率降低到500ms
     setInterval(processColorChange, 500)
   }
@@ -227,7 +214,7 @@ async function entrypoint() {
     setInterval(() => {
       insertRollbackButton()
     }, 200)
-    
+
     // 初始执行一次
     insertRollbackButton()
   }
@@ -236,15 +223,15 @@ async function entrypoint() {
     console.log('监听刷新快捷键')
     // 使用节流来避免快速连续按键导致的多次执行
     let isProcessing = false
-    
+
     document.addEventListener('keydown', async function (event) {
       if (isProcessing || !event.ctrlKey || event.key !== 'd') {
         return
       }
-      
+
       isProcessing = true
       event.preventDefault() // 阻止默认的保存行为
-      
+
       try {
         doFreshInspectList()
       } finally {
@@ -258,14 +245,14 @@ async function entrypoint() {
 
   // 缓存刷新按钮的查询结果
   let cachedRefreshButton: HTMLAnchorElement | null = null
-  
+
   function doFreshInspectList() {
     if (!cachedRefreshButton) {
       cachedRefreshButton = document.querySelector(
         'body > div.panel.easyui-fluid > div.easyui-panel.panel-body.panel-noscroll > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(13) > a'
       ) as HTMLAnchorElement
     }
-    
+
     if (cachedRefreshButton) {
       cachedRefreshButton.click()
     }
@@ -315,11 +302,5 @@ async function entrypoint() {
     submitUserName: string
     systemId: string
     taskName: string
-  }
-
-  function insertOpenInNewTab(element: HTMLAnchorElement) {
-    if (openInNewTab === false) return
-    element.target = '_blank'
-    element.rel = 'noopener noreferrer'
   }
 }

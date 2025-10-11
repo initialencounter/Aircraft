@@ -168,7 +168,19 @@ function formatHexColor(color: string) {
   if (color.startsWith('#')) return color.slice(1)
 }
 
+function validateFormat(input: string): boolean {
+  // 正则表达式解释：
+  // ^[A-Z]EK[A-Z]{2} - 以大写字母开头，接着EK，再两个大写字母
+  // (19|20)\d{2} - 年份：1900-2099
+  // (0[1-9]|1[0-2]) - 月份：01-12
+  // (0[1-9]|[12]\d|3[01]) - 日期：01-31
+  // \d{4} - 4位随机数字
+  const regex = /^[A-Z]EK[A-Z]{2}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{4}$/;
+
+  return regex.test(input);
+}
+
 export {
   LocalConfig, getLocalConfig, getCategory, getSystemId, checkDate, parseDate, sleep,
-  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor
+  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor, validateFormat
 }

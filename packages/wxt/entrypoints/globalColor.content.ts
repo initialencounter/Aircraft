@@ -1,4 +1,4 @@
-import { getLocalConfig, sleep } from '../share/utils'
+import { getLocalConfig, sleep, validateFormat } from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -134,7 +134,7 @@ async function entrypoint() {
       if (processedElements.has(element)) continue
 
       const innerHTML = element.innerHTML
-      if (innerHTML.length === 17 && innerHTML.includes('EK')) {
+      if (innerHTML.length === 17 && validateFormat(innerHTML)) {
         let color = processedProjectNoValues.get(innerHTML)
 
         if (color === undefined) {
