@@ -1,5 +1,16 @@
 # 更新日志
 
+## [v2.0.12] - 2025-10-11
+
+### 新增
+
+- 全局生效在新标签页打开项目编号([cca89e6](https://github.com/initialencounter/Aircraft/commit/cca89e68dd0d4a9ca00a21941091ac3afc7dc732))
+
+### 修复
+
+- 某些页面无法设置项目编号颜色([ef65609](https://github.com/initialencounter/Aircraft/commit/ef65609e1bf406129c4534eb7ef956481deb1f13))
+- 查询或刷新列表后无法在新标签页打开检验单([1eab2d3](https://github.com/initialencounter/Aircraft/commit/1eab2d31b8049d7355a32f14d310c6a81cb1213c))
+
 ## [v2.0.11] - 2025-10-10
 
 ### 新增
