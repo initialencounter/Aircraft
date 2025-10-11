@@ -35,7 +35,7 @@ export function dropStackTest(
       if (!stackTest && !stackTestEvaluation) {
         result.push({
           ok: false,
-          result: `${pkgInfoSubType} 未勾选堆码或堆码评估，如果是24年报告请忽略`,
+          result: `${pkgInfoSubType} 未勾选堆码或堆码评估`,
         })
       }
     }
