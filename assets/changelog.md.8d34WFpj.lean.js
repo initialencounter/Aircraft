@@ -1,1 +1,0 @@
-import{_ as i,c as l,o as e,ae as t}from"./chunks/framework.Dh1jimFm.js";const k=JSON.parse('{"title":"更新日志","description":"","frontmatter":{},"headers":[],"relativePath":"changelog.md","filePath":"changelog.md"}'),r={name:"changelog.md"};function h(n,a,s,o,d,c){return e(),l("div",null,a[0]||(a[0]=[t("",117)]))}const b=i(r,[["render",h]]);export{k as __pageData,b as default};
