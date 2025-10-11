@@ -158,8 +158,6 @@ async function entrypoint() {
     return matchedRow?.id || ''
   }
 
-  // 使用Set记录已处理的按钮，避免重复添加事件监听器
-  const processedButtons = new Set<string>()
   
   function insertRollbackButton() {
     const targets = document.getElementById('datagrid-row-r1-2-0')
@@ -181,7 +179,7 @@ async function entrypoint() {
       const buttonKey = `${taskId}-${i}` // 使用taskId和索引作为唯一标识
       
       // 检查是否已经处理过这个按钮
-      if (target.innerHTML.includes('退退退') || processedButtons.has(buttonKey)) {
+      if (target.innerHTML.includes('退退退')) {
         continue
       }
       
@@ -193,8 +191,6 @@ async function entrypoint() {
       button.addEventListener('click', function () {
         rollbackOneKey(taskId)
       })
-      
-      processedButtons.add(buttonKey)
     }
   }
 
@@ -272,8 +268,6 @@ async function entrypoint() {
     
     if (cachedRefreshButton) {
       cachedRefreshButton.click()
-      // 清空已处理按钮的记录，因为页面将刷新
-      processedButtons.clear()
     }
   }
 
