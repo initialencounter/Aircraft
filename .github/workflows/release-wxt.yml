@@ -38,6 +38,7 @@ jobs:
           echo "版本: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           sed -i "s/wxt-v[0-9]\+\.[0-9]\+\.[0-9]\+/wxt-$VERSION/g; s/lims-v[0-9]\+\.[0-9]\+\.[0-9]\+/lims-$VERSION/g" packages/wxt/docs/quick_start.md
+          sed -i "s/tagline: v[0-9]\+\.[0-9]\+\.[0-9]\+/tagline: $VERSION/g" packages/wxt/docs/index.md
 
       - name: Build docs
         run: |
