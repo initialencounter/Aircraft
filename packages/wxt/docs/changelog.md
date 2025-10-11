@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v2.0.13] - 2025-10-11
+
+### 修复
+
+- 查询或刷新列表后，无法在初验页面打开检验单([ffc1f2b](https://github.com/initialencounter/Aircraft/commit/ffc1f2b3fced74d3f34f4067c4157d027727691c))
+
 ## [v2.0.12] - 2025-10-11
 
 ### 新增
