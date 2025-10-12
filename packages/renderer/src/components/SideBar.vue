@@ -103,7 +103,7 @@ const handleSelect = (index: string) => {
   top: 0;
   height: 100vh;
   background-color: #252529;
-  z-index: 1;
+  z-index: 10;
 }
 
 .sidebar-menu-item {

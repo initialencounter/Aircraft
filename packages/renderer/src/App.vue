@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import TitleBar from './components/TitleBar.vue'
-import { Event } from '@tauri-apps/api/event'
+import type { Event } from '@tauri-apps/api/event'
 import SideBar from './components/SideBar.vue'
 import { ipcManager } from './utils/ipcManager'
 
@@ -31,16 +31,17 @@ ipcManager.on('open_link', (data: Event<Link>): void => {
 @import url('./assets/css/app.css');
 
 .drag-area {
-  position: absolute; /* 绝对定位 */
-  left: 140px;
+  position: fixed; /* 固定定位，相对于视口 */
+  left: 125px;
   top: 0;
-  width: 500px;
-  height: 60px;
+  width: calc(100vw - 285px); /* 减去左侧边栏宽度和右侧按钮区域宽度 */
+  height: 56px;
   background-color: rgba(222, 134, 50, 0); /* 透明背景 */
+  z-index: 5;
+  pointer-events: auto; /* 确保可以接收拖拽事件 */
 }
 
 .main-container {
-  border-radius: 5%;
   display: flex;
   height: calc(100vh - 60px); /* 减去标题栏高度 */
 }
@@ -50,5 +51,7 @@ ipcManager.on('open_link', (data: Event<Link>): void => {
   padding: 20px;
   overflow-y: auto;
   margin-left: 8rem; /* 添加左边距，与侧边栏宽度相同 */
+  position: relative;
+  z-index: 1;
 }
 </style>
