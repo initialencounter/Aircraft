@@ -131,6 +131,8 @@ onMounted(() => {
 <style scoped>
 .fixed-element {
   position: fixed;
+  top: 55px;
+  left: 250px;
   z-index: 999;
 }
 .schema-button {

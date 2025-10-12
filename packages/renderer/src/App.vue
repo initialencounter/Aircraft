@@ -43,7 +43,9 @@ ipcManager.on('open_link', (data: Event<Link>): void => {
 
 .main-container {
   display: flex;
-  height: calc(100vh - 60px); /* 减去标题栏高度 */
+  min-height: calc(100vh - 60px); /* 减去标题栏高度 */
+  height: 100%;
+  flex: 1;
 }
 
 .content {

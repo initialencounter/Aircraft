@@ -60,4 +60,4 @@ export const ConfigSchema: Schema<Config> = Schema.object({
   server: ServerConfigSchema,
   llm: LlmConfigSchema,
   hotkey: HotkeyConfigSchema,
-}).description('配置设置')
+})
