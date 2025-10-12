@@ -225,6 +225,18 @@ pub fn hide_window(app: tauri::AppHandle) {
 }
 
 #[tauri::command]
+pub fn maximize_window(app: tauri::AppHandle) {
+    let window = app.get_webview_window("main").unwrap();
+    window.maximize().unwrap();
+}
+
+#[tauri::command]
+pub fn unmaximize_window(app: tauri::AppHandle) {
+    let window = app.get_webview_window("main").unwrap();
+    window.unmaximize().unwrap();
+}
+
+#[tauri::command]
 pub async fn reload_llm_config(
     app: tauri::AppHandle,
     state: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,

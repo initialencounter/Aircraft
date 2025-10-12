@@ -1,12 +1,25 @@
 <script lang="ts" setup>
+import { ref } from 'vue'
 import { ipcManager } from '../utils/ipcManager'
 defineProps<{
   link: string
   avatar: string
 }>()
 
+const isMaximized = ref(false)
+
 const minimizeWindow = () => {
   ipcManager.invoke('minimize_window')
+}
+
+const toggleMaximize = () => {
+  if (isMaximized.value) {
+    ipcManager.invoke('unmaximize_window')
+    isMaximized.value = false
+  } else {
+    ipcManager.invoke('maximize_window')
+    isMaximized.value = true
+  }
 }
 
 const hideWindow = () => {
@@ -62,6 +75,12 @@ const hideWindow = () => {
     <div id="titleBar-minimize" class="titleBar-button" @click="minimizeWindow">
       <svg height="1.5em" viewBox="0 0 24 24" width="1.5em">
         <path d="M20 14H4v-4h16" />
+      </svg>
+    </div>
+    <div id="titleBar-maximize" class="titleBar-button" @click="toggleMaximize">
+      <svg height="1.5em" viewBox="0 0 24 24" width="1.5em">
+        <path v-if="!isMaximized" d="M4 4h16v16H4V4m2 4v10h12V8H6Z" />
+        <path v-else d="M4 8h4V4h8v4h4v8h-4v4H8v-4H4V8m6-2v2h4V6h2v2h2v4h-2v2h-4v-2H8V8h2V6Z" />
       </svg>
     </div>
     <div id="titleBar-close" class="titleBar-button" @click="hideWindow">

@@ -57,6 +57,8 @@ pub async fn run() {
             cmd::open_with_wps,
             cmd::write_log,
             cmd::minimize_window,
+            cmd::maximize_window,
+            cmd::unmaximize_window,
             cmd::hide_window,
             cmd::get_llm_config,
             cmd::save_llm_config,

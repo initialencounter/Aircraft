@@ -53,6 +53,16 @@ class Ipc extends Service {
       this.ctx.emit('write-log', 'INFO', 'minimize window')
     })
 
+    ipcMain.handle('maximize_window', () => {
+      this.ctx.win.win?.maximize()
+      this.ctx.emit('write-log', 'INFO', 'maximize window')
+    })
+
+    ipcMain.handle('unmaximize_window', () => {
+      this.ctx.win.win?.unmaximize()
+      this.ctx.emit('write-log', 'INFO', 'unmaximize window')
+    })
+
     ipcMain.handle('hide_window', () => {
       this.ctx.win.win?.hide()
       this.ctx.emit('write-log', 'INFO', 'hide window')
