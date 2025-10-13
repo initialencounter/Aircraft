@@ -35,7 +35,7 @@ export default defineConfig(async () => ({
 
   build: {
     rollupOptions: {
-      input: path.join(__dirname, 'electron/index.html'),
+      input: path.join(__dirname, 'index.html'),
       onwarn(warning, warn) {
         // 忽略 eval 相关警告
         if (
