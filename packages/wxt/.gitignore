@@ -30,3 +30,4 @@ chrome-data
 package-lock.json
 dist
 cache
+tmp/*

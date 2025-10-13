@@ -1,6 +1,7 @@
 import { Config } from "entrypoints/options/src/components/Schema"
 
 const LocalConfig: Config = {
+  assignExperiment: true,
   pekProjectNoColor: '#51a020',
   sekProjectNoColor: '#3e8ed0',
   aekProjectNoColor: '#8c1af6',
@@ -45,6 +46,7 @@ const LocalConfig: Config = {
 }
 
 export const configKeys: Array<keyof typeof LocalConfig> = [
+  'assignExperiment',
   'pekProjectNoColor',
   'sekProjectNoColor',
   'aekProjectNoColor',
