@@ -12,7 +12,6 @@ export default defineContentScript({
     'https://*/sales/apply/main',
     'https://*/inspect/query/main',
     'https://*/flow/inspect/experiment/main',
-    'https://*/flow/inspect/assignexperiment/main',
     'https://*/flow/inspect/experiment/main',
     'https://*/flow/inspect/assign/main',
     'https://*/inspect/batterytest/query/main',
