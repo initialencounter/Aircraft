@@ -34,7 +34,7 @@ export default defineContentScript({
 async function entrypoint() {
   const localConfig = await chrome.storage.local.get(['openInNewTab'])
   await sleep(400)
-  if (localConfig.openInNewTab !== false) {
+  if (localConfig.openInNewTab === true) {
     setupOpenInNewTab()
   }
 

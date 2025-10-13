@@ -5,7 +5,7 @@ const LocalConfig: Config = {
   sekProjectNoColor: '#3e8ed0',
   aekProjectNoColor: '#8c1af6',
   rekProjectNoColor: '#ea3323',
-  openInNewTab: true,
+  openInNewTab: false,
   dangerousModels: [
     '27100118P',
     '28100118',
