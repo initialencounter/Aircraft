@@ -122,7 +122,7 @@ async function getGoodsPath(projectNo: string): Promise<string> {
 }
 
 // 处理单元格点击事件
-const handleCellClick = (row: DataModel, column: any, cell: HTMLElement) => {
+const handleCellClick = (cell: HTMLElement) => {
   const text = cell.innerText.trim() // 获取单元格内容
   if (text) {
     // 使用隐藏的输入框进行复制
