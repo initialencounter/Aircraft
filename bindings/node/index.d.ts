@@ -7,6 +7,13 @@ export interface AttachmentInfo {
   summary: SummaryInfo
   goods: GoodsInfo
 }
+export interface SearchResult {
+  path: string
+  name: string
+}
+export interface SearchResponse {
+  results: Array<SearchResult>
+}
 export interface LogMessage {
   timeStamp: string
   level: string
@@ -124,6 +131,7 @@ export interface OtherConfig {
   queryServerHost: string
 }
 export declare function getDefaultConfig(): Config
+export declare function searchFile(fileName: string): Promise<Array<SearchResult>>
 export declare class AircraftRs {
   constructor(appLogDir: string, config: ServerConfig, llmConfig: LLMConfig, hotkeyConfig: HotkeyConfig)
   startServer(): void

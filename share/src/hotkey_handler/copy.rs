@@ -1,6 +1,7 @@
 use crate::utils::popup_message;
 use copypasta::{ClipboardContext, ClipboardProvider};
 use lazy_static::lazy_static;
+use napi_derive::napi;
 use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -19,15 +20,19 @@ struct SearchParams {
     path_column: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct SearchResult {
     pub path: String,
     pub name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct SearchResponse {
-    results: Vec<SearchResult>,
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchResponse {
+    pub results: Vec<SearchResult>,
 }
 
 pub async fn search(file_path: String) -> Vec<SearchResult> {

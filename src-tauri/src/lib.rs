@@ -48,6 +48,7 @@ pub async fn run() {
             cmd::hide_window,
             cmd::get_summary_info_by_buffer,
             cmd::get_report_summary_by_buffer,
+            cmd::search_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,6 +1,10 @@
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain, shell } from 'electron'
+import * as fs from 'fs'
+import * as path from 'path'
+import { spawn } from 'child_process'
+import { SearchResult } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
@@ -97,6 +101,46 @@ class Ipc extends Service {
         )
       }
     )
+
+    ipcMain.handle('open_local_dir', (_, { target }) => {
+      this.openLocalDir(target)
+    })
+
+    ipcMain.handle('search_file', async (_, { fileName }) => {
+      return await this.ctx.bindings.native.searchFile(fileName) as SearchResult[]
+    })
+  }
+
+  private openLocalDir(target: string) {
+    console.log('open_local_dir:', target)
+
+    if (!fs.existsSync(target)) {
+      console.error('Path does not exist:', target)
+      return
+    }
+
+    const stats = fs.statSync(target)
+
+    if (stats.isDirectory()) {
+      // 如果是目录，直接打开目录
+      if (process.platform === 'win32') {
+        spawn('explorer', [target], { detached: true })
+      } else if (process.platform === 'darwin') {
+        spawn('open', [target], { detached: true })
+      } else if (process.platform === 'linux') {
+        spawn('xdg-open', [target], { detached: true })
+      }
+    } else {
+      // 如果是文件，打开文件所在的目录
+      const parentDir = path.dirname(target)
+      if (process.platform === 'win32') {
+        spawn('explorer', [parentDir], { detached: true })
+      } else if (process.platform === 'darwin') {
+        spawn('open', [parentDir], { detached: true })
+      } else if (process.platform === 'linux') {
+        spawn('xdg-open', [parentDir], { detached: true })
+      }
+    }
   }
 }
 

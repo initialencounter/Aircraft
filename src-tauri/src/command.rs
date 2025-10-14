@@ -59,7 +59,6 @@ pub fn is_listening(state: tauri::State<'_, HotkeyManager>) -> bool {
 
 #[tauri::command]
 pub fn open_local_dir(target: &str) {
-    println!("open_local_dir: {}", target);
     let path = Path::new(target);
     if path.exists() {
         if path.is_dir() {
@@ -227,4 +226,9 @@ pub async fn reload_config(
 
     let _ = save_config(app.clone(), config.clone()).await;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::SearchResult> {
+    share::hotkey_handler::copy::search(file_name).await
 }
