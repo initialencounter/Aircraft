@@ -84,6 +84,10 @@ const handleCellClick = (row: DataModel, column: any, cell: HTMLElement) => {
   margin: 0 auto;
 }
 
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background-color: #151517; /* stripe 斑马条纹的背景颜色 */
+}
+
 :deep(.row-green) {
   color: #51a020 !important;
 }
