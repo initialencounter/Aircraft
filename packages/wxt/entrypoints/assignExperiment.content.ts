@@ -80,6 +80,7 @@ async function entrypoint() {
   const startDate = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   await sleep(400)
   if (localConfig.assignExperiment === true) {
+    createMask()
     insetBatchAssignChecker()
     insetBatchAssignButton()
   }
@@ -345,6 +346,50 @@ async function entrypoint() {
     return select.value
   }
 
+  function createMask() {
+    const mask = document.createElement('div')
+    mask.id = 'assignMask'
+    mask.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      `
+
+    const loadingText = document.createElement('div')
+    loadingText.style.cssText = `
+        color: white;
+        font-size: 20px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 20px 40px;
+        border-radius: 8px;
+      `
+    loadingText.textContent = '正在处理中...'
+
+    mask.appendChild(loadingText)
+    document.body.appendChild(mask)
+  }
+
+  function showMask() {
+    const mask = document.getElementById('assignMask')
+    if (mask) {
+      mask.style.display = 'flex'
+    }
+  }
+
+  function hideMask() {
+    const mask = document.getElementById('assignMask')
+    if (mask) {
+      mask.style.display = 'none'
+    }
+  }
+
   function checkAssignUID(users: User[], uid: string): boolean {
     if (!uid || !users.length) return false
     // 使用 some 方法提高查找性能
@@ -456,44 +501,53 @@ async function entrypoint() {
     if (!localConfig.assignExperimentUser || localConfig.assignExperimentUser !== selectUid) {
       chrome.storage.local.set({ assignExperimentUser: selectUid })
     }
+    showMask()
+    try {
+      for (const taskId of checkedTaskIds.checkedTaskIds) {
+        const experimentId = await getExperimentId(taskId)
+        if (!experimentId) {
+          errorMessages.push(`任务 ${taskId} 获取试验 id 失败`)
+          continue
+        }
+        const success = await doAssignExperiment(taskId, experimentId, [selectUid])
+        if (!success) {
+          errorMessages.push(`任务 ${taskId} 分配失败`)
+          continue
+        }
 
-    for (const taskId of checkedTaskIds.checkedTaskIds) {
-      const experimentId = await getExperimentId(taskId)
-      if (!experimentId) {
-        errorMessages.push(`任务 ${taskId} 获取试验 id 失败`)
-        continue
-      }
-      const success = await doAssignExperiment(taskId, experimentId, [selectUid])
-      if (!success) {
-        errorMessages.push(`任务 ${taskId} 分配失败`)
-        continue
-      }
+        const experimentFormHtmlURL = await getExperimentHtmlURL('PEKGZ202510138556', '4')
+        if (!experimentFormHtmlURL) {
+          errorMessages.push(`任务 ${taskId} 获取试验单URL失败`)
+          continue
+        }
 
-      const experimentFormHtmlURL = await getExperimentHtmlURL('PEKGZ202510138556', '4')
-      if (!experimentFormHtmlURL) {
-        errorMessages.push(`任务 ${taskId} 获取试验单URL失败`)
-        continue
-      }
+        const formHtml = await getHtmlText(experimentFormHtmlURL)
+        const makeFormData = makeExperimentFormData('4')
+        if (!makeFormData) {
+          errorMessages.push(`任务 ${taskId} 不支持的试验单类型`)
+          continue
+        }
 
-      const formHtml = await getHtmlText(experimentFormHtmlURL)
-      const makeFormData = makeExperimentFormData('4')
-      if (!makeFormData) {
-        errorMessages.push(`任务 ${taskId} 不支持的试验单类型`)
-        continue
-      }
+        const submitData = makeFormData(formHtml)
+        if (!submitData) {
+          errorMessages.push(`任务 ${taskId} 解析试验单数据失败`)
+          continue
+        }
 
-      const submitData = makeFormData(formHtml)
-      if (!submitData) {
-        errorMessages.push(`任务 ${taskId} 解析试验单数据失败`)
-        continue
-      }
+        const submitSuccess = await doSubmitExperiment(submitData, checkedTaskIds.TaskDict[taskId])
+        if (!submitSuccess) {
+          errorMessages.push(`任务 ${taskId} 提交试验单失败`)
+        }
 
-      const submitSuccess = await doSubmitExperiment(submitData, checkedTaskIds.TaskDict[taskId])
-      if (!submitSuccess) {
-        errorMessages.push(`任务 ${taskId} 提交试验单失败`)
+        await sleep(100) // 每次请求后等待500毫秒，避免请求过快
       }
-
-      await sleep(100) // 每次请求后等待500毫秒，避免请求过快
+    }
+    catch (error) {
+      console.error(error)
+      errorMessages.push(`任务处理失败`)
+    }
+    finally {
+      hideMask()
     }
     refreshList()
     if (errorMessages.length === 0) {
