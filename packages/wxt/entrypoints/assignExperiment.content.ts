@@ -59,6 +59,38 @@ export interface ExperimentFormData4 {
   [property: string]: any;
 }
 
+const ExperimentIDMap: Record<string, string> = {
+  "气溶胶着火距离试验": "1",
+  "气溶胶泡沫燃烧试验": "2",
+  "气溶胶密闭空间着火试验": "3",
+  "液体闪点试验": "4",
+  "易燃固体燃烧试验": "5",
+  "自发热物质试验": "6",
+  "自燃物质试验": "7",
+  "遇水释放易燃气体物质试验": "8",
+  "氧化性物质试验": "9",
+  "金属腐蚀性试验": "10",
+  "密封型电池定性试验": "11",
+  "磁性物质试验": "12",
+  "其它试验": "13",
+}
+
+const IDExperimentMap: Record<string, string> = {
+  "1": "气溶胶着火距离试验",
+  "2": "气溶胶泡沫燃烧试验",
+  "3": "气溶胶密闭空间着火试验",
+  "4": "液体闪点试验",
+  "5": "易燃固体燃烧试验",
+  "6": "自发热物质试验",
+  "7": "自燃物质试验",
+  "8": "遇水释放易燃气体物质试验",
+  "9": "氧化性物质试验",
+  "10": "金属腐蚀性试验",
+  "11": "密封型电池定性试验",
+  "12": "磁性物质试验",
+  "13": "其它试验",
+}
+
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -316,7 +348,7 @@ async function entrypoint() {
     }
   }
 
-  async function doSubmitExperiment(data: ExperimentFormData4 | any, projectNo: string) {
+  async function doSubmitExperiment(data: ExperimentFormData4 | any) {
     try {
       const response = await fetch(
         `https://${window.location.host}/rest/inspect/experiment/submit`,
@@ -329,12 +361,12 @@ async function entrypoint() {
           body: JSON.stringify(data),
         })
       if (!response.ok) {
-        console.error(`Failed to Submit experiment for project ${projectNo}:`, response.statusText)
+        console.error(`Failed to Submit experiment`, response.statusText)
         return false
       }
       return true
     } catch (error) {
-      console.error(`Failed to Submit experiment for project ${projectNo}:`, error)
+      console.error(`Failed to Submit experiment`, error)
       return false
     }
   }
@@ -436,9 +468,13 @@ async function entrypoint() {
         }
       )
       if (!response.ok) return false
-      const data = (await response.json()).rows[0]
-      const url = `https://${window.location.host}/inspect/experiment/type/${experimentId}?taskId=${data.id}&systemId=${projectNo.slice(0, 3).toLowerCase()}&projectId=${data.projectId}&entrustId=${data.entrustId}&experimentId=${experimentId}&experimentName=${encodeURIComponent(data.taskName)}`
-      return url
+      const rows = (await response.json()).rows
+      for (const data of rows) {
+        if (ExperimentIDMap[data.taskName] === experimentId && data.projectNo === projectNo) {
+          return `https://${window.location.host}/inspect/experiment/type/${experimentId}?taskId=${data.id}&systemId=${projectNo.slice(0, 3).toLowerCase()}&projectId=${data.projectId}&entrustId=${data.entrustId}&experimentId=${experimentId}&experimentName=${encodeURIComponent(data.taskName)}`
+        }
+      }
+      return false
     } catch (error) {
       console.error('Failed to fetch experiment task IDs:', error)
       return false
@@ -500,36 +536,45 @@ async function entrypoint() {
           errorMessages.push(`任务 ${taskId} 获取试验 id 失败`)
           continue
         }
-        const success = await doAssignExperiment(taskId, experimentId, [selectUid])
+
+        const assignUser: string[] = []
+        experimentId.forEach(() => {
+          assignUser.push(selectUid)
+        })
+
+        const success = await doAssignExperiment(taskId, experimentId, assignUser)
         if (!success) {
           errorMessages.push(`任务 ${taskId} 分配失败`)
           continue
         }
 
-        const experimentFormHtmlURL = await getExperimentHtmlURL(checkedTaskIds.TaskDict[taskId], experimentId?.[0])
-        if (!experimentFormHtmlURL) {
-          errorMessages.push(`任务 ${taskId} 获取试验单URL失败`)
-          continue
-        }
+        const projectNo = checkedTaskIds.TaskDict[taskId]
+        for (const experimentIdItem of experimentId) {
+          const experimentFormHtmlURL = await getExperimentHtmlURL(projectNo, experimentIdItem)
+          const experimentName = IDExperimentMap[experimentIdItem]
+          if (!experimentFormHtmlURL) {
+            errorMessages.push(`任务 ${projectNo} 获取 ${experimentName} 试验单URL失败`)
+            continue
+          }
 
-        const formHtml = await getHtmlText(experimentFormHtmlURL)
-        if (!formHtml) {
-          errorMessages.push(`任务 ${taskId} 获取试验单HTML失败`)
-          continue
-        }
+          const formHtml = await getHtmlText(experimentFormHtmlURL)
+          if (!formHtml) {
+            errorMessages.push(`任务 ${projectNo} 获取 ${experimentName} 试验单HTML失败`)
+            continue
+          }
+          const submitData = makeExperimentFormData(formHtml)
+          if (!submitData) {
+            errorMessages.push(`任务 ${projectNo} 解析 ${experimentName} 试验单数据失败`)
+            continue
+          }
 
-        const submitData = makeExperimentFormData(formHtml)
-        if (!submitData) {
-          errorMessages.push(`任务 ${taskId} 解析试验单数据失败`)
-          continue
+          const submitSuccess = await doSubmitExperiment(submitData)
+          if (!submitSuccess) {
+            errorMessages.push(`任务 ${projectNo} 提交 ${experimentName} 试验单失败`)
+            continue
+          }
+          await sleep(100) // 每次请求后等待500毫秒，避免请求过快
         }
-
-        const submitSuccess = await doSubmitExperiment(submitData, checkedTaskIds.TaskDict[taskId])
-        if (!submitSuccess) {
-          errorMessages.push(`任务 ${taskId} 提交试验单失败`)
-        }
-
-        await sleep(100) // 每次请求后等待500毫秒，避免请求过快
       }
     }
     catch (error) {
@@ -539,12 +584,11 @@ async function entrypoint() {
     finally {
       hideMask()
     }
-    window.location.reload()
     if (errorMessages.length === 0) {
       Qmsg['success']('分配成功')
     } else {
-      console.log(errorMessages.join('\n'))
-      Qmsg['error']('分配失败')
+      confirm(errorMessages.join('\n'))
     }
+    window.location.reload()
   }
 }
