@@ -8,7 +8,9 @@
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "chcp 65001 && vite -c vite.electron.config.ts",
-    "build": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never"
+    "build": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never",
+    "build:frontend": "vue-tsc --noEmit && vite -c vite.electron.config.ts build",
+    "build:app": "electron-builder --publish never"
   },
   "type": "module",
   "devDependencies": {
