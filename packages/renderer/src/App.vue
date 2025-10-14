@@ -52,6 +52,7 @@ ipcManager.on('open_link', (data: Event<Link>): void => {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  margin-top: 2.2rem;
   margin-left: 8rem; /* 添加左边距，与侧边栏宽度相同 */
   position: relative;
   z-index: 1;

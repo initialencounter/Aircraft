@@ -40,7 +40,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .scroller {
   position: relative;
-  top: 15px;
   height: 100vh;
   overflow-y: auto;
   padding: 12px;
