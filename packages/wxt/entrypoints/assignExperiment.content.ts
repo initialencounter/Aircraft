@@ -403,7 +403,7 @@ async function entrypoint() {
     }
   }
 
-  function makeExperimentFormData4(htmlString: string) {
+  function makeExperimentFormData(htmlString: string) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
     const form = doc.getElementById('experimentForm') as HTMLFormElement;
@@ -424,15 +424,6 @@ async function entrypoint() {
     const jsonData = JSON.stringify(data)
     data['jsonData'] = jsonData
     return data as ExperimentFormData4
-  }
-
-  function makeExperimentFormData(experimentId: string) {
-    switch (experimentId) {
-      case '4':
-        return makeExperimentFormData4
-      default:
-        return null
-    }
   }
 
   async function getExperimentHtmlURL(projectNo: string, experimentId: string) {
@@ -505,7 +496,7 @@ async function entrypoint() {
     try {
       for (const taskId of checkedTaskIds.checkedTaskIds) {
         const experimentId = await getExperimentId(taskId)
-        if (!experimentId) {
+        if (!experimentId?.length) {
           errorMessages.push(`任务 ${taskId} 获取试验 id 失败`)
           continue
         }
@@ -515,20 +506,19 @@ async function entrypoint() {
           continue
         }
 
-        const experimentFormHtmlURL = await getExperimentHtmlURL('PEKGZ202510138556', '4')
+        const experimentFormHtmlURL = await getExperimentHtmlURL(checkedTaskIds.TaskDict[taskId], experimentId?.[0])
         if (!experimentFormHtmlURL) {
           errorMessages.push(`任务 ${taskId} 获取试验单URL失败`)
           continue
         }
 
         const formHtml = await getHtmlText(experimentFormHtmlURL)
-        const makeFormData = makeExperimentFormData('4')
-        if (!makeFormData) {
-          errorMessages.push(`任务 ${taskId} 不支持的试验单类型`)
+        if (!formHtml) {
+          errorMessages.push(`任务 ${taskId} 获取试验单HTML失败`)
           continue
         }
 
-        const submitData = makeFormData(formHtml)
+        const submitData = makeExperimentFormData(formHtml)
         if (!submitData) {
           errorMessages.push(`任务 ${taskId} 解析试验单数据失败`)
           continue
@@ -549,7 +539,7 @@ async function entrypoint() {
     finally {
       hideMask()
     }
-    refreshList()
+    window.location.reload()
     if (errorMessages.length === 0) {
       Qmsg['success']('分配成功')
     } else {
