@@ -111,7 +111,7 @@ async function entrypoint() {
   const endDate = currentDate.toISOString().split('T')[0]
   const startDate = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   await sleep(400)
-  if (localConfig.assignExperiment === true) {
+  if (localConfig.assignExperiment !== false) {
     createMask()
     insetBatchAssignChecker()
     insetBatchAssignButton()
