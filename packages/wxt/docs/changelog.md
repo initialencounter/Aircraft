@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v2.0.14] - 2025-10-14
+
+### 新增
+
+- 分配并提交试验单([3c63190](https://github.com/initialencounter/Aircraft/commit/3c631908d3ff857aa84e9262795ec0297bf10477))
+
+### 修复
+
+- 默认关闭在新标签页打开项目编号([2cdb9f2](https://github.com/initialencounter/Aircraft/commit/2cdb9f2c89f0aec6c593af8e2f2fd116fb6fe348))
+
 ## [v2.0.13] - 2025-10-11
 
 ### 修复
