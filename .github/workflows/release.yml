@@ -64,9 +64,7 @@ jobs:
 
       - name: Build electron
         run: |
-          cd electron
-          yarn build:frontend
-          npm run build:app
+          yarn build:el
 
       - name: Build Tauri-lite
         run: |
