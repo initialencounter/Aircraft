@@ -7,6 +7,7 @@ import {
   Document,
   House,
   MoonNight,
+  Search,
   Setting,
 } from '@element-plus/icons-vue'
 import Clip from '../assets/svg/Clip.vue'
@@ -64,6 +65,13 @@ const menuItems = [
     path: '/logs',
     label: '日志',
     icon: Document,
+    requiresUnlock: false,
+  },
+  {
+    index: '7',
+    path: '/searchTNotes',
+    label: '技术部备注',
+    icon: Search,
     requiresUnlock: false,
   },
 ]

@@ -1,3 +1,5 @@
+import type { DataModel } from '../types'
+
 function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp)
   const year = date.getFullYear().toString().slice(2)
@@ -55,5 +57,26 @@ export const getFileIcon = (fileType: string): string => {
   if (fileType.includes('sheet') || fileType.includes('excel')) return 'excel'
   return 'document'
 }
+
+
+export interface TrackData {
+  total: number
+  rows: DataModel[]
+}
+export async function projectTracking(query: string): Promise<DataModel[]> {
+  const url = `${window.location.origin}/rest/project?${query}`
+  const response = await fetch(url)
+  const data: TrackData = await response.json()
+  if (!response.ok) {
+    return []
+  }
+  return data.rows
+}
+
+export function isDev() {
+  // @ts-ignore
+  return process.env.NODE_ENV === 'development'
+}
+
 
 export { formatTimestamp, calculateColorBrightness }

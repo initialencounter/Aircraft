@@ -8,6 +8,7 @@ import Md5Checker from '../views/Md5checker.vue'
 //@ts-ignore
 import Stack from '../views/Stack.vue'
 import PdfParse from '../views/PdfParse.vue'
+import SearchTNotes from '../components/SearchTNotes.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -41,6 +42,11 @@ const router = createRouter({
       path: '/summary_parse',
       name: 'Pdf Parse',
       component: PdfParse,
+    },
+    {
+      path: '/searchTNotes',
+      name: 'searchTNotes',
+      component: SearchTNotes,
     },
   ],
 })
