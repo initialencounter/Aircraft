@@ -1,4 +1,4 @@
-import type { DataModel } from '../types'
+import { DataModel } from "aircraft-rs"
 
 function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp)
@@ -71,11 +71,6 @@ export async function projectTracking(query: string): Promise<DataModel[]> {
     return []
   }
   return data.rows
-}
-
-export function isDev() {
-  // @ts-ignore
-  return process.env.NODE_ENV === 'development'
 }
 
 

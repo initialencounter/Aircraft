@@ -24,11 +24,9 @@
 import { useSearchStore } from '../stores/search'
 import DataForm from './Form.vue'
 import { onMounted, ref, watch } from 'vue'
-import type { DataModel } from '../types'
 import { ElLoading } from 'element-plus'
-import { isDev } from '../utils/utils'
 import { ipcManager } from '../utils/ipcManager'
-import { Config } from 'aircraft-rs'
+import { Config, DataModel } from 'aircraft-rs'
 
 const searchStore = useSearchStore()
 const props = defineProps<{
@@ -37,14 +35,12 @@ const props = defineProps<{
   label: string
 }>()
 
-const isDevMode = isDev()
 const queryText = ref(searchStore.lastQuery[props.type])
 const host = ref('')
 
 watch(queryText, (newVal: string) => {
   searchStore.setLastQuery(props.type, newVal)
 })
-
 
 const dataList = ref<DataModel[]>(searchStore.searchResults[props.type])
 
@@ -71,14 +67,11 @@ const submitQuery = async () => {
 
   try {
     const endpoint = props.endpoint
-    const res = await fetch(
-      `http://${isDevMode ? 'localhost' : host}:4000/${endpoint}?searchText=${queryText.value.trim()}`
-    )
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`)
-    }
+    const data = (await ipcManager.invoke('search_property', {
+      url: `http://${host.value}:4000/${endpoint}`,
+      searchText: queryText.value.trim(),
+    })) as DataModel[]
 
-    let data: DataModel[] = await res.json()
     searchStore.setSearchResults(props.type, data)
     dataList.value = data
   } catch (error) {
@@ -99,7 +92,7 @@ onMounted(() => {
 
 <style scoped>
 .search-wrapper {
-  margin: 0 1rem 0 1rem ;
+  margin: 0 1rem 0 1rem;
 }
 .input-group {
   display: flex;

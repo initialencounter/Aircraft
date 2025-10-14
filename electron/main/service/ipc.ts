@@ -4,7 +4,7 @@ import { BrowserWindow, ipcMain, shell } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import { spawn } from 'child_process'
-import { SearchResult } from 'aircraft-rs'
+import { DataModel, SearchResult } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
@@ -108,6 +108,10 @@ class Ipc extends Service {
 
     ipcMain.handle('search_file', async (_, { fileName }) => {
       return await this.ctx.bindings.native.searchFile(fileName) as SearchResult[]
+    })
+
+    ipcMain.handle('search_property', async (_, { url, searchText }) => {
+      return await this.ctx.bindings.native.searchProperty(url, searchText) as DataModel[]
     })
   }
 

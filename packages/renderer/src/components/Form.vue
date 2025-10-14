@@ -74,11 +74,10 @@
 </template>
 
 <script setup lang="ts">
-import type { DataModel } from '../types'
 import { ElMessage } from 'element-plus'
 import { Folder } from '@element-plus/icons-vue'
 import { ipcManager } from '../utils/ipcManager'
-import { SearchResult } from 'aircraft-rs'
+import { DataModel, SearchResult } from 'aircraft-rs'
 
 defineProps<{
   tableData: DataModel[]

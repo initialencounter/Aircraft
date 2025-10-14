@@ -14,6 +14,32 @@ export interface SearchResult {
 export interface SearchResponse {
   results: Array<SearchResult>
 }
+export interface DataModel {
+  id: number
+  appraiserName: string
+  assigneeName: string
+  auditorName?: string
+  conclusions?: number
+  displayStatus: string
+  nextYear?: number
+  principalName?: string
+  projectId: string
+  projectNo?: string
+  repeat: number
+  reportType: number
+  submitDate: string
+  surveyorNames?: string
+  systemId: string
+  selfId: string
+  itemCName?: string
+  itemEName?: string
+  mnotes?: string
+  reportNo?: string
+  tnotes?: string
+}
+export interface SearchPropertyParams {
+  searchText: string
+}
 export interface LogMessage {
   timeStamp: string
   level: string
@@ -132,6 +158,7 @@ export interface OtherConfig {
 }
 export declare function getDefaultConfig(): Config
 export declare function searchFile(fileName: string): Promise<Array<SearchResult>>
+export declare function searchProperty(url: string, searchText: string): Promise<Array<DataModel>>
 export declare class AircraftRs {
   constructor(appLogDir: string, config: ServerConfig, llmConfig: LLMConfig, hotkeyConfig: HotkeyConfig)
   startServer(): void

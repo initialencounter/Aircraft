@@ -78,6 +78,75 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
     }
 }
 
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DataModel {
+    pub id: i32,
+    pub appraiser_name: String,
+    pub assignee_name: String,
+    pub auditor_name: Option<String>,
+    pub conclusions: Option<i32>,
+    pub display_status: String,
+    pub next_year: Option<i8>,
+    pub principal_name: Option<String>,
+    pub project_id: String,
+    pub project_no: Option<String>,
+    pub repeat: i8,
+    pub report_type: i32,
+    pub submit_date: String,
+    pub surveyor_names: Option<String>,
+    pub system_id: String,
+    pub self_id: String,
+    pub item_c_name: Option<String>,
+    pub item_e_name: Option<String>,
+    pub mnotes: Option<String>,
+    pub report_no: Option<String>,
+    pub tnotes: Option<String>,
+}
+
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchPropertyParams {
+    pub search_text: String,
+}
+
+pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
+    let client = Client::new();
+    let query = SearchPropertyParams { search_text };
+    let response = client.get(&url).query(&query).send().await;
+    let response = match response {
+        Ok(res) => res,
+        Err(e) => {
+            println!("Request failed: {}", e);
+            eprintln!("Request failed: {}", e);
+            return vec![];
+        }
+    };
+    if response.status().is_success() {
+        match response.text().await {
+            Ok(text) => match serde_json::from_str::<Vec<DataModel>>(&text) {
+                Ok(result) => result,
+                Err(e) => {
+                    println!("Failed to parse JSON: {}", e);
+                    eprintln!("Failed to parse JSON: {}", e);
+                    vec![]
+                }
+            },
+            Err(e) => {
+                println!("Failed to get response text: {}", e);
+                eprintln!("Failed to get response text: {}", e);
+                vec![]
+            }
+        }
+    } else {
+        println!("Request failed: {}", response.status());
+        eprintln!("Request failed: {}", response.status());
+        vec![]
+    }
+}
+
 fn simulate_f5_press() {
     if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
         if let Err(e) = enigo.key(Key::F5, Click) {

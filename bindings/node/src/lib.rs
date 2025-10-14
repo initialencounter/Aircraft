@@ -258,3 +258,8 @@ pub fn get_default_config() -> napi::Result<Config> {
 pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::SearchResult> {
     share::hotkey_handler::copy::search(file_name).await
 }
+
+#[napi]
+pub async fn search_property(url: String, search_text: String) -> Vec<share::hotkey_handler::copy::DataModel> {
+    share::hotkey_handler::copy::search_property(url, search_text).await
+}

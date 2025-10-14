@@ -1,5 +1,5 @@
+import { DataModel } from 'aircraft-rs';
 import { defineStore } from 'pinia'
-import type { DataModel } from '../types'
 
 let today = new Date().toISOString().split('T')[0];
 let lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1))
