@@ -1,4 +1,4 @@
-use crate::command::get_base_config;
+use crate::command::get_config;
 use crate::utils::{check_update, hide_or_show, restart};
 use crate::{menu, Link};
 use std::env;
@@ -80,8 +80,8 @@ pub fn handle_setup(app: &mut App) {
         })
         .build(app).unwrap();
     // 静默启动
-    let base_config = get_base_config(app.handle().clone());
-    if base_config.silent_start {
+    let config = get_config(app.handle().clone());
+    if config.base.silent_start {
         if let Some(window) = app.get_webview_window("main") {
             window.hide().unwrap();
         }
@@ -97,8 +97,7 @@ pub fn handle_setup(app: &mut App) {
         }
     });
     // 静默启动
-    let base_config = get_base_config(app.handle().clone());
-    if !base_config.silent_start {
+    if !config.base.silent_start {
         app.get_webview_window("main").unwrap().show().unwrap();
     }
 }

@@ -2,7 +2,7 @@ use base64::prelude::*;
 use serde_json::json;
 use share::pdf_parser::read::read_pdf_u8;
 use share::pdf_parser::uploader::FileManager;
-use share::types::{Config, LLMConfig};
+use share::types::{Config, LLMConfig, OtherConfig};
 use std::path::Path;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
@@ -25,58 +25,6 @@ pub async fn get_login_status() -> bool {
     login_status
 }
 
-// 保存配置
-#[tauri::command]
-pub async fn save_server_config(app: tauri::AppHandle, config: ServerConfig) -> Result<(), String> {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    store.set("server", json!(config.clone()));
-    store.save().map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-// 获取配置
-#[tauri::command]
-pub fn get_server_config(app: tauri::AppHandle) -> ServerConfig {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    match store.get("server") {
-        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| ServerConfig::default()),
-        None => ServerConfig::default(),
-    }
-}
-
-// 保存配置, 并重启服务器
-#[tauri::command]
-pub async fn reload_server_config(
-    app: tauri::AppHandle,
-    state: tauri::State<'_, ServerManager>,
-    config: ServerConfig,
-) -> Result<(), String> {
-    let _ = save_server_config(app.clone(), config.clone()).await;
-    let llm_config: LLMConfig = {
-        let store = app.store(&Path::new("config.json")).unwrap();
-        match store.get("llm") {
-            Some(data) => serde_json::from_value(data).unwrap_or_else(|_| LLMConfig::default()),
-            None => LLMConfig::default(),
-        }
-    };
-    state.reload(config, llm_config).await;
-    Ok(())
-}
-
-// 重启服务器
-#[tauri::command]
-pub async fn restart_server(state: tauri::State<'_, ServerManager>) -> Result<(), String> {
-    state.restart().await;
-    Ok(())
-}
-
-// 停止服务器
-#[tauri::command]
-pub fn stop_server(state: tauri::State<'_, ServerManager>) -> Result<(), String> {
-    state.stop();
-    Ok(())
-}
-
 pub fn set_auto_start(app: tauri::AppHandle, auto_start: bool) -> Result<(), String> {
     let autostart_manager = app.autolaunch();
     if auto_start {
@@ -84,24 +32,6 @@ pub fn set_auto_start(app: tauri::AppHandle, auto_start: bool) -> Result<(), Str
     } else {
         let _ = autostart_manager.disable();
     }
-    Ok(())
-}
-
-#[tauri::command]
-pub fn get_base_config(app: tauri::AppHandle) -> BaseConfig {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    match store.get("base") {
-        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| BaseConfig::default()),
-        None => BaseConfig::default(),
-    }
-}
-
-#[tauri::command]
-pub fn save_base_config(app: tauri::AppHandle, config: BaseConfig) -> Result<(), String> {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    store.set("base", json!(config.clone()));
-    store.save().map_err(|e| e.to_string())?;
-    let _ = set_auto_start(app, config.auto_start);
     Ok(())
 }
 
@@ -120,64 +50,6 @@ pub fn write_log(logger: tauri::State<'_, Arc<Mutex<Logger>>>, level: &str, mess
             message: message.to_string(),
         });
     }
-}
-
-// 快捷键设置
-#[tauri::command]
-pub fn get_hotkey_config(app: tauri::AppHandle) -> HotkeyConfig {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    match store.get("hotkey") {
-        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| HotkeyConfig::default()),
-        None => HotkeyConfig::default(),
-    }
-}
-
-// 大模型配置
-#[tauri::command]
-pub fn get_llm_config(app: tauri::AppHandle) -> LLMConfig {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    match store.get("llm") {
-        Some(data) => serde_json::from_value(data).unwrap_or_else(|_| LLMConfig::default()),
-        None => LLMConfig::default(),
-    }
-}
-
-#[tauri::command]
-pub fn save_hotkey_config(app: tauri::AppHandle, config: HotkeyConfig) -> Result<(), String> {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    store.set("hotkey", json!(config.clone()));
-    store.save().map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-#[tauri::command]
-pub fn stop_hotkey_listener(state: tauri::State<'_, HotkeyManager>) -> Result<(), String> {
-    state.stop();
-    Ok(())
-}
-
-#[tauri::command]
-pub fn start_hotkey_listener(state: tauri::State<'_, HotkeyManager>) -> Result<(), String> {
-    state.start();
-    Ok(())
-}
-
-#[tauri::command]
-pub fn restart_hotkey_listener(state: tauri::State<'_, HotkeyManager>) -> Result<(), String> {
-    state.stop();
-    state.start();
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn reload_hotkey_listener(
-    state: tauri::State<'_, HotkeyManager>,
-    config: HotkeyConfig,
-) -> Result<(), String> {
-    state.stop();
-    state.save_config(config);
-    state.start();
-    Ok(())
 }
 
 #[tauri::command]
@@ -234,27 +106,6 @@ pub fn maximize_window(app: tauri::AppHandle) {
 pub fn unmaximize_window(app: tauri::AppHandle) {
     let window = app.get_webview_window("main").unwrap();
     window.unmaximize().unwrap();
-}
-
-#[tauri::command]
-pub async fn reload_llm_config(
-    app: tauri::AppHandle,
-    state: tauri::State<'_, Arc<AsyncMutex<FileManager>>>,
-    config: LLMConfig,
-) -> Result<(), String> {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    store.set("llm", json!(config.clone()));
-    store.save().map_err(|e| e.to_string())?;
-    state.lock().await.reload(config);
-    Ok(())
-}
-
-#[tauri::command]
-pub fn save_llm_config(app: tauri::AppHandle, config: LLMConfig) -> Result<(), String> {
-    let store = app.store(&Path::new("config.json")).unwrap();
-    store.set("llm", json!(config.clone()));
-    store.save().map_err(|e| e.to_string())?;
-    Ok(())
 }
 
 #[tauri::command]
