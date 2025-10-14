@@ -14,11 +14,11 @@
   <k-form v-model="config" :schema="ConfigSchema" :initial="initial"></k-form>
   <!-- 添加遮罩层 - 现在相对于容器定位 -->
   <div class="loading-mask" v-if="loading" @dblclick="loading = false">
-      <div class="loading-content">
-        <el-icon class="loading-icon"><Loading /></el-icon>
-        <span>正在保存配置，请稍候...<br />双击关闭遮罩</span>
-      </div>
+    <div class="loading-content">
+      <el-icon class="loading-icon"><Loading /></el-icon>
+      <span>正在保存配置，请稍候...<br />双击关闭遮罩</span>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -27,61 +27,39 @@ import { ElMessage } from 'element-plus'
 import { ipcManager } from '../utils/ipcManager'
 import { Config, ConfigSchema } from '../schema'
 
+const defaultConfig: Config = {
+  server: {
+    baseUrl: 'https://',
+    username: '',
+    password: '',
+    port: 25455,
+    debug: false,
+    logEnabled: false,
+  },
+  base: {
+    autoStart: false,
+    silentStart: false,
+    nothing: '',
+  },
+  hotkey: {
+    copyEnable: false,
+    copyKey: 'ctrl+shift+z',
+    uploadEnable: false,
+    uploadKey: 'ctrl+shift+u',
+    customHotkey: [],
+  },
+  llm: {
+    baseUrl: 'https://api.moonshot.cn/v1',
+    apiKey: '',
+    model: 'moonshot-v1-128k',
+  },
+  other: {
+    queryServerHost: '192.168.0.195',
+  },
+}
 const loading = ref(false)
-const config = ref<Config>({
-  server: {
-    baseUrl: 'https://',
-    username: '',
-    password: '',
-    port: 25455,
-    debug: false,
-    logEnabled: false,
-  },
-  base: {
-    autoStart: false,
-    silentStart: false,
-    nothing: '',
-  },
-  hotkey: {
-    copyEnable: false,
-    copyKey: 'ctrl+shift+z',
-    uploadEnable: false,
-    uploadKey: 'ctrl+shift+u',
-    customHotkey: [],
-  },
-  llm: {
-    baseUrl: 'https://api.moonshot.cn/v1',
-    apiKey: '',
-    model: 'moonshot-v1-128k',
-  },
-})
-const initial = ref<Config>({
-  server: {
-    baseUrl: 'https://',
-    username: '',
-    password: '',
-    port: 25455,
-    debug: false,
-    logEnabled: false,
-  },
-  base: {
-    autoStart: false,
-    silentStart: false,
-    nothing: '',
-  },
-  hotkey: {
-    copyEnable: false,
-    copyKey: 'ctrl+shift+z',
-    uploadEnable: false,
-    uploadKey: 'ctrl+shift+u',
-    customHotkey: [],
-  },
-  llm: {
-    baseUrl: 'https://api.moonshot.cn/v1',
-    apiKey: '',
-    model: 'moonshot-v1-128k',
-  },
-})
+const config = ref<Config>(defaultConfig)
+const initial = ref<Config>(defaultConfig)
 
 async function getConfig() {
   const appConfig = await ipcManager.invoke('get_config')
@@ -98,8 +76,7 @@ async function saveConfig() {
     ElMessage.success(`保存成功: ${JSON.stringify(result)}`)
   } catch (error) {
     ElMessage.error(JSON.stringify(error))
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -114,11 +91,9 @@ async function reloadConfig() {
   try {
     await ipcManager.invoke('reload_config', { config: tmpConfig })
     ElMessage.success('重载成功')
-  }
-  catch {
+  } catch {
     ElMessage.error('重载失败')
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }

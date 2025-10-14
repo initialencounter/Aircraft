@@ -12,41 +12,6 @@ export interface LogMessage {
   level: string
   message: string
 }
-export interface BaseConfig {
-  nothing: string
-  autoStart: boolean
-  silentStart: boolean
-}
-export interface ServerConfig {
-  baseUrl: string
-  username: string
-  password: string
-  port: number
-  debug: boolean
-  logEnabled: boolean
-}
-export interface CustomHotkey {
-  hotkey: string
-  cmd: string
-}
-export interface HotkeyConfig {
-  uploadEnable: boolean
-  uploadKey: string
-  copyEnable: boolean
-  copyKey: string
-  customHotkey: Array<CustomHotkey>
-}
-export interface LLMConfig {
-  baseUrl: string
-  apiKey: string
-  model: string
-}
-export interface Config {
-  base: BaseConfig
-  server: ServerConfig
-  hotkey: HotkeyConfig
-  llm: LLMConfig
-}
 export interface GoodsInfo {
   projectNo: string
   itemCName: string
@@ -118,6 +83,45 @@ export interface SummaryInfo {
   projectNo: string
   /** 签发日期 */
   issueDate: string
+}
+export interface BaseConfig {
+  nothing: string
+  autoStart: boolean
+  silentStart: boolean
+}
+export interface ServerConfig {
+  baseUrl: string
+  username: string
+  password: string
+  port: number
+  debug: boolean
+  logEnabled: boolean
+}
+export interface CustomHotkey {
+  hotkey: string
+  cmd: string
+}
+export interface HotkeyConfig {
+  uploadEnable: boolean
+  uploadKey: string
+  copyEnable: boolean
+  copyKey: string
+  customHotkey: Array<CustomHotkey>
+}
+export interface LLMConfig {
+  baseUrl: string
+  apiKey: string
+  model: string
+}
+export interface Config {
+  base: BaseConfig
+  server: ServerConfig
+  hotkey: HotkeyConfig
+  llm: LLMConfig
+  other: OtherConfig
+}
+export interface OtherConfig {
+  queryServerHost: string
 }
 export declare function getDefaultConfig(): Config
 export declare class AircraftRs {

@@ -171,6 +171,7 @@ pub async fn save_config(app: tauri::AppHandle, config: Config) -> Result<(), St
     store.set("llm", json!(config.llm.clone()));
     store.set("base", json!(config.base.clone()));
     store.set("hotkey", json!(config.hotkey.clone()));
+    store.set("other", json!(config.other.clone()));
     store.save().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -196,6 +197,10 @@ pub fn get_config(app: tauri::AppHandle) -> Config {
             .get("hotkey")
             .and_then(|data| serde_json::from_value(data).ok())
             .unwrap_or_else(|| HotkeyConfig::default()),
+        other: store
+            .get("other")
+            .and_then(|data| serde_json::from_value(data).ok())
+            .unwrap_or_else(|| OtherConfig::default()),
     }
 }
 

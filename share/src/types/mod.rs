@@ -103,6 +103,7 @@ pub struct Config {
     pub server: ServerConfig,
     pub hotkey: HotkeyConfig,
     pub llm: LLMConfig,
+    pub other: OtherConfig,
 }
 
 impl Config {
@@ -112,6 +113,22 @@ impl Config {
             server: ServerConfig::default(),
             hotkey: HotkeyConfig::default(),
             llm: LLMConfig::default(),
+            other: OtherConfig::default(),
+        }
+    }
+}
+
+#[napi(object)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct OtherConfig {
+    pub query_server_host: String,
+}
+
+impl OtherConfig {
+    pub fn default() -> Self {
+        OtherConfig {
+            query_server_host: "192.168.0.195".to_string(),
         }
     }
 }

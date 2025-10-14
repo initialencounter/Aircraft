@@ -5,6 +5,7 @@ import type {
   HotkeyConfig,
   LLMConfig,
   CustomHotkey,
+  OtherConfig,
 } from 'aircraft-rs'
 
 export const ServerConfigSchema: Schema<ServerConfig> = Schema.object({
@@ -48,11 +49,16 @@ export const LlmConfigSchema: Schema<LLMConfig> = Schema.object({
   model: Schema.string().description('模型').default('moonshot-v1-128k'),
 }).description('服务设置')
 
+export const OtherConfigSchema: Schema<OtherConfig> = Schema.object({
+  queryServerHost: Schema.string().description('技术部备注查询服务器地址').default('192.168.0.195'),
+}).description('其他设置')
+
 export interface Config {
   base: BaseConfig
   server: ServerConfig
   llm: LLMConfig
   hotkey: HotkeyConfig
+  other: OtherConfig
 }
 
 export const ConfigSchema: Schema<Config> = Schema.object({
@@ -60,4 +66,5 @@ export const ConfigSchema: Schema<Config> = Schema.object({
   server: ServerConfigSchema,
   llm: LlmConfigSchema,
   hotkey: HotkeyConfigSchema,
+  other: OtherConfigSchema,
 })
