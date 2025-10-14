@@ -115,6 +115,31 @@ async function entrypoint() {
     createMask()
     insetBatchAssignChecker()
     insetBatchAssignButton()
+    listenTableChange()
+  }
+
+  function listenTableChange() {
+    const refreshButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(13) > a:nth-child(1)') as HTMLAnchorElement
+    const nextPageButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(10) > a:nth-child(1)') as HTMLAnchorElement
+    const prevPageButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(4) > a:nth-child(1)') as HTMLAnchorElement
+    const lastPageButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(11) > a:nth-child(1)') as HTMLAnchorElement
+    const firstPageButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > a:nth-child(1)') as HTMLAnchorElement
+    const searchButton = document.querySelector('#searchBtn') as HTMLAnchorElement
+    for (const button of [refreshButton, nextPageButton, prevPageButton, lastPageButton, firstPageButton, searchButton]) {
+      if (button) {
+        button.addEventListener('click', () => {
+          setTimeout(() => {
+            insetBatchAssignChecker()
+            const checkboxes = document.querySelectorAll('.BatchAssignCheckBox') as NodeListOf<HTMLInputElement>
+            checkboxes.forEach(checkbox => {
+              checkbox.checked = false
+            })
+            const headerCheckbox = document.querySelector('.datagrid-header-check > input') as HTMLInputElement
+            if (headerCheckbox) headerCheckbox.checked = false
+          }, 500)
+        })
+      }
+    }
   }
 
   function insetBatchAssignChecker() {
@@ -122,6 +147,8 @@ async function entrypoint() {
     if (!tableHeader) return
 
     const checkboxHeader = createCheckboxHeaderElement()
+    if (tableHeader.innerHTML.includes('datagrid-header-check'))
+      tableHeader.removeChild(tableHeader.children[0])
     tableHeader.insertBefore(checkboxHeader, tableHeader.children[0])
     const parentContainer = document.querySelector('.datagrid-view2 > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1)')
     if (!parentContainer) return
@@ -131,6 +158,7 @@ async function entrypoint() {
       const href = (parent?.children?.[0].children?.[0].children?.[0] as HTMLAnchorElement)?.href
       if (!href) continue
       const taskId = href.split("'")[1]
+      if (parent.innerHTML.includes('BatchAssignCheckBox')) continue
       parent.insertBefore(createCheckboxElement(taskId), parent.children[0]);
     }
   }
@@ -188,7 +216,8 @@ async function entrypoint() {
   async function insetBatchAssignButton() {
     const targetParent = document.getElementById('toolbar')
     if (!targetParent) return
-
+    // 不重复创建
+    if (targetParent.innerHTML.includes('experiment_assign_user')) return
     // 创建按钮容器并设置样式，避免与footer冲突
     const buttonContainer = document.createElement('div')
     buttonContainer.style.display = 'flex'
@@ -426,13 +455,6 @@ async function entrypoint() {
     if (!uid || !users.length) return false
     // 使用 some 方法提高查找性能
     return users.some(user => user.userId === uid)
-  }
-
-  function refreshList() {
-    const refreshButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(13) > a:nth-child(1)') as HTMLAnchorElement
-    if (refreshButton) {
-      refreshButton.click()
-    }
   }
 
   function makeExperimentFormData(htmlString: string) {
