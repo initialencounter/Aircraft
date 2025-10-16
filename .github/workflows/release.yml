@@ -76,5 +76,5 @@ jobs:
         with:
           files: |
             target/release/bundle/msi/aircraft_${{ env.version }}_x64_zh-CN.msi
-            electron/release/${{ env.version }}/aircraft_${{ env.version }}_electron_x64-setup.exe
+            electron/out/make/squirrel.windows/x64/aircraft_${{ env.version }}_electron_x64-setup.exe
           name: 'Aircraft ${{ env.version }}'
