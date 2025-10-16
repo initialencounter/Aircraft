@@ -159,6 +159,7 @@ export interface OtherConfig {
 export declare function getDefaultConfig(): Config
 export declare function searchFile(fileName: string): Promise<Array<SearchResult>>
 export declare function searchProperty(url: string, searchText: string): Promise<Array<DataModel>>
+export declare function openLocalDir(target: string): void
 export declare class AircraftRs {
   constructor(appLogDir: string, config: ServerConfig, llmConfig: LLMConfig, hotkeyConfig: HotkeyConfig)
   startServer(): void

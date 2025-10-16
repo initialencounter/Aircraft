@@ -263,3 +263,8 @@ pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::
 pub async fn search_property(url: String, search_text: String) -> Vec<share::hotkey_handler::copy::DataModel> {
     share::hotkey_handler::copy::search_property(url, search_text).await
 }
+
+#[napi]
+pub fn open_local_dir(target: String) {
+    share::utils::fs::open_local_dir(&target);
+}
