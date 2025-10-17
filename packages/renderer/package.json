@@ -21,19 +21,19 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vueuse/core": "^13.9.0",
     "aircraft-rs": "workspace:*",
-    "element-plus": "^2.11.2",
+    "element-plus": "^2.11.5",
     "markdown-vue": "^1.0.3",
     "pinia": "^3.0.3",
-    "sass-embedded": "^1.92.0",
+    "sass-embedded": "^1.93.2",
     "schemastery-vue": "^7.3.14",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6",
     "vue": "^3.6.0-alpha.2",
     "vue-i18n": "^11.1.12",
-    "vue-router": "^4.5.1",
-    "vue-tsc": "^3.0.7-alpha.1"
+    "vue-router": "^4.6.3",
+    "vue-tsc": "^3.1.1"
   },
   "dependencies": {
     "spark-md5": "^3.0.2"
