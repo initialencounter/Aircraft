@@ -121,17 +121,12 @@ async function getGoodsPath(projectNo: string): Promise<string> {
 }
 
 // 处理单元格点击事件
-const handleCellClick = (cell: HTMLElement) => {
+const handleCellClick = (_row: any, _column: any, cell: HTMLTableCellElement, _event: Event) => {
   const text = cell.innerText.trim() // 获取单元格内容
   if (text) {
     // 使用隐藏的输入框进行复制
-    const input = document.createElement('input')
-    input.value = text
-    document.body.appendChild(input)
-    input.select()
-    document.execCommand('copy')
-    document.body.removeChild(input)
-    ElMessage.success(`已复制: ${text}`)
+    ipcManager.invoke('set_clipboard_text', { text })
+    ElMessage.success('已复制到剪贴板'+': ' + text)
   }
 }
 </script>

@@ -110,6 +110,10 @@ class Ipc extends Service {
     ipcMain.handle('search_property', async (_, { url, searchText }) => {
       return await this.ctx.bindings.native.searchProperty(url, searchText) as DataModel[]
     })
+
+    ipcMain.handle('set_clipboard_text', async (_, { text }) => {
+      return this.ctx.bindings.native.setClipboardText(text)
+    })
   }
 
 }

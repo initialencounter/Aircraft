@@ -2,6 +2,7 @@ pub mod dialog;
 pub mod fs;
 
 use chrono::Local;
+use clipboard_rs::{Clipboard, ClipboardContext};
 pub use dialog::*;
 pub use fs::*;
 
@@ -48,4 +49,17 @@ pub fn build_confirmation_message(raw_file_info: &[RawFileInfo]) -> String {
         message.push_str(&format!("{}. {}\n", index + 1, file.file_name));
     }
     message
+}
+
+pub fn set_clipboard_text(text: String) {
+    match ClipboardContext::new() {
+        Ok(ctx) => {
+            if let Err(e) = ctx.set_text(text) {
+                eprintln!("Failed to set clipboard text: {}", e);
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to create clipboard context: {}", e);
+        }
+    }
 }

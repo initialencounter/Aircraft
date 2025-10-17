@@ -268,3 +268,8 @@ pub async fn search_property(url: String, search_text: String) -> Vec<share::hot
 pub fn open_local_dir(target: String) {
     share::utils::fs::open_local_dir(&target);
 }
+
+#[napi]
+pub fn set_clipboard_text(text: String) {
+    share::utils::set_clipboard_text(text);
+}
