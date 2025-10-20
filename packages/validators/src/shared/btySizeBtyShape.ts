@@ -11,6 +11,7 @@ export function btySizeBtyShape(
   btyShape: string
 ): CheckResult[] {
   if (
+    btySize.includes('Ф') ||
     btySize.includes('Φ') ||
     btySize.includes('φ') ||
     btySize.includes('Ø') ||
@@ -40,6 +41,7 @@ export function btySizeBtyShape(
     '2c9180838b90642e018bf132f37f5a60',
   ].includes(btyShape)) {
     if (
+      !btySize.includes('Ф') &&
       !btySize.includes('Φ') &&
       !btySize.includes('φ') &&
       !btySize.includes('Ø') &&
@@ -48,7 +50,7 @@ export function btySizeBtyShape(
       return [
         {
           ok: false,
-          result: '圆形电池缺少符号，应包含 Φ φ Ø ø',
+          result: '圆形电池缺少符号，应包含 Ф Φ φ Ø ø',
         },
       ]
     }
