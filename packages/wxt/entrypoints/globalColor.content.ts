@@ -11,6 +11,7 @@ export default defineContentScript({
     'https://*/page/html/*',
     'https://*/inspect/batterytest/query/main',
     'https://*/flow/inspect/inspect/main',
+    'https://*/flow/inspect/audit/main',
     'https://*/sales/entrust/list',
     'https://*/project/main',
     'https://*/sales/apply/main',
