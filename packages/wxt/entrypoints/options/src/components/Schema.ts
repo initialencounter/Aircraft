@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  hundredRowsResult: boolean
   assignExperiment: boolean
   pekProjectNoColor?: string
   sekProjectNoColor?: string
@@ -57,6 +58,12 @@ const ModelsWithFactoryList: Schema<ModelsWithFactory> = Schema.object({
 })
 
 export const Config: Schema<Config> = Schema.intersect([
+  // 全局设置 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  Schema.object({
+    hundredRowsResult: Schema.boolean()
+      .description('每页默认显示100条结果')
+      .default(true),
+  }).description('全局设置'),
   // 业务受理 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({
     onekeyAssign: Schema.boolean().description('一键分配').default(true),
