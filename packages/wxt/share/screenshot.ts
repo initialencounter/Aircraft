@@ -126,7 +126,6 @@ function startSyncInterval() {
 
 function addShotListener(Qmsg: QmsgType) {
   const itemCName = document.querySelector("#entrustEditForm")
-  console.log(itemCName, 'itemCName')
   if (!itemCName) return
   itemCName.addEventListener('dblclick', () => {getNameScreenShot(Qmsg)})
 }

@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  screenshotItemName: boolean
   hundredRowsResult: boolean
   assignExperiment: boolean
   pekProjectNoColor?: string
@@ -88,6 +89,9 @@ export const Config: Schema<Config> = Schema.intersect([
     enableSetEntrust: Schema.boolean()
       .description(`自动设置初验的内容`)
       .default(true),
+    screenshotItemName: Schema.boolean()
+      .description('双击截图品名并复制到剪贴板')
+      .default(false),
   }).description('初验'),
   Schema.union([
     Schema.object({

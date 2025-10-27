@@ -68,7 +68,7 @@ async function entrypoint() {
   setAmountListener()
   insertReloadButton()
   startFollow()
-  addShotListener(Qmsg)
+  if (localConfig.screenshotItemName === true) addShotListener(Qmsg)
   startSyncInterval()
   startListenAmount(localConfig.amount)
   chrome.storage.local.get(
