@@ -3,10 +3,15 @@ import { sleep } from '../share/utils'
 export default defineContentScript({
   runAt: 'document_start',
   matches: [
-    'https://*/document*',
-    'https://*/page/html/*',
     'https://*/inspect/batterytest/query/main',
+    'https://*/flow/inspect/assignexperiment/main',
     'https://*/flow/inspect/inspect/main',
+    'https://*/flow/inspect/audit/main',
+    'https://*/inspect/experiment/query/main',
+    'https://*/report/adjust/edit/main',
+    'https://*/report/adjust/reset/main',
+    'https://*/customer/management',
+    'https://*/reckoner/management',
     'https://*/sales/entrust/list',
     'https://*/project/main',
     'https://*/sales/apply/main',
