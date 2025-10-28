@@ -484,7 +484,7 @@ async function entrypoint() {
   async function getExperimentHtmlURL(projectNo: string, experimentId: string) {
     try {
       const response = await fetch(
-        `https://${window.location.host}/rest/flow/task/get/experiment?systemId=&itemCName=&itemEName=&entrustCustomerCName=&entrustCustomerEName=&projectStartDate=${startDate}&projectEndDate=${endDate}&projectNo=${projectNo}&projectState=0&page=1&rows=10`,
+        `https://${window.location.host}/rest/flow/task/get/experiment?systemId=&itemCName=&itemEName=&entrustCustomerCName=&entrustCustomerEName=&projectStartDate=${startDate}&projectEndDate=${endDate}&projectNo=${projectNo}&projectState=0&page=1&rows=100`,
         {
           method: 'GET',
           credentials: 'include',
