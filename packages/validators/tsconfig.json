@@ -8,7 +8,12 @@
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@aircraft/validators/*": ["*"],
+      "@aircraft/validators": ["index"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

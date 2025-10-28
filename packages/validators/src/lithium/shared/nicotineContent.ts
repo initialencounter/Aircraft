@@ -8,7 +8,7 @@ export function checkNicotineContent(
     otherDescribeCAddition.includes('尼古丁盐含量')
   const hasFivePercent = otherDescribeCAddition.includes('5%')
   const hasPointFivePercent = otherDescribeCAddition.includes('.5%')
-  const hasMassVolume = otherDescribeCAddition.includes('质量体积分数')
+  const hasMassVolume = otherDescribeCAddition.includes('质量体积')
 
   if (hasNicotine && hasFivePercent && !hasMassVolume && !hasPointFivePercent) {
     return [

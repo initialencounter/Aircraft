@@ -1,4 +1,4 @@
-import { CheckResult } from "./types"
+import { CheckResult } from './types'
 
 const MAX_ENERGY_DENSITY = 0.32 // 假设最大能量密度为0.32 Wh/g
 

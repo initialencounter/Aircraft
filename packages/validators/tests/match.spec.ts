@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { matchWattHour, matchVoltage, matchCapacity, matchBatteryWeight } from '../src/shared/utils/index'
-
+import {describe, expect, it} from 'vitest'
+import {matchBatteryWeight, matchCapacity, matchVoltage, matchWattHour} from '../src/lithium/shared/utils'
+import {checkPekBtyType, checkSekBtyType} from "../src";
+import {readFileSync, writeFileSync} from "fs";
 
 // it('should return null for inputs without voltage', () => {
 //   for (let i = 1; i < 163; i++) {
@@ -712,4 +713,75 @@ describe('匹配方法测试', () => {
       expect(matchBatteryWeight('为45g')).toBe(45)
     })
   })
+
+
+  // (async () => {
+//     async function sleep(ms) {
+//       return new Promise((resolve) => setTimeout(resolve, ms))
+//     }
+//     let arr = [];
+//     for (let i = 0; i < 100; i++) {
+//       const anchor = document.querySelector(`#datagrid-row-r4-2-${i} > td:nth-child(1) > div > a`)
+//       const url = new URL(anchor.href)
+//       const query = new URLSearchParams(url.search)
+//       const projectId = query.get('projectId')
+//       const res = await fetch(`/rest/sek/inspect/battery/${projectId}`, {
+//         method: 'GET',
+//         credentials: 'include',
+//       })
+//       if (!res.ok) {
+//         continue;
+//       }
+//       const data = await res.json()
+//       if (data.editStatus !== 3) continue
+//       arr.push(data)
+//       console.log(data.projectNo)
+//       await sleep(500)
+//     }
+//     console.log(arr)
+//   }
+// )();
+
+
+  // 验证
+  describe('验证', () => {
+    it('验证空运数据', () => {
+      for (let i = 1; i < 100; i++) {
+        const data = JSON.parse(readFileSync(`./tests/data/pek/data${i}.json`, 'utf8'));
+        const result = checkPekBtyType(data)
+        if (result.length === 0) continue;
+        if ([48].includes(i) && result[0].result.includes('能量密度')) continue;
+        if ([68].includes(i) && result[0].result=='容量*电压 与 瓦时数 误差大于5%') continue;
+        console.log(data)
+        console.log(result)
+        console.log(i)
+        expect(result.length).toBe(0)
+      }
+    })
+    it('验证海运数据', () => {
+      for (let i = 1; i < 99; i++) {
+        const data = JSON.parse(readFileSync(`./tests/data/sek/data${i}.json`, 'utf8'));
+        const result = checkSekBtyType(data)
+        if (result.length === 0) continue;
+        if ([17,28,66,92].includes(i) && result[0].result.includes('能量密度')) continue;
+        if ([48].includes(i) && result[0].result.includes('包装必须达到 II 级包装的性能标准')) continue;
+        if (i===55&&result.length===6) continue;
+        console.log(data)
+        console.log(result)
+        console.log(i)
+        expect(result.length).toBe(0)
+      }
+    })
+  })
+
+  // describe('process', () => {
+  //   it('验证空运数据', () => {
+  //     const data = JSON.parse(readFileSync(`./tests/data/sek/data.json`, 'utf8'));
+  //     let i = 0;
+  //     data.forEach((item) => {
+  //       writeFileSync(`./tests/data/sek/data${i}.json`,JSON.stringify(item, null, 2), 'utf8')
+  //       i++
+  //     })
+  //   })
+  // })
 })

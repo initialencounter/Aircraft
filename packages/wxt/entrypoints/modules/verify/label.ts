@@ -2,8 +2,8 @@ import {
   checkLabel,
   getPekExpectedLabel,
   getSekExpectedLabel,
-} from '@aircraft/validators/lib/summary/goods'
-import { getPkgInfoSubType } from '@aircraft/validators/lib/shared/utils'
+  getPkgInfoSubType,
+} from '@aircraft/validators'
 import type { PekData, SekData } from '@aircraft/validators'
 
 /**
