@@ -1,4 +1,5 @@
 import { getQmsg } from '../share/qmsg'
+import '../assets/message.min.css'
 import { sleep } from '../share/utils'
 
 interface User {
@@ -611,6 +612,6 @@ async function entrypoint() {
     } else {
       confirm(errorMessages.join('\n'))
     }
-    window.location.reload()
+    // window.location.reload()
   }
 }
