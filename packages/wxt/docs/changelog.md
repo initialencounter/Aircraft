@@ -1,5 +1,19 @@
 # 更新日志
 
+## [v2.0.15] - 2025-10-30
+
+### 新增
+
+- 所有搜索页面默认显示100条结果([f77cb3b](https://github.com/initialencounter/Aircraft/commit/f77cb3b38dfc9d228c5eceb0d79e7ff8e231dead))
+
+- 自动保存配置([361c954](https://github.com/initialencounter/Aircraft/commit/361c954db1e0c55349efac873c5a0bbcb8856281))
+
+### 变动
+
+- 默认关闭初验双击品名截图([d5bf158](https://github.com/initialencounter/Aircraft/commit/d5bf158374de930b31a8c7c56ab7a07f816490e2))
+
+
+
 ## [v2.0.14] - 2025-10-14
 
 ### 新增
