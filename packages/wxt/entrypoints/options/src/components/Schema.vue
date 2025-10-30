@@ -1,11 +1,6 @@
 <template>
   <div class="fixed-button-container">
-    <el-text class="mx-1" type="warning"
-      >在您做出任何修改之后请点击保存，否则修改将不会生效</el-text
-    >
     <el-row class="row-bg" justify="end">
-      <el-button class="el-button-save" @click="submitForm()">保存</el-button>
-      <el-button class="el-button-reset" @click="resetForm()">重置</el-button>
       <el-button class="el-button-export" @click="exportConfig"
         >导出配置</el-button
       >
@@ -45,12 +40,26 @@
 
 <script lang="ts" setup>
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Config } from './Schema'
-import { LocalConfig } from '../../../../share/utils'
+
 // 判断是否处于开发环境
 const centerDialogVisible = ref(false)
 const importText = ref('')
+
+// 防抖函数
+const debounce = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout
+  return (...args: any[]) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => func.apply(null, args), delay)
+  }
+}
+
+// 防抖保存函数
+const debouncedSave = debounce(() => {
+  saveConfig()
+}, 100)
 
 const saveConfig = () => {
   try {
@@ -60,6 +69,7 @@ const saveConfig = () => {
       message: '保存成功',
       type: 'success',
       plain: true,
+      duration: 500,
     })
   } catch (error) {
     ElMessage({
@@ -71,8 +81,20 @@ const saveConfig = () => {
   }
 }
 
-const config = ref<Config>(LocalConfig)
-const initial = ref<Config>(LocalConfig)
+const config = ref<Config | null>(null)
+const initial = ref<Config | null>(null)
+
+// 监听配置变化
+watch(
+  config,
+  (newConfig, oldConfig) => {
+    if (oldConfig && newConfig) debouncedSave(newConfig)
+  },
+  {
+    deep: true, // 深度监听对象属性变化
+    immediate: false, // 不立即执行
+  }
+)
 
 chrome.storage.local.get(
   Object.keys(new Config()) as (keyof Config)[],
@@ -81,14 +103,6 @@ chrome.storage.local.get(
     config.value = JSON.parse(JSON.stringify(data))
   }
 )
-
-const submitForm = async () => {
-  saveConfig()
-}
-
-const resetForm = () => {
-  config.value = new Config()
-}
 
 const exportConfig = () => {
   // set clipboard
@@ -125,17 +139,8 @@ const importConfig = () => {
 
 <style>
 .fixed-button-container {
-  position: fixed;
-  top: 10px;
-  left: 40%;
-  z-index: 1000;
   padding: 10px;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.form-container {
-  margin-top: 80px; /* 给固定按钮留出空间 */
 }
 
 .el-row {
