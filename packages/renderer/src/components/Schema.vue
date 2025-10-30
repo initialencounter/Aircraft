@@ -46,7 +46,12 @@ const defaultConfig: Config = {
     copyKey: 'ctrl+shift+z',
     uploadEnable: false,
     uploadKey: 'ctrl+shift+u',
-    customHotkey: [],
+    customHotkey: [
+      {
+        hotkey: 'ctrl+NUMPADADD',
+        cmd: 'calc',
+      },
+    ],
   },
   llm: {
     baseUrl: 'https://api.moonshot.cn/v1',

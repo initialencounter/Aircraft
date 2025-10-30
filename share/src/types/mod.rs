@@ -71,7 +71,10 @@ impl HotkeyConfig {
             upload_key: "ctrl+shift+u".to_string(),
             copy_enable: false,
             copy_key: "ctrl+shift+z".to_string(),
-            custom_hotkey: vec![],
+            custom_hotkey: vec![CustomHotkey{
+                hotkey: "ctrl+NUMPADADD".to_string(),
+                cmd: "calc".to_string(),
+            }],
         }
     }
 }
