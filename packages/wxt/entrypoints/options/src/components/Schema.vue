@@ -1,15 +1,22 @@
 <template>
-  <el-row class="row-bg" justify="end">
-    <el-button class="el-button-save" @click="submitForm()">保存</el-button>
-    <el-button class="el-button-reset" @click="resetForm()">重置</el-button>
-    <el-button class="el-button-export" @click="exportConfig"
-      >导出配置</el-button
+  <div class="fixed-button-container">
+    <el-text class="mx-1" type="warning"
+      >在您做出任何修改之后请点击保存，否则修改将不会生效</el-text
     >
-    <el-button class="el-button-import" @click="centerDialogVisible = true"
-      >导入配置</el-button
-    >
-  </el-row>
-  <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
+    <el-row class="row-bg" justify="end">
+      <el-button class="el-button-save" @click="submitForm()">保存</el-button>
+      <el-button class="el-button-reset" @click="resetForm()">重置</el-button>
+      <el-button class="el-button-export" @click="exportConfig"
+        >导出配置</el-button
+      >
+      <el-button class="el-button-import" @click="centerDialogVisible = true"
+        >导入配置</el-button
+      >
+    </el-row>
+  </div>
+  <div class="form-container">
+    <k-form v-model="config" :schema="Config" :initial="initial"></k-form>
+  </div>
   <el-dialog
     v-model="centerDialogVisible"
     title="导入配置"
@@ -40,6 +47,7 @@
 import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 import { Config } from './Schema'
+import { LocalConfig } from '../../../../share/utils'
 // 判断是否处于开发环境
 const centerDialogVisible = ref(false)
 const importText = ref('')
@@ -63,8 +71,8 @@ const saveConfig = () => {
   }
 }
 
-const config = ref<Config>({})
-const initial = ref<Config>({})
+const config = ref<Config>(LocalConfig)
+const initial = ref<Config>(LocalConfig)
 
 chrome.storage.local.get(
   Object.keys(new Config()) as (keyof Config)[],
@@ -116,6 +124,20 @@ const importConfig = () => {
 </script>
 
 <style>
+.fixed-button-container {
+  position: fixed;
+  top: 10px;
+  left: 40%;
+  z-index: 1000;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
+  margin-top: 80px; /* 给固定按钮留出空间 */
+}
+
 .el-row {
   margin-bottom: 20px;
 }

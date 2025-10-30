@@ -11,7 +11,7 @@
       >重置</el-button
     >
   </div>
-  <k-form v-model="config" :schema="ConfigSchema" :initial="initial"></k-form>
+  <k-form class="config-schema" v-model="config" :schema="ConfigSchema" :initial="initial"></k-form>
   <!-- 添加遮罩层 - 现在相对于容器定位 -->
   <div class="loading-mask" v-if="loading" @dblclick="loading = false">
     <div class="loading-content">
@@ -111,9 +111,12 @@ onMounted(() => {
 <style scoped>
 .fixed-element {
   position: fixed;
-  top: 55px;
-  left: 250px;
+  top: 60px;
+  left: 150px;
   z-index: 999;
+}
+.config-schema {
+  margin-top: 50px; /* 给按钮留出空间 */
 }
 .schema-button {
   background-color: #1e1e20;
