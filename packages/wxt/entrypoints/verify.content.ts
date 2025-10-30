@@ -36,7 +36,6 @@ import { createLabelSelectionUI } from './modules/ui/labels'
 
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
-import { handleFileDrop } from './modules/verify/llm'
 
 // 声明全局函数
 declare global {
@@ -115,13 +114,6 @@ export default defineContentScript({
     // 创建遮罩和标签检查UI
     createMask()
     createLabelSelectionUI(localConfig)
-
-    // 注册拖放事件处理
-    document.ondragover = preventDefault
-    document.ondragenter = preventDefault
-    document.ondragleave = preventDefault
-    document.ondrop = (event) =>
-      handleFileDrop(event, systemId, showMask, hideMask, localConfig)
 
     const span = document.createElement('span')
     span.className = 'l-btn-text'
