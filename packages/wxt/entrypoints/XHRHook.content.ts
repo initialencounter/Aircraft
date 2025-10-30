@@ -77,12 +77,16 @@ function injectInterceptScript() {
 
 async function modifyHTMLTableRows() {
   await sleep(400); // 等待页面加载完成
-  const hundredRows = document.querySelector('.pagination-page-list') as HTMLOptionElement;
+  const hundredRows = document.querySelector('.pagination-page-list') as HTMLSelectElement;
   if (hundredRows) {
-    const span = document.createElement('span');
-    span.innerText = '100条/页';
-    const td = document.createElement('td');
-    td.appendChild(span);
-    hundredRows?.parentElement?.parentElement?.children[0].replaceWith(td);
+    // 方法1: 克隆元素并移除所有事件监听器
+    const clonedElement = hundredRows.cloneNode(true) as HTMLSelectElement;
+    // 替换原元素，这样会移除所有绑定的事件
+    hundredRows.parentNode?.replaceChild(clonedElement, hundredRows);
+
+    const newHundredRows = document.querySelector('.pagination-page-list') as HTMLSelectElement;
+    // 设置为100行
+    await sleep(200);
+    newHundredRows.value = '100';
   }
 }
