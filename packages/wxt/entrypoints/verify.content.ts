@@ -180,8 +180,6 @@ export default defineContentScript({
           showClose: true,
           timeout: 4000,
         })
-        document.getElementById('lims-verifyButton-icon')!.removeChild(span)
-        document.getElementById('lims-verifyButton-icon')?.removeChild(img)
       }
     }
   },
