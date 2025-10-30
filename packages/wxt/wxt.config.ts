@@ -38,5 +38,12 @@ export default defineConfig({
       'contextMenus',
     ],
     host_permissions: ['<all_urls>'],
+    options_page: 'options.html',
+  },
+  hooks: {
+    'build:manifestGenerated': (wxt, manifest) => {
+      // 删除自动生成的 options_ui 字段
+      delete manifest.options_ui;
+    },
   },
 })
