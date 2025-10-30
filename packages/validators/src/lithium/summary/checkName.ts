@@ -8,9 +8,9 @@ export function checkName(
   model: string,
   summaryCName: string
 ): CheckResult[] {
-  formCName = formCName.trim()
-  formEName = formEName.trim()
-  summaryCName = summaryCName.trim()
+  formCName = formCName.trim().replace(/<[^>]+>/g, '')
+  formEName = formEName.trim().replace(/<[^>]+>/g, '')
+  summaryCName = summaryCName.trim().replace(/<[^>]+>/g, '')
   model = model.trim()
   let formCNameText = ''
   let formENameText = ''
