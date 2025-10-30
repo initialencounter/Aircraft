@@ -116,8 +116,8 @@ async function entrypoint() {
       let color = processedProjectNoValues.get(value)
 
       if (color === undefined) {
-        color = getProjectNoColor(value) ?? ''
-        processedProjectNoValues.set(value, color)
+        color = getProjectNoColor(value)
+        processedProjectNoValues.set(value, color ?? '')
       }
 
       if (color && projectNoElement.style.color !== color) {
@@ -139,8 +139,8 @@ async function entrypoint() {
         let color = processedProjectNoValues.get(innerHTML)
 
         if (color === undefined) {
-          color = getProjectNoColor(innerHTML) ?? ''
-          processedProjectNoValues.set(innerHTML, color)
+          color = getProjectNoColor(innerHTML)
+          processedProjectNoValues.set(innerHTML, color ?? '')
         }
 
         if (color) {

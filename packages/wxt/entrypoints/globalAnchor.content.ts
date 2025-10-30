@@ -31,11 +31,13 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  const localConfig = await chrome.storage.local.get(['openInNewTab'])
   await sleep(400)
-  if (localConfig.openInNewTab === true) {
-    setupOpenInNewTab()
-  }
+
+  chrome.storage.local.get(['openInNewTab'], async (localConfig) => {
+    if (localConfig.openInNewTab === true) {
+      setupOpenInNewTab()
+    }
+  })
 
   function setupOpenInNewTab() {
     setInterval(insertOpenInNewTabOnListOptimized, 200)

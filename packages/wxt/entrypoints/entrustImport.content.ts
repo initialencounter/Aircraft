@@ -14,15 +14,14 @@ let isListening = false
 
 async function entrypoint() {
   try {
-    // 使用 Promise 化的 chrome.storage API
-    const result = await chrome.storage.local.get(['autoImport'])
-    if (result.autoImport === false) {
-      console.log('未启用导入委托单，退出脚本')
-      return
-    }
-    
-    await sleep(400)
-    await listenImportHotkey()
+    chrome.storage.local.get(['autoImport'], async (localConfig) => {
+      if (localConfig?.autoImport === false) {
+        console.log('未启用导入委托单，退出脚本')
+        return
+      }
+      await sleep(400)
+      await listenImportHotkey()
+    })
   } catch (error) {
     console.error('初始化失败:', error)
   }
@@ -31,7 +30,7 @@ async function entrypoint() {
     try {
       const projectNo = (await getClipboardText()).replace(/[^0-9A-Z]/g, '')
       console.log('项目编号：', projectNo)
-      
+
       if (!projectNo) {
         console.log('没有项目编号，退出脚本')
         return
@@ -44,14 +43,14 @@ async function entrypoint() {
       if (projectNoInput) {
         projectNoInput.value = projectNo
       }
-      
+
       const searchBtn = document.querySelector(
         '#toolbar > p:nth-child(2) > a:nth-child(5)'
       ) as HTMLAnchorElement
       if (searchBtn) {
         searchBtn.click()
       }
-      
+
       // 还原原来的 setInterval 轮询方式
       const handle = setInterval(() => {
         const row1 = document.querySelector(
@@ -81,7 +80,7 @@ async function entrypoint() {
       if (!event.ctrlKey || event.key !== 'd') {
         return
       }
-      
+
       event.preventDefault() // 阻止默认的保存行为
       await autoImport()
     }

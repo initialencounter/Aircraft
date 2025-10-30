@@ -181,7 +181,7 @@ function entrypoint() {
     if (request.action === 'getIframeRect') {
       sendResponse(
         IFRAME_RECT_MAP[sender.tab!.id!] ||
-          DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 })
+        DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 })
       )
       return true // 保持消息通道开放，等待异步响应
     }

@@ -253,7 +253,7 @@ async function entrypoint() {
         return
       }
       if (globalAssignUser !== selectUid) {
-        await chrome.storage.local.set({ assignUser: selectUid })
+        chrome.storage.local.set({ assignUser: selectUid })
         globalAssignUser = selectUid
       }
       const data: EntrustFormData | undefined = getEntrustFormData()

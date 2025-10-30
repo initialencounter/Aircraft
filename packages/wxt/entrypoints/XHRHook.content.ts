@@ -37,13 +37,14 @@ export default defineContentScript({
 
 async function entrypoint() {
   try {
-    const localConfig = await chrome.storage.local.get(['hundredRowsResult'])
-    if (localConfig?.hundredRowsResult === false) {
-      console.log('[XHR Hook] hundredRowsResult is disabled, skipping injection.');
-      return;
-    }
-    injectInterceptScript();
-    modifyHTMLTableRows();
+    chrome.storage.local.get(['hundredRowsResult'], (localConfig) => {
+      if (localConfig?.hundredRowsResult === false) {
+        console.log('[XHR Hook] hundredRowsResult is disabled, skipping injection.');
+        return;
+      }
+      injectInterceptScript();
+      modifyHTMLTableRows();
+    })
   } catch (error) {
     console.error('[XHR Hook] Error in entrypoint:', error);
   }

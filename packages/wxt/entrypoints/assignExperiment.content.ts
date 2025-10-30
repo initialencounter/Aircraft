@@ -106,18 +106,19 @@ export default defineContentScript({
 
 async function entrypoint() {
   const Qmsg = getQmsg()
-  const localConfig = await chrome.storage.local.get(['assignExperiment', 'assignExperimentUser'])
   const dataCache = new Map<string, any>()
   const currentDate = new Date()
   const endDate = currentDate.toISOString().split('T')[0]
   const startDate = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   await sleep(400)
-  if (localConfig.assignExperiment !== false) {
-    createMask()
-    insetBatchAssignChecker()
-    insetBatchAssignButton()
-    listenTableChange()
-  }
+  chrome.storage.local.get(['assignExperiment', 'assignExperimentUser'], (localConfig) => {
+    if (localConfig.assignExperiment !== false) {
+      createMask()
+      insetBatchAssignChecker()
+      insetBatchAssignButton(localConfig)
+      listenTableChange()
+    }
+  })
 
   function listenTableChange() {
     const refreshButton = document.querySelector('.datagrid-pager > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(13) > a:nth-child(1)') as HTMLAnchorElement
@@ -214,7 +215,7 @@ async function entrypoint() {
     return { TaskDict, checkedTaskIds }
   }
 
-  async function insetBatchAssignButton() {
+  async function insetBatchAssignButton(localConfig: any) {
     const targetParent = document.getElementById('toolbar')
     if (!targetParent) return
     // 不重复创建
@@ -239,7 +240,7 @@ async function entrypoint() {
     <span class='l-btn-text'>分配并提交试验单：</span>
   </span>
   `
-    assignButton.onclick = batchAssignAndSubmitExperiment
+    assignButton.onclick = () => { batchAssignAndSubmitExperiment(localConfig) }
 
     // select
     const select = document.createElement('select')
@@ -528,7 +529,7 @@ async function entrypoint() {
       return ''
     }
   }
-  async function batchAssignAndSubmitExperiment() {
+  async function batchAssignAndSubmitExperiment(localConfig: any) {
     const errorMessages: string[] = []
 
     const checkedTaskIds = getCheckedTaskIds()
@@ -612,6 +613,6 @@ async function entrypoint() {
     } else {
       confirm(errorMessages.join('\n'))
     }
-    // window.location.reload()
+    window.location.reload()
   }
 }
