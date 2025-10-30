@@ -29,7 +29,7 @@ const router = createRouter({
       component: Logs,
     },
     {
-      path: '/blake2',
+      path: '/md5',
       name: 'Md5Checker',
       component: Md5Checker,
     },

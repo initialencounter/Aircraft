@@ -48,8 +48,8 @@ const menuItems = [
   },
   {
     index: '4',
-    path: '/blake2',
-    label: 'BLAKE2',
+    path: '/md5',
+    label: 'MD5',
     icon: Clip,
     requiresUnlock: false,
   },
