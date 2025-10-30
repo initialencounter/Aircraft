@@ -1,6 +1,7 @@
-import { Config } from "entrypoints/options/src/components/Schema"
+import { Config } from "../entrypoints/options/src/components/Schema"
 
 const LocalConfig: Config = {
+  hundredRowsResult: true,
   screenshotItemName: false,
   assignExperiment: true,
   pekProjectNoColor: '#51a020',
@@ -47,6 +48,7 @@ const LocalConfig: Config = {
 }
 
 export const configKeys: Array<keyof typeof LocalConfig> = [
+  'hundredRowsResult',
   'screenshotItemName',
   'assignExperiment',
   'pekProjectNoColor',
