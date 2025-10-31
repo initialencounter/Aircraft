@@ -12,4 +12,4 @@ export { getPkgInfoSubType } from './lithium/shared/utils'
 
 export { checkPekSodiumBtyType } from './sodium/pek'
 export { checkSekSodiumBtyType } from './sodium/sek'
-// export { checkSekSodiumAttachment, checkPekSodiumAttachment } from './sodium/summary'
+export { checkSekSodiumAttachment, checkPekSodiumAttachment } from './summary'

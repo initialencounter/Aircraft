@@ -2,7 +2,7 @@ import type { CheckResult, PkgInfoSubType } from '../../lithium/shared/types'
 
 function getPekExpectedLabel(
   pkgInfoSubType: PkgInfoSubType,
-  netWeight: number
+  netWeight: number, 
 ): string[] {
   const label = []
   switch (pkgInfoSubType) {
@@ -11,6 +11,7 @@ function getPekExpectedLabel(
       break
     case '965, IA':
     case '968, IA':
+    case '976':
       label.push('9A', 'CAO')
       break
     case '965, IB':
@@ -21,6 +22,8 @@ function getPekExpectedLabel(
     case '969, I':
     case '967, I':
     case '970, I':
+    case '977, I':
+    case '978, I':
       label.push('9A')
       if (netWeight > 5) {
         label.push('CAO')
@@ -30,6 +33,8 @@ function getPekExpectedLabel(
     case '969, II':
     case '967, II':
     case '970, II':
+    case '977, II':
+    case '978, II':
       label.push('bty')
       break
   }

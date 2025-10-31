@@ -1,12 +1,15 @@
 import type { CheckResult, SekBtyType } from '../lithium/shared/types'
 
-const batteryTypeMap = {
+export const batteryTypeMap = {
   '500': '锂离子电池',
   '501': '锂离子电芯',
   '502': '锂金属电池',
   '503': '锂金属电芯',
   '504': '单电芯锂离子电池',
   '505': '单电芯锂金属电池',
+  '600': '钠离子电池',
+  '601': '钠离子电芯',
+  '602': '单电芯钠离子电池',
 }
 
 export function matchBatteryType(summaryBatteryType: string): SekBtyType | '' {
@@ -16,6 +19,9 @@ export function matchBatteryType(summaryBatteryType: string): SekBtyType | '' {
   if (summaryBatteryType.includes('锂金属电池')) return '502'
   if (summaryBatteryType.includes('锂金属电芯')) return '503'
   if (summaryBatteryType.includes('锂离子电池')) return '500'
+  if (summaryBatteryType.includes('单电芯钠离子电池')) return '602'
+  if (summaryBatteryType.includes('钠离子电芯')) return '601'
+  if (summaryBatteryType.includes('钠离子电池')) return '600'
   return ''
 }
 

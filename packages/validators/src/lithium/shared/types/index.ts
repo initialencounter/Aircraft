@@ -2,7 +2,7 @@ import type { AttachmentInfo, GoodsInfo, SummaryInfo } from 'aircraft-rs'
 import type { SummaryFromLLM } from './attachment'
 import type { EntrustData } from './entrust'
 
-export type SekBtyType = '500' | '501' | '504' | '502' | '503' | '505'
+export type SekBtyType = '500' | '501' | '504' | '502' | '503' | '505' | '600' | '601' | '602'
 export type PekUNNO =
   | ''
   | 'UN3480'
@@ -24,6 +24,9 @@ export type PekPkgInfo =
   | '969'
   | '970'
   | '952'
+  | '976'
+  | '977'
+  | '978'
 export type PkgInfoSubType =
   | ''
   | '968, IB'
@@ -39,6 +42,11 @@ export type PkgInfoSubType =
   | '969, I'
   | '970, I'
   | '952'
+  | '976'
+  | '977, I'
+  | '977, II'
+  | '978, I'
+  | '978, II'
 
 /**
  * PekData

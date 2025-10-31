@@ -14,7 +14,7 @@ import {
   matchDeviceTrademark,
   matchTestManual,
 } from './matchDevice'
-import { PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
+import { PekSodiumData, PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
 
 function matchWattHour(projectName: string) {
   const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*[MmKk]?[Ww][Hh]/g)]
@@ -64,13 +64,13 @@ function matchBatteryWeight(describe: string) {
   return weight
 }
 
-function getBtyTypeCode(currentData: PekData): SekBtyType {
+function getBtyTypeCode(currentData: PekData | PekSodiumData, isSodium: boolean = false): SekBtyType {
   const isIon: boolean = String(currentData['type1']) === '1'
   const isCell: boolean = String(currentData['type2']) === '1'
   const isSingleCell: boolean = currentData['otherDescribe'].includes('1790')
   if (isIon) {
-    if (isCell) return '501'
-    else return isSingleCell ? '504' : '500'
+    if (isCell) return isSodium ? '601' : '501'
+    else return isSodium ? (isSingleCell ? '602' : '600') : (isSingleCell ? '504' : '500')
   } else {
     if (isCell) return '503'
     else return isSingleCell ? '505' : '502'

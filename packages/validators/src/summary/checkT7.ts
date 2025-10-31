@@ -1,13 +1,6 @@
 import type { CheckResult, SekBtyType } from '../lithium/shared/types'
+import { batteryTypeMap } from './checkBatteryType'
 
-const batteryTypeMap = {
-  '500': '锂离子电池',
-  '501': '锂离子电芯',
-  '502': '锂金属电池',
-  '503': '锂金属电芯',
-  '504': '单芯锂离子电池',
-  '505': '单芯锂金属电池',
-}
 
 export function checkT7(
   batteryType: SekBtyType,
@@ -18,6 +11,7 @@ export function checkT7(
     case '501':
     case '502':
     case '503':
+    case '601':
       if (summaryTest7.includes('通过')) {
         return [
           {
@@ -28,6 +22,7 @@ export function checkT7(
       }
       break
     case '500':
+    case '600':
       if (summaryTest7.includes('不适用') && !note.includes('保护')) {
         return [
           {
@@ -38,6 +33,7 @@ export function checkT7(
       }
       break
     case '504':
+    case '602':
       if (summaryTest7.includes('不适用')) {
         return [
           {

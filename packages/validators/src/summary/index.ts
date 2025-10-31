@@ -38,9 +38,11 @@ import { checkUN38fg } from './checkUN38fg'
 import { checkPekGoods, checkSekGoods } from './goods'
 import { checkTitle } from './checkTitle'
 import { checkColor } from './checkColor'
+import { checkT8 } from './checkT8'
+import { PekSodiumData, PekSodiumPkgInfo, SekSodiumData } from '../sodium/shared/types'
 
 export function checkSekAttachment(
-  currentData: SekData,
+  currentData: SekData | SekSodiumData,
   attachmentInfo: AttachmentInfo,
   entrustData: EntrustData
 ) {
@@ -122,13 +124,14 @@ export function checkSekAttachment(
   return results
 }
 export function checkPekAttachment(
-  currentData: PekData,
+  currentData: PekData | PekSodiumData,
   attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData
+  entrustData: EntrustData,
+  isSodium: boolean = false,
 ) {
   const summaryData = attachmentInfo.summary
   const goodsInfo = attachmentInfo.goods
-  const btyType = getBtyTypeCode(currentData)
+  const btyType = getBtyTypeCode(currentData, isSodium)
   // 品名
   const {
     // 品名
@@ -226,10 +229,11 @@ interface SummaryCheckParams {
 }
 
 function checkSummaryFromLLM(
-  currentData: PekData | SekData,
+  currentData: PekData | SekData | PekSodiumData | SekSodiumData,
   summaryData: AttachmentInfo["summary"],
   entrustData: EntrustData,
-  summaryCheckParams: SummaryCheckParams
+  summaryCheckParams: SummaryCheckParams,
+  isSodium: boolean = false,
 ) {
   const results: CheckResult[] = []
   const {
@@ -267,6 +271,7 @@ function checkSummaryFromLLM(
   results.push(...checkMass(batteryWeight, summaryData.mass))
   results.push(...checkLiContent(liContent, summaryData.licontent))
   results.push(...checkT7(btyType, summaryData.test7, summaryData.note))
+  results.push(...checkT8(isSodium, summaryData.test8))
   results.push(...checkIssueDate(summaryData.issueDate, currentData.projectNo))
   results.push(...checkProjectNo(currentData.projectNo, summaryData.projectNo))
   results.push(...checkConsignor(entrustData.consignor, summaryData.consignor))
@@ -276,4 +281,20 @@ function checkSummaryFromLLM(
   results.push(...checkMarket(market, summaryData.testReportNo))
   results.push(...checkUN38fg(summaryData.un38f, summaryData.un38g))
   return results
+}
+
+export function checkSekSodiumAttachment(
+  currentData: SekSodiumData,
+  attachmentInfo: AttachmentInfo,
+  entrustData: EntrustData
+) {
+  return checkSekAttachment(currentData, attachmentInfo, entrustData)
+}
+
+export function checkPekSodiumAttachment(
+  currentData: PekSodiumData,
+  attachmentInfo: AttachmentInfo,
+  entrustData: EntrustData
+) {
+  return checkPekAttachment(currentData, attachmentInfo, entrustData, true)
 }
