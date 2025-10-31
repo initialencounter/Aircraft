@@ -1,4 +1,4 @@
-import type { CheckResult, SekBtyType } from '../shared/types'
+import type { CheckResult, SekBtyType } from '../lithium/shared/types'
 
 const batteryTypeMap = {
   '500': '锂离子电池',

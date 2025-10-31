@@ -8,7 +8,7 @@ import type {
   SekBtyType,
   SekData,
   EntrustData,
-} from '../shared/types'
+} from '../lithium/shared/types'
 import {
   getBtyTypeCode,
   getPkgInfoSubType,
@@ -17,7 +17,7 @@ import {
   matchNumber,
   matchVoltage,
   parseNetWeight,
-} from '../shared/utils'
+} from '../lithium/shared/utils'
 import { checkBatteryType } from './checkBatteryType'
 import { checkCapacity } from './checkCapacity'
 import { checkIssueDate } from './checkIssueDate'
@@ -86,33 +86,6 @@ export function checkSekAttachment(
   const conclusions = Number(currentData['conclusions'])
   const btyBrand = currentData['btyBrand']
   const results: CheckResult[] = []
-  results.push(...checkTitle(summaryData.title))
-  results.push(
-    ...checkName(packageType, itemEName, itemCName, btyKind, summaryData.cnName)
-  )
-  results.push(...checkBatteryType(btyType, summaryData.classification))
-  results.push(...checkModel(btyKind, summaryData.type))
-  results.push(...checkTradeMark(btyBrand, summaryData.trademark))
-  if (voltage) {
-    results.push(...checkVoltage(voltage, summaryData.voltage))
-  }
-  if (capacity) {
-    results.push(...checkCapacity(capacity, summaryData.capacity))
-  }
-  results.push(...checkWattHour(wattHour, summaryData.watt))
-  results.push(...checkShape(btyShape, summaryData.shape))
-  results.push(...checkColor(btyColor, summaryData.shape))
-  results.push(...checkMass(batteryWeight, summaryData.mass))
-  results.push(...checkLiContent(liContent, summaryData.licontent))
-  results.push(...checkT7(btyType, summaryData.test7, summaryData.note))
-  results.push(...checkIssueDate(summaryData.issueDate, currentData.projectNo))
-  results.push(...checkProjectNo(currentData.projectNo, summaryData.projectNo))
-  results.push(...checkConsignor(entrustData.consignor, summaryData.consignor))
-  results.push(
-    ...checkManufacturer(entrustData.manufacturer, summaryData.manufacturer)
-  )
-  results.push(...checkMarket(market, summaryData.testReportNo))
-  results.push(...checkUN38fg(summaryData.un38f, summaryData.un38g))
   results.push(
     ...checkSekGoods(
       conclusions,
@@ -120,6 +93,30 @@ export function checkSekAttachment(
       itemCName,
       currentData.projectNo,
       goodsInfo
+    )
+  )
+  const summaryCheckParams: SummaryCheckParams = {
+    itemCName,
+    itemEName,
+    btyKind,
+    btyColor,
+    btyShape,
+    voltage,
+    capacity,
+    wattHour,
+    liContent,
+    batteryWeight,
+    packageType,
+    btyType,
+    btyBrand,
+    market,
+  }
+  results.push(
+    ...checkSummaryFromLLM(
+      currentData,
+      summaryData,
+      entrustData,
+      summaryCheckParams
     )
   )
   return results
@@ -175,6 +172,82 @@ export function checkPekAttachment(
   )
   const btyBrand = currentData['brands']
   const results: CheckResult[] = []
+  results.push(
+    ...checkPekGoods(
+      pkgInfoSubType,
+      netWeight,
+      itemCName,
+      currentData.projectNo,
+      goodsInfo
+    )
+  )
+  const summaryCheckParams: SummaryCheckParams = {
+    itemCName,
+    itemEName,
+    btyKind,
+    btyColor,
+    btyShape,
+    voltage,
+    capacity,
+    wattHour,
+    liContent,
+    batteryWeight,
+    packageType,
+    btyType,
+    btyBrand,
+    market,
+  }
+  results.push(
+    ...checkSummaryFromLLM(
+      currentData,
+      summaryData,
+      entrustData,
+      summaryCheckParams
+    )
+  )
+  return results
+}
+
+interface SummaryCheckParams {
+  itemCName: string,
+  itemEName: string,
+  btyKind: string,
+  btyColor: string,
+  btyShape: string,
+  voltage: number,
+  capacity: number,
+  wattHour: number,
+  liContent: number,
+  batteryWeight: number,
+  packageType: '0' | '1' | '2',
+  btyType: SekBtyType,
+  btyBrand: string,
+  market: string
+}
+
+function checkSummaryFromLLM(
+  currentData: PekData | SekData,
+  summaryData: AttachmentInfo["summary"],
+  entrustData: EntrustData,
+  summaryCheckParams: SummaryCheckParams
+) {
+  const results: CheckResult[] = []
+  const {
+    itemCName,
+    itemEName,
+    btyKind,
+    btyColor,
+    btyShape,
+    voltage,
+    capacity,
+    wattHour,
+    liContent,
+    batteryWeight,
+    packageType,
+    btyType,
+    btyBrand,
+    market,
+  } = summaryCheckParams
   results.push(...checkTitle(summaryData.title))
   results.push(
     ...checkName(packageType, itemEName, itemCName, btyKind, summaryData.cnName)
@@ -182,8 +255,12 @@ export function checkPekAttachment(
   results.push(...checkBatteryType(btyType, summaryData.classification))
   results.push(...checkModel(btyKind, summaryData.type))
   results.push(...checkTradeMark(btyBrand, summaryData.trademark))
-  results.push(...checkVoltage(voltage, summaryData.voltage))
-  results.push(...checkCapacity(capacity, summaryData.capacity))
+  if (voltage) {
+    results.push(...checkVoltage(voltage, summaryData.voltage))
+  }
+  if (capacity) {
+    results.push(...checkCapacity(capacity, summaryData.capacity))
+  }
   results.push(...checkWattHour(wattHour, summaryData.watt))
   results.push(...checkShape(btyShape, summaryData.shape))
   results.push(...checkColor(btyColor, summaryData.shape))
@@ -198,14 +275,5 @@ export function checkPekAttachment(
   )
   results.push(...checkMarket(market, summaryData.testReportNo))
   results.push(...checkUN38fg(summaryData.un38f, summaryData.un38g))
-  results.push(
-    ...checkPekGoods(
-      pkgInfoSubType,
-      netWeight,
-      itemCName,
-      currentData.projectNo,
-      goodsInfo
-    )
-  )
   return results
 }

@@ -1,4 +1,4 @@
-import type { CheckResult } from '../shared/types'
+import type { CheckResult } from '../lithium/shared/types'
 
 // 检查日期 2024-11-06
 export function checkIssueDate(

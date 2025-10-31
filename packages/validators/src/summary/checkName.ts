@@ -1,4 +1,4 @@
-import type { CheckResult } from '../shared/types'
+import type { CheckResult } from '../lithium/shared/types'
 
 // inspectionItem1 0 965 1 966 2 967
 export function checkName(

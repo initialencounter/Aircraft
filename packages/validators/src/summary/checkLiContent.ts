@@ -1,5 +1,5 @@
-import type { CheckResult } from '../shared/types'
-import { matchBatteryWeight } from '../shared/utils'
+import type { CheckResult } from '../lithium/shared/types'
+import { matchBatteryWeight } from '../lithium/shared/utils'
 
 export function checkLiContent(
   formLiContent: number,

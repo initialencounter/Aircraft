@@ -1,4 +1,4 @@
-import type { CheckResult } from '../shared/types'
+import type { CheckResult } from '../lithium/shared/types'
 
 export function checkTitle(summaryTitle: string): CheckResult[] {
   if (summaryTitle.trim() !== '锂电池/钠离子电池UN38.3试验概要Test Summary') {

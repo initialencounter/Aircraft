@@ -1,5 +1,5 @@
-import type { CheckResult } from '../shared/types'
-import { matchWattHour } from '../shared/utils'
+import type { CheckResult } from '../lithium/shared/types'
+import { matchWattHour } from '../lithium/shared/utils'
 
 export function checkWattHour(
   formWattHour: number,

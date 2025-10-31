@@ -1,4 +1,4 @@
-import type { CheckResult } from '../shared/types'
+import type { CheckResult } from '../lithium/shared/types'
 
 function replaceSpace(str: string) {
   return str.replace(/\s+/g, '')

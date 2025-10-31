@@ -1,5 +1,5 @@
-import type { CheckResult } from '../shared/types'
-import { colorMap } from '../shared/appearence'
+import type { CheckResult } from '../lithium/shared/types'
+import { colorMap } from '../lithium/shared/appearence'
 
 export function removeNonChineseCharacters(str: string): string {
   // 使用正则表达式匹配所有非中文字符并替换为空字符串

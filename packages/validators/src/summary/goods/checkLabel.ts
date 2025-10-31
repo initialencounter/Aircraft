@@ -1,4 +1,4 @@
-import type { CheckResult, PkgInfoSubType } from '../../shared/types'
+import type { CheckResult, PkgInfoSubType } from '../../lithium/shared/types'
 
 function getPekExpectedLabel(
   pkgInfoSubType: PkgInfoSubType,

@@ -1,5 +1,5 @@
-import type { CheckResult } from '../shared/types'
-import { matchVoltage } from '../shared/utils'
+import type { CheckResult } from '../lithium/shared/types'
+import { matchVoltage } from '../lithium/shared/utils'
 
 export function checkVoltage(
   formVoltage: number,

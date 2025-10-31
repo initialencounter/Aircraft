@@ -1,4 +1,4 @@
-import type { CheckResult } from '../shared/types'
+import type { CheckResult } from '../lithium/shared/types'
 
 export function checkUN38fg(un38f: string, un38g: string): CheckResult[] {
   const result: CheckResult[] = []

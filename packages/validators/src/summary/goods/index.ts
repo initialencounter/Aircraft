@@ -1,5 +1,5 @@
 import type { GoodsInfo } from 'aircraft-rs'
-import type { CheckResult, PkgInfoSubType } from '../../shared/types'
+import type { CheckResult, PkgInfoSubType } from '../../lithium/shared/types'
 import { checkItemCName } from './checkItemCName'
 import {
   getPekExpectedLabel,

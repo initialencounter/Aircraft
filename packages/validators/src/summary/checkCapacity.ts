@@ -1,5 +1,5 @@
-import type { CheckResult } from '../shared/types'
-import { matchCapacity } from '../shared/utils'
+import type { CheckResult } from '../lithium/shared/types'
+import { matchCapacity } from '../lithium/shared/utils'
 
 export function checkCapacity(
   formCapacity: number,
