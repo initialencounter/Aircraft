@@ -13,6 +13,8 @@ export type PekUNNO =
   | 'UN3556'
   | 'UN3557'
   | 'UN3558'
+  | 'UN3551'
+  | 'UN3552'
 export type PekPkgInfo =
   | ''
   | '965'

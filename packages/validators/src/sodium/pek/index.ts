@@ -10,10 +10,13 @@ import { baseCheck } from '../../lithium/shared'
 import { pekSodiumBatteryNetWeighLimit } from './netWeighLimit'
 import { pekSodiumActiveStateWarn } from './activeStateWarn'
 import { pekSodiumStateOfCharge } from './stateOfCharge'
-import { otherDescribeIsCell } from '../lithium/pek/otherDescribeIsCell'
-import { packetOrContain } from '@aircraft/validators/lithium/pek/packetOrContain'
-import { dropStackTest } from '@aircraft/validators/lithium/pek/dropStackTest'
+import { otherDescribeIsCell } from '../../lithium/pek/otherDescribeIsCell'
+import { packetOrContain } from '../../lithium/pek/packetOrContain'
 import { pekSodiumDropStackTest } from './dropStackTest'
+import { sodiumBtyLabelCheck } from './sodiumBtyLabelCheck'
+import { sodiumIonOrMetal } from './sodiumIonOrMetal'
+import { sodiumRemarksCheck } from './sodiumRemarksCheck'
+import { sodiumConclusionsCheck } from './sodiumConclusionsCheck'
 
 function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   const result = []
@@ -166,7 +169,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
     ...pekSodiumDropStackTest(pkgInfoSubType, stackTest, dropTest)
   )
   // 检查项目5 是否加贴锂电池标记
-  result.push(...liBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel))
+  result.push(...sodiumBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel))
 
   // 包装说明
   if (isDangerous) {
@@ -179,7 +182,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
     }
   }
   // 鉴别项目1
-  result.push(...ionOrMetal(isIon, inspectionItem3Text1, inspectionItem4Text1))
+  result.push(...sodiumIonOrMetal(inspectionItem3Text1, inspectionItem4Text1))
 
   // 验证瓦数数
   if (wattHourFromName > 0 && !isNaN(wattHour) && isIon) {
@@ -191,7 +194,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   }
 
   // 注意事项
-  result.push(...remarksCheck(remarks, pkgInfoSubType))
+  result.push(...sodiumRemarksCheck(remarks, pkgInfoSubType))
 
   // 结论 非限制性 0 危险品 1
   const conclusions = Number(currentData['conclusions'])
@@ -202,7 +205,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   // 是否属于危险品
   // 危险品
   result.push(
-    ...conclusionsCheck(
+    ...sodiumConclusionsCheck(
       conclusions,
       isDangerous,
       pkgInfoByPackCargo,
@@ -219,11 +222,8 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
       packageGrade
     )
   )
-  // 瓦时数、净重、锂含量、电芯类型是否为数字
-  result.push(...isNaNCheck(isIon, wattHour, liContent, netWeight))
-  // 965 IA IB
-  result.push(...IAIBCheck(isIA, pkgInfoSubType))
   return result
 }
 
 export { checkPekSodiumBtyType }
+

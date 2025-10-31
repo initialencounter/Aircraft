@@ -43,7 +43,7 @@ export interface PekSodiumData {
   netWeight: string
   otherDescribe: string
   otherDescribeCAddition: string
-  otherDescribeChecked: string
+  otherDescribeChecked: null | string
   otherDescribeEAddition: string
   packCargo: string
   packPassengerCargo: string

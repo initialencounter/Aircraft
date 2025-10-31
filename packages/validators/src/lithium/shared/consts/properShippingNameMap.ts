@@ -9,4 +9,7 @@ export const properShippingNameMap = {
   UN3556: 'Vehicle,lithium ion battery powered',
   UN3557: 'Vehicle,lithium metal battery powered',
   UN3558: 'Vehicle,sodium ion battery powered',
+  UN3551: 'Sodium ion batteries',
+  'UN3552-P': 'Sodium ion batteries packed with equipment',
+  'UN3552-C': 'Sodium ion batteries contained in equipment',
 }

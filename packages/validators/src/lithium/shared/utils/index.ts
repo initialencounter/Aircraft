@@ -14,6 +14,7 @@ import {
   matchDeviceTrademark,
   matchTestManual,
 } from './matchDevice'
+import { PekSodiumPkgInfo, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
 
 function matchWattHour(projectName: string) {
   const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*[MmKk]?[Ww][Hh]/g)]
@@ -136,7 +137,7 @@ function getPkgInfo(
 }
 
 function isBatteryLabel(
-  pkgInfoSubType: PkgInfoSubType,
+  pkgInfoSubType: PkgInfoSubType | SodiumPkgInfoSubType,
   shape: string
 ): boolean {
   switch (pkgInfoSubType) {
@@ -147,14 +148,19 @@ function isBatteryLabel(
     case '968, IA':
     case '969, I':
     case '970, I':
+    case '976':
+    case '977, I':
+    case '978, I':
       return false
     case '970, II':
+    case '978, II':
       return shape !== '8aad92b65aae82c3015ab094788a0026'
     case '965, IB':
     case '966, II':
     case '967, II':
     case '968, IB':
     case '969, II':
+    case '977, II':
       return true
   }
   return false
@@ -182,7 +188,7 @@ function getPkgInfoSubType(
   return `${clearPackCargo.slice(0, 3)}, ${subType}` as PkgInfoSubType
 }
 
-function getUNNO(pkgInfo: PekPkgInfo, isIon: boolean): PekUNNO {
+function getUNNO(pkgInfo: PekPkgInfo | PekSodiumPkgInfo, isIon: boolean, isSodium: boolean = false): PekUNNO {
   switch (pkgInfo) {
     case '965':
       return 'UN3480'
@@ -195,20 +201,28 @@ function getUNNO(pkgInfo: PekPkgInfo, isIon: boolean): PekUNNO {
     case '970':
       return 'UN3091'
     case '952':
-      return isIon ? 'UN3556' : 'UN3557'
+      return isSodium ? 'UN3558' : (isIon ? 'UN3556' : 'UN3557')
+    case '976':
+      return 'UN3551'
+    case '977':
+    case '978':
+      return 'UN3552'
   }
   return ''
 }
 
-function getIsCargoOnly(pkgInfo: PekPkgInfo, netWeight: number) {
+function getIsCargoOnly(pkgInfo: PekPkgInfo | PekSodiumPkgInfo, netWeight: number) {
   switch (pkgInfo) {
     case '965':
     case '968':
+    case '976':
       return true
     case '966':
     case '967':
     case '969':
     case '970':
+    case '977':
+    case '978':
       if (netWeight > 5) return true
       return false
     default:
