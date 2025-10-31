@@ -178,12 +178,13 @@ function getPkgInfoSubType(
   inspectionItem5Text1: PekPkgInfo,
   packCargo: string
 ): PkgInfoSubType {
-  if (inspectionItem5Text1 === '' && packCargo === '') return ''
+  if (!inspectionItem5Text1 && !packCargo) return ''
   const clearPackCargo = packCargo.replace(/[^a-zA-Z0-9]/g, '')
   if (!clearPackCargo.length)
     return (inspectionItem5Text1 + ', II') as PkgInfoSubType
   if (clearPackCargo.length < 3) return '' as PkgInfoSubType
   if (clearPackCargo === '952') return '952'
+  if (clearPackCargo === '976') return '976'
   const subType = clearPackCargo.replace(/[^A-Z]/g, '')
   return `${clearPackCargo.slice(0, 3)}, ${subType}` as PkgInfoSubType
 }

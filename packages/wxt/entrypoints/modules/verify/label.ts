@@ -5,6 +5,7 @@ import {
   getPkgInfoSubType,
 } from '@aircraft/validators'
 import type { PekData, SekData } from '@aircraft/validators'
+import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types'
 
 /**
  * 获取选中的标签
@@ -28,7 +29,7 @@ export function getSelectedImages(): string[] {
  */
 export function checkLabelManual(
   systemId: 'pek' | 'sek',
-  data: PekData | SekData
+  data: PekData | SekData | PekSodiumData | SekSodiumData
 ): Array<{ ok: boolean; result: string }> {
   const labels = getSelectedImages()
   let expectedLabels

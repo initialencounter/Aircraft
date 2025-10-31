@@ -7,6 +7,7 @@ import { checkAttachment, checkAttachmentFiles } from './attachment'
 import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { checkModelWithFactory, checkModel } from './dangetousModel'
+import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types'
 
 /**
  * 验证表单数据
@@ -19,7 +20,7 @@ export async function verifyFormData(
   localConfig: typeof LocalConfig
 ): Promise<Array<{ ok: boolean; result: string }>> {
   let result = []
-  let dataFromForm: PekData | SekData
+  let dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData
   let model: string
   if (category === 'battery') {
     if (systemId === 'pek') {
@@ -33,11 +34,11 @@ export async function verifyFormData(
     }
   } else {
     if (systemId === 'pek') {
-      dataFromForm = getFormData<PekData>(systemId)
+      dataFromForm = getFormData<PekSodiumData>(systemId)
       model = dataFromForm.model
       result = window.checkPekSodiumBtyType(dataFromForm)
     } else {
-      dataFromForm = getFormData<SekData>(systemId)
+      dataFromForm = getFormData<SekSodiumData>(systemId)
       model = dataFromForm.btyKind
       result = window.checkSekSodiumBtyType(dataFromForm)
     }

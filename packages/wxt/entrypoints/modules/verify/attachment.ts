@@ -12,6 +12,7 @@ import {
   parseEntrust,
 } from '../utils/api'
 import type { LocalConfig } from '../../../share/utils'
+import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types';
 
 /**
  * 检查附件文件
@@ -51,7 +52,7 @@ export async function checkAttachmentFiles(
  */
 export async function checkAttachment(
   systemId: 'pek' | 'sek',
-  dataFromForm: PekData | SekData,
+  dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   localConfig: typeof LocalConfig,
   entrustData: EntrustData
 ): Promise<Array<{ ok: boolean; result: string }>> {
@@ -88,21 +89,39 @@ export async function checkAttachment(
  */
 export function checkSummary(
   systemId: 'pek' | 'sek',
-  dataFromForm: PekData | SekData,
+  dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData
+  entrustData: EntrustData,
+  isSodium = false
 ): Array<{ ok: boolean; result: string }> {
-  if (systemId === 'pek') {
-    return window.checkPekAttachment(
-      dataFromForm as PekData,
-      attachmentInfo,
-      entrustData
-    )
+  if (isSodium) {
+    if (systemId === 'pek') {
+      return window.checkPekSodiumAttachment(
+        dataFromForm as PekSodiumData,
+        attachmentInfo,
+        entrustData
+      )
+    } else {
+      return window.checkSekSodiumAttachment(
+        dataFromForm as SekSodiumData,
+        attachmentInfo,
+        entrustData
+      )
+    }
   } else {
-    return window.checkSekAttachment(
-      dataFromForm as SekData,
-      attachmentInfo,
-      entrustData
-    )
+    if (systemId === 'pek') {
+      return window.checkPekAttachment(
+        dataFromForm as PekData,
+        attachmentInfo,
+        entrustData
+      )
+    } else {
+      return window.checkSekAttachment(
+        dataFromForm as SekData,
+        attachmentInfo,
+        entrustData
+      )
+    }
   }
+
 }
