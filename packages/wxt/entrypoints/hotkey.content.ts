@@ -123,6 +123,7 @@ async function entrypoint() {
 
   // 导入检验单时设置分类
   if (localConfig.enableSetImportClassification && !fromQuery) {
+    await sleep(300);
     await importClassification()
   }
 
