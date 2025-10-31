@@ -68,7 +68,6 @@ export interface SekSodiumData {
   appraiseDate: string
   appraiser: string
   appraiserName: string
-  brands: string
   btyBrand: string
   btyColor: string
   btyCount: string
@@ -88,29 +87,20 @@ export interface SekSodiumData {
   checkLocation: string
   checkLocationName: string
   classOrDiv: string
-  color: string
   comment: string
   commentExtra: null | string
   conclusions: number
   createdBy: string
   createdDate: string
   editStatus: number
-  grossWeight: string
   id: string
   inspectionItem1: string
   inspectionItem1Text1: string
   inspectionItem1Text2: string
-  inspectionItem1Text3: string
-  inspectionItem1Text4: string
   inspectionItem2: string
-  inspectionItem2Text1: string
-  inspectionItem2Text2: string
   inspectionItem3: string
-  inspectionItem3Text1: string
   inspectionItem4: string
-  inspectionItem4Text1: string
   inspectionItem5: string
-  inspectionItem5Text1: string
   inspectionItem6: string
   inspectionItem7: string
   inspectionItem8Cn: string
@@ -129,29 +119,18 @@ export interface SekSodiumData {
   itemCName: string
   itemEName: string
   market: string
-  model: string
   modifiedBy: string
   modifiedDate: string
-  netWeight: string
   otherDescribe: string
   otherDescribeCAddition: string
   otherDescribeChecked: string
   otherDescribeEAddition: string
-  packCargo: string
-  packPassengerCargo: string
-  packSpecial: string
-  packSubDanger: string
   pg: string
   principalName: null
   projectId: string
   projectNo: string
   psn: string
   remarks: string
-  result1: string
-  shape: string
-  size: string
-  type1: number
-  type2: number
   unno: string
 }
 

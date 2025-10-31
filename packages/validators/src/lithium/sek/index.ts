@@ -15,6 +15,8 @@ import { wattHourScope } from './wattHourScope'
 import { packetOrContain } from './packetOrContain'
 import { checkReMark } from './checkReMark'
 import { checkComment } from './checkComment'
+import { checkDropTest } from './checkDropTest'
+import { checkBtyLabel } from './checkBtyLabel'
 
 function checkSekBtyType(currentData: SekData): CheckResult[] {
   const result = []
@@ -89,6 +91,7 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
   // 参见包装说明，可能为空，通常来自模板
   const unTest = String(currentData['inspectionResult2']) === '0' // UN38.3 测试
   const dropTest = String(currentData['inspectionResult5']) === '0' // 跌落
+  const isBtyLabel = String(currentData['inspectionResult6']) === '0' // 电池标记
   // 包装等级
   const packageGrade = currentData['pg']
   // 结论
@@ -156,17 +159,11 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
     })
 
   // 检验结果5 1.2米跌落
-  if (!dropTest) {
-    if (otherDescribe.includes('540') && String(conclusions) === '0') {
-      result.push({ ok: false, result: '单独运输非限制性，未通过1.2米跌落' })
-    }
-    if (otherDescribe.includes('541') && String(conclusions) === '0') {
-      result.push({
-        ok: false,
-        result: '非限制性和设备包装在一起，未通过1.2米跌落',
-      })
-    }
-  }
+  result.push(...checkDropTest(otherDescribe, dropTest, conclusions))
+
+  // 电池标记
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions))
+
   // 随附文件
   if (currentData['inspectionResult7'] !== '2')
     result.push({ ok: false, result: '随附文件错误，未勾选不适用' })

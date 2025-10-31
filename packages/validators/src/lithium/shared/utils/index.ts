@@ -7,14 +7,14 @@ import type {
   SummaryFromLLM,
   SummaryInfo,
 } from '../types'
-import { removeNonChineseCharacters } from '../../summary/checkColor'
+import { removeNonChineseCharacters } from '@aircraft/validators/summary/checkColor'
 import {
   matchDeviceModel,
   matchDeviceName,
   matchDeviceTrademark,
   matchTestManual,
 } from './matchDevice'
-import { PekSodiumPkgInfo, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
+import { PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
 
 function matchWattHour(projectName: string) {
   const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*[MmKk]?[Ww][Hh]/g)]
@@ -81,8 +81,8 @@ function getIsIon(btyType: SekBtyType) {
   return btyType === '500' || btyType === '501' || btyType === '504'
 }
 
-function getIsCell(btyType: SekBtyType) {
-  return btyType === '501' || btyType === '503'
+function getIsCell(btyType: SekBtyType | SekSodiumBtyType) {
+  return btyType === '501' || btyType === '503' || btyType === '601'
 }
 
 function getIsSingleCell(

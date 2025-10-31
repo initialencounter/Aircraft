@@ -1,5 +1,5 @@
 import type { CheckResult } from '../shared/types'
-import { removeNonChineseCharacters } from '../summary/checkColor'
+import { removeNonChineseCharacters } from '@aircraft/validators/summary/checkColor'
 
 export function checkClassification(
   classificationLLM: string,
