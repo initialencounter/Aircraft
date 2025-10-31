@@ -51,7 +51,8 @@ export function baseCheck(
   capacity: number,
   wattHour: number,
   wattHourFromName: number,
-  inspectionItem1: '0' | '1' | '2'
+  inspectionItem1: '0' | '1' | '2',
+  isLithium: boolean = true,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 尺寸或形状
@@ -76,9 +77,9 @@ export function baseCheck(
   // 设备名称、型号、商标验证
   result.push(...checkDevice(itemCName, itemEName, otherDescribeCAddition))
   // 尼古丁体积分数验证
-  result.push(...checkNicotineContent(otherDescribeCAddition))
+  if (isLithium) result.push(...checkNicotineContent(otherDescribeCAddition))
   // 967 防意外启动描述
-  result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1))
+  if (isLithium) result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1))
   // 描述格式验证
   result.push(...descriptionFormat(otherDescribeCAddition))
   // 电池数量验证
@@ -86,6 +87,6 @@ export function baseCheck(
     ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1, isChargeBoxOrRelated)
   )
   // 电池能量密度验证
-  result.push(...checkEnergyDensity(wattHour, batteryWeight))
+  if (isLithium) result.push(...checkEnergyDensity(wattHour, batteryWeight))
   return result
 }

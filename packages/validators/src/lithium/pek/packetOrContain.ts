@@ -22,7 +22,7 @@ export function packetOrContain(
     })
   }
   if (
-    (pkgInfo === '966' || pkgInfo === '969') &&
+    (pkgInfo === '966' || pkgInfo === '969' || pkgInfo === '977' ) &&
     !otherDescribeCAddition.includes('包装在一起') &&
     !isChargeBoxOrRelated
   )
@@ -31,7 +31,7 @@ export function packetOrContain(
       result: '与设备包装在一起，其他描述中没有包装在一起5个字',
     })
   if (
-    (pkgInfo === '967' || pkgInfo === '970') &&
+    (pkgInfo === '967' || pkgInfo === '970' || pkgInfo === '978') &&
     !otherDescribeCAddition.includes('设备内置') &&
     !isChargeBoxOrRelated
   )

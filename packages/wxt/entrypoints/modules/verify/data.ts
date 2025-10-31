@@ -12,6 +12,7 @@ import { checkModelWithFactory, checkModel } from './dangetousModel'
  * 验证表单数据
  */
 export async function verifyFormData(
+  category: string,
   systemId: 'pek' | 'sek',
   projectId: string,
   projectNo: string,
@@ -20,14 +21,26 @@ export async function verifyFormData(
   let result = []
   let dataFromForm: PekData | SekData
   let model: string
-  if (systemId === 'pek') {
-    dataFromForm = getFormData<PekData>(systemId)
-    model = dataFromForm.model
-    result = window.checkPekBtyType(dataFromForm)
+  if (category === 'battery') {
+    if (systemId === 'pek') {
+      dataFromForm = getFormData<PekData>(systemId)
+      model = dataFromForm.model
+      result = window.checkPekBtyType(dataFromForm)
+    } else {
+      dataFromForm = getFormData<SekData>(systemId)
+      model = dataFromForm.btyKind
+      result = window.checkSekBtyType(dataFromForm)
+    }
   } else {
-    dataFromForm = getFormData<SekData>(systemId)
-    model = dataFromForm.btyKind
-    result = window.checkSekBtyType(dataFromForm)
+    if (systemId === 'pek') {
+      dataFromForm = getFormData<PekData>(systemId)
+      model = dataFromForm.model
+      result = window.checkPekSodiumBtyType(dataFromForm)
+    } else {
+      dataFromForm = getFormData<SekData>(systemId)
+      model = dataFromForm.btyKind
+      result = window.checkSekSodiumBtyType(dataFromForm)
+    }
   }
 
   result.push(...(await checkAttachmentFiles(projectNo, projectId)))

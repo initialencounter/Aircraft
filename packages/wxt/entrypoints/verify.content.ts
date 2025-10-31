@@ -12,6 +12,10 @@ import {
   checkSekAttachment,
   checkSekBtyType,
   checkSummaryFromLLM,
+  checkPekSodiumBtyType，
+  checkSekSodiumBtyType，
+  checkPekSodiumAttachment，
+  checkSekSodiumAttachment，
 } from '@aircraft/validators'
 import '../assets/message.min.css'
 
@@ -72,6 +76,32 @@ declare global {
     ok: boolean
     result: string
   }>
+
+  function checkPekSodiumBtyType(
+    data: SekData
+  ): Array<{ ok: boolean; result: string }>
+
+  function checkPekSodiumAttachment(
+    data: SekData,
+    attachmentInfo: AttachmentInfo,
+    entrustData: EntrustData
+  ): Array<{
+    ok: boolean
+    result: string
+  }>
+
+  function checkSekSodiumBtyType(
+    data: SekData
+  ): Array<{ ok: boolean; result: string }>
+
+  function checkSekSodiumAttachment(
+    data: SekData,
+    attachmentInfo: AttachmentInfo,
+    entrustData: EntrustData
+  ): Array<{
+    ok: boolean
+    result: string
+  }>
 }
 
 export default defineContentScript({
@@ -91,17 +121,22 @@ export default defineContentScript({
     window.checkSekAttachment = checkSekAttachment
     window.checkSummaryFromLLM = checkSummaryFromLLM
 
+    window.checkPekSodiumBtyType = checkPekSodiumBtyType
+    window.checkSekSodiumBtyType = checkSekSodiumBtyType
+    window.checkPekSodiumAttachment = checkPekSodiumAttachment
+    window.checkSekSodiumAttachment = checkSekSodiumAttachment
+
     // 读取本地配置
     const localConfig = await getLocalConfig()
     await sleep(200)
 
     // 获取系统信息
     const Qmsg = getNotification()
-    const category = getCategory()
+    const category = getCategory() ?? ''
     const systemId = getSystemId()
 
     // 如果不是电池类别或未启用验证，则退出
-    if (category !== 'battery') return
+    if (!['battery', 'sodium'].includes(category)) return
     console.log('localConfig2', JSON.stringify(localConfig, null, 2))
     if (!localConfig.verify) {
       console.log('未启用验证，退出脚本')
@@ -139,23 +174,25 @@ export default defineContentScript({
         Qmsg.warning('获取项目编号失败')
         return
       }
-      const tempHtml = document.getElementById('lims-verifyButton-icon')!.innerHTML
+      const tempHtml = document.getElementById(
+        'lims-verifyButton-icon'
+      )!.innerHTML
       let result: Array<{
-        ok: boolean;
-        result: string;
-      }> = [];
+        ok: boolean
+        result: string
+      }> = []
       try {
         document.getElementById('lims-verifyButton-icon')!.innerHTML = ''
         document.getElementById('lims-verifyButton-icon')?.appendChild(span)
         document.getElementById('lims-verifyButton-icon')?.appendChild(img)
         // 执行验证
         result = await verifyFormData(
+          category,
           systemId,
           currentProjectId,
           projectNo,
           localConfig
         )
-
       } catch (e) {
         console.error('验证处理出错:', e)
         Qmsg.error('验证处理出错，请稍后重试', { timeout: 3000 })
