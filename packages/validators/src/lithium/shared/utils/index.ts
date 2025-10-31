@@ -7,7 +7,7 @@ import type {
   SummaryFromLLM,
   SummaryInfo,
 } from '../types'
-import { removeNonChineseCharacters } from '@aircraft/validators/summary/checkColor'
+import { removeNonChineseCharacters } from '../../../summary/checkColor'
 import {
   matchDeviceModel,
   matchDeviceName,

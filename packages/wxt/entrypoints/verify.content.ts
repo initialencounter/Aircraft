@@ -12,10 +12,10 @@ import {
   checkSekAttachment,
   checkSekBtyType,
   checkSummaryFromLLM,
-  checkPekSodiumBtyType，
-  checkSekSodiumBtyType，
-  checkPekSodiumAttachment，
-  checkSekSodiumAttachment，
+  checkPekSodiumBtyType,
+  checkSekSodiumBtyType,
+  checkPekSodiumAttachment,
+  checkSekSodiumAttachment,
 } from '@aircraft/validators'
 import '../assets/message.min.css'
 
@@ -40,6 +40,7 @@ import { createLabelSelectionUI } from './modules/ui/labels'
 
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
+import { PekSodiumData, SekSodiumData } from '../../validators/src/sodium/shared/types'
 
 // 声明全局函数
 declare global {
@@ -78,11 +79,11 @@ declare global {
   }>
 
   function checkPekSodiumBtyType(
-    data: SekData
+    data: PekSodiumData
   ): Array<{ ok: boolean; result: string }>
 
   function checkPekSodiumAttachment(
-    data: SekData,
+    data: PekSodiumData,
     attachmentInfo: AttachmentInfo,
     entrustData: EntrustData
   ): Array<{
@@ -91,11 +92,11 @@ declare global {
   }>
 
   function checkSekSodiumBtyType(
-    data: SekData
+    data: SekSodiumData
   ): Array<{ ok: boolean; result: string }>
 
   function checkSekSodiumAttachment(
-    data: SekData,
+    data: SekSodiumData,
     attachmentInfo: AttachmentInfo,
     entrustData: EntrustData
   ): Array<{
