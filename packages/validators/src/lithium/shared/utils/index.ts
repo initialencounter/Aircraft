@@ -68,12 +68,23 @@ function getBtyTypeCode(currentData: PekData | PekSodiumData, isSodium: boolean 
   const isIon: boolean = String(currentData['type1']) === '1'
   const isCell: boolean = String(currentData['type2']) === '1'
   const isSingleCell: boolean = currentData['otherDescribe'].includes('1790')
-  if (isIon) {
-    if (isCell) return isSodium ? '601' : '501'
-    else return isSodium ? (isSingleCell ? '602' : '600') : (isSingleCell ? '504' : '500')
+  if (isSodium) {
+    if (isSingleCell) {
+      return '602'
+    }
+    if (isCell) {
+      return '601'
+    } else {
+      return '600'
+    }
   } else {
-    if (isCell) return '503'
-    else return isSingleCell ? '505' : '502'
+    if (isIon) {
+      if (isCell) return '501'
+      else return isSingleCell ? '504' : '500'
+    } else {
+      if (isCell) return '503'
+      else return isSingleCell ? '505' : '502'
+    }
   }
 }
 

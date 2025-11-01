@@ -67,7 +67,8 @@ export async function verifyFormData(
         systemId,
         dataFromForm,
         localConfig,
-        entrustData
+        entrustData,
+        category === 'sodium',
       ))
     )
   }

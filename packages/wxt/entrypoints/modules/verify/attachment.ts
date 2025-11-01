@@ -54,7 +54,8 @@ export async function checkAttachment(
   systemId: 'pek' | 'sek',
   dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   localConfig: typeof LocalConfig,
-  entrustData: EntrustData
+  entrustData: EntrustData,
+  isSodium: boolean,
 ): Promise<Array<{ ok: boolean; result: string }>> {
   if (localConfig.enableCheckAttachment === false) return []
   try {
@@ -77,7 +78,7 @@ export async function checkAttachment(
       attachmentInfo.goods.labels = ['pass']
     }
 
-    return checkSummary(systemId, dataFromForm, attachmentInfo, entrustData)
+    return checkSummary(systemId, dataFromForm, attachmentInfo, entrustData, isSodium)
   } catch (e) {
     console.log(e)
     return [{ ok: false, result: '附件解析失败' }]
