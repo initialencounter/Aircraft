@@ -114,6 +114,23 @@ class Ipc extends Service {
     ipcMain.handle('set_clipboard_text', async (_, { text }) => {
       return this.ctx.bindings.native.setClipboardText(text)
     })
+
+    ipcMain.handle('get_clipboard_snapshot_configs', async () => {
+      return this.ctx.bindings.native.getClipboardSnapshotConfigs()
+    })
+
+    ipcMain.handle('add_clipboard_snapshot_config', async (_, { config }) => {
+      console.log('IPC add config:', config)
+      return this.ctx.bindings.native.addClipboardSnapshotConfig(JSON.parse(config))
+    })
+
+    ipcMain.handle('remove_clipboard_snapshot_config', async (_, { id }) => {
+      return this.ctx.bindings.native.removeClipboardSnapshotConfig(id)
+    })
+
+    ipcMain.handle('reload_clipboard_snapshot_configs', async () => {
+      this.ctx.emit('reload_clipboard_snapshot_configs')
+    })
   }
 
 }

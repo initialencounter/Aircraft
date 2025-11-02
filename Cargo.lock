@@ -713,6 +713,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "clipkeeper"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b63c0723432b300a6cf1202d673be87d49f1008261343e38355c8bba1710281"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "dirs 6.0.0",
+ "serde",
+ "serde_json",
+ "windows 0.58.0",
+]
+
+[[package]]
 name = "cocoa"
 version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5300,6 +5314,7 @@ dependencies = [
  "bytes",
  "chrono",
  "clipboard-rs",
+ "clipkeeper",
  "colored",
  "copypasta",
  "enigo",

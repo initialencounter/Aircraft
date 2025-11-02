@@ -1,8 +1,8 @@
 use crate::command::get_config;
-use share::logger::Logger;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
 use share::pdf_parser::uploader::FileManager;
+use share::{logger::Logger, manager::clipboard_snapshot_manager::ClipboardSnapshotManager};
 use std::{path::PathBuf, sync::Arc, sync::Mutex};
 use tauri::{App, Manager};
 use tokio::sync::Mutex as AsyncMutex;
@@ -37,4 +37,7 @@ pub fn apply(app: &mut App) {
     app.manage(hotkey_manager);
     let llm_config = config.llm.clone();
     app.manage(Arc::new(AsyncMutex::new(FileManager::new(llm_config))));
+    let clipboard_snapshot_manager = ClipboardSnapshotManager::new();
+    clipboard_snapshot_manager.start();
+    app.manage(clipboard_snapshot_manager);
 }

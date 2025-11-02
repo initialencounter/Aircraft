@@ -24,6 +24,7 @@ declare module 'cordis' {
     'reload-llm': (llmConfig: LLMConfig) => void
     'reload-hotkey': (hotkey: HotkeyConfig) => void
     'write-log': (level: string, message: string) => void
+    'reload_clipboard_snapshot_configs': () => void
   }
 }
 
@@ -53,6 +54,11 @@ class AircraftCore extends Service {
     ctx.on('reload-hotkey', async (hotkey: HotkeyConfig) => {
       ctx.emit('write-log', 'INFO', 'Reloading Hotkey Config...')
       this.bindings.reloadHotkey(hotkey)
+    })
+    ctx.on('reload_clipboard_snapshot_configs', async () => {
+      ctx.emit('write-log', 'INFO', 'Reloading Clipboard Snapshot Configs...')
+      this.bindings
+        .reloadClipboardSnapshotConfigs()
     })
   }
 

@@ -5,6 +5,7 @@ extern crate napi_derive;
 
 use share::attachment_parser::{get_attachment_info as get_attachment_info_rs, AttachmentInfo};
 use share::logger::{LogMessage, Logger};
+use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
 use share::pdf_parser::parse::parse_good_file;
@@ -22,6 +23,7 @@ use std::sync::{Arc, Mutex};
 pub struct AircraftRs {
   server_manager: ServerManager,
   hotkey_manager: HotkeyManager,
+  clipboard_snapshot_manager: ClipboardSnapshotManager,
   log_tx: Sender<LogMessage>,
   logger: Arc<Mutex<Logger>>,
 }
@@ -45,6 +47,7 @@ impl AircraftRs {
     Self {
       server_manager: ServerManager::new(config, log_tx.clone(), llm_config),
       hotkey_manager: HotkeyManager::new(hotkey_config),
+      clipboard_snapshot_manager: ClipboardSnapshotManager::new(),
       log_tx,
       logger,
     }
@@ -182,6 +185,13 @@ impl AircraftRs {
     let logs = self.logger.lock().unwrap().try_get_logs();
     Ok(logs)
   }
+
+  #[napi]
+  pub fn reload_clipboard_snapshot_configs(&self) -> napi::Result<()> {
+    self.clipboard_snapshot_manager.stop();
+    self.clipboard_snapshot_manager.start();
+    Ok(())
+  }
 }
 
 #[napi(js_name = "FileManager")]
@@ -256,20 +266,55 @@ pub fn get_default_config() -> napi::Result<Config> {
 
 #[napi]
 pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::SearchResult> {
-    share::hotkey_handler::copy::search(file_name).await
+  share::hotkey_handler::copy::search(file_name).await
 }
 
 #[napi]
-pub async fn search_property(url: String, search_text: String) -> Vec<share::hotkey_handler::copy::DataModel> {
-    share::hotkey_handler::copy::search_property(url, search_text).await
+pub async fn search_property(
+  url: String,
+  search_text: String,
+) -> Vec<share::hotkey_handler::copy::DataModel> {
+  share::hotkey_handler::copy::search_property(url, search_text).await
 }
 
 #[napi]
 pub fn open_local_dir(target: String) {
-    share::utils::fs::open_local_dir(&target);
+  share::utils::fs::open_local_dir(&target);
 }
 
 #[napi]
 pub fn set_clipboard_text(text: String) {
-    share::utils::set_clipboard_text(text);
+  share::utils::set_clipboard_text(text);
+}
+
+#[napi]
+pub fn get_clipboard_snapshot_configs(
+) -> Vec<share::manager::clipboard_snapshot_manager::ClipboardHotkey> {
+  share::manager::clipboard_snapshot_manager::get_clipboard_snapshot_configs()
+}
+
+#[napi]
+pub fn add_clipboard_snapshot_config(
+  config: share::manager::clipboard_snapshot_manager::ClipboardHotkey,
+) -> napi::Result<()> {
+  println!("Adding clipboard snapshot config: {:?}", config);
+  match share::manager::clipboard_snapshot_manager::add_clipboard_snapshot_config(config) {
+    Ok(_) => Ok(()),
+    Err(e) => Err(napi::Error::new(
+      napi::Status::GenericFailure,
+      format!("添加剪贴板快照配置失败: {}", e),
+    )),
+  }
+}
+
+#[napi]
+pub fn remove_clipboard_snapshot_config(content_name: String) -> napi::Result<()> {
+  match share::manager::clipboard_snapshot_manager::remove_clipboard_snapshot_config(&content_name)
+  {
+    Ok(_) => Ok(()),
+    Err(e) => Err(napi::Error::new(
+      napi::Status::GenericFailure,
+      format!("移除剪贴板快照配置失败: {}", e),
+    )),
+  }
 }

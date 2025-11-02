@@ -17,6 +17,7 @@ reqwest = {version = "0.12.8", features = ["blocking", "json", "multipart", "coo
 copypasta = "0.10.1"
 enigo = "0.2.1"
 flextrek = "0.2.2"
+clipkeeper = "0.1.1"
 anyhow = "1.0.95"
 clipboard-rs = "0.3.0"
 futures-util = "0.3.31"

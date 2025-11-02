@@ -7,6 +7,7 @@ import {
   Document,
   House,
   MoonNight,
+  Notebook,
   Search,
   Setting,
 } from '@element-plus/icons-vue'
@@ -72,6 +73,13 @@ const menuItems = [
     path: '/searchTNotes',
     label: '技术部备注',
     icon: Search,
+    requiresUnlock: false,
+  },
+  {
+    index: '8',
+    path: '/clipkeeper',
+    label: '剪贴板持久化',
+    icon: Notebook,
     requiresUnlock: false,
   },
 ]

@@ -47,8 +47,6 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   // 瓦时
   const wattHour = matchNumber(currentData['inspectionItem3Text1'])
   const wattHourFromName = matchWattHour(currentData['itemCName'])
-  // 锂含量
-  const naContent = matchNumber(currentData['inspectionItem4Text1'])
   // 电池数量
   const btyCount = matchNumber(currentData['btyCount'])
   // 净重 单位：g

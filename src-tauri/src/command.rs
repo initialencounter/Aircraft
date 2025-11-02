@@ -218,13 +218,51 @@ pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::
     share::hotkey_handler::copy::search(file_name).await
 }
 
-
 #[tauri::command]
-pub async fn search_property(url: String, search_text: String) -> Vec<share::hotkey_handler::copy::DataModel> {
+pub async fn search_property(
+    url: String,
+    search_text: String,
+) -> Vec<share::hotkey_handler::copy::DataModel> {
     share::hotkey_handler::copy::search_property(url, search_text).await
 }
 
 #[tauri::command]
 pub fn set_clipboard_text(text: String) {
     share::utils::set_clipboard_text(text);
+}
+
+#[tauri::command]
+pub fn get_clipboard_snapshot_configs(
+) -> Vec<share::manager::clipboard_snapshot_manager::ClipboardHotkey> {
+    share::manager::clipboard_snapshot_manager::get_clipboard_snapshot_configs()
+}
+
+#[tauri::command]
+pub fn add_clipboard_snapshot_config(
+    config: share::manager::clipboard_snapshot_manager::ClipboardHotkey,
+) -> Result<(), String> {
+    match share::manager::clipboard_snapshot_manager::add_clipboard_snapshot_config(config) {
+        Ok(_) => Ok(()),
+        Err(e) => Err("添加剪贴板快照配置失败: ".to_string() + &e.to_string()),
+    }
+}
+
+#[tauri::command]
+pub fn remove_clipboard_snapshot_config(content_name: &str) -> Result<(), String> {
+    match share::manager::clipboard_snapshot_manager::remove_clipboard_snapshot_config(content_name)
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err("移除剪贴板快照配置失败: ".to_string() + &e.to_string()),
+    }
+}
+
+#[tauri::command]
+pub fn reload_clipboard_snapshot_configs(
+    clipboard_snapshot_manager: tauri::State<
+        '_,
+        share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager,
+    >,
+) {
+    clipboard_snapshot_manager.stop();
+    clipboard_snapshot_manager.start();
 }

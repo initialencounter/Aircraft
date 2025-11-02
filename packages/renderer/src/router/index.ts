@@ -9,6 +9,7 @@ import Md5Checker from '../views/Md5checker.vue'
 import Stack from '../views/Stack.vue'
 import PdfParse from '../views/PdfParse.vue'
 import SearchTNotes from '../components/SearchTNotes.vue'
+import Clipkeeper from '../views/Clipkeeper.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -47,6 +48,11 @@ const router = createRouter({
       path: '/searchTNotes',
       name: 'searchTNotes',
       component: SearchTNotes,
+    },
+    {
+      path: '/clipkeeper',
+      name: 'ClipKeeper',
+      component: Clipkeeper,
     },
   ],
 })

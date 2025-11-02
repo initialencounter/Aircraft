@@ -39,7 +39,7 @@ import { checkPekGoods, checkSekGoods } from './goods'
 import { checkTitle } from './checkTitle'
 import { checkColor } from './checkColor'
 import { checkT8 } from './checkT8'
-import { PekSodiumData, PekSodiumPkgInfo, SekSodiumData } from '../sodium/shared/types'
+import { PekSodiumData, SekSodiumData } from '../sodium/shared/types'
 
 export function checkSekAttachment(
   currentData: SekData | SekSodiumData,

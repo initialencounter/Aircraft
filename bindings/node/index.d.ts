@@ -45,6 +45,10 @@ export interface LogMessage {
   level: string
   message: string
 }
+export interface ClipboardHotkey {
+  hotkeys: Array<string>
+  clipboardContentName: string
+}
 export interface GoodsInfo {
   projectNo: string
   itemCName: string
@@ -161,6 +165,9 @@ export declare function searchFile(fileName: string): Promise<Array<SearchResult
 export declare function searchProperty(url: string, searchText: string): Promise<Array<DataModel>>
 export declare function openLocalDir(target: string): void
 export declare function setClipboardText(text: string): void
+export declare function getClipboardSnapshotConfigs(): Array<ClipboardHotkey>
+export declare function addClipboardSnapshotConfig(config: ClipboardHotkey): void
+export declare function removeClipboardSnapshotConfig(contentName: string): void
 export declare class AircraftRs {
   constructor(appLogDir: string, config: ServerConfig, llmConfig: LLMConfig, hotkeyConfig: HotkeyConfig)
   startServer(): void
@@ -178,6 +185,7 @@ export declare class AircraftRs {
   getCurrentHotkeyConfig(): HotkeyConfig
   writeLog(log: LogMessage): void
   tryGetLogs(): Array<LogMessage>
+  reloadClipboardSnapshotConfigs(): void
 }
 export type JsFileManager = FileManager
 export declare class FileManager {

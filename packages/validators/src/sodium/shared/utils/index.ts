@@ -1,11 +1,11 @@
-import { PekPkgInfo, PekUNNO } from "../../../lithium/shared/types"
+import { PekUNNO } from "../../../lithium/shared/types"
 import { PekSodiumData, PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType } from "../types"
 
 export function getSodiumBtyTypeCode(currentData: PekSodiumData): SekSodiumBtyType {
   const isCell: boolean = String(currentData['type2']) === '1'
   const isSingleCell: boolean = currentData['otherDescribe'].includes('1790')
   if (isCell) return '601'
-    else return isSingleCell ? '602' : '600'
+  else return isSingleCell ? '602' : '600'
 }
 
 export function getIsSodiumSingleCell(btyType: SekSodiumBtyType) {
