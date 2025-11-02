@@ -4,6 +4,5 @@ members = [
     "share",
     "src-tauri",
     "bindings/node",
-     "clipboard_persistence",
 ]
 resolver = "2" 
