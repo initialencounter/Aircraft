@@ -1,1 +1,0 @@
-import{_ as l,c as o,o as a,ae as d}from"./chunks/framework.Dh1jimFm.js";const I=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"rule.md","filePath":"rule.md"}'),i={name:"rule.md"};function c(r,e,h,t,u,n){return a(),o("div",null,e[0]||(e[0]=[d("",58)]))}const b=l(i,[["render",c]]);export{I as __pageData,b as default};
