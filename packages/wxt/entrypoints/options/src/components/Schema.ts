@@ -131,7 +131,7 @@ export const Config: Schema<Config> = Schema.intersect([
   Schema.object({
     verify: Schema.boolean()
       .description(
-        '表单验证（仅限锂电池），验证规则详见[rule](https://lims.initenc.cn/rule.html)，欢迎补充'
+        '表单验证（仅支持锂电池和钠离子电池），验证规则详见[rule](https://lims.initenc.cn/rule.html)，欢迎补充'
       )
       .default(true),
     dangerousModels: Schema.array(String)
