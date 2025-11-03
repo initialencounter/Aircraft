@@ -78,7 +78,7 @@ const menuItems = [
   {
     index: '8',
     path: '/clipkeeper',
-    label: '剪贴板持久化',
+    label: '剪贴板快照',
     icon: Notebook,
     requiresUnlock: false,
   },
