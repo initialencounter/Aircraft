@@ -5,7 +5,9 @@ import type {
   SekData,
 } from '@aircraft/validators'
 import type { LocalConfig } from '../../../share/utils'
+import { getProjectDate } from '../../../share/utils'
 import { getHost } from './helpers'
+import { ProjectTraceResponse } from '../../../share/types'
 
 /**
  * 获取项目数据
@@ -113,5 +115,44 @@ export function parseEntrust(entrustData: string | null): EntrustData {
   return {
     consignor: consignor.innerHTML.trim(),
     manufacturer: manufacturer.innerHTML.trim(),
+  }
+}
+
+
+
+export async function getProjectTrace(projectNo: string): Promise<ProjectTraceResponse | null> {
+  if (!projectNo) return null;
+  const [startDate, endDate] = getProjectDate(projectNo);
+  const systemId = projectNo.slice(0, 3).toLowerCase();
+  const queryParams = new URLSearchParams({
+    systemId: systemId,
+    category: '',
+    reportType: '0',
+    appraiserName: '',
+    itemName: '',
+    principal: '',
+    startDate: startDate,
+    endDate: endDate,
+    projectNo: projectNo,
+    page: '1',
+    rows: '10',
+  })
+  const url = `${window.location.origin}/rest/project?${queryParams.toString()}`
+  try {
+    const response = await fetch(
+      url,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          Referer: `${window.location.origin}/project/main`,
+        },
+      }
+    )
+    if (!response.ok) return null
+    return await response.json()
+  } catch (e) {
+    console.error(e);
+    return null
   }
 }

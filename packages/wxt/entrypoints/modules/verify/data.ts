@@ -1,8 +1,8 @@
 import type { EntrustData, PekData, SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
-import { getData } from '../utils/api'
+import { getData, getProjectTrace } from '../utils/api'
 import { getHost } from '../utils/helpers'
-import type { LocalConfig } from '../../../share/utils'
+import { getProjectYear, type LocalConfig } from '../../../share/utils'
 import { checkAttachment, checkAttachmentFiles } from './attachment'
 import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
@@ -24,9 +24,15 @@ export async function verifyFormData(
   let model: string
   if (category === 'battery') {
     if (systemId === 'pek') {
+      const data = await getProjectTrace(projectNo);
+      let projectYear: string | undefined = undefined;
+      if (data && data.rows.length > 0) {
+        projectYear = getProjectYear(projectNo, data.rows[0].nextYear)
+      }
       dataFromForm = getFormData<PekData>(systemId)
       model = dataFromForm.model
-      result = window.checkPekBtyType(dataFromForm)
+      console.log('Project Year:', projectYear);
+      result = window.checkPekBtyType(dataFromForm, projectYear)
     } else {
       dataFromForm = getFormData<SekData>(systemId)
       model = dataFromForm.btyKind

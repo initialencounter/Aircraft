@@ -186,7 +186,23 @@ function validateFormat(input: string): boolean {
   return regex.test(input);
 }
 
+function getProjectDate(projectNo: string): [string, string] {
+  const datePart = projectNo.slice(5, 13);
+  const year = datePart.slice(0, 4);
+  const month = datePart.slice(4, 6);
+  const day = datePart.slice(6, 8);
+  const date = new Date(`${year}-${month}-${day}`);
+  const startDate = date.setDate(date.getDate() -1);
+  const endDate = date.setDate(date.getDate() +1);
+  return [new Date(startDate).toISOString().slice(0,10), new Date(endDate).toISOString().slice(0,10)];
+}
+
+function getProjectYear(projectNo: string, nextYear: boolean): string {
+  const year = parseInt(projectNo.slice(5, 9));
+  return nextYear ? (year + 1).toString() : year.toString();
+}
 export {
   LocalConfig, getLocalConfig, getCategory, getSystemId, checkDate, parseDate, sleep,
-  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor, validateFormat
+  setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor, validateFormat,
+  getProjectDate, getProjectYear
 }

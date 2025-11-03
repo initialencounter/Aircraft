@@ -26,7 +26,6 @@ import {
   getCurrentProjectNo,
   getNotification,
   getSystemId,
-  preventDefault,
   sleep,
 } from './modules/utils/helpers'
 
@@ -45,7 +44,8 @@ import { PekSodiumData, SekSodiumData } from '../../validators/src/sodium/shared
 // 声明全局函数
 declare global {
   function checkPekBtyType(
-    data: PekData
+    data: PekData,
+    ProjectYear?: string,
   ): Array<{ ok: boolean; result: string }>
 
   function checkSekBtyType(
