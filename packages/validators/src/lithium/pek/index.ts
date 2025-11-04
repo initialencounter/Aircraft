@@ -32,7 +32,7 @@ import { packetOrContain } from './packetOrContain'
 import { remarksCheck } from './remarksCheck'
 import { stateOfCharge } from './stateOfCharge'
 
-function checkPekBtyType(currentData: PekData): CheckResult[] {
+function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResult[] {
   const result = []
   const btyType = getBtyTypeCode(currentData)
   // 品名
@@ -176,7 +176,7 @@ function checkPekBtyType(currentData: PekData): CheckResult[] {
   // 开启状态运输
   result.push(...activeStateWarn(otherDescribe))
   // 荷电状态≤30%
-  result.push(...stateOfCharge(pkgInfo, otherDescribe))
+  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, projectYear))
   // 其他描述是否为电芯或电池
   result.push(...otherDescribeIsCell(isCell, otherDescribe))
   // 包装与其他描述验证
