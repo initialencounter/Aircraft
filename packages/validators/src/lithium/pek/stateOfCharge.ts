@@ -46,12 +46,12 @@ export function stateOfCharge(
       }
       break;
     case '952':
-      if (projectYear === undefined && unno === 'UN3556' && wattHour > 100 && !deviceBatteryCapacity && !socCapacity) {
-        result.push({ ok: false, result: `${pkgInfoSubType}，UN3556 瓦时>100， 应勾选显示电量≤25%或SoC荷电状态≤30%，如果是25年报告请忽略` })
+      if (projectYear === undefined && unno === 'UN3556' && wattHour > 100 && !deviceBatteryCapacity) {
+        result.push({ ok: false, result: `${pkgInfoSubType}，UN3556 瓦时>100，应勾选显示电量≤25%，如果是25年报告请忽略` })
         break;
       }
-      if (projectYear === '2026' && !deviceBatteryCapacity && !socCapacity && unno === 'UN3556' && wattHour > 100) {
-        result.push({ ok: false, result: `${projectYear}年报告，UN3556 瓦时>100，${pkgInfoSubType}应勾选显示电量≤25%或SoC荷电状态≤30%` })
+      if (projectYear === '2026' && unno === 'UN3556' && wattHour > 100 && !deviceBatteryCapacity) {
+        result.push({ ok: false, result: `${projectYear}年报告，UN3556 瓦时>100，${pkgInfoSubType}应勾选显示电量≤25%` })
       }
       break;
     default:
