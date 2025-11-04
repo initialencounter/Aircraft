@@ -18,7 +18,7 @@ import { checkComment } from './checkComment'
 import { checkDropTest } from './checkDropTest'
 import { checkBtyLabel } from './checkBtyLabel'
 
-function checkSekBtyType(currentData: SekData): CheckResult[] {
+function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResult[] {
   const result = []
   const checkMap = {
     '500': ['≤100Wh', '>100Wh'],
@@ -203,7 +203,8 @@ function checkSekBtyType(currentData: SekData): CheckResult[] {
       packageGrade,
       classOrDiv,
       isIon,
-      properShippingName
+      properShippingName,
+      projectYear,
     )
   )
   if (isIon) {

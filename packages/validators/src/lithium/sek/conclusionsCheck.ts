@@ -25,13 +25,20 @@ export function conclusionsCheck(
   packageGrade: string,
   classOrDiv: string,
   isIon: boolean,
-  properShippingName: string
+  properShippingName: string,
+  projectYear?: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   unno = unno.trim()
   properShippingName = properShippingName.trim()
   packageGrade = packageGrade.trim()
   classOrDiv = classOrDiv.trim()
+  if (projectYear === '2026' && unno === 'UN3171') {
+    result.push({ ok: false, result: `2026年报告，UN3171已不适用` })
+  }
+  if (projectYear === undefined && unno === 'UN3171') {
+    result.push({ ok: false, result: `UN3171已不适用，如果是25年报告请忽略` })
+  }
   if (conclusions === 1) {
     // 危险品
     if (

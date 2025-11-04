@@ -23,12 +23,13 @@ export async function verifyFormData(
   let dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData
   let model: string
   if (category === 'battery') {
+    const data = await getProjectTrace(projectNo);
+    let projectYear: string | undefined = undefined;
+    if (data && data.rows.length > 0) {
+      projectYear = getProjectYear(projectNo, data.rows[0].nextYear)
+    }
     if (systemId === 'pek') {
-      const data = await getProjectTrace(projectNo);
-      let projectYear: string | undefined = undefined;
-      if (data && data.rows.length > 0) {
-        projectYear = getProjectYear(projectNo, data.rows[0].nextYear)
-      }
+
       dataFromForm = getFormData<PekData>(systemId)
       model = dataFromForm.model
       console.log('Project Year:', projectYear);
@@ -36,7 +37,7 @@ export async function verifyFormData(
     } else {
       dataFromForm = getFormData<SekData>(systemId)
       model = dataFromForm.btyKind
-      result = window.checkSekBtyType(dataFromForm)
+      result = window.checkSekBtyType(dataFromForm, projectYear)
     }
   } else {
     if (systemId === 'pek') {

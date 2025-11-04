@@ -49,7 +49,8 @@ declare global {
   ): Array<{ ok: boolean; result: string }>
 
   function checkSekBtyType(
-    data: SekData
+    data: SekData,
+    ProjectYear?: string,
   ): Array<{ ok: boolean; result: string }>
 
   function checkPekAttachment(
