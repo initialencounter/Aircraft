@@ -13,6 +13,11 @@ export function packetOrContain(
   isChargeBoxOrRelated: boolean
 ): CheckResult[] {
   const result: CheckResult[] = []
+
+  if (otherDescribeCAddition.includes('符合包装说明967第II部分')) {
+    result.push({ ok: false, result: '海陆运，描述中不应存在“锂离子电池符合包装说明967第II部分”' })
+  }
+
   // 包装与其他描述验证
   if (
     otherDescribe === '541' &&
