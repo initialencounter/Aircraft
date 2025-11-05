@@ -191,10 +191,11 @@ async function entrypoint() {
       isProcessing = true
 
       requestAnimationFrame(() => {
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 100; i++) {
           const target = document.querySelector(
             `#datagrid-row-r1-2-${i}`
           ) as HTMLTableRowElement
+          if (!target) continue
           if (target && target.style.color === 'orange') {
             target.style.color = nextYearColor
             target.style.backgroundColor = nextYearBgColor

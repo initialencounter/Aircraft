@@ -297,10 +297,11 @@ async function entrypoint() {
     setInterval(() => {
       if (nextYearColor === undefined) nextYearColor = ''
       if (nextYearBgColor === undefined) nextYearBgColor = '#76EEC6'
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 100; i++) {
         const target = document.querySelector(
           `#datagrid-row-r1-1-${i}`
         ) as HTMLElement
+        if (!target) continue
         if (target.style.color !== 'orange') continue
         target.style.color = nextYearColor
         target.style.backgroundColor = nextYearBgColor
