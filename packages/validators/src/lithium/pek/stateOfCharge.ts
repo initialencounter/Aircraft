@@ -11,6 +11,7 @@ export function stateOfCharge(
   otherDescribe: string,
   wattHour: number,
   unno: string,
+  isChargingCase: boolean,
   projectYear?: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
@@ -21,28 +22,37 @@ export function stateOfCharge(
   if (socCapacity && deviceBatteryCapacity) {
     result.push({ ok: false, result: `同时勾选SoC荷电状态≤30%和设备显示电量≤25%` })
   }
+  const onlySelectSocCapacity = socCapacity && !deviceBatteryCapacity;
+  const onlySelectDeviceBatteryCapacity = deviceBatteryCapacity && !socCapacity;
+  const neitherSelect = !deviceBatteryCapacity && !socCapacity;
+
+  if (isChargingCase) {
+    if (!neitherSelect) {
+      result.push({ ok: false, result: `充电盒“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
+    }
+  }
   switch (pkgInfoSubType) {
     case '965, IA':
     case '965, IB':
-      if (!(socCapacity && !deviceBatteryCapacity)) {
+      if (!onlySelectSocCapacity) {
         result.push({ ok: false, result: `${pkgInfoSubType}只勾选SoC荷电状态≤30%` })
       }
       break;
     case '966, I':
       switch (projectYear) {
         case undefined:
-          if (!(socCapacity && !deviceBatteryCapacity)) {
+          if (!onlySelectSocCapacity) {
             result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType}只勾选SoC荷电状态≤30%，如果是25年报告请忽略` })
           }
           break;
         case '2026':
-          if (!(socCapacity && !deviceBatteryCapacity)) {
+          if (!onlySelectSocCapacity) {
             result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType}只勾选SoC荷电状态≤30%` })
           }
           break;
         default:
-          if (!(!deviceBatteryCapacity && !socCapacity)) {
-            result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+          if (!neitherSelect) {
+            result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType}“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
           }
       }
       break;
@@ -50,29 +60,29 @@ export function stateOfCharge(
       switch (projectYear) {
         case undefined:
           if (wattHour > 2.7) {
-            if (!(socCapacity && !deviceBatteryCapacity)) {
+            if (!onlySelectSocCapacity) {
               result.push({ ok: false, result: `${pkgInfoSubType}瓦时＞2.7，只勾选SoC荷电状态≤30%，如果是25年报告请忽略` })
             }
           } else {
-            if (!(!deviceBatteryCapacity && !socCapacity)) {
-              result.push({ ok: false, result: `${pkgInfoSubType}瓦时≤2.7，都不应勾选SoC荷电状态≤30%和设备显示电量≤25%，如果是25年报告请忽略` })
+            if (!neitherSelect) {
+              result.push({ ok: false, result: `${pkgInfoSubType}瓦时≤2.7，“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选，如果是25年报告请忽略` })
             }
           }
           break;
         case '2026':
           if (wattHour > 2.7) {
-            if (!(socCapacity && !deviceBatteryCapacity)) {
+            if (!onlySelectSocCapacity) {
               result.push({ ok: false, result: `${projectYear}年报告，瓦时＞2.7，${pkgInfoSubType}只勾选SoC荷电状态≤30%` })
             }
           } else {
-            if (!(!deviceBatteryCapacity && !socCapacity)) {
-              result.push({ ok: false, result: `${projectYear}年报告，瓦时≤2.7，${pkgInfoSubType}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+            if (!neitherSelect) {
+              result.push({ ok: false, result: `${projectYear}年报告，瓦时≤2.7，${pkgInfoSubType}“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
             }
           }
           break;
         default:
-          if (!(!deviceBatteryCapacity && !socCapacity)) {
-            result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+          if (!neitherSelect) {
+            result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType}“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
           }
           break;
       }
@@ -82,34 +92,34 @@ export function stateOfCharge(
         switch (projectYear) {
           case undefined:
             if (wattHour > 100) {
-              if (!(deviceBatteryCapacity && !socCapacity)) {
+              if (!onlySelectDeviceBatteryCapacity) {
                 result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时>100，只勾选设备显示电量≤25%，如果是25年报告请忽略` })
               }
             } else {
-              if (!(!deviceBatteryCapacity && !socCapacity)) {
-                result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时≤100，都不应勾选SoC荷电状态≤30%和设备显示电量≤25%，如果是25年报告请忽略` })
+              if (!neitherSelect) {
+                result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时≤100，“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选，如果是25年报告请忽略` })
               }
             }
             break;
           case '2026':
             if (wattHour > 100) {
-              if (!(deviceBatteryCapacity && !socCapacity)) {
+              if (!onlySelectDeviceBatteryCapacity) {
                 result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType} ${unno} 瓦时>100，只勾选设备显示电量≤25%` })
               }
             } else {
-              if (!(!deviceBatteryCapacity && !socCapacity)) {
-                result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType} ${unno} 瓦时≤100，都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+              if (!neitherSelect) {
+                result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType} ${unno} 瓦时≤100，“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
               }
             }
             break;
           default:
-            if (!(!deviceBatteryCapacity && !socCapacity)) {
-              result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType} ${unno}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+            if (!neitherSelect) {
+              result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType} ${unno}“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
             }
         }
       } else {
-        if (!(!deviceBatteryCapacity && !socCapacity)) {
-          result.push({ ok: false, result: `${pkgInfoSubType} ${unno}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+        if (!neitherSelect) {
+          result.push({ ok: false, result: `${pkgInfoSubType} ${unno}“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
         }
       }
       break;

@@ -137,6 +137,8 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
     netWeight,
     isSingleCell
   )
+  const isChargingCase = pkgInfoSubType === '966, II' &&
+    otherDescribeCAddition.includes('耳机') && otherDescribeCAddition.includes('总净重') && (otherDescribeCAddition.includes('充电盒') || otherDescribeCAddition.includes('充电仓'))
   if (!itemCName) result.push({ ok: false, result: '中文品名为空' })
   if (!itemEName) result.push({ ok: false, result: '英文品名为空' })
   if (!btyKind) result.push({ ok: false, result: '电池型号为空' })
@@ -176,7 +178,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   // 开启状态运输
   result.push(...activeStateWarn(otherDescribe))
   // 荷电状态≤30%
-  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, projectYear))
+  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, isChargingCase, projectYear))
   // 其他描述是否为电芯或电池
   result.push(...otherDescribeIsCell(isCell, otherDescribe))
   // 包装与其他描述验证
