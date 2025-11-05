@@ -14,44 +14,103 @@ export function stateOfCharge(
   projectYear?: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
-  // 荷电状态≤30%
+  // SoC荷电状态≤30%
   const socCapacity = otherDescribe.includes('8aad92b65887a3a8015889d0cd7d0093')
   const deviceBatteryCapacity = otherDescribe.includes('2c9180849a150aee019a47e5345f3e5e')
+  // 设备显示电量≤25%
   if (socCapacity && deviceBatteryCapacity) {
     result.push({ ok: false, result: `同时勾选SoC荷电状态≤30%和设备显示电量≤25%` })
   }
   switch (pkgInfoSubType) {
     case '965, IA':
     case '965, IB':
-      if (!socCapacity) {
-        result.push({ ok: false, result: `${pkgInfoSubType}应为SoC荷电状态≤30%` })
+      if (!(socCapacity && !deviceBatteryCapacity)) {
+        result.push({ ok: false, result: `${pkgInfoSubType}只勾选SoC荷电状态≤30%` })
       }
       break;
     case '966, I':
-      if (projectYear === undefined && !socCapacity) {
-        result.push({ ok: false, result: `${pkgInfoSubType}应为SoC荷电状态≤30%，如果是25年报告请忽略` })
-        break;
-      }
-      if (!socCapacity && projectYear === '2026') {
-        result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType}应为SoC荷电状态≤30%` })
+      switch (projectYear) {
+        case undefined:
+          if (!(socCapacity && !deviceBatteryCapacity)) {
+            result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType}只勾选SoC荷电状态≤30%，如果是25年报告请忽略` })
+          }
+          break;
+        case '2026':
+          if (!(socCapacity && !deviceBatteryCapacity)) {
+            result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType}只勾选SoC荷电状态≤30%` })
+          }
+          break;
+        default:
+          if (!(!deviceBatteryCapacity && !socCapacity)) {
+            result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+          }
       }
       break;
     case '966, II':
-      if (projectYear === undefined && wattHour > 2.7 && !socCapacity) {
-        result.push({ ok: false, result: `${pkgInfoSubType}瓦时＞2.7，应为SoC荷电状态≤30%，如果是25年报告请忽略` })
-        break;
-      }
-      if (projectYear === '2026' && wattHour > 2.7 && !socCapacity) {
-        result.push({ ok: false, result: `${projectYear}年报告，瓦时＞2.7，${pkgInfoSubType}应为SoC荷电状态≤30%` })
+      switch (projectYear) {
+        case undefined:
+          if (wattHour > 2.7) {
+            if (!(socCapacity && !deviceBatteryCapacity)) {
+              result.push({ ok: false, result: `${pkgInfoSubType}瓦时＞2.7，只勾选SoC荷电状态≤30%，如果是25年报告请忽略` })
+            }
+          } else {
+            if (!(!deviceBatteryCapacity && !socCapacity)) {
+              result.push({ ok: false, result: `${pkgInfoSubType}瓦时≤2.7，都不应勾选SoC荷电状态≤30%和设备显示电量≤25%，如果是25年报告请忽略` })
+            }
+          }
+          break;
+        case '2026':
+          if (wattHour > 2.7) {
+            if (!(socCapacity && !deviceBatteryCapacity)) {
+              result.push({ ok: false, result: `${projectYear}年报告，瓦时＞2.7，${pkgInfoSubType}只勾选SoC荷电状态≤30%` })
+            }
+          } else {
+            if (!(!deviceBatteryCapacity && !socCapacity)) {
+              result.push({ ok: false, result: `${projectYear}年报告，瓦时≤2.7，${pkgInfoSubType}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+            }
+          }
+          break;
+        default:
+          if (!(!deviceBatteryCapacity && !socCapacity)) {
+            result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+          }
+          break;
       }
       break;
     case '952':
-      if (projectYear === undefined && unno === 'UN3556' && wattHour > 100 && !deviceBatteryCapacity) {
-        result.push({ ok: false, result: `${pkgInfoSubType}，UN3556 瓦时>100，应勾选显示电量≤25%，如果是25年报告请忽略` })
-        break;
-      }
-      if (projectYear === '2026' && unno === 'UN3556' && wattHour > 100 && !deviceBatteryCapacity) {
-        result.push({ ok: false, result: `${projectYear}年报告，UN3556 瓦时>100，${pkgInfoSubType}应勾选显示电量≤25%` })
+      if (unno === 'UN3556') {
+        switch (projectYear) {
+          case undefined:
+            if (wattHour > 100) {
+              if (!(deviceBatteryCapacity && !socCapacity)) {
+                result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时>100，只勾选设备显示电量≤25%，如果是25年报告请忽略` })
+              }
+            } else {
+              if (!(!deviceBatteryCapacity && !socCapacity)) {
+                result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时≤100，都不应勾选SoC荷电状态≤30%和设备显示电量≤25%，如果是25年报告请忽略` })
+              }
+            }
+            break;
+          case '2026':
+            if (wattHour > 100) {
+              if (!(deviceBatteryCapacity && !socCapacity)) {
+                result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType} ${unno} 瓦时>100，只勾选设备显示电量≤25%` })
+              }
+            } else {
+              if (!(!deviceBatteryCapacity && !socCapacity)) {
+                result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType} ${unno} 瓦时≤100，都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+              }
+            }
+            break;
+          default:
+            if (!(!deviceBatteryCapacity && !socCapacity)) {
+              result.push({ ok: false, result: `${projectYear}年报告,${pkgInfoSubType} ${unno}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+            }
+        }
+      } else {
+        if (!(!deviceBatteryCapacity && !socCapacity)) {
+          result.push({ ok: false, result: `${pkgInfoSubType} ${unno}都不应勾选SoC荷电状态≤30%和设备显示电量≤25%` })
+        }
       }
       break;
     default:
@@ -62,6 +121,5 @@ export function stateOfCharge(
         result.push({ ok: false, result: `${pkgInfoSubType}不应勾选设备显示电量≤25%` })
       }
   }
-
   return result
 }
