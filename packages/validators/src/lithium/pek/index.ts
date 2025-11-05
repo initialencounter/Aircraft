@@ -180,7 +180,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   // 开启状态运输
   result.push(...activeStateWarn(otherDescribe))
   // 荷电状态≤30%
-  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, isChargingCase, projectYear))
+  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, projectYear))
   // 其他描述是否为电芯或电池
   result.push(...otherDescribeIsCell(isCell, otherDescribe))
   // 包装与其他描述验证

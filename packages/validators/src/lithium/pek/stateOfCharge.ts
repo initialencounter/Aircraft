@@ -11,7 +11,6 @@ export function stateOfCharge(
   otherDescribe: string,
   wattHour: number,
   unno: string,
-  isChargingCase: boolean,
   projectYear?: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
@@ -26,11 +25,6 @@ export function stateOfCharge(
   const onlySelectDeviceBatteryCapacity = deviceBatteryCapacity && !socCapacity;
   const neitherSelect = !deviceBatteryCapacity && !socCapacity;
 
-  if (isChargingCase) {
-    if (!neitherSelect) {
-      result.push({ ok: false, result: `充电盒“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
-    }
-  }
   switch (pkgInfoSubType) {
     case '965, IA':
     case '965, IB':
