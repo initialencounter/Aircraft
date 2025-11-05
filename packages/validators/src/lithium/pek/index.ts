@@ -20,6 +20,7 @@ import {
   pkgInfoIsIA,
 } from '../shared/utils'
 import { activeStateWarn } from './activeStateWarn'
+import { chargingCase967II } from './chargingCase967II'
 import { conclusionsCheck } from './conclusionsCheck'
 import { dropStackTest } from './dropStackTest'
 import { IAIBCheck } from './IAIBCheck'
@@ -139,6 +140,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   )
   const isChargingCase = pkgInfoSubType === '966, II' &&
     otherDescribeCAddition.includes('耳机') && otherDescribeCAddition.includes('总净重') && (otherDescribeCAddition.includes('充电盒') || otherDescribeCAddition.includes('充电仓'))
+  result.push(...chargingCase967II(isChargingCase, otherDescribeCAddition))
   if (!itemCName) result.push({ ok: false, result: '中文品名为空' })
   if (!itemEName) result.push({ ok: false, result: '英文品名为空' })
   if (!btyKind) result.push({ ok: false, result: '电池型号为空' })
