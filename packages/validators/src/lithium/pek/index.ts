@@ -14,6 +14,7 @@ import {
   getPkgInfoSubType,
   matchBatteryWeight,
   matchNumber,
+  matchTotalNetweight,
   matchWattHour,
   parseNetWeight,
   pekIsDangerous,
@@ -175,8 +176,9 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       inspectionItem1
     )
   )
+  const totalNetWeight = (!netWeight || isNaN(netWeight)) ? matchTotalNetweight(otherDescribeCAddition) : netWeight
   // 电池净重限重
-  result.push(...netWeighLimit(netWeight, pkgInfoSubType))
+  result.push(...netWeighLimit(totalNetWeight, pkgInfoSubType))
   // 开启状态运输
   result.push(...activeStateWarn(otherDescribe))
   // 荷电状态≤30%
@@ -239,7 +241,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       pkgInfoByPackCargo,
       pkgInfo,
       unno,
-      netWeight,
+      totalNetWeight,
       packPassengerCargo,
       classOrDiv,
       pkgInfoReference,

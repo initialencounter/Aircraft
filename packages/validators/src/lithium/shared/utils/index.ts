@@ -54,14 +54,47 @@ function matchCapacity(projectName: string) {
 }
 
 function matchBatteryWeight(describe: string) {
-  const matches = [...describe.matchAll(/为(\d+\.?\d*)\s*[Kk]?g?/g)]
-  const results = matches.map((match) => match[1])
-  const rowText = matches.map((match) => match[0])[0]
-  let weight = Number(results[0])
-  if (!results.length) return 0
-  if (isNaN(weight)) return 0
-  if (rowText.toLowerCase().includes('kg')) weight = weight * 1000
-  return weight
+  const weightRegex = /为(\d+\.?\d*)\s*(kg|g|千克|克)?/i;
+
+  const match = describe.match(weightRegex);
+
+  if (!match) {
+    return 0;
+  }
+
+  const numericValue = parseFloat(match[1]);
+
+  const unit = match[2]?.toLowerCase();
+  if (!unit || unit === 'kg' || unit === '千克') {
+    return numericValue * 1000;
+  } else if (unit === 'g' || unit === '克') {
+    return numericValue;
+  }
+
+  return numericValue; // 默认情况
+}
+
+
+export function matchTotalNetweight(sourceText: string): number {
+  // 增强正则表达式，支持更多可能的格式
+  const weightRegex = /总净重\s*[：:为]?\s*(\d+(?:\.\d+)?)\s*(kg|g|千克|克)?/i;
+
+  const match = sourceText.match(weightRegex);
+
+  if (!match) {
+    return 0;
+  }
+
+  const numericValue = parseFloat(match[1]);
+
+  const unit = match[2]?.toLowerCase();
+  if (!unit || unit === 'kg' || unit === '千克') {
+    return numericValue;
+  } else if (unit === 'g' || unit === '克') {
+    return numericValue / 1000;
+  }
+
+  return numericValue; // 默认情况
 }
 
 function getBtyTypeCode(currentData: PekData | PekSodiumData, isSodium: boolean = false): SekBtyType {
