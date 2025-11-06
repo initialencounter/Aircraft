@@ -1,12 +1,18 @@
 # 更新日志
 
+## [v2.1.5] - 2025-11-06
+
+### 新增
+
+- SoC荷电状态和设备显示电量验证([f931c0a](https://github.com/initialencounter/Aircraft/commit/f931c0aa68229914df6c22e293736b793f797a2e))
+
 ## [v2.1.0] - 2025-11-01
 
-## 新增
+### 新增
 
 - 适配钠离子电池([cc126ec](https://github.com/initialencounter/Aircraft/commit/cc126ec9db8631a04644d365af54f0503894872f))
 
-## 修复
+### 修复
 
 - 海陆运跌落,188标记无法验证
 
