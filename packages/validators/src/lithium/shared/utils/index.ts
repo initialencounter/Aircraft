@@ -306,25 +306,6 @@ function pkgInfoIsIA(
   return false
 }
 
-function parseNetWeight(net_weight: string) {
-  net_weight = net_weight.replace(/ /g, '')
-  if (net_weight.length === 0) {
-    return NaN
-  }
-  switch (net_weight) {
-    case '<5':
-      return 4.9
-    case '＜5':
-      return 4.9
-    case '<35':
-      return 34.9
-    case '＜35':
-      return 34.9
-    default:
-      return Number(net_weight)
-  }
-}
-
 function matchNumber(num: string) {
   num = num.replace(/ /g, '')
   const matches = [...num.matchAll(/[0-9]+(\.\d*)?/g)]
@@ -424,7 +405,6 @@ export {
   getUNNO,
   getIsCargoOnly,
   pkgInfoIsIA,
-  parseNetWeight,
   matchNumber,
   matchVoltage,
   matchCapacity,

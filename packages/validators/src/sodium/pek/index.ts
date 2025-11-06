@@ -1,4 +1,4 @@
-import { matchBatteryWeight, matchNumber, matchWattHour, parseNetWeight } from '../../lithium/shared/utils'
+import { matchBatteryWeight, matchNumber, matchWattHour } from '../../lithium/shared/utils'
 import { CheckResult, PekUNNO } from '../../lithium/shared/types'
 import type {
   PekSodiumData,
@@ -51,7 +51,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   // 电池数量
   const btyCount = matchNumber(currentData['btyCount'])
   // 净重 单位：g
-  const netWeight = parseNetWeight(currentData['netWeight'])
+  const netWeight = parseFloat(currentData['netWeight'])
   // 真实显示净重数字 单位：g
   const netWeightDisplay = matchNumber(currentData['netWeight']) * 1000
   // 描述

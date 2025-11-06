@@ -16,7 +16,6 @@ import {
   matchNumber,
   matchTotalNetweight,
   matchWattHour,
-  parseNetWeight,
   pekIsDangerous,
   pkgInfoIsIA,
 } from '../shared/utils'
@@ -27,7 +26,6 @@ import { checkDropTest } from './dropTest'
 import { checkStackTest } from './stackTest'
 import { IAIBCheck } from './IAIBCheck'
 import { ionOrMetal } from './ionOrMetal'
-import { isNaNCheck } from './isNaNCheck'
 import { liBtyLabelCheck } from './liBtyLabelCheck'
 import { netWeighLimit } from './netWeighLimit'
 import { otherDescribeIsCell } from './otherDescribeIsCell'
@@ -69,7 +67,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   // 电池数量
   const btyCount = matchNumber(currentData['btyCount'])
   // 净重 单位：g
-  const netWeight = parseNetWeight(currentData['netWeight'])
+  const netWeight = parseFloat(currentData['netWeight'])
   // 真实显示净重数字 单位：g
   const netWeightDisplay = matchNumber(currentData['netWeight']) * 1000
   // 描述
@@ -257,8 +255,6 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       packageGrade
     )
   )
-  // 瓦时数、净重、锂含量、电芯类型是否为数字
-  result.push(...isNaNCheck(isIon, wattHour, liContent, netWeight))
   // 965 IA IB
   result.push(...IAIBCheck(isIA, pkgInfoSubType))
   return result
