@@ -1,5 +1,11 @@
 import {describe, expect, it} from 'vitest'
-import {matchBatteryWeight, matchCapacity, matchVoltage, matchWattHour} from '../src/lithium/shared/utils'
+import {
+  matchBatteryWeight,
+  matchCapacity,
+  matchTotalNetweight,
+  matchVoltage,
+  matchWattHour
+} from '../src/lithium/shared/utils'
 import {checkPekBtyType, checkSekBtyType} from "../src";
 import {readFileSync, writeFileSync} from "fs";
 
@@ -748,7 +754,7 @@ describe('匹配方法测试', () => {
     it('验证空运数据', () => {
       for (let i = 1; i < 100; i++) {
         const data = JSON.parse(readFileSync(`./tests/data/pek/data${i}.json`, 'utf8'));
-        const result = checkPekBtyType(data)
+        const result = checkPekBtyType(data, '2025')
         if (result.length === 0) continue;
         if ([48].includes(i) && result[0].result.includes('能量密度')) continue;
         if ([68].includes(i) && result[0].result=='容量*电压 与 瓦时数 误差大于5%') continue;
@@ -761,7 +767,7 @@ describe('匹配方法测试', () => {
     it('验证海运数据', () => {
       for (let i = 1; i < 99; i++) {
         const data = JSON.parse(readFileSync(`./tests/data/sek/data${i}.json`, 'utf8'));
-        const result = checkSekBtyType(data)
+        const result = checkSekBtyType(data, '2025')
         if (result.length === 0) continue;
         if ([17,28,66,92].includes(i) && result[0].result.includes('能量密度')) continue;
         if ([48].includes(i) && result[0].result.includes('包装必须达到 II 级包装的性能标准')) continue;
@@ -772,6 +778,20 @@ describe('匹配方法测试', () => {
         expect(result.length).toBe(0)
       }
     })
+  })
+
+  it('验证总净重', () => {
+    expect(matchTotalNetweight(`（注：单个蓝牙耳机充电盒的重量约为41.0g。摩托罗拉主动降噪蓝牙耳机型号：MOTO BUDS-S ANC，内置1块可充电锂离子电芯 LIR1254，电池额定瓦特小时为 0.222Wh，单块电池的 重量为1.9g，锂离子电池符合包装说明967第II部分。每个充电盒与一对耳机合包在一个零售包装内，整个包装件内含40个充电盒和80个耳机电池，包装件内锂电池总净重为1.792kg。）`)).toBe(1.792)
+
+    expect(matchTotalNetweight(`（注：单个真无线立体声耳机充电盒的重量约为34.277g。真无线立体声耳机型号：EDF200170，内置1块聚合物锂离子电芯 WEL 451012，电芯额定瓦特小时为0.14Wh，单块电芯的重量为0.77g，锂离子电芯符合包装说明967第II部分。每个充电盒与一对耳机合包在一个零售包装内，整个包装件内含80个充电盒和160个耳机电芯，包装件内锂电池总净重为2.88kg。)`)).toBe(2.88)
+
+    expect(matchTotalNetweight(`（注：该电池已经做好防短路措施并已采取防止意外启动措施。单块电池的重量约为15.45g。设备：麦克风；型号：1194140。每台设备内置1块电池，每包装件内含6台设备。该包装 件另含锂离子电池 18650，该包装件中锂电池总净重为0.32kg。)
+实际物品运输时需进行磁性检测。`)).toBe(0.32)
+    expect(matchTotalNetweight(`（注：该电池已经做好防短路措施并已采取防止意外启动措施。单块电池的重量约为237g。设备：手持式拉曼分析仪；型号：Finder-Edge-1064。该包装件另含18650电池组 FE01。该包装件内锂电池总净重为0.474kg）`)).toBe(0.474)
+    expect(matchTotalNetweight(`（注：单个TWS 充电盒的重量约为29.9g。无线耳机型号：Air Neo，内置1块锂离子聚合物电芯 YF 401010，电芯额定瓦特小时为0.111Wh，单块电芯的重量为0.743g，锂离子电芯符合包装说明967第II部分。每个充电盒与一对耳机合包在一个零售包装内，整个包装件内含100个充电盒和200个耳机电芯，包装件内锂电池总净重为3.1386kg。)`)).toBe(3.1386)
+    expect(matchTotalNetweight(`（注：该电池已经做好防短路措施并已采取防止意外启动措施。单块电池的重量约为96.5g。设备：POS 终端；型号：S300。每台设备内置1块电池，每包装件内含20台设备。该包装件另含锂-二氧化锰电池 CR2430，该包装件中锂电池总净重为2.02kg。)`)).toBe(2.02)
+    expect(matchTotalNetweight(`（注：该电芯已经做好防短路措施并已采取防止意外启动措施。单块电芯的重量约为4.325g。设备：POS 终端；型号：S300。每台设备内置电芯1块，每个包装件内含20台设备。该包 装件另含可充电锂离子电池 SX18650-2S1P，该包装件中锂电池总净重为2.02kg。)`)).toBe(2.02)
+    expect(matchTotalNetweight(`（注：单块电池的重量约为82.6g。设备：移动数据终端；型号：CT37-X0N。每台设备与1块电池包装在一起，每包装件内含20台设备。该包装件另含可充式锂离子电池组 341322PM4。该包装件内锂电池总净重为1.693kg）`)).toBe(1.693)
   })
 
   // describe('process', () => {
