@@ -7,7 +7,7 @@ import type {
 } from '../shared/types'
 import { getIsSodiumSingleCell, getSodiumBtyTypeCode, getSodiumInfoSubType, getSodiumPkgInfo, getSodiumPkgInfoByPackCargo, pekSodiumIsDangerous } from '../shared/utils'
 import { baseCheck } from '../../lithium/shared'
-import { pekSodiumBatteryNetWeighLimit } from './netWeighLimit'
+import { netWeighLimit } from '../../lithium/pek/netWeighLimit'
 import { pekSodiumActiveStateWarn } from './activeStateWarn'
 import { pekSodiumStateOfCharge } from './stateOfCharge'
 import { otherDescribeIsCell } from '../../lithium/pek/otherDescribeIsCell'
@@ -146,7 +146,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
     )
   )
   // 电池净重限重
-  result.push(...pekSodiumBatteryNetWeighLimit(netWeight, pkgInfoSubType))
+  result.push(...netWeighLimit(netWeight, pkgInfoSubType))
   // 开启状态运输 2796
   result.push(...pekSodiumActiveStateWarn(otherDescribe))
   // 荷电状态≤30% 2797
