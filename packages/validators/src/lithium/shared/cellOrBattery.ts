@@ -13,17 +13,21 @@ export function cellOrBattery(
   isChargeBoxOrRelated: boolean
 ): CheckResult[] {
   const result: CheckResult[] = []
-  if (
-    isCell &&
-    !otherDescribeCAddition.includes('单块电芯') &&
-    !isChargeBoxOrRelated
-  )
-    result.push({ ok: false, result: '物品为电芯时，描述中不应该出现单块电池' })
-  if (
-    !isCell &&
-    !otherDescribeCAddition.includes('单块电池') &&
-    !isChargeBoxOrRelated
-  )
-    result.push({ ok: false, result: '物品为电池时，描述中不应该出现单块电芯' })
+  if (isChargeBoxOrRelated) return result
+  if (isCell) {
+    if (otherDescribeCAddition.includes('单块电池')
+      || otherDescribeCAddition.includes('块电池')
+      || otherDescribeCAddition.includes('内置电池')
+      || otherDescribeCAddition.includes('外配电池')) {
+      result.push({ ok: false, result: '类型为电芯时，描述中不应该出现电池' })
+    }
+  } else {
+    if (otherDescribeCAddition.includes('单块电芯')
+      || otherDescribeCAddition.includes('块电芯')
+      || otherDescribeCAddition.includes('内置电芯')
+      || otherDescribeCAddition.includes('外配电芯')) {
+      result.push({ ok: false, result: '类型为电池时，描述中不应该出现电芯' })
+    }
+  }
   return result
 }
