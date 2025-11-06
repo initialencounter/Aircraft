@@ -23,7 +23,8 @@ import {
 import { activeStateWarn } from './activeStateWarn'
 import { chargingCase967II } from './chargingCase967II'
 import { conclusionsCheck } from './conclusionsCheck'
-import { dropStackTest } from './dropStackTest'
+import { checkDropTest } from './dropTest'
+import { checkStackTest } from './stackTest'
 import { IAIBCheck } from './IAIBCheck'
 import { ionOrMetal } from './ionOrMetal'
 import { isNaNCheck } from './isNaNCheck'
@@ -194,9 +195,13 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       isChargeBoxOrRelated
     )
   )
-  // 跌落和堆码检测
+  // 跌落检测
   result.push(
-    ...dropStackTest(pkgInfoSubType, stackTest, dropTest, stackTestEvaluation)
+    ...checkDropTest(pkgInfoSubType, dropTest)
+  )
+  // 堆码检测
+  result.push(
+    ...checkStackTest(pkgInfoSubType, stackTest, stackTestEvaluation)
   )
   // 检查项目5 是否加贴锂电池标记
   result.push(...liBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel))

@@ -12,7 +12,8 @@ import { pekSodiumActiveStateWarn } from './activeStateWarn'
 import { pekSodiumStateOfCharge } from './stateOfCharge'
 import { otherDescribeIsCell } from '../../lithium/pek/otherDescribeIsCell'
 import { packetOrContain } from '../../lithium/pek/packetOrContain'
-import { pekSodiumDropStackTest } from './dropStackTest'
+import { checkDropTest } from '../../lithium/pek/dropTest'
+import { checkStackTest } from '../../lithium/pek/stackTest'
 import { sodiumBtyLabelCheck } from './sodiumBtyLabelCheck'
 import { sodiumIonOrMetal } from './sodiumIonOrMetal'
 import { sodiumRemarksCheck } from './sodiumRemarksCheck'
@@ -162,10 +163,10 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
       isChargeBoxOrRelated
     )
   )
-  // 跌落和堆码检测
-  result.push(
-    ...pekSodiumDropStackTest(pkgInfoSubType, stackTest, dropTest)
-  )
+  // 跌落检测
+  result.push(...checkDropTest(pkgInfoSubType, stackTest))
+  // 堆码检测
+  result.push(...checkStackTest(pkgInfoSubType, stackTest, false))
   // 检查项目5 是否加贴锂电池标记
   result.push(...sodiumBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel))
 
