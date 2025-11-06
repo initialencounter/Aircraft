@@ -15,8 +15,8 @@ import {
   matchBatteryWeight,
   matchCapacity,
   matchNumber,
+  matchTotalNetweight,
   matchVoltage,
-  parseNetWeight,
 } from '../lithium/shared/utils'
 import { checkBatteryType } from './checkBatteryType'
 import { checkCapacity } from './checkCapacity'
@@ -154,7 +154,7 @@ export function checkPekAttachment(
   // 锂含量
   const liContent = matchNumber(currentData['inspectionItem4Text1'])
   // 净重 单位：g
-  const netWeight = parseNetWeight(currentData['netWeight'])
+  const netWeight = parseFloat(currentData['netWeight'])
   // 描述
   const otherDescribeCAddition = currentData['otherDescribeCAddition']
   // 电池重量
@@ -174,11 +174,12 @@ export function checkPekAttachment(
     packCargo
   )
   const btyBrand = currentData['brands']
+  const totalNetWeight = (!netWeight || isNaN(netWeight)) ? matchTotalNetweight(otherDescribeCAddition) : netWeight
   const results: CheckResult[] = []
   results.push(
     ...checkPekGoods(
       pkgInfoSubType,
-      netWeight,
+      totalNetWeight,
       itemCName,
       currentData.projectNo,
       goodsInfo
