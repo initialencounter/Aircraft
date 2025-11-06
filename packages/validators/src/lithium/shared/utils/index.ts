@@ -17,39 +17,69 @@ import {
 import { PekSodiumData, PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
 
 function matchWattHour(projectName: string) {
-  const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*[MmKk]?[Ww][Hh]/g)]
+  const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*([mMkK]?)[Ww][Hh]/g)]
   const results = matches.map((match) => match[1])
-  const rowText = matches.map((match) => match[0])[results.length - 1]
+  const prefixes = matches.map((match) => match[2])
   let wattHour = Number(results[results.length - 1])
   if (!results.length) return 0
   if (isNaN(wattHour)) return 0
-  if (rowText.toLowerCase().includes('kwh')) wattHour *= 1000
-  if (rowText.toLowerCase().includes('mwh')) wattHour /= 1000
+  
+  // 根据前缀进行单位换算（统一转换为瓦时Wh）
+  const prefix = prefixes[prefixes.length - 1]
+  if (prefix === 'M') {                      // 兆瓦时 → 瓦时: × 1,000,000
+    wattHour *= 1000000
+  } else if (prefix === 'k' || prefix === 'K') { // 千瓦时 → 瓦时: × 1000
+    wattHour *= 1000
+  } else if (prefix === 'm') {               // 毫瓦时 → 瓦时: ÷ 1000
+    wattHour /= 1000
+  }
+  // 无前缀就是瓦时，保持不变
+  
   return wattHour
 }
 
 function matchVoltage(projectName: string) {
-  const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*[MmKk]?[Vv]/g)]
+  const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*([mMkK]?)[Vv]/g)]
   const results = matches.map((match) => match[1])
-  const rowText = matches.map((match) => match[0])[results.length - 1]
+  const prefixes = matches.map((match) => match[2])
   let voltage = Number(results[results.length - 1])
   if (!results.length) return 0
   if (isNaN(voltage)) return 0
-  if (rowText.toLowerCase().includes('mv')) voltage /= 1000
-  if (rowText.toLowerCase().includes('kv')) voltage *= 1000
+  
+  // 根据前缀进行单位换算（统一转换为伏V）
+  const prefix = prefixes[prefixes.length - 1]
+  if (prefix === 'M') {                      // 兆伏 → 伏: × 1,000,000
+    voltage *= 1000000
+  } else if (prefix === 'k' || prefix === 'K') { // 千伏 → 伏: × 1000
+    voltage *= 1000
+  } else if (prefix === 'm') {               // 毫伏 → 伏: ÷ 1000
+    voltage /= 1000
+  }
+  // 无前缀就是伏，保持不变
+  
   return voltage
 }
 
 function matchCapacity(projectName: string) {
-  const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*[MmKk]?[Aa][Hh]/g)]
+  const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*([mMkK]?)[Aa][Hh]/g)]
   const results = matches.map((match) => match[1])
-  const rowText = matches.map((match) => match[0])[results.length - 1]
+  const prefixes = matches.map((match) => match[2])
   let result = Number(results[results.length - 1])
   if (!results.length) return 0
   if (isNaN(result)) return 0
-  if (rowText.toLowerCase().includes('kah')) {// kAh
-    result *= 1000 * 1000
-  } else if (!rowText.toLowerCase().includes('mah')) result *= 1000
+  
+  // 根据前缀进行单位换算（统一转换为毫安时mAh）
+  const prefix = prefixes[prefixes.length - 1]
+  if (prefix === 'M') {                      // 兆安时 → 毫安时: × 1,000,000,000
+    result *= 1000000000
+  } else if (prefix === 'k' || prefix === 'K') { // 千安时 → 毫安时: × 1,000,000
+    result *= 1000000
+  } else if (prefix === 'm') {               // 毫安时，保持不变
+    // 已经是目标单位
+  } else {                                   // 安时 → 毫安时: × 1000
+    result *= 1000
+  }
+  
   return result
 }
 
