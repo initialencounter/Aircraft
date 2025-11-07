@@ -291,13 +291,12 @@ async function entrypoint() {
         await sleep(100)
         searchButton.click()
         await sleep(200)
-        const reslutRow1 = document.querySelector(
-          '#datagrid-row-r10-2-0'
-        ) as HTMLElement
-        if (reslutRow1) {
-          reslutRow1.click()
+        const resultRow1Selector = (systemId === 'PEKGZ') ? '#datagrid-row-r10-2-0' : '#datagrid-row-r7-2-0'
+        const resultRow1 = document.querySelector(resultRow1Selector) as HTMLElement
+        if (resultRow1) {
+          resultRow1.click()
         } else {
-          console.log('reslutRow1 not found')
+          console.log('resultRow1 not found')
         }
       } else {
         console.log('searchButton not found')
