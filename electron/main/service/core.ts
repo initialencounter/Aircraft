@@ -45,6 +45,7 @@ class AircraftCore extends Service {
       // 启动核心服务
       this.bindings.startServer()
       this.bindings.startHotkey()
+      this.bindings.startClipboardSnapshotManager()
     })
 
     ctx.on('reload-server', async (serverConfig, llmConfig) => {

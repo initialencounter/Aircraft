@@ -186,6 +186,7 @@ export declare class AircraftRs {
   writeLog(log: LogMessage): void
   tryGetLogs(): Array<LogMessage>
   reloadClipboardSnapshotConfigs(): void
+  startClipboardSnapshotManager(): void
 }
 export type JsFileManager = FileManager
 export declare class FileManager {

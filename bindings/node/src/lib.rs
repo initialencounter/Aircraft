@@ -192,6 +192,12 @@ impl AircraftRs {
     self.clipboard_snapshot_manager.start();
     Ok(())
   }
+
+  #[napi]
+  pub fn start_clipboard_snapshot_manager(&self) -> napi::Result<()> {
+    self.clipboard_snapshot_manager.start();
+    Ok(())
+  }
 }
 
 #[napi(js_name = "FileManager")]
