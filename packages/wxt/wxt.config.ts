@@ -18,7 +18,7 @@ export default defineConfig({
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
     web_accessible_resources: [
       {
-        resources: ['loading.gif', 'xhr-interceptor.js'],
+        resources: ['loading.gif', 'easyui-interceptor.js'],
         matches: ['<all_urls>'],
       }
     ],

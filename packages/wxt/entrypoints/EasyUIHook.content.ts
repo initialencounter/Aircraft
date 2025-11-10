@@ -1,5 +1,3 @@
-import { sleep } from '../share/utils'
-
 export default defineContentScript({
   runAt: 'document_start',
   matches: [
@@ -39,54 +37,36 @@ async function entrypoint() {
   try {
     chrome.storage.local.get(['hundredRowsResult'], (localConfig) => {
       if (localConfig?.hundredRowsResult === false) {
-        console.log('[XHR Hook] hundredRowsResult is disabled, skipping injection.');
+        console.log('[EasyUI] hundredRowsResult is disabled, skipping injection.');
         return;
       }
-      injectInterceptScript();
-      modifyHTMLTableRows();
+      injectEasyUIInterceptor(); // 注入EasyUI拦截器
     })
   } catch (error) {
-    console.error('[XHR Hook] Error in entrypoint:', error);
+    console.error('[EasyUI] Error in entrypoint:', error);
   }
 }
 
-function injectInterceptScript() {
+function injectEasyUIInterceptor() {
   // 检查是否已经注入过
-  if ((window as any).__xhr_intercepted) {
+  if ((window as any).__easyui_intercepted) {
     return;
   }
 
   const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('xhr-interceptor.js');
+  script.src = chrome.runtime.getURL('easyui-interceptor.js');
   script.onload = () => {
-    (window as any).__xhr_intercepted = true;
-    script.remove(); // 加载后移除脚本元素
+    (window as any).__easyui_intercepted = true;
+    script.remove();
   };
   script.onerror = (e) => {
-    console.error('[XHR Hook] Failed to load interceptor script:', e);
+    console.error('[EasyUI Hook] Failed to load interceptor script:', e);
   };
 
   try {
-    // 尽早注入脚本
     const target = document.head || document.documentElement || document;
     target.appendChild(script);
   } catch (e) {
-    console.error('[XHR Hook] Failed to inject script:', e);
-  }
-}
-
-async function modifyHTMLTableRows() {
-  await sleep(400); // 等待页面加载完成
-  const hundredRows = document.querySelector('.pagination-page-list') as HTMLSelectElement;
-  if (hundredRows) {
-    // 方法1: 克隆元素并移除所有事件监听器
-    const clonedElement = hundredRows.cloneNode(true) as HTMLSelectElement;
-    // 替换原元素，这样会移除所有绑定的事件
-    hundredRows.parentNode?.replaceChild(clonedElement, hundredRows);
-
-    const newHundredRows = document.querySelector('.pagination-page-list') as HTMLSelectElement;
-    // 设置为100行
-    await sleep(200);
-    newHundredRows.value = '100';
+    console.error('[EasyUI Hook] Failed to inject script:', e);
   }
 }
