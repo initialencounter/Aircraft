@@ -1,5 +1,14 @@
 # 更新日志
 
+# 更新日志
+
+## [v2.1.8] - 2025-11-11
+
+### 修复
+
+- 钠离子电池跌落检查([9b2f6e0](https://github.com/initialencounter/Aircraft/commit/9b2f6e005229bcd7639de35a2efe4007bb51694d))
+
+
 ## [v2.1.7] - 2025-11-10
 
 ### 修复
