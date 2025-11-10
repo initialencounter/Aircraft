@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v2.1.7] - 2025-11-10
+
+### 修复
+
+- 项目列表序号显示错误([859dde6](https://github.com/initialencounter/Aircraft/commit/859dde6d83b39eab515423c4cae0dee479852c04))
+
+### 新增
+
+- 比对数据适配空运
+
 ## [v2.1.5] - 2025-11-06
 
 ### 新增
