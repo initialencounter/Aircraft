@@ -2,7 +2,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 
 use crate::hotkey_handler::copy::copy_file_to_here;
-use crate::hotkey_handler::copy_to_clipboard::set_image_to_clipboard;
 use crate::hotkey_handler::upload::upload_file;
 use crate::types::HotkeyConfig;
 use flextrek::{listen, listen_path, listen_selected_files, HotkeyHandle};
@@ -11,7 +10,7 @@ pub struct HotkeyManager {
     is_running: AtomicBool,
     copy_handle: Mutex<Option<HotkeyHandle>>,
     upload_handle: Mutex<Option<HotkeyHandle>>,
-    key_proxy_handle: Mutex<Option<HotkeyHandle>>,
+    pub search_handle: Mutex<Option<HotkeyHandle>>,
     pub config: Mutex<HotkeyConfig>,
     custom_hotkey_handle: Mutex<Option<Vec<HotkeyHandle>>>,
 }
@@ -23,17 +22,31 @@ impl HotkeyManager {
             copy_handle: Mutex::new(None),
             upload_handle: Mutex::new(None),
             config: Mutex::new(config),
-            key_proxy_handle: Mutex::new(None),
+            search_handle: Mutex::new(None),
             custom_hotkey_handle: Mutex::new(None),
         }
     }
 
     pub fn start(&self) {
         let config = self.config.lock().unwrap().clone();
-        *self.key_proxy_handle.lock().unwrap() =
-            Some(listen("ctrl+shift+a".to_string(), move || async move {
-                set_image_to_clipboard().unwrap();
-            }));
+        *self.search_handle.lock().unwrap() = Some(listen(
+            "CTRL+NUMPADSUBTRACT".to_string(),
+            move || async move {
+                let search_text = clipboard_win::get_clipboard_string().unwrap_or_default();
+                let program = r"Everything64";
+                println!("Executing: {} -s {}", program, search_text);
+                match std::process::Command::new(program)
+                    .arg("-s")
+                    .arg(&search_text)
+                    .spawn()
+                {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!("Failed to execute command: {:?}", e);
+                    }
+                }
+            },
+        ));
         if config.copy_enable {
             *self.copy_handle.lock().unwrap() =
                 Some(listen_path(config.copy_key, |paths| async move {
@@ -67,12 +80,11 @@ impl HotkeyManager {
     }
 
     pub fn stop(&self) {
-        self.key_proxy_handle
+        self.search_handle
             .lock()
             .unwrap()
             .take()
-            .unwrap()
-            .unregister();
+            .map(|h| h.unregister());
         if let Some(handle) = self.copy_handle.lock().unwrap().take() {
             handle.unregister();
         }

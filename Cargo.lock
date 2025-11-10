@@ -5314,6 +5314,7 @@ dependencies = [
  "bytes",
  "chrono",
  "clipboard-rs",
+ "clipboard-win 5.4.1",
  "clipkeeper",
  "colored",
  "copypasta",
