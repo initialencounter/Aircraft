@@ -164,7 +164,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
     )
   )
   // 跌落检测
-  result.push(...checkDropTest(pkgInfoSubType, stackTest))
+  result.push(...checkDropTest(pkgInfoSubType, dropTest))
   // 堆码检测
   result.push(...checkStackTest(pkgInfoSubType, stackTest, false))
   // 检查项目5 是否加贴锂电池标记
