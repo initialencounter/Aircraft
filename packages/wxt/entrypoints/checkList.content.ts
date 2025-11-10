@@ -8,6 +8,7 @@ export default defineContentScript({
     'https://*/rek/inspect*',
     'https://*/aek/inspect*',
     'https://*/sek/inspect*',
+    'https://*/pek/inspect*',
   ],
   allFrames: true,
   async main() {
@@ -78,7 +79,8 @@ async function entrypoint() {
           value as FormJSONData[keyof FormJSONData]
       }
     })
-    data['comment'] = data['comment'].slice(1)
+    if (!projectNo.startsWith('PEK'))
+      data['comment'] = data['comment'].slice(1)
     data['remarks'] = data['remarks'].slice(1)
     return data
   }
@@ -103,18 +105,32 @@ async function entrypoint() {
           ?.children[0]?.children[1] as SVGAElement
         if (verifyButton) verifyButton.setAttribute('fill', '#54a124')
       }
-    } catch {
+    } catch (e) {
+      console.error('parse clipboard data error:', e)
       Qmsg.error('解析数据失败', { timeout: 500 })
     }
   }
 
-  function compareFormData(data: FormJSONData) {
+  function compareFormData(data: FormJSONData | PekFormJSONData) {
     const localFormData = getFormDataJSON()
+    if (data.projectNo.slice(0, 3) !== localFormData.projectNo.slice(0, 3)) {
+      if (data.projectNo.startsWith('PEK')) {
+        return sekVSPek(localFormData, data as unknown as PekFormJSONData)
+      } else {
+        return sekVSPek(data as FormJSONData, localFormData as unknown as PekFormJSONData)
+      }
+    }
+
+
+    if (data.projectNo.startsWith('PEK')) {
+      return pekVSPek(data as unknown as PekFormJSONData, localFormData as unknown as PekFormJSONData)
+    }
     const diffDataKeys: string[] = []
     Object.keys(localFormData).forEach((key) => {
       if (ignoreList.includes(key)) return
       if (
         localFormData[key as keyof FormJSONData].trim() !==
+        // @ts-ignore
         data[key as keyof FormJSONData].trim()
       ) {
         diffDataKeys.push(keyMap[key as keyof FormJSONData])
@@ -181,6 +197,177 @@ async function entrypoint() {
     taskId: 'taskId',
     unno: 'UN编号',
     projectNo: '项目编号',
+  }
+
+  const pekKeyMap: Record<keyof PekFormJSONData, string> = {
+    projectNo: "项目编号",
+    projectId: "项目ID",
+    checkLocation: "检验地点",
+    taskId: "taskId",
+    according: "依据",
+    itemCName: "物品名称中文",
+    itemEName: "物品名称英文",
+    color: "颜色",
+    shape: "形状",
+    size: "尺寸",
+    model: "型号",
+    brands: "商标",
+    btyCount: "电池数量",
+    netWeight: "净重",
+    grossWeight: "毛重",
+    type1: "电池类型1",
+    type2: "电池类型2",
+    otherDescribe: "操作信息",
+    otherDescribeChecked: "操作信息勾选",
+    otherDescribeCAddition: "描述中文",
+    otherDescribeEAddition: "描述英文",
+    inspectionItem1: "包装方式",
+    inspectionItem1Text1: "与**包装在一起1",
+    inspectionItem1Text2: "与**包装在一起2",
+    inspectionItem6: "包装件通过3米堆码试验",
+    inspectionItem1Text3: "安装在**上1",
+    inspectionItem1Text4: "安装在**上2",
+    inspectionItem2: "提供测试报告，通过1.2米跌落试验",
+    inspectionItem2Text1: "电压",
+    inspectionItem2Text2: "容量",
+    inspectionItem3: "提供并通过UN38.3标准实验",
+    inspectionItem3Text1: "瓦时",
+    inspectionItem4: "加贴电池标记",
+    inspectionItem4Text1: "锂含量",
+    inspectionItem5: "附有随机文件",
+    inspectionItem5Text1: "参见包装说明",
+    remarks: "注意事项",
+    conclusions: "结论",
+    result1: "DGR规定,资料核实",
+    unno: "UN No.",
+    psn: "PSN",
+    classOrDiv: "危险性",
+    pg: "包装等级",
+    packPassengerCargo: "客货机",
+    packSubDanger: "次要危险性",
+    packCargo: "仅限货机",
+    packSpecial: "特殊规定	",
+    market: "技术部备注",
+  }
+  // @ts-ignore
+  const PekKey2SekKey: Record<keyof PekFormJSONData, keyof FormJSONData | null> = {
+    color: 'btyColor',
+    shape: 'btyShape',
+    size: 'btySize',
+    model: 'btyKind',
+    brands: 'btyBrand',
+    netWeight: 'btyNetWeight',
+    // 瓦时
+    inspectionItem3Text1: 'inspectionItem1Text1',
+    // 锂含量
+    inspectionItem4Text1: 'inspectionItem1Text2',
+  }
+  function sekVSPek(sekData: FormJSONData, pekData: PekFormJSONData) {
+    const diffDataKeys: string[] = []
+    const ignoreList = [
+      'projectId',
+      'projectNo',
+      'according',
+      'otherDescribe',
+      'inspectionItem1',
+      'conclusions',
+      'remarks',
+      'inspectionItem1Text1',
+      'inspectionItem1Text2',
+    ]
+    for (const pekKey of Object.keys(pekData) as Partial<keyof PekFormJSONData>[]) {
+      if (ignoreList.includes(pekKey)) {
+        continue
+      }
+      let sekValue = ''
+      let pekValue = pekData[pekKey]
+      let sekKey = PekKey2SekKey[pekKey]
+      if (!sekKey) {
+        sekKey = pekKey as keyof FormJSONData
+      }
+      sekValue = sekData[sekKey] as keyof FormJSONData
+      if (sekValue === undefined || pekValue === undefined) {
+        continue
+      }
+      if (sekValue.trim() !== pekValue.trim()) {
+        diffDataKeys.push(keyMap[sekKey as keyof FormJSONData] || pekKey)
+        console.log({ sekKey, sekValue, pekValue, pekKey })
+      }
+    }
+    return diffDataKeys
+  }
+
+  function pekVSPek(pekData1: PekFormJSONData, pekData2: PekFormJSONData) {
+    const diffDataKeys: string[] = []
+    if (pekData1['otherDescribeChecked'] !== pekData2['otherDescribeChecked']) {
+      diffDataKeys.push('其它描述勾选')
+    }
+    Object.keys(pekData1).forEach((key) => {
+      if (ignoreList.includes(key)) return
+      if (pekData1[key as keyof PekFormJSONData] === undefined ||
+        pekData2[key as keyof PekFormJSONData] === undefined) {
+        return
+      }
+      if (
+        pekData1[key as keyof PekFormJSONData].trim() !==
+        // @ts-ignore
+        pekData2[key as keyof PekFormJSONData].trim()
+      ) {
+        diffDataKeys.push(pekKeyMap[key as keyof PekFormJSONData])
+      }
+    })
+    return diffDataKeys
+  }
+
+  interface PekFormJSONData {
+    according: string;
+    brands: string;
+    btyCount: string;
+    checkLocation: string;
+    classOrDiv: string;
+    color: string;
+    conclusions: string;
+    grossWeight: string;
+    inspectionItem1: string;
+    inspectionItem1Text1: string;
+    inspectionItem1Text2: string;
+    inspectionItem1Text3: string;
+    inspectionItem1Text4: string;
+    inspectionItem2: string;
+    inspectionItem2Text1: string;
+    inspectionItem2Text2: string;
+    inspectionItem3: string;
+    inspectionItem3Text1: string;
+    inspectionItem4: string;
+    inspectionItem4Text1: string;
+    inspectionItem5: string;
+    inspectionItem5Text1: string;
+    inspectionItem6: string;
+    itemCName: string;
+    itemEName: string;
+    market: string;
+    model: string;
+    netWeight: string;
+    otherDescribe: string;
+    otherDescribeCAddition: string;
+    otherDescribeChecked: string;
+    otherDescribeEAddition: string;
+    packCargo: string;
+    packPassengerCargo: string;
+    packSpecial: string;
+    packSubDanger: string;
+    pg: string;
+    projectId: string;
+    projectNo: string;
+    psn: string;
+    remarks: string;
+    result1: string;
+    shape: string;
+    size: string;
+    taskId: string;
+    type1: string;
+    type2: string;
+    unno: string;
   }
 
   /**
