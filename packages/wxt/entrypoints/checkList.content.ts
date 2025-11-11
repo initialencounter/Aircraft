@@ -113,7 +113,10 @@ async function entrypoint() {
 
   function compareFormData(data: FormJSONData | PekFormJSONData) {
     const localFormData = getFormDataJSON()
-    if (data.projectNo.slice(0, 3) !== localFormData.projectNo.slice(0, 3)) {
+    if (
+      (data.projectNo.startsWith('PEK') && !localFormData.projectNo.startsWith('PEK')) ||
+      (!data.projectNo.startsWith('PEK') && localFormData.projectNo.startsWith('PEK'))
+    ) {
       if (data.projectNo.startsWith('PEK')) {
         return sekVSPek(localFormData, data as unknown as PekFormJSONData)
       } else {
@@ -122,7 +125,7 @@ async function entrypoint() {
     }
 
 
-    if (data.projectNo.startsWith('PEK')) {
+    if (data.projectNo.startsWith('PEK') && localFormData.projectNo.startsWith('PEK')) {
       return pekVSPek(data as unknown as PekFormJSONData, localFormData as unknown as PekFormJSONData)
     }
     const diffDataKeys: string[] = []
