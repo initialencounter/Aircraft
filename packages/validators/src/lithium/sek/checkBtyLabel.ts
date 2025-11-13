@@ -1,4 +1,4 @@
-import type { CheckResult } from '../shared/types'
+import type { CheckResult, SekBtyType } from '../shared/types'
 
 /**
  * 锂含量范围检测
@@ -10,19 +10,23 @@ import type { CheckResult } from '../shared/types'
 export function checkBtyLabel(
   isBtyLabel: boolean,
   btyShape: string,
-  conclusions: number
+  conclusions: number,
+  btyType: SekBtyType, 
+  otherDescribe2Pek: '0' | '1' | '2',
 ): CheckResult[] {
   const result: CheckResult[] = []
+  const PI970II = otherDescribe2Pek === '2'&& btyType === '503' && String(conclusions) === '0'
+  const PI978II = otherDescribe2Pek === '2'&& btyType === '601' && String(conclusions) === '0'
   if (isBtyLabel) {
     if (String(conclusions) === '1') {
       result.push({ ok: false, result: '危险品, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
     }
-    if (btyShape === '8aad92b65aae82c3015ab094788a0026') {
-      result.push({ ok: false, result: '纽扣电池, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
+    else if (btyShape === '8aad92b65aae82c3015ab094788a0026' && (PI970II || PI978II)) {
+      result.push({ ok: false, result: 'PI970II || PI978II 纽扣电池, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
     }
   } else {
     if (String(conclusions) === '0'
-      && btyShape !== '8aad92b65aae82c3015ab094788a0026') {
+      && !(btyShape === '8aad92b65aae82c3015ab094788a0026' && (PI970II || PI978II))) {
       result.push({
         ok: false,
         result: '未勾选包装件需要按照特殊规定188的要求进行适当标记。',

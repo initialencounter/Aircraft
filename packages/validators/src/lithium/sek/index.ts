@@ -28,6 +28,8 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
     '503': ['>1g', '≤1g'],
     '505': ['>1g', '≤1g'],
   }
+  // 锂离子电池 锂离子电芯 锂金属电池 锂金属电芯 单芯锂离子电池 单芯锂金属电池
+  // '500'    | '501'    | '502'  |  '503'   | '504'       | '505'
   const btyType = currentData['btyType'] as SekBtyType
   const {
     // 项目编号
@@ -39,8 +41,6 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
     // 电池尺寸
     btySize,
     // 电池形状
-    // 锂离子电池 锂离子电芯 锂金属电池 锂金属电芯 单芯锂离子电池 单芯锂金属电池
-    // '500'    | '501'    | '504'  |  '502'   | '503'       | '505'
     btyShape,
     // 电池型号
     btyKind,
@@ -162,7 +162,7 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
   result.push(...checkDropTest(otherDescribe, dropTest, conclusions))
 
   // 电池标记
-  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions))
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions, btyType, otherDescribe2Pek))
 
   // 随附文件
   if (currentData['inspectionResult7'] !== '2')

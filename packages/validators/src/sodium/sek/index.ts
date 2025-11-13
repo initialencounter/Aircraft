@@ -152,7 +152,7 @@ export function checkSekSodiumBtyType(currentData: SekSodiumData): CheckResult[]
   result.push(...checkDropTest(otherDescribe, dropTest, conclusions))
 
   // 电池标记
-  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions))
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions, btyType, otherDescribe2Pek))
 
 
   // 随附文件
