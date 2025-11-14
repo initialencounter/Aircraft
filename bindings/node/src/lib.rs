@@ -46,7 +46,7 @@ impl AircraftRs {
     let log_tx = logger.lock().unwrap().log_tx.clone();
     Self {
       server_manager: ServerManager::new(config, log_tx.clone(), llm_config),
-      hotkey_manager: HotkeyManager::new(hotkey_config),
+      hotkey_manager: HotkeyManager::new(hotkey_config, log_tx.clone()),
       clipboard_snapshot_manager: ClipboardSnapshotManager::new(),
       log_tx,
       logger,

@@ -28,11 +28,11 @@ pub fn apply(app: &mut App) {
     let config = get_config(app.handle().clone());
     let server_config = config.server.clone();
     let llm_config_clone = config.llm.clone();
-    let server_manager = ServerManager::new(server_config, log_tx, llm_config_clone);
+    let server_manager = ServerManager::new(server_config, log_tx.clone(), llm_config_clone);
     server_manager.start();
     app.manage(server_manager);
     let hotkey_config = config.hotkey.clone();
-    let hotkey_manager = HotkeyManager::new(hotkey_config);
+    let hotkey_manager = HotkeyManager::new(hotkey_config, log_tx.clone());
     hotkey_manager.start();
     app.manage(hotkey_manager);
     let llm_config = config.llm.clone();
