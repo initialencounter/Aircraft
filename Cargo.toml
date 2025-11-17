@@ -4,5 +4,6 @@ members = [
     "share",
     "src-tauri",
     "bindings/node",
+    "yolo",
 ]
 resolver = "2" 
