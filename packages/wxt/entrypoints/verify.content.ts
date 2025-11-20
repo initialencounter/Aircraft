@@ -207,7 +207,7 @@ export default defineContentScript({
         }
 
         updateVerifyButtonStatus('#fa5e55')
-        Qmsg.warning('初步验证未通过' + JSON.stringify(result, null, 2), {
+        Qmsg.warning('初步验证未通过' + JSON.stringify(result.map((result)=>result), null, 2), {
           showClose: true,
           timeout: 4000,
         })

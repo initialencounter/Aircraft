@@ -7,9 +7,7 @@ import type {
 import { getCurrentProjectNo } from '../utils/helpers'
 import {
   getAttachmentFiles,
-  getEntrustData,
   getProjectAttachmentInfo,
-  parseEntrust,
 } from '../utils/api'
 import type { LocalConfig } from '../../../share/utils'
 import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types';
@@ -78,7 +76,7 @@ export async function checkAttachment(
       attachmentInfo.goods.labels = ['pass']
     }
 
-    return checkSummary(systemId, dataFromForm, attachmentInfo, entrustData, isSodium)
+    return checkSummary(systemId, dataFromForm, attachmentInfo, entrustData, localConfig, isSodium)
   } catch (e) {
     console.log(e)
     return [{ ok: false, result: '附件解析失败' }]
@@ -93,6 +91,7 @@ export function checkSummary(
   dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   attachmentInfo: AttachmentInfo,
   entrustData: EntrustData,
+  localConfig: typeof LocalConfig,
   isSodium = false
 ): Array<{ ok: boolean; result: string }> {
   if (isSodium) {
@@ -111,11 +110,40 @@ export function checkSummary(
     }
   } else {
     if (systemId === 'pek') {
-      return window.checkPekAttachment(
+      let results: Array<{ ok: boolean; result: string }> = []
+      if (localConfig.autoCheckStackEvaluation === true) {
+        if (dataFromForm.otherDescribe.includes(
+          '2c9180849267773c0192dc73c77e5fb2'
+        )) {
+          if (!attachmentInfo?.other) {
+            results.push({ ok: false, result: '找不到项目文件夹' })
+          }
+          if (attachmentInfo?.other?.stackEvaluation === false) {
+            results.push({ ok: false, result: `项目文件夹内找不到堆码评估单` })
+          }
+        }
+        results.push(...window.checkPekAttachment(
+          dataFromForm as PekData,
+          attachmentInfo,
+          entrustData
+        ))
+      }
+
+      if (localConfig.manualCheckStackEvaluation === true) {
+        const stackTest = String(dataFromForm['inspectionItem6']) === '1' // 堆码
+        const stackTestEvaluation = dataFromForm.otherDescribe.includes(
+          '2c9180849267773c0192dc73c77e5fb2'
+        )
+        if (stackTestEvaluation || stackTest) {
+          results.push({ ok: true, result: `你已勾选${stackTest ? '堆码报告' : '评估单'}, 请确认` })
+        }
+      }
+      results.push(...window.checkPekAttachment(
         dataFromForm as PekData,
         attachmentInfo,
         entrustData
-      )
+      ))
+      return results
     } else {
       return window.checkSekAttachment(
         dataFromForm as SekData,

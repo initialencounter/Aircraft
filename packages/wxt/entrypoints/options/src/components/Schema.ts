@@ -6,6 +6,8 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  manualCheckStackEvaluation: boolean
+  autoCheckStackEvaluation: boolean
   screenshotItemName: boolean
   hundredRowsResult: boolean
   assignExperiment: boolean
@@ -160,6 +162,12 @@ export const Config: Schema<Config> = Schema.intersect([
       .default(false),
     enableLabelCheckManual: Schema.boolean()
       .description('启用手动标签检查')
+      .default(false),
+    manualCheckStackEvaluation: Schema.boolean()
+      .description('手动检查堆码评估单')
+      .default(false),
+    autoCheckStackEvaluation: Schema.boolean()
+      .description('自动检查堆码评估单，需要将堆码评估单放在图片概要同一文件夹下')
       .default(false),
     verifyButtonOnMiddle: Schema.boolean()
       .description('验证按钮放在提交按钮旁边')

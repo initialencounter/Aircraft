@@ -1,6 +1,8 @@
 import { Config } from "../entrypoints/options/src/components/Schema"
 
 const LocalConfig: Config = {
+  manualCheckStackEvaluation: false,
+  autoCheckStackEvaluation: false,
   hundredRowsResult: true,
   screenshotItemName: false,
   assignExperiment: true,
@@ -48,6 +50,8 @@ const LocalConfig: Config = {
 }
 
 export const configKeys: Array<keyof typeof LocalConfig> = [
+  'manualCheckStackEvaluation',
+  'autoCheckStackEvaluation',
   'hundredRowsResult',
   'screenshotItemName',
   'assignExperiment',
