@@ -150,6 +150,19 @@ pub fn match_file_list(file_list: Vec<String>) -> Vec<RawFileInfo> {
     result_file_list
 }
 
+pub fn get_file_names(dir: &PathBuf) -> io::Result<Vec<String>> {
+    let mut file_names = Vec::new();
+    for entry in fs::read_dir(dir)? {
+        let path = entry?.path();
+        if path.is_file() {
+            if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
+                file_names.push(file_name.to_string());
+            }
+        }
+    }
+    Ok(file_names)
+}
+
 pub fn open_local_dir(target: &str) {
     let path = std::path::Path::new(target);
     if path.exists() {
