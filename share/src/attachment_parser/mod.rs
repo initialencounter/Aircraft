@@ -79,6 +79,9 @@ pub async fn find_stack_evaluation(project_dir: String)-> bool {
         if file_name.contains("评估单") {
             return true;
         }
+        if file_name.contains("堆码评估") {
+            return true;
+        }
     }
     return false;
 }
