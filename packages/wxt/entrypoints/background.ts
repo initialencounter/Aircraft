@@ -5,6 +5,49 @@ type ExtendedCreateProperties = CreateProperties & {
 
 const IFRAME_RECT_MAP: Record<number, DOMRect> = {}
 
+interface SearchResult {
+  name: string
+  path: string
+}
+
+interface SearchResponse {
+  results: SearchResult[]
+}
+
+let creating: Promise<void> | null = null;
+
+async function setupOffscreenDocument(path: string) {
+  // Check if offscreen API is available
+  if (!chrome.offscreen) {
+    console.warn('Offscreen API is not available in this browser');
+    return;
+  }
+
+  const offscreenUrl = chrome.runtime.getURL(path);
+
+  // Check if offscreen document already exists
+  const existingContexts = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT']
+  });
+
+  if (existingContexts.length > 0) {
+    return;
+  }
+
+  if (creating) {
+    await creating;
+  } else {
+    creating = chrome.offscreen.createDocument({
+      url: path,
+      reasons: [chrome.offscreen.Reason.WORKERS],
+      justification: 'Run ONNX model',
+    });
+    await creating;
+    creating = null;
+  }
+}
+
+
 export default defineBackground({
   main() {
     entrypoint()
@@ -14,6 +57,8 @@ export default defineBackground({
 function entrypoint() {
   // A generic onclick callback function.
   chrome.contextMenus.onClicked.addListener(genericOnClick)
+
+  setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));
 
   // A generic onclick callback function.
   function genericOnClick(info: chrome.contextMenus.OnClickData) {

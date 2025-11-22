@@ -7,8 +7,19 @@ export default defineConfig({
   vite: () => ({
     build: {
       minify: false,
+      rollupOptions: {
+        output: {
+          // 将所有依赖打包到一起
+          inlineDynamicImports: true,
+          manualChunks: undefined,
+        },
+      },
     },
     plugins: [yaml()],
+    optimizeDeps: {
+      // 确保这些依赖被预构建
+      include: ['onnxruntime-web'],
+    },
   }),
   modules: ['@wxt-dev/module-vue'],
   entrypointsDir: './entrypoints',
@@ -18,10 +29,23 @@ export default defineConfig({
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
     web_accessible_resources: [
       {
-        resources: ['loading.gif', 'easyui-interceptor.js'],
+        resources: [
+          'loading.gif',
+          'easyui-interceptor.js',
+
+          // ONNX 模型相关文件
+          'segment.onnx',
+          'model.js',
+          'ort-wasm-simd-threaded.wasm',
+          'ort-wasm-simd-threaded.jsep.wasm',
+          'ort-wasm-simd-threaded.asyncify.wasm',
+        ],
         matches: ['<all_urls>'],
       }
     ],
+    content_security_policy: {
+      extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
     browser_specific_settings: {
       gecko: {
         id: '{3f8b9a12-a64d-48d8-bb5c-8d9f4e9322b2}',
@@ -36,6 +60,7 @@ export default defineConfig({
       'scripting',
       'storage',
       'contextMenus',
+      'offscreen',
     ],
     host_permissions: ['<all_urls>'],
     options_page: 'options.html',
