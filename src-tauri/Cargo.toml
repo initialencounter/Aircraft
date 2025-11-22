@@ -30,3 +30,5 @@ chrono = "0.4.38"
 tauri-plugin-store = "2.1.0"
 share = { path = "../share" }
 base64 = "0.22.1"
+summary = { path = "../summary" }
+pdf_parser = { path = "../pdf_parser" }

@@ -258,7 +258,7 @@ function checkSummaryFromLLM(
     ...checkName(packageType, itemEName, itemCName, btyKind, summaryData.cnName)
   )
   results.push(...checkBatteryType(btyType, summaryData.classification))
-  results.push(...checkModel(btyKind, summaryData.type))
+  results.push(...checkModel(btyKind, summaryData.model))
   results.push(...checkTradeMark(btyBrand, summaryData.trademark))
   if (voltage) {
     results.push(...checkVoltage(voltage, summaryData.voltage))
@@ -280,7 +280,7 @@ function checkSummaryFromLLM(
     ...checkManufacturer(entrustData.manufacturer, summaryData.manufacturer)
   )
   results.push(...checkMarket(market, summaryData.testReportNo))
-  results.push(...checkUN38fg(summaryData.un38f, summaryData.un38g))
+  results.push(...checkUN38fg(summaryData.un38F, summaryData.un38G))
   return results
 }
 

@@ -1,7 +1,8 @@
+#[cfg(feature = "napi-support")]
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
-#[napi(object)]
+#[cfg_attr(feature = "napi-support", napi(object))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GoodsInfo {

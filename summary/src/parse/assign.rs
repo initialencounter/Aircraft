@@ -1,4 +1,4 @@
-use crate::summary_rs::SummaryInfo;
+use crate::types::SummaryInfo;
 use std::collections::HashMap;
 
 use super::match_project_no;
@@ -64,7 +64,7 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
 
 #[cfg(test)]
 mod tests {
-    use crate::summary_rs::{parse_docx_text, read_docx_content};
+    use crate::{parse_docx_text, read_docx_content};
 
     use super::*;
 

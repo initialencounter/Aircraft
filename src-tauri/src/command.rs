@@ -1,7 +1,7 @@
 use base64::prelude::*;
 use serde_json::json;
-use share::pdf_parser::read::read_pdf_u8;
-use share::pdf_parser::uploader::FileManager;
+use pdf_parser::read::read_pdf_u8;
+use share::utils::uploader::FileManager;
 use share::types::{Config, LLMConfig, OtherConfig};
 use std::path::Path;
 use std::sync::atomic::Ordering;
@@ -14,7 +14,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use share::logger::{LogMessage, Logger};
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
-use share::summary_rs::{get_summary_info_by_buffer as get_summary_info_by_u8, SummaryInfo};
+use summary::{get_summary_info_by_buffer as get_summary_info_by_u8, SummaryInfo};
 use share::task_proxy::LOGIN_STATUS;
 use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
 
@@ -97,7 +97,7 @@ pub fn get_summary_info_by_buffer(base64_string: String) -> Result<SummaryInfo, 
     let buffer = BASE64_STANDARD
         .decode(base64_string)
         .map_err(|e| e.to_string())?;
-    get_summary_info_by_u8(buffer)
+    get_summary_info_by_u8(&buffer)
         .map_err(|e| e.to_string())
         .map(|summary_info| summary_info)
 }
@@ -110,7 +110,7 @@ pub async fn get_report_summary_by_buffer(
     let buffer = BASE64_STANDARD
         .decode(base64_string)
         .map_err(|e| e.to_string())?;
-    let mut pdf_text = match read_pdf_u8(buffer.clone()) {
+    let mut pdf_text = match read_pdf_u8(&buffer) {
         Ok(pdf_read_result) => pdf_read_result.text,
         Err(_) => String::new(),
     };

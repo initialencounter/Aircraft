@@ -23,8 +23,8 @@ pub struct PdfReadResult {
 }
 
 /// 使用 pdf_extract 读取 pdf 文件的文本内容
-pub fn read_pdf_u8(data: Vec<u8>) -> Result<PdfReadResult, PdfError> {
-    match extract_text_from_mem(&data) {
+pub fn read_pdf_u8(data: &[u8]) -> Result<PdfReadResult, PdfError> {
+    match extract_text_from_mem(data) {
         Ok(text) => Ok(PdfReadResult { text, images: None }),
         Err(_) => Ok(PdfReadResult {
             text: "".to_string(),

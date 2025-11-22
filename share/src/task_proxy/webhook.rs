@@ -1,7 +1,7 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
-use crate::pdf_parser::read::read_pdf_u8;
-use crate::pdf_parser::uploader::FileManager;
+use pdf_parser::read::read_pdf_u8;
+use crate::utils::uploader::FileManager;
 use bytes::BufMut;
 use futures_util::StreamExt;
 use serde::Serialize;
@@ -171,7 +171,7 @@ async fn handle_upload(
                 .to_string();
 
             let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
-            let mut file_content = match read_pdf_u8(file_data.clone()) {
+            let mut file_content = match read_pdf_u8(&file_data) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
                     println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);

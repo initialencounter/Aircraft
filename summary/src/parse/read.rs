@@ -55,7 +55,7 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                             })
                             .collect::<Vec<_>>()
                             .join("/");
-                        let text = e.unescape().unwrap_or_default().to_string();
+                       let text = reader.decoder().decode(e.as_ref()).unwrap_or_default().to_string();
                         if last_path_str.is_empty() {
                             last_path_str = path_str.clone();
                         }

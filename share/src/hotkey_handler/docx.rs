@@ -1,4 +1,4 @@
-use crate::summary_rs::modify_docx;
+use summary::modify_docx;
 use crate::utils::popup_message;
 use lazy_static::lazy_static;
 use regex::Regex;

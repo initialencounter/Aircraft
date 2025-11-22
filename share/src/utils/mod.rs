@@ -1,5 +1,6 @@
 pub mod dialog;
 pub mod fs;
+pub mod uploader;
 
 use chrono::Local;
 use clipboard_rs::{Clipboard, ClipboardContext};

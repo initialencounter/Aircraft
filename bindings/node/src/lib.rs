@@ -8,11 +8,11 @@ use share::logger::{LogMessage, Logger};
 use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
-use share::pdf_parser::parse::parse_good_file;
-use share::pdf_parser::read::{read_pdf, read_pdf_u8, PdfReadResult};
-use share::pdf_parser::types::GoodsInfo;
-use share::pdf_parser::uploader::FileManager;
-use share::summary_rs::{get_summary_info_by_buffer, get_summary_info_by_path, SummaryInfo};
+use pdf_parser::parse::parse_good_file;
+use pdf_parser::read::{read_pdf, read_pdf_u8, PdfReadResult};
+use pdf_parser::types::GoodsInfo;
+use share::utils::uploader::FileManager;
+use summary::{get_summary_info_by_buffer, get_summary_info_by_path, SummaryInfo};
 use share::types::{Config, LLMConfig};
 use share::types::{HotkeyConfig, ServerConfig};
 use std::path::PathBuf;
@@ -108,7 +108,7 @@ impl AircraftRs {
   }
 
   #[napi]
-  pub fn get_summary_info_by_buffer(&self, buffer: Vec<u8>) -> napi::Result<SummaryInfo> {
+  pub fn get_summary_info_by_buffer(&self, buffer: &[u8]) -> napi::Result<SummaryInfo> {
     let contents = get_summary_info_by_buffer(buffer);
     match contents {
       Ok(contents) => Ok(contents),
@@ -258,7 +258,7 @@ impl JsFileManager {
   }
   /// 使用 pdf_extract 读取 pdf 文件的文本内容
   #[napi]
-  pub async fn read_pdf_buffer(&self, buffer: Vec<u8>) -> napi::Result<String> {
+  pub async fn read_pdf_buffer(&self, buffer: &[u8]) -> napi::Result<String> {
     let res: PdfReadResult = read_pdf_u8(buffer).unwrap();
     Ok(res.text)
   }

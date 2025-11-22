@@ -3,9 +3,9 @@ use std::io::Read;
 
 use zip::ZipArchive;
 
-use crate::summary_rs::{parse_docx_table, parse_docx_text};
+use super::parse::{parse_docx_table, parse_docx_text};
 
-use super::SummaryInfo;
+use super::types::SummaryInfo;
 
 pub fn read_docx_content(
     input_path: &str,
@@ -32,11 +32,11 @@ pub fn read_docx_content(
 }
 
 pub fn read_docx_content_u8(
-    file_content: Vec<u8>,
+    file_content: &[u8],
     names: Vec<String>,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     // 从内存中读取zip文件
-    let mut archive = ZipArchive::new(std::io::Cursor::new(&file_content))?;
+    let mut archive = ZipArchive::new(std::io::Cursor::new(file_content))?;
     let mut content = Vec::new();
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
@@ -63,7 +63,7 @@ pub fn get_summary_info_by_path(path: &str) -> Result<SummaryInfo, Box<dyn std::
 }
 
 pub fn get_summary_info_by_buffer(
-    buffer: Vec<u8>,
+    buffer: &[u8],
 ) -> Result<SummaryInfo, Box<dyn std::error::Error>> {
     let contents = read_docx_content_u8(buffer, vec!["word/document.xml".to_string()])?;
     get_summary_info(contents)

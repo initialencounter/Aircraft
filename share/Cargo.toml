@@ -3,6 +3,10 @@ name = "share"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+napi = []
+
 [dependencies]
 chrono = "0.4.38"
 colored = "2.1.0"
@@ -30,3 +34,9 @@ pdf-extract = "0.8.2"
 quick-xml = "0.37.1"
 zip = "2.2.1"
 clipboard-win = "5.4.1"
+yolo = { path = "../yolo" }
+summary = { path = "../summary" }
+pdf_parser = { path = "../pdf_parser" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2.15", features = ["js"] }

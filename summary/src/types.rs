@@ -1,7 +1,8 @@
+#[cfg(feature = "napi-support")]
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
-#[napi(object)]
+#[cfg_attr(feature = "napi-support", napi(object))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SummaryInfo {
@@ -33,8 +34,6 @@ pub struct SummaryInfo {
     pub classification: String,
 
     /// 型号
-    #[napi(js_name = "type")]
-    #[serde(rename = "type")]
     pub model: String,
     /// 商标
     pub trademark: String,
@@ -76,11 +75,8 @@ pub struct SummaryInfo {
     pub test7: String,
     pub test8: String,
 
-    #[napi(js_name = "un38f")]
-    #[serde(rename = "un38f")]
+
     pub un38f: String,
-    #[napi(js_name = "un38g")]
-    #[serde(rename = "un38g")]
     pub un38g: String,
 
     /// 备注

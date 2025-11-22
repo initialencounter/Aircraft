@@ -1,5 +1,5 @@
 use crate::logger::LogMessage;
-use crate::pdf_parser::uploader::FileManager;
+use crate::utils::uploader::FileManager;
 use crate::types::LLMConfig;
 use http_client::HttpClient;
 use std::sync::atomic::Ordering;

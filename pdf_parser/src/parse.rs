@@ -72,7 +72,8 @@ pub fn parse_good_file(pdf_text: String, is_965: bool) -> Result<GoodsInfo> {
 
 #[cfg(test)]
 mod tests {
-    use crate::pdf_parser::read::read_pdf;
+
+    use crate::read::read_pdf;
 
     use super::*;
 

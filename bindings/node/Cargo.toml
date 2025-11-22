@@ -10,7 +10,9 @@ crate-type = ["cdylib"]
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.12.2", default-features = false, features = ["napi4", "async", "serde-json"] }
 napi-derive = "2.12.2"
-share = { path = "../../share" }
+share = { path = "../../share", features = ["napi"] }
+summary = { path = "../../summary", features = ["napi-support"] }
+pdf_parser = { path = "../../pdf_parser" , features = ["napi-support"] }
 [build-dependencies]
 napi-build = "2.0.1"
 

@@ -1,9 +1,13 @@
 [workspace]
 members = [
-    "headless",
-    "share",
-    "src-tauri",
-    "bindings/node",
-    "yolo",
+  "headless",
+  "share",
+  "src-tauri",
+  "bindings/node",
+  "yolo",
+  "image_classifier",
+  "wasm_utils",
+  "summary",
+  "pdf_parser",
 ]
-resolver = "2" 
+resolver = "2"

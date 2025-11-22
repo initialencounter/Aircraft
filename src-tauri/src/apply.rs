@@ -1,7 +1,7 @@
 use crate::command::get_config;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
-use share::pdf_parser::uploader::FileManager;
+use share::utils::uploader::FileManager;
 use share::{logger::Logger, manager::clipboard_snapshot_manager::ClipboardSnapshotManager};
 use std::{path::PathBuf, sync::Arc, sync::Mutex};
 use tauri::{App, Manager};

@@ -359,7 +359,7 @@ export function convertSummaryInfo2SummaryFromLLM(
     classification: removeNonChineseCharacters(
       data.classification.trim()
     ).trim(),
-    type: data.type,
+    type: data.model,
     trademark: data.trademark,
     voltage: (() => {
       if (data.voltage.includes('不适用')) {

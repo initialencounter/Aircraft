@@ -2,12 +2,13 @@ use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
 use crate::hotkey_handler::copy::{search, SearchResult};
-use crate::pdf_parser::parse::parse_good_file;
-use crate::pdf_parser::read::read_pdf;
-use crate::pdf_parser::types::GoodsInfo;
-use crate::summary_rs::{parse_docx_table, parse_docx_text, read_docx_content, SummaryInfo};
+use pdf_parser::parse::parse_good_file;
+use pdf_parser::read::read_pdf;
+use pdf_parser::types::GoodsInfo;
+use summary::{parse_docx_table, parse_docx_text, read_docx_content, SummaryInfo};
 use crate::utils::get_file_names;
-// use crate::yolov8::detect_objects_on_image;
+#[cfg(not(feature = "napi"))]
+use yolo::segment::detect_objects_on_image;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -60,7 +61,14 @@ pub async fn get_goods_info(
 ) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let result = read_pdf(&path, required_image)?;
-    let goods_info = parse_good_file(result.text, is_965)?;
+    let mut goods_info = parse_good_file(result.text, is_965)?;
+    #[cfg(not(feature = "napi"))]
+    if required_image {
+        if let Some(images) = result.images {
+            let labels = detect_goods_pdf(images).await;
+            goods_info.labels = labels;
+        }
+    }
     Ok(goods_info)
 }
 
@@ -121,4 +129,19 @@ pub async fn get_attachment_info(
         goods: get_goods_info(project_no.clone(), required_image, is_965).await?,
         other: get_other_info(project_no.clone()).await?,
     })
+}
+
+#[cfg(not(feature = "napi"))]
+pub async fn detect_goods_pdf(images: Vec<Vec<u8>>) -> Vec<String> {
+    let mut labels = vec![];
+    for (_, image) in images.iter().enumerate() {
+        let text = detect_objects_on_image(image.clone());
+        if text.is_empty() {
+            continue;
+        }
+        for (_, label) in text.iter().enumerate() {
+            labels.push(label[4].clone());
+        }
+    }
+    return labels;
 }
