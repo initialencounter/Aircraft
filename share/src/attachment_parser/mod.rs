@@ -140,7 +140,7 @@ pub async fn detect_goods_pdf(images: Vec<Vec<u8>>) -> Vec<String> {
             continue;
         }
         for (_, label) in text.iter().enumerate() {
-            labels.push(label[4].clone());
+            labels.push(label.4.clone());
         }
     }
     return labels;
