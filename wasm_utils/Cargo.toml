@@ -1,0 +1,33 @@
+[package]
+name = "wasm_utils"
+version = "0.1.0"
+edition = "2024"
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+
+[dependencies]
+console_error_panic_hook = { version = "0.1.7", optional = true }
+serde = "1.0.228"
+serde-wasm-bindgen = "0.6.5"
+serde_json = "1.0.145"
+wasm-bindgen = "0.2.105"
+# Optional native dependency; gated behind the "native" feature so it won't build for wasm32-unknown-unknown.
+summary = { path = "../summary", default-features = false }
+pdf_parser = { path = "../pdf_parser", default-features = false }
+# Limit zip features to pure Rust deflate to avoid bzip2/zstd C backends for wasm target.
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# Panic hook helpful for better error messages in browser.
+console_error_panic_hook = { version = "0.1.7" }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.55"
+
+[profile.release]
+# Optimize for small code size.
+opt-level = "s"

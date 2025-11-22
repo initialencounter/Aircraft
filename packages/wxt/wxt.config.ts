@@ -4,6 +4,7 @@ import yaml from '@maikolib/vite-plugin-yaml'
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   manifestVersion: 3,
+  // @ts-expect-error - Vite version mismatch between WXT and local
   vite: () => ({
     build: {
       minify: false,
@@ -39,6 +40,11 @@ export default defineConfig({
           'ort-wasm-simd-threaded.wasm',
           'ort-wasm-simd-threaded.jsep.wasm',
           'ort-wasm-simd-threaded.asyncify.wasm',
+
+          // WASM 相关文件
+          'aircraft.js',
+          'aircraft_bg.wasm',
+          'attachment.js',
         ],
         matches: ['<all_urls>'],
       }
