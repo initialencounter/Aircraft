@@ -171,7 +171,7 @@ async fn handle_upload(
                 .to_string();
 
             let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
-            let mut file_content = match read_pdf_u8(&file_data) {
+            let mut file_content = match read_pdf_u8(&file_data, false) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
                     println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);

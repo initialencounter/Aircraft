@@ -20,9 +20,18 @@ pub struct PdfReadResult {
 }
 
 /// 使用 pdf_extract 读取 pdf 文件的文本内容
-pub fn read_pdf_u8(data: &[u8]) -> Result<PdfReadResult, PdfError> {
+pub fn read_pdf_u8(data: &[u8], required_image: bool) -> Result<PdfReadResult, PdfError> {
     match extract_text_from_mem(data) {
-        Ok(text) => Ok(PdfReadResult { text, images: None }),
+        Ok(text) => {
+            let mut images = None;
+            if required_image {
+                images = match read_pdf_img(data) {
+                    Ok(imgs) => Some(imgs),
+                    Err(_) => None,
+                }
+            }
+            Ok(PdfReadResult { text, images })
+        }
         Err(_) => Ok(PdfReadResult {
             text: "".to_string(),
             images: None,

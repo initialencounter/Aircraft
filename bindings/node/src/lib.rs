@@ -259,7 +259,7 @@ impl JsFileManager {
   /// 使用 pdf_extract 读取 pdf 文件的文本内容
   #[napi]
   pub async fn read_pdf_buffer(&self, buffer: &[u8]) -> napi::Result<String> {
-    let res: PdfReadResult = read_pdf_u8(buffer).unwrap();
+    let res: PdfReadResult = read_pdf_u8(buffer, false).unwrap();
     Ok(res.text)
   }
 }
