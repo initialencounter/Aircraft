@@ -65,10 +65,10 @@ fn main() {
     let results = yolo::segment::detect_objects_on_image(image_data);
     
     // 处理结果
-    for (x1, y1, x2, y2, label, confidence, mask) in results {
-        println!("检测到 {}: 置信度 {:.2}", label, confidence);
-        println!("边界框: ({:.0}, {:.0}) - ({:.0}, {:.0})", x1, y1, x2, y2);
-        println!("掩码尺寸: {}x{}", mask.len(), mask[0].len());
+    for result in results {
+        println!("检测到 {}: 置信度 {:.2}", result.label, result.confidence);
+        println!("边界框: ({:.0}, {:.0}) - ({:.0}, {:.0})", result.x1, result.y1, result.x2, result.y2);
+        println!("掩码尺寸: {}x{}", result.mask.len(), result.mask[0].len());
         
         // mask 是一个二维数组，可以用来生成分割图像
         // mask[y][x] 的值为 255（前景）或 0（背景）

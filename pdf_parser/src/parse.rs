@@ -67,6 +67,7 @@ pub fn parse_good_file(pdf_text: String, is_965: bool) -> Result<GoodsInfo> {
         project_no,
         item_c_name,
         labels: vec![],
+        segment_result: vec![],
     })
 }
 

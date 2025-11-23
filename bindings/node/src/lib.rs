@@ -133,6 +133,7 @@ impl AircraftRs {
         project_no: "".to_string(),
         item_c_name: "".to_string(),
         labels: vec![],
+        segment_result: vec![],
       },
     };
     Ok(goods_info)

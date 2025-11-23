@@ -2131,6 +2131,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "gloo-utils"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b5555354113b18c547c1d3a98fbf7fb32a9ff4f6fa112ce823a21641a0ba3aa"
+dependencies = [
+ "js-sys",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "gobject-sys"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4301,8 +4314,9 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "tsify",
+ "tsify 0.4.5",
  "wasm-bindgen",
+ "yolo",
 ]
 
 [[package]]
@@ -5861,7 +5875,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "tsify",
+ "tsify 0.4.5",
  "wasm-bindgen",
  "zip 6.0.0",
 ]
@@ -6764,10 +6778,23 @@ version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6b26cf145f2f3b9ff84e182c448eaf05468e247f148cf3d2a7d67d78ff023a0"
 dependencies = [
- "gloo-utils",
+ "gloo-utils 0.1.7",
  "serde",
  "serde_json",
- "tsify-macros",
+ "tsify-macros 0.4.5",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "tsify"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ec5505497c87f1c050b4392d3f11b49a04537fcb9dc0da57bc0af168a6331f2"
+dependencies = [
+ "gloo-utils 0.2.0",
+ "serde",
+ "serde_json",
+ "tsify-macros 0.5.6",
  "wasm-bindgen",
 ]
 
@@ -6780,6 +6807,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals 0.28.0",
+ "syn 2.0.94",
+]
+
+[[package]]
+name = "tsify-macros"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fc2c44dc9fe4baf55b88e032621b7a11b215a1f0a7de8d0aa04367207d915bc"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde_derive_internals 0.29.1",
  "syn 2.0.94",
 ]
 
@@ -7244,6 +7283,7 @@ dependencies = [
  "serde-wasm-bindgen",
  "serde_json",
  "summary",
+ "tsify 0.5.6",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -8341,8 +8381,14 @@ version = "0.1.0"
 dependencies = [
  "image",
  "lazy_static",
+ "napi",
+ "napi-derive",
  "ndarray",
  "ort",
+ "serde",
+ "serde_json",
+ "tsify 0.4.5",
+ "wasm-bindgen",
 ]
 
 [[package]]
