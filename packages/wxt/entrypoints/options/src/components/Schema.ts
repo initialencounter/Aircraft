@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  allInWebBrowser: boolean
   manualCheckStackEvaluation: boolean
   autoCheckStackEvaluation: boolean
   screenshotItemName: boolean
@@ -66,6 +67,9 @@ export const Config: Schema<Config> = Schema.intersect([
     hundredRowsResult: Schema.boolean()
       .description('每页默认显示100条结果')
       .default(true),
+    allInWebBrowser: Schema.boolean()
+      .description('所有功能都在浏览器中实现, 不依赖概要解析器 (但验证速度较慢), 且需要占用200MB内存)')
+      .default(false),
   }).description('全局设置'),
   // 业务受理 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({

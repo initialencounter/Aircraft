@@ -197,7 +197,12 @@ export default defineContentScript({
         )
       } catch (e) {
         console.error('验证处理出错:', e)
-        Qmsg.error('验证处理出错，请稍后重试', { timeout: 3000 })
+        // 检查是否是扩展上下文失效错误
+        if (e instanceof Error && e.message.includes('扩展已更新或重新加载')) {
+          Qmsg.error('扩展已更新，请刷新页面后重试', { timeout: 5000 })
+        } else {
+          Qmsg.error('验证处理出错，请稍后重试', { timeout: 3000 })
+        }
       } finally {
         document.getElementById('lims-verifyButton-icon')!.innerHTML = tempHtml
         if (!result.length) {
@@ -207,7 +212,7 @@ export default defineContentScript({
         }
 
         updateVerifyButtonStatus('#fa5e55')
-        Qmsg.warning('初步验证未通过' + JSON.stringify(result.map((result)=>result), null, 2), {
+        Qmsg.warning('初步验证未通过' + JSON.stringify(result.map((result) => result), null, 2), {
           showClose: true,
           timeout: 4000,
         })

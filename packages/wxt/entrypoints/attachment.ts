@@ -1,5 +1,7 @@
+import type * as Aircraft from '../public/aircraft';
+
 export default defineUnlistedScript(() => {
-  let wasmModule: any;
+  let wasmModule: typeof Aircraft;
   let wasmInitialized = false;
 
   (async () => {
@@ -28,29 +30,25 @@ export default defineUnlistedScript(() => {
         sendResponse({ error: 'WASM not initialized' });
         return;
       }
-
-      if (request.action === "parse-pdf") {
+      if (request.action === "get_goods_info_wasm") {
         console.log("Received parse-pdf request");
         try {
-          console.log("Input array length:", request.input?.length);
-          // 将数组转换回 Uint8Array
           const buffer = new Uint8Array(request.input);
-          const result = wasmModule.add(buffer);
-          console.log("PDF parse result:", result);
-          sendResponse({ result });
+          const result = wasmModule.get_goods_info(buffer, true,  request.is_965 );
+          sendResponse(result);
         } catch (e) {
           sendResponse({ error: String(e) });
         }
-      } else if (request.action === "get-pdf-title") {
-        console.log("Received get-pdf-title request");
+        return true;
+      } else if (request.action === "get_summary_info_wasm") {
         try {
           const buffer = new Uint8Array(request.input);
-          const title = wasmModule.get_pdf_title(buffer);
-          console.log("PDF title:", title);
-          sendResponse({ title });
+          const result = wasmModule.get_summary_info(buffer);
+          sendResponse(result);
         } catch (e) {
           sendResponse({ error: String(e) });
         }
+        return true;
       }
     });
   })();

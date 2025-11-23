@@ -136,6 +136,11 @@ pub fn apply_webhook(
                 }
             },
         );
+    
+    let ping_route = warp::get()
+        .and(warp::path("ping"))
+        .map(|| warp::reply::json(&"pong"));
+    
     let cors = warp::cors()
         .allow_any_origin() // 允许所有来源
         .allow_headers(vec!["content-type"]) // 允许的请求头
@@ -145,6 +150,7 @@ pub fn apply_webhook(
         .or(selected_routes)
         .or(get_summary_info)
         .or(llm_files_handle)
+        .or(ping_route)
         .with(cors);
     // 启动 web 服务器
     let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));

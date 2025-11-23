@@ -80,12 +80,13 @@ export function get_summary_info(buffer) {
 /**
  * @param {Uint8Array} buffer
  * @param {boolean} require_image
- * @returns {PdfReadResult}
+ * @param {boolean} is_965
+ * @returns {GoodsInfoWasm}
  */
-export function get_goods_info(buffer, require_image) {
+export function get_goods_info(buffer, require_image, is_965) {
     const ptr0 = passArray8ToWasm0(buffer, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_goods_info(ptr0, len0, require_image);
+    const ret = wasm.get_goods_info(ptr0, len0, require_image, is_965);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -176,6 +177,11 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_static_accessor_WINDOW_b45bfc5a37f6cfa2 = function() {
         const ret = typeof window === 'undefined' ? null : window;
         return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+    };
+    imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
+        // Cast intrinsic for `Ref(String) -> Externref`.
+        const ret = getStringFromWasm0(arg0, arg1);
+        return ret;
     };
     imports.wbg.__wbindgen_init_externref_table = function() {
         const table = wasm.__wbindgen_externrefs;

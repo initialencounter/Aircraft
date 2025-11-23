@@ -1,10 +1,19 @@
 import * as ort from "onnxruntime-web/wasm";
 
-const yoloClasses = ['9', '9A', 'BTY', 'CAO']
+const yoloClasses = ['9', '9A', 'bty', 'CAO']
 
 export default defineUnlistedScript(() => {
+  // 通过 background 代理获取 enableLabelCheck
+  chrome.runtime.sendMessage({ action: 'getEnableLabelCheck' }).then((result) => {
+    if (result.enableLabelCheck === false) {
+      console.log('未启用标签检测, 不加载 YOLO 模型')
+      return;
+    }
+  }).catch((error) => {
+    console.error('获取 enableLabelCheck 失败:', error)
+  })
   let session: ort.InferenceSession;
-  
+
   (async () => {
     try {
       const modelUrl = chrome.runtime.getURL('segment.onnx');
@@ -20,33 +29,39 @@ export default defineUnlistedScript(() => {
       chrome.runtime.sendMessage({ action: 'madeModel', input: "Model Import Error" });
     }
 
-    chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (request.action == "yolo-inference") {
         console.log("Received yolo-inference request");
-        try {
-          let result = await predict(yoloClasses, session, request['input']);
-          console.log("Prediction result", result);
-          sendResponse({ result });
-        } catch (e) {
-          sendResponse({ 'error': String(e) });
-        }
+        // 使用 Promise 处理异步操作
+        (async () => {
+          try {
+            // 将数组转换回 Uint8Array
+            const input = Array.isArray(request.input)
+              ? new Uint8Array(request.input)
+              : request.input;
+            let result = await predict(yoloClasses, session, input);
+            console.log("YOLO Prediction result", result);
+            // 格式化返回数据，将结果数组转换为对象数组
+            const formattedResult = result.map((item: any) => ({
+              bbox: [item[0], item[1], item[2], item[3]],
+              label: item[4],
+              confidence: item[5],
+              mask: item[6]
+            }));
+            sendResponse({ result: formattedResult });
+          } catch (e) {
+            console.error("YOLO inference error:", e);
+            sendResponse({ 'error': String(e) });
+          }
+        })();
+        return true; // 保持消息通道开放，等待异步响应
       }
     });
   })();
 
-  async function predict(yoloClasses: string[], session: ort.InferenceSession, imageUrl: string) {
-    // 创建一个 Image 对象
-    const img = new Image();
-    img.src = imageUrl;
-    
-    // 等待图片加载完成
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-    });
-
-    const rowImageWidth = img.width;
-    const rowImageHeight = img.height;
+  async function predict(yoloClasses: string[], session: ort.InferenceSession, imageInput: Uint8Array | string) {
+    let rowImageWidth: number;
+    let rowImageHeight: number;
     const width = 640;
     const height = 640;
 
@@ -55,10 +70,39 @@ export default defineUnlistedScript(() => {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d')!;
-    
-    // 在 Canvas 上绘制缩放后的图片
-    ctx.drawImage(img, 0, 0, width, height);
-    
+
+    if (imageInput instanceof Uint8Array) {
+      // 直接从 Uint8Array 创建 ImageBitmap
+      // @ts-ignore - Uint8Array can be used in Blob constructor
+      const blob = new Blob([imageInput], { type: 'image/png' });
+      const imageBitmap = await createImageBitmap(blob);
+
+      rowImageWidth = imageBitmap.width;
+      rowImageHeight = imageBitmap.height;
+
+      // 在 Canvas 上绘制缩放后的图片
+      ctx.drawImage(imageBitmap, 0, 0, width, height);
+
+      // 关闭 ImageBitmap 释放资源
+      imageBitmap.close();
+    } else {
+      // 使用 Image 对象加载 URL
+      const img = new Image();
+      img.src = imageInput;
+
+      // 等待图片加载完成
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      rowImageWidth = img.width;
+      rowImageHeight = img.height;
+
+      // 在 Canvas 上绘制缩放后的图片
+      ctx.drawImage(img, 0, 0, width, height);
+    }
+
     // 获取图片数据
     const imageData = ctx.getImageData(0, 0, width, height);
     const pixels = imageData.data; // Uint8ClampedArray，包含 RGBA 数据
@@ -103,10 +147,10 @@ export default defineUnlistedScript(() => {
   function process_output(output0: number[], output1: number[], img_width: number, img_height: number, yolo_classes: string[]) {
     const num_classes = yolo_classes.length;
     const mask_dim = 32; // mask coefficients dimension
-    
+
     // output0 shape: [1, 4+num_classes+32, 8400] -> transposed to [8400, 4+num_classes+32]
     // output1 shape: [1, 32, 160, 160]
-    
+
     // 提取 mask prototypes: [32, 160, 160] -> reshape to [32, 25600]
     const mask_prototypes: number[][] = [];
     for (let c = 0; c < 32; c++) {
@@ -116,19 +160,19 @@ export default defineUnlistedScript(() => {
       }
       mask_prototypes.push(channel);
     }
-    
+
     let boxes: Array<[number, number, number, number, string, number, number[]]> = [];
-    
+
     for (let index = 0; index < 8400; index++) {
       // 提取类别概率
       const [class_id, prob] = [...Array(num_classes).keys()]
         .map((col) => [col, output0[8400 * (col + 4) + index]])
         .reduce((accum, item) => (item[1] > accum[1] ? item : accum), [0, 0]);
-      
+
       if (prob < 0.5) {
         continue;
       }
-      
+
       const label = yolo_classes[class_id];
       const xc = output0[index];
       const yc = output0[8400 + index];
@@ -138,19 +182,19 @@ export default defineUnlistedScript(() => {
       const y1 = ((yc - h / 2) / 640) * img_height;
       const x2 = ((xc + w / 2) / 640) * img_width;
       const y2 = ((yc + h / 2) / 640) * img_height;
-      
+
       // 提取 mask coefficients (32个系数)
       const mask_coeffs: number[] = [];
       for (let i = 0; i < mask_dim; i++) {
         mask_coeffs.push(output0[8400 * (4 + num_classes + i) + index]);
       }
-      
+
       boxes.push([x1, y1, x2, y2, label, prob, mask_coeffs]);
     }
 
     boxes = boxes.sort((box1, box2) => box2[5] - box1[5]);
     const result = [];
-    
+
     while (boxes.length > 0) {
       const currentBox = boxes[0];
       // 计算分割掩码: mask_coeffs @ mask_prototypes = [32] @ [32, 25600] = [25600] -> [160, 160]
@@ -158,10 +202,10 @@ export default defineUnlistedScript(() => {
       result.push([currentBox[0], currentBox[1], currentBox[2], currentBox[3], currentBox[4], currentBox[5], mask]);
       boxes = boxes.filter((box) => iou(boxes[0], box) < 0.7);
     }
-    
+
     return result;
   }
-  
+
   /**
    * Calculate segmentation mask for a detected object
    * @param mask_coeffs Mask coefficients [32]
@@ -179,7 +223,7 @@ export default defineUnlistedScript(() => {
     img_height: number
   ): number[][] {
     const [x1, y1, x2, y2] = box;
-    
+
     // 计算 mask: coeffs @ prototypes
     const mask_160x160: number[] = new Array(160 * 160).fill(0);
     for (let i = 0; i < 160 * 160; i++) {
@@ -190,16 +234,16 @@ export default defineUnlistedScript(() => {
       // Sigmoid activation
       mask_160x160[i] = 1 / (1 + Math.exp(-sum));
     }
-    
+
     // 裁剪到边界框区域并调整大小
     const crop_x1 = Math.round((x1 / img_width) * 160);
     const crop_y1 = Math.round((y1 / img_height) * 160);
     const crop_x2 = Math.round((x2 / img_width) * 160);
     const crop_y2 = Math.round((y2 / img_height) * 160);
-    
+
     const crop_w = Math.max(1, crop_x2 - crop_x1);
     const crop_h = Math.max(1, crop_y2 - crop_y1);
-    
+
     // 裁剪掩码
     const cropped_mask: number[][] = [];
     for (let y = crop_y1; y < crop_y2 && y < 160; y++) {
@@ -211,15 +255,15 @@ export default defineUnlistedScript(() => {
       }
       if (row.length > 0) cropped_mask.push(row);
     }
-    
+
     // 调整掩码大小到原始边界框尺寸
     const target_w = Math.round(x2 - x1);
     const target_h = Math.round(y2 - y1);
-    
+
     if (target_w <= 0 || target_h <= 0 || cropped_mask.length === 0) {
       return [];
     }
-    
+
     const resized_mask: number[][] = [];
     for (let y = 0; y < target_h; y++) {
       const row: number[] = [];
@@ -230,7 +274,7 @@ export default defineUnlistedScript(() => {
       }
       resized_mask.push(row);
     }
-    
+
     return resized_mask;
   }
 

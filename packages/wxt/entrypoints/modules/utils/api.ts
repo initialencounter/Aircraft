@@ -88,6 +88,11 @@ export async function getProjectAttachmentInfo(
     })
     return response
   } catch (error) {
+    // 检查是否是扩展上下文失效错误
+    if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+      console.error('扩展上下文已失效，请刷新页面后重试')
+      throw new Error('扩展已更新或重新加载，请刷新页面后重试')
+    }
     console.error('获取项目信息失败:', error)
     return null
   }

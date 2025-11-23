@@ -2,7 +2,7 @@
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
 export const get_summary_info: (a: number, b: number) => [number, number, number];
-export const get_goods_info: (a: number, b: number, c: number) => [number, number, number];
+export const get_goods_info: (a: number, b: number, c: number, d: number) => [number, number, number];
 export const __wbindgen_exn_store: (a: number) => void;
 export const __externref_table_alloc: () => number;
 export const __wbindgen_externrefs: WebAssembly.Table;
