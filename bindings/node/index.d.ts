@@ -257,7 +257,7 @@ export interface GoodsInfo {
   projectNo: string
   itemCName: string
   labels: Array<string>
-  segmentResult: Array<SegmentResult>
+  segmentResults: Array<SegmentResult>
 }
 export interface PdfReadResult {
   text: string
