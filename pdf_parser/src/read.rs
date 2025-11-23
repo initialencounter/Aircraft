@@ -1,17 +1,14 @@
 // Fork from https://github.com/pdf-rs/pdf/blob/master/pdf/examples/read.rs
 
 use fax::tiff;
-use pdf::any::AnySync;
 use pdf::content::Op;
 use pdf::enc::StreamFilter;
 use pdf::error::PdfError;
-use pdf::file::{File, NoLog, SyncCache};
 use pdf::object::Resolve;
 use pdf::object::*;
 use pdf::primitive::Name;
 use pdf_extract::extract_text_from_mem;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 pub fn replace_whitespace_with_space(text: &str) -> String {
     text.replace(char::is_whitespace, " ")
@@ -39,10 +36,9 @@ pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfEr
         Ok(text) => text,
         Err(_) => "".to_string(),
     };
-    let file = pdf::file::FileOptions::cached().load(data)?;
     let mut images = None;
     if required_image {
-        images = match read_pdf_img(file) {
+        images = match read_pdf_img(&data) {
             Ok(images) => Some(images),
             Err(_) => None,
         }
@@ -50,14 +46,8 @@ pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfEr
     Ok(PdfReadResult { text, images })
 }
 
-pub fn read_pdf_img(
-    file: File<
-        Vec<u8>,
-        Arc<SyncCache<PlainRef, Result<AnySync, Arc<PdfError>>>>,
-        Arc<SyncCache<PlainRef, Result<Arc<[u8]>, Arc<PdfError>>>>,
-        NoLog,
-    >,
-) -> Result<Vec<Vec<u8>>, PdfError> {
+pub fn read_pdf_img(data: &[u8]) -> Result<Vec<Vec<u8>>, PdfError> {
+    let file = pdf::file::FileOptions::cached().load(data)?;
     let resolver = file.resolver();
     let mut images: Vec<_> = vec![];
 
@@ -119,14 +109,8 @@ impl ImageWithPosition {
 
 /// 读取PDF图片并按真实位置排序
 /// 通过解析PDF内容流获取图片的实际坐标
-pub fn read_pdf_img_sorted(
-    file: File<
-        Vec<u8>,
-        Arc<SyncCache<PlainRef, Result<AnySync, Arc<PdfError>>>>,
-        Arc<SyncCache<PlainRef, Result<Arc<[u8]>, Arc<PdfError>>>>,
-        NoLog,
-    >,
-) -> Result<Vec<ImageWithPosition>, PdfError> {
+pub fn read_pdf_img_sorted(data: &[u8]) -> Result<Vec<ImageWithPosition>, PdfError> {
+    let file = pdf::file::FileOptions::cached().load(data)?;
     let resolver = file.resolver();
     let mut images_with_pos: Vec<ImageWithPosition> = vec![];
 
@@ -252,15 +236,8 @@ pub fn read_pdf_img_sorted(
 }
 
 /// 只获取位于最右下角的图片
-pub fn read_pdf_img_bottom_right(
-    file: File<
-        Vec<u8>,
-        Arc<SyncCache<PlainRef, Result<AnySync, Arc<PdfError>>>>,
-        Arc<SyncCache<PlainRef, Result<Arc<[u8]>, Arc<PdfError>>>>,
-        NoLog,
-    >,
-) -> Result<Option<Vec<u8>>, PdfError> {
-    let images = read_pdf_img_sorted(file)?;
+pub fn read_pdf_img_bottom_right(data: &[u8]) -> Result<Option<Vec<u8>>, PdfError> {
+    let images = read_pdf_img_sorted(data)?;
 
     if images.is_empty() {
         return Ok(None);
@@ -293,10 +270,9 @@ mod tests {
     fn test_read_pdf_sorted() {
         let path = r"D:\dev\parse-rs\AEKGZ202511185140.pdf";
         let data = std::fs::read(path).unwrap();
-        let file = pdf::file::FileOptions::cached().load(data).unwrap();
 
         // 获取排序后的图片
-        let images = read_pdf_img_sorted(file).unwrap();
+        let images = read_pdf_img_sorted(&data).unwrap();
         println!("找到 {} 张图片", images.len());
 
         for (i, img) in images.iter().enumerate() {
@@ -312,10 +288,9 @@ mod tests {
     fn test_read_pdf_bottom_right() {
         let path = r"D:\dev\parse-rs\AEKGZ202511185140.pdf";
         let data = std::fs::read(path).unwrap();
-        let file = pdf::file::FileOptions::cached().load(data).unwrap();
 
         // 只获取最右下角的图片
-        if let Some(img_data) = read_pdf_img_bottom_right(file).unwrap() {
+        if let Some(img_data) = read_pdf_img_bottom_right(&data).unwrap() {
             println!("找到最右下角的图片");
             std::fs::write("bottom_right_image.png", img_data).unwrap();
         } else {
