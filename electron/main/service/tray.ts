@@ -15,7 +15,7 @@ declare module 'cordis' {
 
 class CustomTray extends Service {
   static inject = ['app', 'win', 'http']
-  tray: Tray | null
+  tray!: Tray | null
   constructor(ctx: Context) {
     super(ctx, 'tray')
   }

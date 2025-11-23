@@ -8,33 +8,21 @@ use pdf::object::Resolve;
 use pdf::object::*;
 use pdf::primitive::Name;
 use pdf_extract::extract_text_from_mem;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-#[cfg(feature = "wasm-support")]
-use tsify::Tsify;
+
+use aircraft_types::pdf_parser::PdfReadResult;
 
 pub fn replace_whitespace_with_space(text: &str) -> String {
     text.replace(char::is_whitespace, " ")
-}
-
-#[derive(Serialize, Deserialize)]
-#[cfg_attr(feature = "wasm-support", derive(Tsify))]
-#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
-pub struct PdfReadResult {
-    pub text: String,
-    pub images: Option<Vec<Vec<u8>>>,
 }
 
 /// 使用 pdf_extract 读取 pdf 文件的文本内容
 pub fn read_pdf_u8(data: &[u8], required_image: bool) -> Result<PdfReadResult, PdfError> {
     match extract_text_from_mem(data) {
         Ok(text) => {
-            let mut images: Option<Vec<Vec<u8>>> = None;
+            let mut images: Option<Vec<u8>> = None;
             if required_image {
-                images = match read_pdf_img(data) {
-                    Ok(imgs) => Some(imgs),
-                    Err(_) => None,
-                }
+                images = read_pdf_img_bottom_right(data).unwrap_or_else(|_| None)
             }
             Ok(PdfReadResult { text, images })
         }
@@ -53,53 +41,12 @@ pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfEr
     };
     let mut images = None;
     if required_image {
-        images = match read_pdf_img(&data) {
-            Ok(images) => Some(images),
+        images = match read_pdf_img_bottom_right(&data) {
+            Ok(imgs) => imgs,
             Err(_) => None,
         }
     }
     Ok(PdfReadResult { text, images })
-}
-
-pub fn read_pdf_img(data: &[u8]) -> Result<Vec<Vec<u8>>, PdfError> {
-    let file = pdf::file::FileOptions::cached().load(data)?;
-    let resolver = file.resolver();
-    let mut images: Vec<_> = vec![];
-
-    for page in file.pages() {
-        let page = page?;
-        let resources = page.resources()?;
-        images.extend(
-            resources
-                .xobjects
-                .iter()
-                .map(|(_name, &r)| resolver.get(r).unwrap())
-                .filter(|o| matches!(**o, XObject::Image(_))),
-        );
-    }
-
-    let mut image_buffer_vec: Vec<Vec<u8>> = vec![];
-    // 提取图片
-    for (_i, o) in images.iter().enumerate() {
-        let img = match **o {
-            XObject::Image(ref im) => im,
-            _ => continue,
-        };
-        let (mut data, filter) = img.raw_image_data(&resolver)?;
-        match filter {
-            Some(StreamFilter::DCTDecode(_)) => "jpeg",
-            Some(StreamFilter::JBIG2Decode(_)) => "jbig2",
-            Some(StreamFilter::JPXDecode) => "jp2k",
-            Some(StreamFilter::FlateDecode(_)) => "png",
-            Some(StreamFilter::CCITTFaxDecode(_)) => {
-                data = tiff::wrap(&data, img.width, img.height).into();
-                "tiff"
-            }
-            _ => continue,
-        };
-        image_buffer_vec.push(data.to_vec());
-    }
-    Ok(image_buffer_vec)
 }
 
 #[derive(Debug, Clone)]

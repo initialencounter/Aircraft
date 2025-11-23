@@ -1,13 +1,16 @@
+// Summary 相关类型定义
+
 #[cfg(feature = "napi-support")]
 use napi_derive::napi;
 #[cfg(feature = "wasm-support")]
 use tsify::Tsify;
+
 use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "wasm-support", derive(Tsify))]
 #[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SummaryInfo {
     /// 项目ID
@@ -79,9 +82,8 @@ pub struct SummaryInfo {
     pub test7: String,
     pub test8: String,
 
-
-    pub un38f: String,
-    pub un38g: String,
+    pub un38_f: String,
+    pub un38_g: String,
 
     /// 备注
     pub note: String,
@@ -128,8 +130,8 @@ impl SummaryInfo {
             test6: "".to_string(),
             test7: "".to_string(),
             test8: "".to_string(),
-            un38f: "".to_string(),
-            un38g: "".to_string(),
+            un38_f: "".to_string(),
+            un38_g: "".to_string(),
             note: "".to_string(),
             title: "".to_string(),
             project_no: "".to_string(),

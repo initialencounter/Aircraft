@@ -15,14 +15,9 @@ windows = { version = "0.58.0", features = [
   "Win32_System_Console"
 ] }
 image = "0.25.4"
-chrono = "0.4.38"
 winreg = "0.52.0"
 is_elevated = "0.1.2"
-lazy_static = "1.5.0"
-regex = "1.11.1"
-serde = { version = "1.0", features = ["derive"] }
-
+aircraft-types = { path = "../types" }
 
 [build-dependencies]
-embed-resource = "2.5.0"
 winres = "0.1.12"

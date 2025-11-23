@@ -30,7 +30,7 @@ declare module 'cordis' {
 
 class AircraftCore extends Service {
   static inject = ['http', 'app', 'bindings']
-  bindings: AircraftRs
+  bindings!: AircraftRs
   constructor(ctx: Context) {
     super(ctx, 'core')
     const loggerDir = resolve(ctx.app.APP_CONFIG_PATH, 'logs')
@@ -71,8 +71,7 @@ class AircraftCore extends Service {
   }
 
   async getSummaryInfoByBuffer(buffer: Buffer): Promise<SummaryInfo> {
-    const u8 = Array.from(buffer)
-    return this.bindings.getSummaryInfoByBuffer(u8)
+    return this.bindings.getSummaryInfoByBuffer(buffer)
   }
 }
 

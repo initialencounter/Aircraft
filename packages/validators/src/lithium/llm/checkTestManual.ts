@@ -25,8 +25,6 @@ export function checkTestManual(
       },
     ]
   }
-  console.log('raw input', rawTestManualLLM, rawTestManual)
-  console.log('match from docx', testManual)
   if (rawTestManualLLM !== testManual) {
     return [
       {

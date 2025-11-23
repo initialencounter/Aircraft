@@ -49,7 +49,7 @@ class LLM extends Service {
   }
   /**从pdf buffer中读取提取文本内容*/
   async readPdfBuffer(buffer: Array<number>): Promise<string> {
-    return await this.bindings.readPdfBuffer(buffer)
+    return await this.bindings.readPdfBuffer(new Uint8Array(buffer))
   }
   async parsePdf(path: Array<string>): Promise<string> {
     return await this.bindings.parsePdf(path)
@@ -61,10 +61,9 @@ class LLM extends Service {
     return await this.bindings.chatWithAiFastAndCheap(fileContents)
   }
   async uploadLLMFiles(buf: Buffer): Promise<string> {
-    const u8 = Array.from(buf)
-    let pdfText = await this.bindings.readPdfBuffer(u8)
+    let pdfText = await this.bindings.readPdfBuffer(buf)
     if (!pdfText.trim().length) {
-      pdfText = await this.bindings.parsePdfU8('UN38.3 Test Report.pdf', u8)
+      pdfText = await this.bindings.parsePdfU8('UN38.3 Test Report.pdf', Array.from(buf))
     }
     if (!pdfText.trim().length) {
       throw new Error('PDF解析失败')

@@ -9,5 +9,6 @@ members = [
   "wasm_utils",
   "summary",
   "pdf_parser",
+  "types",
 ]
 resolver = "2"

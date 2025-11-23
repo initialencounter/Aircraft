@@ -3,21 +3,26 @@
 #[macro_use]
 extern crate napi_derive;
 
-use share::attachment_parser::{get_attachment_info as get_attachment_info_rs, AttachmentInfo};
-use share::logger::{LogMessage, Logger};
+use aircraft_types::attachment::AttachmentInfo;
+use aircraft_types::config::{Config, HotkeyConfig, LLMConfig, ServerConfig};
+use aircraft_types::logger::LogMessage;
+use aircraft_types::others::ClipboardHotkey;
+use aircraft_types::others::SearchResult;
+use aircraft_types::project::DataModel;
+use aircraft_types::summary::SummaryInfo;
+use pdf_parser::parse::parse_good_file;
+use pdf_parser::read::{read_pdf, read_pdf_u8};
+use pdf_parser::{GoodsInfo, PdfReadResult};
+use share::attachment_parser::get_attachment_info as get_attachment_info_rs;
+use share::logger::Logger;
 use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
-use pdf_parser::parse::parse_good_file;
-use pdf_parser::read::{read_pdf, read_pdf_u8, PdfReadResult};
-use pdf_parser::types::GoodsInfo;
 use share::utils::uploader::FileManager;
-use summary::{get_summary_info_by_buffer, get_summary_info_by_path, SummaryInfo};
-use share::types::{Config, LLMConfig};
-use share::types::{HotkeyConfig, ServerConfig};
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
+use summary::{get_summary_info_by_buffer, get_summary_info_by_path};
 
 #[napi(js_name = "AircraftRs")]
 pub struct AircraftRs {
@@ -250,12 +255,17 @@ impl JsFileManager {
     &self,
     file_contents: Vec<String>,
   ) -> napi::Result<String> {
-    let res = self
+    match self
       .manager
       .chat_with_ai_fast_and_cheap(file_contents)
       .await
-      .unwrap();
-    Ok(res)
+    {
+      Ok(res) => Ok(res),
+      Err(e) => Err(napi::Error::new(
+        napi::Status::GenericFailure,
+        format!("调用 fast and cheap 接口失败: {}", e),
+      )),
+    }
   }
   /// 使用 pdf_extract 读取 pdf 文件的文本内容
   #[napi]
@@ -272,15 +282,12 @@ pub fn get_default_config() -> napi::Result<Config> {
 }
 
 #[napi]
-pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::SearchResult> {
+pub async fn search_file(file_name: String) -> Vec<SearchResult> {
   share::hotkey_handler::copy::search(file_name).await
 }
 
 #[napi]
-pub async fn search_property(
-  url: String,
-  search_text: String,
-) -> Vec<share::hotkey_handler::copy::DataModel> {
+pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
   share::hotkey_handler::copy::search_property(url, search_text).await
 }
 
@@ -295,16 +302,12 @@ pub fn set_clipboard_text(text: String) {
 }
 
 #[napi]
-pub fn get_clipboard_snapshot_configs(
-) -> Vec<share::manager::clipboard_snapshot_manager::ClipboardHotkey> {
+pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {
   share::manager::clipboard_snapshot_manager::get_clipboard_snapshot_configs()
 }
 
 #[napi]
-pub fn add_clipboard_snapshot_config(
-  config: share::manager::clipboard_snapshot_manager::ClipboardHotkey,
-) -> napi::Result<()> {
-  println!("Adding clipboard snapshot config: {:?}", config);
+pub fn add_clipboard_snapshot_config(config: ClipboardHotkey) -> napi::Result<()> {
   match share::manager::clipboard_snapshot_manager::add_clipboard_snapshot_config(config) {
     Ok(_) => Ok(()),
     Err(e) => Err(napi::Error::new(

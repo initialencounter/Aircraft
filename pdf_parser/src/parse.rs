@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use super::types::GoodsInfo;
+use aircraft_types::pdf_parser::GoodsInfo;
 
 lazy_static! {
     static ref RE_PROJECT_NO: Regex =

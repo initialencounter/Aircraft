@@ -1,6 +1,6 @@
-use crate::logger::LogMessage;
 use crate::utils::uploader::FileManager;
-use crate::types::LLMConfig;
+use aircraft_types::config::LLMConfig;
+use aircraft_types::logger::LogMessage;
 use http_client::HttpClient;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;

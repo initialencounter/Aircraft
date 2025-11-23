@@ -1,9 +1,9 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
-use pdf_parser::read::read_pdf_u8;
 use crate::utils::uploader::FileManager;
 use bytes::BufMut;
 use futures_util::StreamExt;
+use pdf_parser::read::read_pdf_u8;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;

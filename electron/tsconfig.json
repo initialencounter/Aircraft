@@ -1,0 +1,56 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+
+    /* Node.js & Electron */
+    "types": [],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../types",
+      "../node_modules/@types"
+    ],
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@aircraft/renderer": ["../packages/renderer/src"],
+      "@aircraft/validators": ["../packages/validators/src"],
+      "aircraft-rs": ["../bindings/node/index.d.ts"],
+      "schemastery-vue": ["../types/schemastery-vue.d.ts"]
+    }
+  },
+  "include": [
+    "main/**/*.ts",
+    "preload/**/*.ts",
+    "renderer/**/*.ts",
+    "types/**/*.ts",
+    "vite.electron.config.ts",
+    "electron-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist-electron",
+    "release",
+    "**/node_modules/**",
+    "../node_modules/**"
+  ]
+}

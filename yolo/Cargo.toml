@@ -3,26 +3,10 @@ name = "yolo"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-default = ["napi-support"]
-napi-support = ["napi", "napi-derive"]
-wasm-support = ["tsify", "wasm-bindgen"]
-
 [dependencies]
 ort = "2.0.0-rc.10"
 ndarray = "0.16.1"
 image = "0.25.4"
 lazy_static = "1.5.0"
 
-tsify = { version = "0.4.5", optional = true }
-wasm-bindgen = { version = "0.2.105", optional = true }
-
-napi = { version = "2.12.2", default-features = false, features = [
-  "napi4",
-  "async",
-  "serde-json",
-], optional = true }
-napi-derive = { version = "2.12.2", optional = true }
-
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+aircraft-types = { path = "../types" }

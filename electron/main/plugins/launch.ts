@@ -9,7 +9,7 @@ declare module 'cordis' {
 
 class Launch {
   static inject = ['app']
-  launch: AutoLaunch
+  launch!: AutoLaunch
 
   constructor(ctx: Context) {
     ctx.on('auto-launch-switch', async (enable, isHidden) => {

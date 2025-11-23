@@ -67,18 +67,36 @@ pub fn handle_setup(app: &mut App) {
         .icon(app.default_window_icon().unwrap().clone())
         .menu(&tray_menu)
         .show_menu_on_left_click(false)
-        .on_menu_event(move |app, event| match event.id().as_ref() {
-            "help" => app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助".to_string() })).unwrap(),
-            "quit" => app.exit(0),
-            "restart" => restart(),
-            "about" => app.emit("open_link", Some(Link { link: "https://github.com/initialencounter/Aircraft".to_string() })).unwrap(),
-            "update" => handle_menu_event_update(&app),
-            _ => {}
+        .on_menu_event(move |app, event| {
+            match event.id().as_ref() {
+      "help" => app
+        .emit(
+          "open_link",
+          Some(Link {
+            link: "https://github.com/initialencounter/Aircraft?tab=readme-ov-file#使用帮助"
+              .to_string(),
+          }),
+        )
+        .unwrap(),
+      "quit" => app.exit(0),
+      "restart" => restart(),
+      "about" => app
+        .emit(
+          "open_link",
+          Some(Link {
+            link: "https://github.com/initialencounter/Aircraft".to_string(),
+          }),
+        )
+        .unwrap(),
+      "update" => handle_menu_event_update(&app),
+      _ => {}
+    }
         })
         .on_tray_icon_event(|tray, event| {
             handle_tray_icon_event(tray, &event);
         })
-        .build(app).unwrap();
+        .build(app)
+        .unwrap();
     // 静默启动
     let config = get_config(app.handle().clone());
     if config.base.silent_start {

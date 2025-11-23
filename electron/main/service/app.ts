@@ -15,7 +15,7 @@ declare module 'cordis' {
 
 class App extends Service {
   app: Electron.App
-  require: typeof createRequire
+  require: ReturnType<typeof createRequire>
   __dirname: string
   APP_ROOT: string
   MAIN_DIST: string

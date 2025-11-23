@@ -93,7 +93,7 @@ async fn get_project_info(project_no: &str) -> Result<QueryResult> {
         let res: QueryResult = response.json().await?;
         Ok(res)
     } else {
-        Err("未找到项目信息".into())
+        Err("未找到系统项目信息".into())
     }
 }
 

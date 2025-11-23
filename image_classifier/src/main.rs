@@ -55,21 +55,25 @@ use yolo;
 //     }
 // }
 
-
-
 fn main() {
     // 读取图像文件
-    let image_data = std::fs::read(r"C:\Users\29115\yolov8\yolov11-seg\datasets17k_yolo\images\train\img_000002.jpeg").unwrap();
-    
+    let image_data = std::fs::read(
+        r"C:\Users\29115\yolov8\yolov11-seg\datasets17k_yolo\images\train\img_000002.jpeg",
+    )
+    .unwrap();
+
     // 执行检测
     let results = yolo::segment::detect_objects_on_image(image_data);
-    
+
     // 处理结果
     for result in results {
         println!("检测到 {}: 置信度 {:.2}", result.label, result.confidence);
-        println!("边界框: ({:.0}, {:.0}) - ({:.0}, {:.0})", result.x1, result.y1, result.x2, result.y2);
+        println!(
+            "边界框: ({:.0}, {:.0}) - ({:.0}, {:.0})",
+            result.x1, result.y1, result.x2, result.y2
+        );
         println!("掩码尺寸: {}x{}", result.mask.len(), result.mask[0].len());
-        
+
         // mask 是一个二维数组，可以用来生成分割图像
         // mask[y][x] 的值为 255（前景）或 0（背景）
     }

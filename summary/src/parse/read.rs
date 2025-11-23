@@ -1,5 +1,5 @@
-use quick_xml::events::Event;
 use quick_xml::Reader;
+use quick_xml::events::Event;
 
 pub fn parse_docx_text(content: &str) -> Vec<String> {
     let mut reader = Reader::from_str(content);
@@ -55,7 +55,7 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                             })
                             .collect::<Vec<_>>()
                             .join("/");
-                       let text = reader.decoder().decode(e.as_ref()).unwrap_or_default().to_string();
+                        let text = reader.decoder().decode(&e).unwrap_or_default().to_string();
                         if last_path_str.is_empty() {
                             last_path_str = path_str.clone();
                         }

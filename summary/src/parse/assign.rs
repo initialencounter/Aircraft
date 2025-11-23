@@ -1,4 +1,4 @@
-use crate::types::SummaryInfo;
+use aircraft_types::summary::SummaryInfo;
 use std::collections::HashMap;
 
 use super::match_project_no;
@@ -42,8 +42,8 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
             ("撞击/挤压", &mut summary.test6),
             ("过度充电", &mut summary.test7),
             ("强制放电", &mut summary.test8),
-            ("UN38.3.3.1(f)", &mut summary.un38f),
-            ("UN38.3.3.1(g)", &mut summary.un38g),
+            ("UN38.3.3.1(f)", &mut summary.un38_f),
+            ("UN38.3.3.1(g)", &mut summary.un38_g),
             ("备注", &mut summary.note),
         ]);
 

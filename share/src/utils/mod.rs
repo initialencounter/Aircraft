@@ -64,3 +64,23 @@ pub fn set_clipboard_text(text: String) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_date() {
+        let (start, end) = parse_date("PEKGZ202301017777").unwrap();
+        println!("Start: {}, End: {}", start, end);
+
+
+        let (start, end) = parse_date("PEKGZ202301317777").unwrap();
+        println!("Start: {}, End: {}", start, end);
+
+
+        let (start, end) = parse_date("PEKGZ202312317777").unwrap();
+        println!("Start: {}, End: {}", start, end);
+
+    }
+}

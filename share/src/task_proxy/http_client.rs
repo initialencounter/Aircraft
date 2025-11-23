@@ -1,3 +1,4 @@
+use aircraft_types::{logger::LogMessage, others::QueryResult};
 use chrono::Local;
 use std::env;
 use std::path::PathBuf;
@@ -6,7 +7,6 @@ use std::sync::mpsc::Sender;
 use reqwest::header;
 use reqwest::{multipart, Client};
 
-use crate::logger::LogMessage;
 use crate::utils::{
     build_confirmation_message, get_today_date, match_file, match_file_list, parse_date,
     prepare_file_info, RawFileInfo,
@@ -14,29 +14,7 @@ use crate::utils::{
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use serde::{Deserialize, Serialize};
-
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
-
-#[derive(Deserialize, Serialize)]
-pub struct QueryResult {
-    rows: Vec<ProjectRow>,
-}
-
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct ProjectRow {
-    item_c_name: String,
-    item_e_name: String,
-    edit_status: i64,
-    project_id: String,
-    project_no: String,
-}
-
-#[derive(serde::Deserialize, serde::Serialize)]
-struct DirectoryInfo {
-    dir: String,
-}
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 

@@ -1,6 +1,8 @@
 pub mod parse;
 pub mod read;
-pub mod types;
+
+// 从统一的 types 包导入类型
+pub use aircraft_types::pdf_parser::{GoodsInfo, PdfReadResult};
 
 #[cfg(test)]
 mod tests {

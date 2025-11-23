@@ -35,7 +35,7 @@ export interface SummaryFromLLM {
     | null
 
   /**电池型号*/
-  type: string | null
+  model: string | null
 
   /**电池商标*/
   trademark: string | null

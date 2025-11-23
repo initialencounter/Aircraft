@@ -1,4 +1,3 @@
-use summary::modify_docx;
 use crate::utils::popup_message;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -6,6 +5,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
+use summary::modify_docx;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 

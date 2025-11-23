@@ -42,15 +42,17 @@ function domReady(
 }
 
 const safeDOM = {
-  append(parent: HTMLElement, child: HTMLElement) {
+  append(parent: HTMLElement, child: HTMLElement): HTMLElement | undefined {
     if (!Array.from(parent.children).find((e) => e === child)) {
       return parent.appendChild(child)
     }
+    return undefined
   },
-  remove(parent: HTMLElement, child: HTMLElement) {
+  remove(parent: HTMLElement, child: HTMLElement): HTMLElement | undefined {
     if (Array.from(parent.children).find((e) => e === child)) {
       return parent.removeChild(child)
     }
+    return undefined
   },
 }
 

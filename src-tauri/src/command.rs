@@ -1,8 +1,12 @@
+use aircraft_types::logger::LogMessage;
+use aircraft_types::others::SearchResult;
 use base64::prelude::*;
-use serde_json::json;
 use pdf_parser::read::read_pdf_u8;
+use serde_json::json;
+use share::hotkey_handler::copy::search;
+use share::logger::Logger;
+use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::utils::uploader::FileManager;
-use share::types::{Config, LLMConfig, OtherConfig};
 use std::path::Path;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
@@ -11,12 +15,22 @@ use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::Mutex as AsyncMutex;
 
-use share::logger::{LogMessage, Logger};
+use aircraft_types::config::{
+    BaseConfig, Config, HotkeyConfig, LLMConfig, OtherConfig, ServerConfig,
+};
+use aircraft_types::others::ClipboardHotkey;
+use aircraft_types::project::DataModel;
+use aircraft_types::summary::SummaryInfo;
+use share::hotkey_handler::copy::search_property as search_property_source;
+use share::manager::clipboard_snapshot_manager::{
+    add_clipboard_snapshot_config as add_clipboard_snapshot_config_source,
+    get_clipboard_snapshot_configs as get_clipboard_snapshot_configs_source,
+    remove_clipboard_snapshot_config as remove_clipboard_snapshot_config_source,
+};
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
-use summary::{get_summary_info_by_buffer as get_summary_info_by_u8, SummaryInfo};
 use share::task_proxy::LOGIN_STATUS;
-use share::types::{BaseConfig, HotkeyConfig, ServerConfig};
+use summary::get_summary_info_by_buffer as get_summary_info_by_u8;
 
 // 获取登录状态
 #[tauri::command]
@@ -214,16 +228,13 @@ pub async fn reload_config(
 }
 
 #[tauri::command]
-pub async fn search_file(file_name: String) -> Vec<share::hotkey_handler::copy::SearchResult> {
-    share::hotkey_handler::copy::search(file_name).await
+pub async fn search_file(file_name: String) -> Vec<SearchResult> {
+    search(file_name).await
 }
 
 #[tauri::command]
-pub async fn search_property(
-    url: String,
-    search_text: String,
-) -> Vec<share::hotkey_handler::copy::DataModel> {
-    share::hotkey_handler::copy::search_property(url, search_text).await
+pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
+    search_property_source(url, search_text).await
 }
 
 #[tauri::command]
@@ -232,16 +243,13 @@ pub fn set_clipboard_text(text: String) {
 }
 
 #[tauri::command]
-pub fn get_clipboard_snapshot_configs(
-) -> Vec<share::manager::clipboard_snapshot_manager::ClipboardHotkey> {
-    share::manager::clipboard_snapshot_manager::get_clipboard_snapshot_configs()
+pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {
+    get_clipboard_snapshot_configs_source()
 }
 
 #[tauri::command]
-pub fn add_clipboard_snapshot_config(
-    config: share::manager::clipboard_snapshot_manager::ClipboardHotkey,
-) -> Result<(), String> {
-    match share::manager::clipboard_snapshot_manager::add_clipboard_snapshot_config(config) {
+pub fn add_clipboard_snapshot_config(config: ClipboardHotkey) -> Result<(), String> {
+    match add_clipboard_snapshot_config_source(config) {
         Ok(_) => Ok(()),
         Err(e) => Err("添加剪贴板快照配置失败: ".to_string() + &e.to_string()),
     }
@@ -249,8 +257,7 @@ pub fn add_clipboard_snapshot_config(
 
 #[tauri::command]
 pub fn remove_clipboard_snapshot_config(content_name: &str) -> Result<(), String> {
-    match share::manager::clipboard_snapshot_manager::remove_clipboard_snapshot_config(content_name)
-    {
+    match remove_clipboard_snapshot_config_source(content_name) {
         Ok(_) => Ok(()),
         Err(e) => Err("移除剪贴板快照配置失败: ".to_string() + &e.to_string()),
     }
@@ -258,10 +265,7 @@ pub fn remove_clipboard_snapshot_config(content_name: &str) -> Result<(), String
 
 #[tauri::command]
 pub fn reload_clipboard_snapshot_configs(
-    clipboard_snapshot_manager: tauri::State<
-        '_,
-        share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager,
-    >,
+    clipboard_snapshot_manager: tauri::State<'_, ClipboardSnapshotManager>,
 ) {
     clipboard_snapshot_manager.stop();
     clipboard_snapshot_manager.start();

@@ -165,6 +165,113 @@ export interface Config {
 export interface OtherConfig {
   queryServerHost: string
 }
+export interface LlmConfig {
+  baseUrl: string
+  apiKey: string
+  model: string
+}
+export interface Config {
+  base: BaseConfig
+  server: ServerConfig
+  hotkey: HotkeyConfig
+  llm: LlmConfig
+  other: OtherConfig
+}
+export interface FileUploadResult {
+  bytes: number
+  createdAt: number
+  filename: string
+  id: string
+  object: string
+  purpose: string
+  status: string
+  statusDetails: string
+}
+/** PdfReadResult */
+export interface PdfReadResult {
+  content: string
+  fileType: string
+  filename: string
+  title: string
+  contentType: string
+}
+/** PdfDeleteResult */
+export interface PdfDeleteResult {
+  deleted: boolean
+  id: string
+  object: string
+}
+/** ChatRequest */
+export interface ChatRequest {
+  messages: Array<Message>
+  model: string
+  temperature: number
+  responseFormat: ResponseFormat
+}
+/** ChatResponse */
+export interface ChatResponse {
+  choices: Array<Choice>
+  created: number
+  id: string
+  model: string
+  object: string
+  usage: Usage
+}
+export interface Choice {
+  finishReason?: string
+  index?: number
+  message?: Message
+}
+/** Message */
+export interface Message {
+  content: string
+  role: string
+}
+export interface Usage {
+  completionTokens: number
+  promptTokens: number
+  totalTokens: number
+}
+export interface ResponseFormat {
+  responseFormatType: string
+}
+export interface QueryResult {
+  rows: Array<ProjectRow>
+}
+export interface ProjectRow {
+  itemCName: string
+  itemEName: string
+  editStatus: number
+  projectId: string
+  projectNo: string
+}
+export interface DirectoryInfo {
+  dir: string
+}
+export interface SearchParams {
+  search: string
+  json: number
+  pathColumn: number
+}
+export interface GoodsInfo {
+  projectNo: string
+  itemCName: string
+  labels: Array<string>
+  segmentResult: Array<SegmentResult>
+}
+export interface PdfReadResult {
+  text: string
+  images?: Array<number>
+}
+export interface SegmentResult {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  label: string
+  confidence: number
+  mask: Array<Array<number>>
+}
 export declare function getDefaultConfig(): Config
 export declare function searchFile(fileName: string): Promise<Array<SearchResult>>
 export declare function searchProperty(url: string, searchText: string): Promise<Array<DataModel>>

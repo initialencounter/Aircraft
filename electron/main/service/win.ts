@@ -17,7 +17,7 @@ export const logger = new Logger('win')
 
 class Window extends Service {
   static inject = ['app']
-  win: BrowserWindow | null
+  win!: BrowserWindow | null
   constructor(ctx: Context) {
     super(ctx, 'win')
   }
@@ -52,7 +52,7 @@ class Window extends Service {
         'VITE_DEV_SERVER_URL' + this.ctx.app.VITE_DEV_SERVER_URL
       )
       // Open devTool if the app is not packaged
-      // this.win?.webContents.openDevTools()
+      this.win?.webContents.openDevTools()
     } else {
       await this.win?.loadFile(this.ctx.app.indexHtml)
     }

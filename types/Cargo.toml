@@ -1,0 +1,21 @@
+[package]
+name = "aircraft-types"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+napi-support = ["napi", "napi-derive"]
+wasm-support = ["tsify", "wasm-bindgen"]
+
+[dependencies]
+# 基础依赖
+serde = { version = "1", features = ["derive"] }
+
+# NAPI 依赖 - 条件编译
+napi = { version = "2.12.2", features = ["napi4"], optional = true }
+napi-derive = { version = "2.12.2", optional = true }
+
+# WASM 依赖 - 条件编译
+tsify = { version = "0.4.5", optional = true }
+wasm-bindgen = { version = "0.2.105", optional = true }

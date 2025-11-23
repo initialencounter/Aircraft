@@ -1,113 +1,11 @@
+use aircraft_types::config::LLMConfig;
+use aircraft_types::llm::{
+    ChatRequest, ChatResponse, FileUploadResult, Message, PdfDeleteResult, ResponseFormat,
+};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use reqwest::multipart::Part;
 use reqwest::{multipart, Client};
 use std::error::Error;
-
-use serde::{Deserialize, Serialize};
-
-use crate::types::LLMConfig;
-
-/// FileUploadResult
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct FileUploadResult {
-    pub bytes: i64,
-
-    pub created_at: i64,
-
-    pub filename: String,
-
-    pub id: String,
-
-    pub object: String,
-
-    pub purpose: String,
-
-    pub status: String,
-
-    pub status_details: String,
-}
-
-/// PdfReadResult
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PdfReadResult {
-    pub content: String,
-
-    pub file_type: String,
-
-    pub filename: String,
-
-    pub title: String,
-
-    #[serde(rename = "type")]
-    pub content_type: String,
-}
-
-/// PdfDeleteResult
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PdfDeleteResult {
-    pub deleted: bool,
-
-    pub id: String,
-
-    pub object: String,
-}
-
-/// ChatRequest
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ChatRequest {
-    pub messages: Vec<Message>,
-    pub model: String,
-    pub temperature: f64,
-    pub response_format: ResponseFormat,
-}
-
-/// ChatResponse
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ChatResponse {
-    pub choices: Vec<Choice>,
-
-    pub created: i64,
-
-    pub id: String,
-
-    pub model: String,
-
-    pub object: String,
-
-    pub usage: Usage,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Choice {
-    pub finish_reason: Option<String>,
-
-    pub index: Option<i64>,
-
-    pub message: Option<Message>,
-}
-
-/// Message
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Message {
-    pub content: String,
-
-    pub role: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Usage {
-    pub completion_tokens: i64,
-
-    pub prompt_tokens: i64,
-
-    pub total_tokens: i64,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ResponseFormat {
-    #[serde(rename = "type")]
-    pub response_format_type: String,
-}
 
 fn extract_json(input: &str) -> Option<String> {
     // 定义起始和结束标记
@@ -326,7 +224,7 @@ export interface SummaryFromLLM {
     | null
 
   /**电池型号*/
-  type: string | null
+  model: string | null
 
   /**电池商标*/
   trademark: string | null

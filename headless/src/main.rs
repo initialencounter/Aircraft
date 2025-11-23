@@ -1,10 +1,10 @@
 mod config;
 mod tray;
 mod utils;
+use aircraft_types::config::{LLMConfig, ServerConfig};
 use config::read_env_to_config;
 use is_elevated::is_elevated;
-use share::types::LLMConfig;
-use share::{logger::Logger, task_proxy::run as task_proxy_run, types::ServerConfig};
+use share::{logger::Logger, task_proxy::run as task_proxy_run};
 use std::{
     env,
     path::PathBuf,

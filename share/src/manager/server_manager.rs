@@ -1,12 +1,11 @@
-use crate::types::LLMConfig;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
-use crate::logger::LogMessage;
 use crate::task_proxy::run as task_proxy_run;
-use crate::types::ServerConfig;
+use aircraft_types::config::{LLMConfig, ServerConfig};
+use aircraft_types::logger::LogMessage;
 
 pub struct ServerManager {
     handle: Mutex<Option<JoinHandle<()>>>,

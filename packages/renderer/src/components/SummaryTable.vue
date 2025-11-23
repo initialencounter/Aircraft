@@ -34,7 +34,7 @@
           </tr>
           <tr>
             <td class="label">型号 Type</td>
-            <td>{{ data.type }}</td>
+            <td>{{ data.model }}</td>
             <td class="label">商标 Trademark</td>
             <td>{{ data.trademark ?? '/' }}</td>
           </tr>

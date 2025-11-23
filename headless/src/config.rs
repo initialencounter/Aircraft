@@ -1,4 +1,4 @@
-use share::types::ServerConfig;
+use aircraft_types::config::ServerConfig;
 use std::{env, path::PathBuf};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;

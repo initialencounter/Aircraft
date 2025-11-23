@@ -2,7 +2,7 @@ import type { SummaryFromLLM, SummaryInfo } from '../shared/types'
 import type { CheckResult } from '../shared/types'
 
 const baseCheckItem: Array<keyof SummaryFromLLM> = [
-  'type',
+  'model',
   'testReportNo',
   'testDate',
 ]

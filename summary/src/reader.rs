@@ -5,7 +5,7 @@ use zip::ZipArchive;
 
 use super::parse::{parse_docx_table, parse_docx_text};
 
-use super::types::SummaryInfo;
+use aircraft_types::summary::SummaryInfo;
 
 pub fn read_docx_content(
     input_path: &str,

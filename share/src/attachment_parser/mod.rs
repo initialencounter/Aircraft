@@ -1,13 +1,16 @@
-use napi_derive::napi;
-use serde::{Deserialize, Serialize};
-
-use crate::hotkey_handler::copy::{search, SearchResult};
+use crate::hotkey_handler::copy::search;
 use crate::utils::get_file_names;
+use aircraft_types::{
+    attachment::{AttachmentInfo, OtherInfo},
+    others::SearchResult,
+    summary::SummaryInfo,
+};
 use pdf_parser::parse::parse_good_file;
 use pdf_parser::read::read_pdf;
-use pdf_parser::types::GoodsInfo;
-use summary::{parse_docx_table, parse_docx_text, read_docx_content, SummaryInfo};
-#[cfg(not(feature = "napi"))]
+use pdf_parser::GoodsInfo;
+use summary::{parse_docx_table, parse_docx_text, read_docx_content};
+
+#[cfg(not(feature = "napi-support"))]
 use yolo::segment::detect_objects_on_image;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -40,7 +43,7 @@ pub async fn get_summary_path(project_no: String) -> Result<String> {
     let search_result = search(project_no.clone()).await;
     let file_list = filter_file(".docx", search_result).await?;
     if file_list.is_empty() {
-        return Err(format!("未找到项目: {}", project_no).into());
+        return Err(format!("未找到概要路径: {}", project_no).into());
     }
     Ok(file_list[0].clone())
 }
@@ -49,7 +52,7 @@ pub async fn get_goods_path(project_no: String) -> Result<String> {
     let search_result = search(project_no.clone()).await;
     let file_list = filter_file(format!("{}.pdf", project_no).as_str(), search_result).await?;
     if file_list.is_empty() {
-        return Err(format!("未找到项目: {}", project_no).into());
+        return Err(format!("未找到图片路径: {}", project_no).into());
     }
     Ok(file_list[0].clone())
 }
@@ -61,27 +64,29 @@ pub async fn get_goods_info(
 ) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let result = read_pdf(&path, required_image)?;
-    #[cfg(not(feature = "napi"))]
+    #[cfg(not(feature = "napi-support"))]
     {
         let mut goods_info = parse_good_file(result.text, is_965)?;
         if required_image {
             if let Some(images) = result.images {
-                let labels = detect_goods_pdf(images).await;
+                let segment_result = detect_objects_on_image(images);
+                let mut labels = vec![];
+                for result in &segment_result {
+                    if result.confidence > 0.5 {
+                        labels.push(result.label.clone());
+                    }
+                }
                 goods_info.labels = labels;
+                goods_info.segment_result = segment_result;
             }
         }
+        Ok(goods_info)
     }
-    #[cfg(feature = "napi")]
-    let goods_info = parse_good_file(result.text, is_965)?;
-    Ok(goods_info)
-}
-
-#[napi(object)]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OtherInfo {
-    pub stack_evaluation: bool,
-    pub project_dir: String,
+    #[cfg(feature = "napi-support")]
+    {
+        let goods_info = parse_good_file(result.text, is_965)?;
+        Ok(goods_info)
+    }
 }
 
 pub async fn find_stack_evaluation(project_dir: String) -> bool {
@@ -113,15 +118,6 @@ pub async fn get_other_info(project_no: String) -> Result<OtherInfo> {
     })
 }
 
-#[napi(object)]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AttachmentInfo {
-    pub summary: SummaryInfo,
-    pub goods: GoodsInfo,
-    pub other: OtherInfo,
-}
-
 pub async fn get_attachment_info(
     project_no: String,
     required_image: bool,
@@ -132,19 +128,4 @@ pub async fn get_attachment_info(
         goods: get_goods_info(project_no.clone(), required_image, is_965).await?,
         other: get_other_info(project_no.clone()).await?,
     })
-}
-
-#[cfg(not(feature = "napi"))]
-pub async fn detect_goods_pdf(images: Vec<Vec<u8>>) -> Vec<String> {
-    let mut labels = vec![];
-    for (_, image) in images.iter().enumerate() {
-        let text = detect_objects_on_image(image.clone());
-        if text.is_empty() {
-            continue;
-        }
-        for (_, label) in text.iter().enumerate() {
-            labels.push(label.4.clone());
-        }
-    }
-    return labels;
 }

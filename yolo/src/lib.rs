@@ -1,4 +1,4 @@
-use image::{imageops::FilterType, GenericImageView};
+use crate::segment::prepare_input;
 use lazy_static::lazy_static;
 use ndarray::{s, Array, Axis, IxDyn};
 use ort::{session::Session, value::Value};
@@ -21,23 +21,7 @@ lazy_static! {
 pub fn detect_objects_on_image(buf: Vec<u8>) -> Vec<Vec<String>> {
     let (input, img_width, img_height) = prepare_input(buf);
     let output = run_model(input);
-    return process_output(output, img_width, img_height);
-}
-
-fn prepare_input(buf: Vec<u8>) -> (Array<f32, IxDyn>, u32, u32) {
-    let img = image::load_from_memory(&buf).unwrap();
-    let (img_width, img_height) = (img.width(), img.height());
-    let img = img.resize_exact(640, 640, FilterType::CatmullRom);
-    let mut input = Array::zeros((1, 3, 640, 640)).into_dyn();
-    for pixel in img.pixels() {
-        let x = pixel.0 as usize;
-        let y = pixel.1 as usize;
-        let [r, g, b, _] = pixel.2 .0;
-        input[[0, 0, y, x]] = (r as f32) / 255.0;
-        input[[0, 1, y, x]] = (g as f32) / 255.0;
-        input[[0, 2, y, x]] = (b as f32) / 255.0;
-    }
-    return (input, img_width, img_height);
+    process_output(output, img_width, img_height)
 }
 
 fn run_model(input: Array<f32, IxDyn>) -> Array<f32, IxDyn> {
@@ -51,7 +35,7 @@ fn run_model(input: Array<f32, IxDyn>) -> Array<f32, IxDyn> {
         .unwrap()
         .t()
         .to_owned();
-    return output;
+    output
 }
 
 fn process_output(output: Array<f32, IxDyn>, img_width: u32, img_height: u32) -> Vec<Vec<String>> {
@@ -104,7 +88,7 @@ fn process_output(output: Array<f32, IxDyn>, img_width: u32, img_height: u32) ->
             ]
         })
         .collect();
-    return array_data;
+    array_data
 }
 
 fn iou(
@@ -135,7 +119,7 @@ fn intersection(
     let y1 = box1_y1.max(box2_y1);
     let x2 = box1_x2.min(box2_x2);
     let y2 = box1_y2.min(box2_y2);
-    return (x2 - x1) * (y2 - y1);
+    (x2 - x1) * (y2 - y1)
 }
 
 const YOLO_CLASSES: [&str; 8] = ["9A", "3480", "CAO", "3481", "UN spec", "Blur", "9", "3091"];

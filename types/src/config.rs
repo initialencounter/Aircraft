@@ -1,8 +1,14 @@
+#[cfg(feature = "napi-support")]
 use napi_derive::napi;
+#[cfg(feature = "wasm-support")]
+use tsify::Tsify;
+
 use serde::{Deserialize, Serialize};
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct BaseConfig {
     // 暗号
@@ -21,8 +27,10 @@ impl BaseConfig {
     }
 }
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct ServerConfig {
     pub base_url: String,
@@ -46,16 +54,20 @@ impl ServerConfig {
     }
 }
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct CustomHotkey {
     pub hotkey: String,
     pub cmd: String,
 }
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct HotkeyConfig {
     pub upload_enable: bool,
@@ -71,7 +83,7 @@ impl HotkeyConfig {
             upload_key: "ctrl+shift+u".to_string(),
             copy_enable: false,
             copy_key: "ctrl+shift+z".to_string(),
-            custom_hotkey: vec![CustomHotkey{
+            custom_hotkey: vec![CustomHotkey {
                 hotkey: "ctrl+NUMPADADD".to_string(),
                 cmd: "calc".to_string(),
             }],
@@ -79,8 +91,10 @@ impl HotkeyConfig {
     }
 }
 
-#[napi(js_name = "LLMConfig", object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct LLMConfig {
     pub base_url: String,
@@ -98,8 +112,10 @@ impl LLMConfig {
     }
 }
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
     pub base: BaseConfig,
@@ -121,8 +137,10 @@ impl Config {
     }
 }
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 #[serde(rename_all = "camelCase")]
 pub struct OtherConfig {
     pub query_server_host: String,

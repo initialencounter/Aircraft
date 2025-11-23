@@ -1,14 +1,10 @@
 use image::{imageops::FilterType, GenericImage, GenericImageView, Rgba};
 use lazy_static::lazy_static;
-#[cfg(feature = "napi-support")]
-use napi_derive::napi;
 use ndarray::{s, Array, Array2, Axis, IxDyn};
 use ort::{session::Session, value::Value};
-use serde::{Deserialize, Serialize};
 use std::{sync::Mutex, vec};
 
-#[cfg(feature = "wasm-support")]
-use tsify::Tsify;
+use aircraft_types::yolo::SegmentResult;
 
 lazy_static! {
     static ref MODEL: Mutex<Session> = {
@@ -22,28 +18,13 @@ lazy_static! {
     };
 }
 
-#[cfg_attr(feature = "wasm-support", derive(Tsify))]
-#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
-#[cfg_attr(feature = "napi-support", napi(object))]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SegmentResult {
-    pub x1: f64,
-    pub y1: f64,
-    pub x2: f64,
-    pub y2: f64,
-    pub label: String,
-    pub confidence: f64,
-    pub mask: Vec<Vec<u8>>,
-}
-
 pub fn detect_objects_on_image(buf: Vec<u8>) -> Vec<SegmentResult> {
     let (input, img_width, img_height) = prepare_input(buf);
     let outputs = run_model(input);
     return process_output(outputs, img_width, img_height);
 }
 
-fn prepare_input(buf: Vec<u8>) -> (Array<f32, IxDyn>, u32, u32) {
+pub fn prepare_input(buf: Vec<u8>) -> (Array<f32, IxDyn>, u32, u32) {
     let img = image::load_from_memory(&buf).unwrap();
     let (img_width, img_height) = (img.width(), img.height());
     let img = img.resize_exact(640, 640, FilterType::CatmullRom);

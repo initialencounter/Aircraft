@@ -1,39 +1,18 @@
 use crate::utils::popup_message;
+use aircraft_types::{
+    others::{SearchParams, SearchResponse, SearchResult},
+    project::{DataModel, SearchPropertyParams},
+};
 use copypasta::{ClipboardContext, ClipboardProvider};
 use lazy_static::lazy_static;
-use napi_derive::napi;
 use regex::Regex;
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
 use std::fs;
-
 lazy_static! {
     static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S|A|R]EK.{2}\d{12}").unwrap();
 }
 
 use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
-
-#[derive(Serialize, Debug)]
-struct SearchParams {
-    search: String,
-    json: i32,
-    path_column: i32,
-}
-
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SearchResult {
-    pub path: String,
-    pub name: String,
-}
-
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SearchResponse {
-    pub results: Vec<SearchResult>,
-}
 
 pub async fn search(file_path: String) -> Vec<SearchResult> {
     let client = Client::new();
@@ -50,7 +29,6 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
     let response = match response {
         Ok(res) => res,
         Err(e) => {
-            println!("Request failed: {}", e);
             eprintln!("Request failed: {}", e);
             return vec![];
         }
@@ -60,56 +38,19 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
             Ok(text) => match serde_json::from_str::<SearchResponse>(&text) {
                 Ok(result) => result.results,
                 Err(e) => {
-                    println!("Failed to parse JSON: {}", e);
                     eprintln!("Failed to parse JSON: {}", e);
                     vec![]
                 }
             },
             Err(e) => {
-                println!("Failed to get response text: {}", e);
                 eprintln!("Failed to get response text: {}", e);
                 vec![]
             }
         }
     } else {
-        println!("Request failed: {}", response.status());
         eprintln!("Request failed: {}", response.status());
         vec![]
     }
-}
-
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct DataModel {
-    pub id: i32,
-    pub appraiser_name: String,
-    pub assignee_name: String,
-    pub auditor_name: Option<String>,
-    pub conclusions: Option<i32>,
-    pub display_status: String,
-    pub next_year: Option<i8>,
-    pub principal_name: Option<String>,
-    pub project_id: String,
-    pub project_no: Option<String>,
-    pub repeat: i8,
-    pub report_type: i32,
-    pub submit_date: String,
-    pub surveyor_names: Option<String>,
-    pub system_id: String,
-    pub self_id: String,
-    pub item_c_name: Option<String>,
-    pub item_e_name: Option<String>,
-    pub mnotes: Option<String>,
-    pub report_no: Option<String>,
-    pub tnotes: Option<String>,
-}
-
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SearchPropertyParams {
-    pub search_text: String,
 }
 
 pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
@@ -119,7 +60,6 @@ pub async fn search_property(url: String, search_text: String) -> Vec<DataModel>
     let response = match response {
         Ok(res) => res,
         Err(e) => {
-            println!("Request failed: {}", e);
             eprintln!("Request failed: {}", e);
             return vec![];
         }
@@ -129,19 +69,16 @@ pub async fn search_property(url: String, search_text: String) -> Vec<DataModel>
             Ok(text) => match serde_json::from_str::<Vec<DataModel>>(&text) {
                 Ok(result) => result,
                 Err(e) => {
-                    println!("Failed to parse JSON: {}", e);
                     eprintln!("Failed to parse JSON: {}", e);
                     vec![]
                 }
             },
             Err(e) => {
-                println!("Failed to get response text: {}", e);
                 eprintln!("Failed to get response text: {}", e);
                 vec![]
             }
         }
     } else {
-        println!("Request failed: {}", response.status());
         eprintln!("Request failed: {}", response.status());
         vec![]
     }

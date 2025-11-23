@@ -16,7 +16,7 @@ declare module 'cordis' {
 class RustBindings extends Service {
   static inject = ['app']
   native: typeof AircraftRs
-  bindingsPath: string
+  bindingsPath!: string
   constructor(ctx: Context) {
     super(ctx, 'bindings')
     //@ts-ignore

@@ -30,7 +30,7 @@ export function checkSummaryFromLLM(
       summaryInfo.classification
     )
   )
-  // 基本信息验证，"type", "testReportNo", "testDate"
+  // 基本信息验证，"model", "testReportNo", "testDate"
   results.push(...baseCheck(summaryFromLLM, summaryInfo))
   // 电池参数验证，"voltage", "capacity", "watt", "mass", "licontent"
   results.push(...checkContainUnit(summaryFromLLM, summaryInfo))

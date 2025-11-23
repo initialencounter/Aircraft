@@ -3,17 +3,9 @@ use clipkeeper::{
     WindowsClipboardSnapshot,
 };
 use flextrek::{listen, HotkeyHandle};
-use napi_derive::napi;
-use serde::{Deserialize, Serialize};
 use std::{fs, sync::Mutex};
 
-#[napi(object)]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct ClipboardHotkey {
-    pub hotkeys: Vec<String>,
-    pub clipboard_content_name: String,
-}
+use aircraft_types::others::ClipboardHotkey;
 
 pub struct ClipboardSnapshotManager {
     pub handles: Mutex<Option<Vec<HotkeyHandle>>>,

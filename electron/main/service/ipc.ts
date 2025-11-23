@@ -85,9 +85,10 @@ class Ipc extends Service {
     ipcMain.handle(
       'get_report_summary_by_buffer',
       async (_, { base64String }) => {
-        return await this.ctx.llm.uploadLLMFiles(
+        let res = await this.ctx.llm.uploadLLMFiles(
           Buffer.from(base64String, 'base64')
         )
+        return res
       }
     )
     ipcMain.handle(

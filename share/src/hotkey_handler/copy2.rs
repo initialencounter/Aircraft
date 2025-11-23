@@ -39,7 +39,6 @@ pub fn copy2_callback() -> Result<()> {
         for path in paths {
             let new_path_str = replace_in_multiline(&path, project_no.clone());
             let new_path = std::path::Path::new(&new_path_str);
-            println!("复制到: {:?}", new_path);
             let from = std::path::Path::new(&path);
             match std::fs::copy(from, new_path) {
                 Ok(_) => {

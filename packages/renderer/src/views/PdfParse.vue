@@ -54,7 +54,6 @@ const handleParseReport = async (files: ParseReportFiles) => {
       'get_summary_info_by_buffer',
       { base64String: docxBase64 }
     )
-
     llmResult.value = pdfRes as SummaryFromLLM
     summaryStore.setPdf(llmResult.value)
     parseResult.value = convertSummaryInfo2SummaryFromLLM(docxRes)
