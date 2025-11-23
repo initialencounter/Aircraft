@@ -8,12 +8,18 @@ use pdf::object::Resolve;
 use pdf::object::*;
 use pdf::primitive::Name;
 use pdf_extract::extract_text_from_mem;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+#[cfg(feature = "wasm-support")]
+use tsify::Tsify;
 
 pub fn replace_whitespace_with_space(text: &str) -> String {
     text.replace(char::is_whitespace, " ")
 }
 
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct PdfReadResult {
     pub text: String,
     pub images: Option<Vec<Vec<u8>>>,
@@ -23,7 +29,7 @@ pub struct PdfReadResult {
 pub fn read_pdf_u8(data: &[u8], required_image: bool) -> Result<PdfReadResult, PdfError> {
     match extract_text_from_mem(data) {
         Ok(text) => {
-            let mut images = None;
+            let mut images: Option<Vec<Vec<u8>>> = None;
             if required_image {
                 images = match read_pdf_img(data) {
                     Ok(imgs) => Some(imgs),

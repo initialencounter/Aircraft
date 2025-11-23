@@ -2,11 +2,11 @@ use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
 use crate::hotkey_handler::copy::{search, SearchResult};
+use crate::utils::get_file_names;
 use pdf_parser::parse::parse_good_file;
 use pdf_parser::read::read_pdf;
 use pdf_parser::types::GoodsInfo;
 use summary::{parse_docx_table, parse_docx_text, read_docx_content, SummaryInfo};
-use crate::utils::get_file_names;
 #[cfg(not(feature = "napi"))]
 use yolo::segment::detect_objects_on_image;
 
@@ -61,17 +61,20 @@ pub async fn get_goods_info(
 ) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let result = read_pdf(&path, required_image)?;
-    let mut goods_info = parse_good_file(result.text, is_965)?;
     #[cfg(not(feature = "napi"))]
-    if required_image {
-        if let Some(images) = result.images {
-            let labels = detect_goods_pdf(images).await;
-            goods_info.labels = labels;
+    {
+        let mut goods_info = parse_good_file(result.text, is_965)?;
+        if required_image {
+            if let Some(images) = result.images {
+                let labels = detect_goods_pdf(images).await;
+                goods_info.labels = labels;
+            }
         }
     }
+    #[cfg(feature = "napi")]
+    let goods_info = parse_good_file(result.text, is_965)?;
     Ok(goods_info)
 }
-
 
 #[napi(object)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -81,7 +84,7 @@ pub struct OtherInfo {
     pub project_dir: String,
 }
 
-pub async fn find_stack_evaluation(project_dir: String)-> bool {
+pub async fn find_stack_evaluation(project_dir: String) -> bool {
     let file_name_list = get_file_names(&std::path::PathBuf::from(&project_dir)).unwrap_or(vec![]);
     for file_name in file_name_list {
         if file_name.contains("评估单") {
@@ -100,9 +103,9 @@ pub async fn get_other_info(project_no: String) -> Result<OtherInfo> {
         first_result.path.clone()
     } else {
         return Ok(OtherInfo {
-        stack_evaluation: false,
-        project_dir: "null".to_string(),
-    });
+            stack_evaluation: false,
+            project_dir: "null".to_string(),
+        });
     };
     Ok(OtherInfo {
         stack_evaluation: find_stack_evaluation(project_dir.clone()).await,
