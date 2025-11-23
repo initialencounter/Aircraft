@@ -38,8 +38,6 @@ export default defineConfig({
           'segment.onnx',
           'model.js',
           'ort-wasm-simd-threaded.wasm',
-          'ort-wasm-simd-threaded.jsep.wasm',
-          'ort-wasm-simd-threaded.asyncify.wasm',
 
           // WASM 相关文件
           'aircraft.js',

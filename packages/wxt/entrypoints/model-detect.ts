@@ -1,4 +1,4 @@
-import * as ort from "onnxruntime-web";
+import * as ort from "onnxruntime-web/wasm";
 
 const yoloClasses = ['9', '9A', 'BTY', 'CAO']
 
