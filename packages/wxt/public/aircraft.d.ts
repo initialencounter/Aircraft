@@ -96,6 +96,7 @@ export interface GoodsInfo {
     projectNo: string;
     itemCName: string;
     labels: string[];
+    packageImage: number[] | null;
     segmentResults: SegmentResult[];
 }
 

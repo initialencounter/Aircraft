@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web/wasm";
-
+import { SegmentResult } from "aircraft-rs";
 const yoloClasses = ['9', '9A', 'bty', 'CAO']
 
 export default defineUnlistedScript(() => {
@@ -40,15 +40,7 @@ export default defineUnlistedScript(() => {
               ? new Uint8Array(request.input)
               : request.input;
             let result = await predict(yoloClasses, session, input);
-            console.log("YOLO Prediction result", result);
-            // 格式化返回数据，将结果数组转换为对象数组
-            const formattedResult = result.map((item: any) => ({
-              bbox: [item[0], item[1], item[2], item[3]],
-              label: item[4],
-              confidence: item[5],
-              mask: item[6]
-            }));
-            sendResponse({ result: formattedResult });
+            sendResponse({ result });
           } catch (e) {
             console.error("YOLO inference error:", e);
             sendResponse({ 'error': String(e) });
@@ -132,8 +124,6 @@ export default defineUnlistedScript(() => {
     return process_output(res['output0']['data'], res['output1']['data'], rowImageWidth, rowImageHeight, yoloClasses)
   }
 
-  type BoundingBox = [number, number, number, number, string, number, number[][]?];
-
   /**
    * Function used to convert RAW output from YOLOv8-Segment to an array of detected objects with masks.
    * Each object contains the bounding box, object type, probability, and segmentation mask
@@ -144,7 +134,7 @@ export default defineUnlistedScript(() => {
    * @param yolo_classes Array of class names
    * @returns Array of detected objects with masks [[x1,y1,x2,y2,object_type,probability,mask],...]
    */
-  function process_output(output0: number[], output1: number[], img_width: number, img_height: number, yolo_classes: string[]) {
+  function process_output(output0: number[], output1: number[], img_width: number, img_height: number, yolo_classes: string[]): SegmentResult[] {
     const num_classes = yolo_classes.length;
     const mask_dim = 32; // mask coefficients dimension
 
@@ -199,7 +189,15 @@ export default defineUnlistedScript(() => {
       const currentBox = boxes[0];
       // 计算分割掩码: mask_coeffs @ mask_prototypes = [32] @ [32, 25600] = [25600] -> [160, 160]
       const mask = calculate_mask(currentBox[6], mask_prototypes, currentBox, img_width, img_height);
-      result.push([currentBox[0], currentBox[1], currentBox[2], currentBox[3], currentBox[4], currentBox[5], mask]);
+      result.push({
+        x1: currentBox[0],
+        y1: currentBox[1],
+        x2: currentBox[2],
+        y2: currentBox[3],
+        label: currentBox[4],
+        confidence: currentBox[5],
+        mask: mask
+      });
       boxes = boxes.filter((box) => iou(boxes[0], box) < 0.7);
     }
 

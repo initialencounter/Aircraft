@@ -1,9 +1,9 @@
-import type { EntrustData, PekData, SekData } from '@aircraft/validators'
+import type { AttachmentInfo, EntrustData, PekData, SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
-import { getData, getProjectTrace } from '../utils/api'
+import { getData, getProjectAttachmentInfo, getProjectTrace } from '../utils/api'
 import { getHost } from '../utils/helpers'
 import { getProjectYear, type LocalConfig } from '../../../share/utils'
-import { checkAttachment, checkAttachmentFiles } from './attachment'
+import { checkAttachment, checkAttachmentFiles, drawSegmentMask, showSegmentMask } from './attachment'
 import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { checkModelWithFactory, checkModel } from './dangetousModel'
@@ -61,7 +61,17 @@ export async function verifyFormData(
     result.push({ ok: false, result: '获取系统委托方和制造商失败' })
   }
 
-  if (entrustData) {
+  let is_965 = false
+  if (systemId === 'pek') {
+    is_965 = (dataFromForm as PekData).inspectionItem1 === 0
+  } else {
+    is_965 = (dataFromForm as SekData).otherDescribe === '540'
+  }
+
+  const attachmentInfo: AttachmentInfo | null =
+    await getProjectAttachmentInfo(projectNo, is_965, localConfig)
+
+  if (entrustData && attachmentInfo) {
     result.push(
       ...checkModelWithFactory(
         entrustData,
@@ -75,9 +85,18 @@ export async function verifyFormData(
         dataFromForm,
         localConfig,
         entrustData,
+        attachmentInfo,
         category === 'sodium',
       ))
     )
+  }
+  console.log('attachmentInfo:', attachmentInfo)
+  if (attachmentInfo?.goods.segmentResults && localConfig.enableLabelCheck) {
+    console.log('显示分割遮罩')
+    const img = await drawSegmentMask(attachmentInfo)
+    if (img) {
+      showSegmentMask(img)
+    }
   }
 
   result.push(...checkModel(localConfig.dangerousModels, model))

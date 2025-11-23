@@ -300,6 +300,7 @@ async function entrypoint() {
       projectNo: res.project_no,
       itemCName: res.item_c_name,
       labels: labels,
+      packageImage: res.image ?? undefined,
       segmentResults: segmentResults,
     }
   }
@@ -337,6 +338,7 @@ async function entrypoint() {
         segmentResults.push(item)
       }
     }
+    console.log('Detected labels:', labels)
 
     return { labels, segmentResults }
   }

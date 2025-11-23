@@ -33,7 +33,7 @@ pub fn get_goods_info(
         Err(e) => return Err(JsValue::from_str(&format!("Failed to read PDF: {}", e))),
     };
 
-    let goods_info = match pdf_parser::parse::parse_good_file(pdf.text, is_965) {
+    let goods_info = match pdf_parser::parse::parse_good_file(pdf.text, is_965, None) {
         Ok(info) => info,
         Err(e) => {
             return Err(JsValue::from_str(&format!(

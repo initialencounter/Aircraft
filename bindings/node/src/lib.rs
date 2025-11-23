@@ -132,12 +132,13 @@ impl AircraftRs {
       Ok(result) => result.text,
       Err(_) => "".to_string(),
     };
-    let goods_info = match parse_good_file(pdf_text, is_965) {
+    let goods_info = match parse_good_file(pdf_text, is_965, None) {
       Ok(goods_info) => goods_info,
       Err(_) => GoodsInfo {
         project_no: "".to_string(),
         item_c_name: "".to_string(),
         labels: vec![],
+        package_image: None,
         segment_results: vec![],
       },
     };

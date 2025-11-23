@@ -18,6 +18,7 @@ pub struct GoodsInfo {
     pub project_no: String,
     pub item_c_name: String,
     pub labels: Vec<String>,
+    pub package_image: Option<Vec<u8>>,
     pub segment_results: Vec<SegmentResult>,
 }
 

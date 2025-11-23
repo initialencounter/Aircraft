@@ -66,10 +66,10 @@ pub async fn get_goods_info(
     let result = read_pdf(&path, required_image)?;
     #[cfg(not(feature = "napi-support"))]
     {
-        let mut goods_info = parse_good_file(result.text, is_965)?;
+        let mut goods_info = parse_good_file(result.text, is_965, None)?;
         if required_image {
             if let Some(images) = result.images {
-                let segment_result = detect_objects_on_image(images);
+                let segment_result = detect_objects_on_image(images.clone());
                 let mut labels = vec![];
                 for result in &segment_result {
                     if result.confidence > 0.5 {
@@ -77,14 +77,15 @@ pub async fn get_goods_info(
                     }
                 }
                 goods_info.labels = labels;
-                goods_info.segment_result = segment_result;
+                goods_info.segment_results = segment_result;
+                goods_info.package_image = Some(images);
             }
         }
         Ok(goods_info)
     }
     #[cfg(feature = "napi-support")]
     {
-        let goods_info = parse_good_file(result.text, is_965)?;
+        let goods_info = parse_good_file(result.text, is_965, None)?;
         Ok(goods_info)
     }
 }
