@@ -16,25 +16,38 @@ import {
 } from './matchDevice'
 import { PekSodiumData, PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType } from '../../../sodium/shared/types'
 
+/**
+ * 修复浮点数精度问题
+ * @param value 原始值
+ * @param precision 保留的小数位数，默认为2
+ * @returns 修正后的值
+ * @example fixFloatPrecision(16.08 * 1000) // 返回 16080 而不是 16079.999999999998
+ */
+function fixFloatPrecision(value: number, precision: number = 2): number {
+  const multiplier = Math.pow(10, precision)
+  return Math.round(value * multiplier) / multiplier
+}
+
 function matchWattHour(projectName: string) {
   const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*([mMkK]?)[Ww][Hh]/g)]
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
-  let wattHour = Number(results[results.length - 1])
+  let wattHour = parseFloat(results[results.length - 1])
+  console.log('matchWattHour0:', wattHour)
   if (!results.length) return 0
   if (isNaN(wattHour)) return 0
   
   // 根据前缀进行单位换算（统一转换为瓦时Wh）
   const prefix = prefixes[prefixes.length - 1]
   if (prefix === 'M') {                      // 兆瓦时 → 瓦时: × 1,000,000
-    wattHour *= 1000000
+    wattHour = fixFloatPrecision(wattHour * 1000000)
   } else if (prefix === 'k' || prefix === 'K') { // 千瓦时 → 瓦时: × 1000
-    wattHour *= 1000
+    wattHour = fixFloatPrecision(wattHour * 1000)
   } else if (prefix === 'm') {               // 毫瓦时 → 瓦时: ÷ 1000
-    wattHour /= 1000
+    wattHour = fixFloatPrecision(wattHour / 1000)
   }
   // 无前缀就是瓦时，保持不变
-  
+  console.log('matchWattHour1:', wattHour)
   return wattHour
 }
 
@@ -42,18 +55,18 @@ function matchVoltage(projectName: string) {
   const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*([mMkK]?)[Vv]/g)]
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
-  let voltage = Number(results[results.length - 1])
+  let voltage = parseFloat(results[results.length - 1])
   if (!results.length) return 0
   if (isNaN(voltage)) return 0
   
   // 根据前缀进行单位换算（统一转换为伏V）
   const prefix = prefixes[prefixes.length - 1]
   if (prefix === 'M') {                      // 兆伏 → 伏: × 1,000,000
-    voltage *= 1000000
+    voltage = fixFloatPrecision(voltage * 1000000)
   } else if (prefix === 'k' || prefix === 'K') { // 千伏 → 伏: × 1000
-    voltage *= 1000
+    voltage = fixFloatPrecision(voltage * 1000)
   } else if (prefix === 'm') {               // 毫伏 → 伏: ÷ 1000
-    voltage /= 1000
+    voltage = fixFloatPrecision(voltage / 1000)
   }
   // 无前缀就是伏，保持不变
   
@@ -64,20 +77,20 @@ function matchCapacity(projectName: string) {
   const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*([mMkK]?)[Aa][Hh]/g)]
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
-  let result = Number(results[results.length - 1])
+  let result = parseFloat(results[results.length - 1])
   if (!results.length) return 0
   if (isNaN(result)) return 0
   
   // 根据前缀进行单位换算（统一转换为毫安时mAh）
   const prefix = prefixes[prefixes.length - 1]
   if (prefix === 'M') {                      // 兆安时 → 毫安时: × 1,000,000,000
-    result *= 1000000000
+    result = fixFloatPrecision(result * 1000000000)
   } else if (prefix === 'k' || prefix === 'K') { // 千安时 → 毫安时: × 1,000,000
-    result *= 1000000
+    result = fixFloatPrecision(result * 1000000)
   } else if (prefix === 'm') {               // 毫安时，保持不变
     // 已经是目标单位
   } else {                                   // 安时 → 毫安时: × 1000
-    result *= 1000
+    result = fixFloatPrecision(result * 1000)
   }
   
   return result
@@ -96,7 +109,7 @@ function matchBatteryWeight(describe: string) {
 
   const unit = match[2]?.toLowerCase();
   if (!unit || unit === 'kg' || unit === '千克') {
-    return numericValue * 1000;
+    return fixFloatPrecision(numericValue * 1000);
   } else if (unit === 'g' || unit === '克') {
     return numericValue;
   }
@@ -121,7 +134,7 @@ export function matchTotalNetweight(sourceText: string): number {
   if (!unit || unit === 'kg' || unit === '千克') {
     return numericValue;
   } else if (unit === 'g' || unit === '克') {
-    return numericValue / 1000;
+    return fixFloatPrecision(numericValue / 1000);
   }
 
   return numericValue; // 默认情况
@@ -340,7 +353,7 @@ function matchNumber(num: string) {
   num = num.replace(/ /g, '')
   const matches = [...num.matchAll(/[0-9]+(\.\d*)?/g)]
   const results = matches.map((match) => match[0])
-  const result = Number(results[0])
+  const result = parseFloat(results[0])
   if (isNaN(result)) return 0
   return result
 }
@@ -424,6 +437,7 @@ export function convertSummaryInfo2SummaryFromLLM(
 }
 
 export {
+  fixFloatPrecision,
   matchWattHour,
   getBtyTypeCode,
   getIsSingleCell,
