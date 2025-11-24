@@ -33,7 +33,6 @@ function matchWattHour(projectName: string) {
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
   let wattHour = parseFloat(results[results.length - 1])
-  console.log('matchWattHour0:', wattHour)
   if (!results.length) return 0
   if (isNaN(wattHour)) return 0
   
@@ -47,7 +46,6 @@ function matchWattHour(projectName: string) {
     wattHour = fixFloatPrecision(wattHour / 1000)
   }
   // 无前缀就是瓦时，保持不变
-  console.log('matchWattHour1:', wattHour)
   return wattHour
 }
 

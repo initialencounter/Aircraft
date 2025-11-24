@@ -1,7 +1,6 @@
-import { checkPekBtyType, checkPekSodiumBtyType, checkSekBtyType, checkSekSodiumBtyType, type AttachmentInfo, type EntrustData, type PekData, type SekData } from '@aircraft/validators'
+import { checkPekBtyType, checkPekSodiumBtyType, CheckResult, checkSekBtyType, checkSekSodiumBtyType, type AttachmentInfo, type EntrustData, type PekData, type SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
-import { getData, getProjectAttachmentInfo, getProjectTrace } from '../utils/api'
-import { getHost } from '../utils/helpers'
+import { getProjectAttachmentInfo, getProjectTrace } from '../utils/api'
 import { getProjectYear, type LocalConfig } from '../../../share/utils'
 import { checkAttachment, checkAttachmentFiles, drawSegmentMask, showSegmentMask } from './attachment'
 import { checkLabelManual } from './label'
@@ -18,8 +17,8 @@ export async function verifyFormData(
   projectId: string,
   projectNo: string,
   localConfig: typeof LocalConfig
-): Promise<Array<{ ok: boolean; result: string }>> {
-  let result = []
+): Promise<CheckResult[]> {
+  let result: CheckResult[] = []
   let dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData
   let model: string
   if (category === 'battery') {
