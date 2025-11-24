@@ -110,7 +110,7 @@ export function checkSummary(
         if (dataFromForm.otherDescribe.includes(
           '2c9180849267773c0192dc73c77e5fb2'
         )) {
-          if (!attachmentInfo?.other) {
+          if (!attachmentInfo?.other?.projectDir) {
             results.push({ ok: false, result: '找不到项目文件夹' })
           }
           if (attachmentInfo?.other?.stackEvaluation === false) {

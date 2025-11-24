@@ -311,7 +311,16 @@ async function entrypoint() {
   }
 
   async function getOtherInfo(projectNo: string): Promise<OtherInfo | null> {
-    const fileItems = await getProjectDirItems(projectNo)
+    const searchResponses: SearchResponse | null = await searchAttachment(projectNo + '.doc')
+    if (!searchResponses?.results?.[0]) {
+      console.error('搜索结果为空')
+      return {
+        stackEvaluation: false,
+        projectDir: '',
+      }
+    }
+    const projectDir = searchResponses.results[0].path
+    const fileItems = await getProjectDirItems(projectDir)
     for (const file of fileItems?.results || []) {
       if (file.type === 'dir') continue
       if (file.name.includes('评估单') || file.name.includes('堆码评估')) {
@@ -321,7 +330,10 @@ async function entrypoint() {
         }
       }
     }
-    return null;
+    return {
+      stackEvaluation: false,
+      projectDir: projectDir,
+    }
   }
 
   async function getYOLOSegmentResults(image: Array<number> | null, label: boolean) {
@@ -382,14 +394,8 @@ async function entrypoint() {
     return res
   }
 
-  async function getProjectDirItems(projectNo: string): Promise<SearchPathResponse | null> {
+  async function getProjectDirItems(projectDir: string): Promise<SearchPathResponse | null> {
     try {
-      const searchResponses: SearchResponse | null = await searchAttachment(projectNo + '.doc')
-      if (searchResponses === null || searchResponses.results.length === 0) {
-        console.error('搜索结果为空')
-        return null
-      }
-      const projectDir = searchResponses.results[0].path
       const pathResponses: SearchPathResponse | null = await searchEverythinPacth(projectDir)
       if (pathResponses === null || pathResponses.totalResults === 0) {
         console.error('路径搜索结果为空')
