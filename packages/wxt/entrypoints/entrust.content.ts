@@ -267,6 +267,7 @@ async function entrypoint() {
       select.appendChild(option)
     })
     if (await checkAssignUID(users, uid)) select.value = uid
+    if (!targetParent.children[1]) return
     const button1 = targetParent.children[1].children[0]; // 初验按钮
     for (let i = 0; i < targetParent.children[1].children.length; i++) {
       const buttonText = (targetParent.children[1].children[i] as HTMLAnchorElement).innerText
@@ -275,6 +276,7 @@ async function entrypoint() {
         (targetParent.children[1].children[i] as HTMLAnchorElement).style.height = '0';
       }
     }
+    if (!button1) return
     targetParent.children[1].insertBefore(assignButton, button1)
     targetParent.children[1].insertBefore(select, button1)
     console.log('一键分配按钮插入成功')
@@ -338,6 +340,7 @@ async function entrypoint() {
         const inspectElement = document.createElement('a')
         inspectElement.role = 'button'
         inspectElement.innerHTML = '检验单'
+        if (!projectNo) continue
         inspectElement.onclick = () => openWindow(projectNo)
         inspectElement.style.cursor = 'pointer'
         operateElement.appendChild(document.createTextNode(' '))
@@ -358,7 +361,7 @@ async function entrypoint() {
         inspectElement0.style.textDecoration = 'none'
         inspectElement0.style.color = 'inherit'
       }
-      itemCNameElement.onclick = () => openWindow(globalItemNumberList1[i])
+      itemCNameElement.onclick = () => openWindow(globalItemNumberList1[i] ?? '')
       itemCNameElement.style.cursor = 'pointer'
       itemCNameElement.appendChild(inspectElement0)
     }
@@ -453,7 +456,7 @@ async function entrypoint() {
         return undefined
       }
       const { rows }: QueryResultData = await response.json()
-      if (rows.length < 1) return undefined
+      if (rows.length < 1 || !rows[0]) return undefined
       return {
         systemId: rows[0]['systemId'],
         projectId: rows[0]['projectId'],
@@ -511,6 +514,7 @@ async function entrypoint() {
   }
 
   async function openWindow(projectNo: string) {
+    if (!projectNo) return
     const linkParams = await getCategory(projectNo)
     if (!linkParams) return
     const params = new URLSearchParams({
