@@ -60,7 +60,7 @@ export async function checkAttachment(
   try {
     const projectNo = getCurrentProjectNo()
     if (!projectNo) return []
-    if (!attachmentInfo?.goods || attachmentInfo?.summary)
+    if (!attachmentInfo?.goods || !attachmentInfo?.summary)
       return [{ ok: false, result: '无法获取本地的图片概要' }]
 
     if (!localConfig.enableLabelCheck) {
