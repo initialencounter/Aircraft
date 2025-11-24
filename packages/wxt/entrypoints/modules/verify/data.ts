@@ -1,4 +1,4 @@
-import type { AttachmentInfo, EntrustData, PekData, SekData } from '@aircraft/validators'
+import { checkPekBtyType, checkPekSodiumBtyType, checkSekBtyType, checkSekSodiumBtyType, type AttachmentInfo, type EntrustData, type PekData, type SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
 import { getData, getProjectAttachmentInfo, getProjectTrace } from '../utils/api'
 import { getHost } from '../utils/helpers'
@@ -33,21 +33,21 @@ export async function verifyFormData(
       dataFromForm = getFormData<PekData>(systemId)
       model = dataFromForm.model
       console.log('Project Year:', projectYear);
-      result = window.checkPekBtyType(dataFromForm, projectYear)
+      result = checkPekBtyType(dataFromForm, projectYear)
     } else {
       dataFromForm = getFormData<SekData>(systemId)
       model = dataFromForm.btyKind
-      result = window.checkSekBtyType(dataFromForm, projectYear)
+      result = checkSekBtyType(dataFromForm, projectYear)
     }
   } else {
     if (systemId === 'pek') {
       dataFromForm = getFormData<PekSodiumData>(systemId)
       model = dataFromForm.model
-      result = window.checkPekSodiumBtyType(dataFromForm)
+      result = checkPekSodiumBtyType(dataFromForm)
     } else {
       dataFromForm = getFormData<SekSodiumData>(systemId)
       model = dataFromForm.btyKind
-      result = window.checkSekSodiumBtyType(dataFromForm)
+      result = checkSekSodiumBtyType(dataFromForm)
     }
   }
 

@@ -1,22 +1,3 @@
-import type {
-  AttachmentInfo,
-  EntrustData,
-  PekData,
-  SekData,
-  SummaryFromLLM,
-  SummaryInfo,
-} from '@aircraft/validators'
-import {
-  checkPekAttachment,
-  checkPekBtyType,
-  checkSekAttachment,
-  checkSekBtyType,
-  checkSummaryFromLLM,
-  checkPekSodiumBtyType,
-  checkSekSodiumBtyType,
-  checkPekSodiumAttachment,
-  checkSekSodiumAttachment,
-} from '@aircraft/validators'
 import '../assets/message.min.css'
 
 // 工具函数和辅助方法
@@ -34,77 +15,11 @@ import {
   createVerifyButtons,
   updateVerifyButtonStatus,
 } from './modules/ui/buttons'
-import { createMask, hideMask, showMask } from './modules/ui/mask'
+import { createMask } from './modules/ui/mask'
 import { createLabelSelectionUI } from './modules/ui/labels'
 
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
-import { PekSodiumData, SekSodiumData } from '../../validators/src/sodium/shared/types'
-
-// 声明全局函数
-declare global {
-  function checkPekBtyType(
-    data: PekData,
-    ProjectYear?: string,
-  ): Array<{ ok: boolean; result: string }>
-
-  function checkSekBtyType(
-    data: SekData,
-    ProjectYear?: string,
-  ): Array<{ ok: boolean; result: string }>
-
-  function checkPekAttachment(
-    data: PekData,
-    attachmentInfo: AttachmentInfo,
-    entrustData: EntrustData
-  ): Array<{
-    ok: boolean
-    result: string
-  }>
-
-  function checkSekAttachment(
-    data: SekData,
-    attachmentInfo: AttachmentInfo,
-    entrustData: EntrustData
-  ): Array<{
-    ok: boolean
-    result: string
-  }>
-
-  function checkSummaryFromLLM(
-    summaryFromLLM: SummaryFromLLM,
-    summaryInfo: SummaryInfo
-  ): Array<{
-    ok: boolean
-    result: string
-  }>
-
-  function checkPekSodiumBtyType(
-    data: PekSodiumData
-  ): Array<{ ok: boolean; result: string }>
-
-  function checkPekSodiumAttachment(
-    data: PekSodiumData,
-    attachmentInfo: AttachmentInfo,
-    entrustData: EntrustData
-  ): Array<{
-    ok: boolean
-    result: string
-  }>
-
-  function checkSekSodiumBtyType(
-    data: SekSodiumData
-  ): Array<{ ok: boolean; result: string }>
-
-  function checkSekSodiumAttachment(
-    data: SekSodiumData,
-    attachmentInfo: AttachmentInfo,
-    entrustData: EntrustData
-  ): Array<{
-    ok: boolean
-    result: string
-  }>
-}
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -116,17 +31,6 @@ export default defineContentScript({
   ],
   allFrames: true,
   async main() {
-    // 注册全局函数
-    window.checkPekBtyType = checkPekBtyType
-    window.checkSekBtyType = checkSekBtyType
-    window.checkPekAttachment = checkPekAttachment
-    window.checkSekAttachment = checkSekAttachment
-    window.checkSummaryFromLLM = checkSummaryFromLLM
-
-    window.checkPekSodiumBtyType = checkPekSodiumBtyType
-    window.checkSekSodiumBtyType = checkSekSodiumBtyType
-    window.checkPekSodiumAttachment = checkPekSodiumAttachment
-    window.checkSekSodiumAttachment = checkSekSodiumAttachment
 
     // 读取本地配置
     const localConfig = await getLocalConfig()

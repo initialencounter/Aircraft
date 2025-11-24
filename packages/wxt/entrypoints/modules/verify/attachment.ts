@@ -7,11 +7,15 @@ import type {
 import { getCurrentProjectNo } from '../utils/helpers'
 import {
   getAttachmentFiles,
-  getProjectAttachmentInfo,
 } from '../utils/api'
 import type { LocalConfig } from '../../../share/utils'
 import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types';
-
+import {
+  checkPekAttachment,
+  checkSekAttachment,
+  checkPekSodiumAttachment,
+  checkSekSodiumAttachment,
+} from '@aircraft/validators'
 /**
  * 检查附件文件
  */
@@ -87,13 +91,13 @@ export function checkSummary(
 ): Array<{ ok: boolean; result: string }> {
   if (isSodium) {
     if (systemId === 'pek') {
-      return window.checkPekSodiumAttachment(
+      return checkPekSodiumAttachment(
         dataFromForm as PekSodiumData,
         attachmentInfo,
         entrustData
       )
     } else {
-      return window.checkSekSodiumAttachment(
+      return checkSekSodiumAttachment(
         dataFromForm as SekSodiumData,
         attachmentInfo,
         entrustData
@@ -113,7 +117,7 @@ export function checkSummary(
             results.push({ ok: false, result: `项目文件夹内找不到堆码评估单` })
           }
         }
-        results.push(...window.checkPekAttachment(
+        results.push(...checkPekAttachment(
           dataFromForm as PekData,
           attachmentInfo,
           entrustData
@@ -129,14 +133,14 @@ export function checkSummary(
           results.push({ ok: true, result: `你已勾选${stackTest ? '堆码报告' : '评估单'}, 请确认` })
         }
       }
-      results.push(...window.checkPekAttachment(
+      results.push(...checkPekAttachment(
         dataFromForm as PekData,
         attachmentInfo,
         entrustData
       ))
       return results
     } else {
-      return window.checkSekAttachment(
+      return checkSekAttachment(
         dataFromForm as SekData,
         attachmentInfo,
         entrustData
