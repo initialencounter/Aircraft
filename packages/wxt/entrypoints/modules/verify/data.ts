@@ -91,7 +91,7 @@ export async function verifyFormData(
     )
   }
   console.log('attachmentInfo:', attachmentInfo)
-  if (attachmentInfo?.goods.segmentResults && localConfig.enableLabelCheck) {
+  if (attachmentInfo?.goods?.segmentResults && localConfig.enableLabelCheck) {
     console.log('显示分割遮罩')
     const img = await drawSegmentMask(attachmentInfo)
     if (img) {
