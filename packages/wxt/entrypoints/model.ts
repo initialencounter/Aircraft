@@ -159,7 +159,7 @@ export default defineUnlistedScript(() => {
         .map((col) => [col, output0[8400 * (col + 4) + index]])
         .reduce((accum, item) => (item[1] > accum[1] ? item : accum), [0, 0]);
 
-      if (prob < 0.5) {
+      if (prob < 0.25) {
         continue;
       }
 
