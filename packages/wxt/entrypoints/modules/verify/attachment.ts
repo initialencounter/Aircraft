@@ -117,11 +117,6 @@ export function checkSummary(
             results.push({ ok: false, result: `项目文件夹内找不到堆码评估单` })
           }
         }
-        results.push(...checkPekAttachment(
-          dataFromForm as PekData,
-          attachmentInfo,
-          entrustData
-        ))
       }
 
       if (localConfig.manualCheckStackEvaluation === true) {
