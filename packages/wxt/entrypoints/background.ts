@@ -206,6 +206,11 @@ async function entrypoint() {
       `${aircraftServer}/get-attachment-info/${projectNo}?label=${label}&is_965=${is_965 ? 1 : 0}`,
       {
         method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
         mode: 'cors',
       }
     )
@@ -406,6 +411,12 @@ async function entrypoint() {
       })
       const response = await fetch(`http://127.0.0.1:25456?${params.toString()}`, {
         method: 'GET',
+        cache: 'no-store',
+        mode: 'cors',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
       })
       if (!response.ok) {
         console.error(`搜索失败！${await response.text()}`)
@@ -428,12 +439,19 @@ async function entrypoint() {
       })
       const response = await fetch(`http://127.0.0.1:25456?${params.toString()}`, {
         method: 'GET',
+        cache: 'no-store',
+        mode: 'cors',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
       })
       if (!response.ok) {
         console.error(`搜索失败！${await response.text()}`)
         return null
       }
       const result = await response.json()
+      console.log('searchAttachment result:', result)
       return result
     } catch (error) {
       console.error('搜索异常', error)
@@ -445,8 +463,12 @@ async function entrypoint() {
     try {
       const response = await fetch(`http://127.0.0.1:25456/${path}`, {
         method: 'GET',
+        cache: 'no-store',
+        mode: 'cors',
         headers: {
           responseType: 'arraybuffer',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
         }
       })
       if (!response.ok) {
