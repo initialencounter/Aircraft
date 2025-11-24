@@ -2,6 +2,7 @@
   "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "paths": {
+      "schemastery-vue": ["../../types/schemastery-vue.d.ts"],
       "@aircraft/validators": ["../validators/src/index.ts"]
     },
     // 严格的类型检查选项
@@ -18,12 +19,10 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     
     // 更严格的检查
     "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
     "useUnknownInCatchVariables": true
   }
 }

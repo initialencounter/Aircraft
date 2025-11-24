@@ -32,7 +32,9 @@ function matchWattHour(projectName: string) {
   const matches = [...projectName.matchAll(/\s(\d+\.?\d*)\s*([mMkK]?)[Ww][Hh]/g)]
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
-  let wattHour = parseFloat(results[results.length - 1])
+  const lastResult = results[results.length - 1]
+  if (!lastResult) return 0
+  let wattHour = parseFloat(lastResult)
   if (!results.length) return 0
   if (isNaN(wattHour)) return 0
   
@@ -53,7 +55,9 @@ function matchVoltage(projectName: string) {
   const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*([mMkK]?)[Vv]/g)]
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
-  let voltage = parseFloat(results[results.length - 1])
+  const lastResult = results[results.length - 1]
+  if (!lastResult) return 0
+  let voltage = parseFloat(lastResult)
   if (!results.length) return 0
   if (isNaN(voltage)) return 0
   
@@ -75,7 +79,9 @@ function matchCapacity(projectName: string) {
   const matches = [...projectName.matchAll(/(\d+\.?\d*)\s*([mMkK]?)[Aa][Hh]/g)]
   const results = matches.map((match) => match[1])
   const prefixes = matches.map((match) => match[2])
-  let result = parseFloat(results[results.length - 1])
+  const lastResult = results[results.length - 1]
+  if (!lastResult) return 0
+  let result = parseFloat(lastResult)
   if (!results.length) return 0
   if (isNaN(result)) return 0
   
@@ -99,7 +105,7 @@ function matchBatteryWeight(describe: string) {
 
   const match = describe.match(weightRegex);
 
-  if (!match) {
+  if (!match || !match[1]) {
     return 0;
   }
 

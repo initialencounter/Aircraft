@@ -29,7 +29,7 @@ export default defineUnlistedScript(() => {
       chrome.runtime.sendMessage({ action: 'madeModel', input: "Model Import Error" });
     }
 
-    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
       if (request.action == "yolo-inference") {
         console.log("Received yolo-inference request");
         // 使用 Promise 处理异步操作
@@ -48,6 +48,7 @@ export default defineUnlistedScript(() => {
         })();
         return true; // 保持消息通道开放，等待异步响应
       }
+      return false;
     });
   })();
 
@@ -105,8 +106,11 @@ export default defineUnlistedScript(() => {
     for (let i = 0; i < height; i++) {
       for (let j = 0; j < width; j++) {
         const pixelIndex = (i * width + j) * 4; // 每个像素有 4 个值（RGBA）
+        // @ts-ignore
         const r = pixels[pixelIndex] / 255.0;     // R
+        // @ts-ignore
         const g = pixels[pixelIndex + 1] / 255.0; // G
+        // @ts-ignore
         const b = pixels[pixelIndex + 2] / 255.0; // B
 
         // 将数据填充到 inputData 中，布局为 [1, 3, 640, 640]
@@ -146,6 +150,7 @@ export default defineUnlistedScript(() => {
     for (let c = 0; c < 32; c++) {
       const channel: number[] = [];
       for (let i = 0; i < 160 * 160; i++) {
+        // @ts-ignore
         channel.push(output1[c * 160 * 160 + i]);
       }
       mask_prototypes.push(channel);
@@ -239,8 +244,6 @@ export default defineUnlistedScript(() => {
     const crop_x2 = Math.round((x2 / img_width) * 160);
     const crop_y2 = Math.round((y2 / img_height) * 160);
 
-    const crop_w = Math.max(1, crop_x2 - crop_x1);
-    const crop_h = Math.max(1, crop_y2 - crop_y1);
 
     // 裁剪掩码
     const cropped_mask: number[][] = [];

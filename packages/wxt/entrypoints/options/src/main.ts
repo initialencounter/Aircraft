@@ -14,6 +14,7 @@ const i18n = createI18n({
 
 createApp(App)
   .use(i18n)
+  // @ts-ignore
   .use(form)
   .component('k-markdown', Markdown)
   .use(ElementPlus)

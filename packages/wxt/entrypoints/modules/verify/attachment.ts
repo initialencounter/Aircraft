@@ -208,7 +208,7 @@ export async function drawSegmentMask(attachmentInfo: AttachmentInfo): Promise<{
 
         // 为每个检测结果绘制边框
         if (segmentResults && segmentResults.length > 0) {
-          segmentResults.forEach((result, index) => {
+          segmentResults.forEach((result, _index) => {
             const { x1, y1, x2, y2, label, confidence } = result;
 
             // 计算缩放后的坐标

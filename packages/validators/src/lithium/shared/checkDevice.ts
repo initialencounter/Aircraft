@@ -7,8 +7,8 @@ export function checkDevice(
   otherDescribeCAddition: string
 ): CheckResult[] {
   const results: CheckResult[] = []
-  const name = matchDeviceName(otherDescribeCAddition).trim()
-  const model = matchDeviceModel(otherDescribeCAddition).trim()
+  const name = matchDeviceName(otherDescribeCAddition)?.trim() ?? ''
+  const model = matchDeviceModel(otherDescribeCAddition)?.trim() ?? ''
 
   if (name.length && !cName.includes(name)) {
     results.push({

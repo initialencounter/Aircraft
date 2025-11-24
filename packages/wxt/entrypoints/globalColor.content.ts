@@ -45,7 +45,6 @@ async function entrypoint() {
   // 缓存已处理的元素，避免重复处理
   const processedElements = new WeakSet<Element>()
   const processedProjectNoValues = new Map<string, string>() // 缓存项目编号对应的颜色
-  let lastProcessedCount = 0
 
   // 防抖函数，避免频繁处理
   let processTimeout: number | null = null

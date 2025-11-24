@@ -25,7 +25,7 @@ export default defineUnlistedScript(() => {
       chrome.runtime.sendMessage({ action: 'wasmReady', status: 'error', error: String(e) });
     }
 
-    chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+    chrome.runtime.onMessage.addListener(async function (request, _sender, sendResponse) {
       if (!wasmInitialized || !wasmModule) {
         sendResponse({ error: 'WASM not initialized' });
         return;
@@ -50,6 +50,7 @@ export default defineUnlistedScript(() => {
         }
         return true;
       }
+      return false;
     });
   })();
 });

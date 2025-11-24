@@ -24,6 +24,7 @@ export function checkContainUnit(
   const results: CheckResult[] = []
   for (let i = 0; i < containUnitItem.length; i++) {
     const item = containUnitItem[i]
+    if (!item) continue
     const valueFromLLM = Number(summaryFromLLM[item as keyof SummaryFromLLM])
     let valueFromInfo = String(summaryInfo[item as keyof SummaryInfo]).trim()
     const unit = units[i]
@@ -39,7 +40,9 @@ export function checkContainUnit(
     if (item === 'watt') {
       valueFromInfo = ' ' + valueFromInfo
     }
-    const valueFromInfoNumber = numberMatcher[i](valueFromInfo)
+    const matcher = numberMatcher[i]
+    if (!matcher) continue
+    const valueFromInfoNumber = matcher(valueFromInfo)
     if (valueFromInfoNumber !== valueFromLLM) {
       results.push({
         ok: false,

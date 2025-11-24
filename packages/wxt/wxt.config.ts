@@ -70,7 +70,7 @@ export default defineConfig({
     options_page: 'options.html',
   },
   hooks: {
-    'build:manifestGenerated': (wxt, manifest) => {
+    'build:manifestGenerated': (_wxt, manifest) => {
       // 删除自动生成的 options_ui 字段
       delete manifest.options_ui;
     },

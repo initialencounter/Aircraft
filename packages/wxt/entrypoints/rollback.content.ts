@@ -151,7 +151,7 @@ async function entrypoint() {
   function insertRollbackButton() {
     const targets = document.getElementById('datagrid-row-r1-2-0')
       ?.parentElement?.children
-    if (!targets) return false
+    if (!targets) return 
 
     for (let i = 0; i < targets.length; i++) {
       const row = targets[i]
@@ -163,7 +163,6 @@ async function entrypoint() {
       if (!matches || matches.length < 2) continue
 
       const taskId = matches[1]
-      const buttonKey = `${taskId}-${i}` // 使用taskId和索引作为唯一标识
 
       // 检查是否已经处理过这个按钮
       if (target.innerHTML.includes('退退退')) {

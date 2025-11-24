@@ -224,7 +224,7 @@ async function entrypoint() {
     if (!uid) return false
     if (!users.length) return false
     for (let i = 0; i < users.length; i++) {
-      if (users[i].userId === uid) return true
+      if (users[i]?.userId === uid) return true
     }
     return false
   }
@@ -370,6 +370,7 @@ async function entrypoint() {
         for (let i = 0; i < ids.length; i++) {
           if (row['entrustId'] === ids[i]) return true
         }
+        return false
       })
       .map((item: Task) => item.id)
   }

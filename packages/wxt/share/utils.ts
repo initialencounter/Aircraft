@@ -1,6 +1,7 @@
 import { Config } from "../entrypoints/options/src/components/Schema"
 
 const LocalConfig: Config = {
+  allInWebBrowser: false,
   manualCheckStackEvaluation: false,
   autoCheckStackEvaluation: false,
   hundredRowsResult: true,
@@ -176,6 +177,7 @@ function getSystemId() {
 
 function formatHexColor(color: string) {
   if (color.startsWith('#')) return color.slice(1)
+    return color
 }
 
 function validateFormat(input: string): boolean {

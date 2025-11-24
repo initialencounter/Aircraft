@@ -233,7 +233,8 @@ function checkSekIonBtyType(
   const wattHourFromName = matchWattHour(currentData['itemCName'])
   const wattHour = matchNumber(currentData['inspectionItem1Text1'])
   const inspectionResult1 = currentData['inspectionResult1']
-  if (!checkMap[btyType].includes(inspectionResult1))
+  const checkList = checkMap[btyType]
+  if (checkList && !checkList.includes(inspectionResult1))
     result.push({ ok: false, result: '检验结果1错误，瓦时数取值范围错误' })
   if (wattHourFromName > 0 && !isNaN(wattHour)) {
     if (wattHour !== wattHourFromName)
@@ -266,7 +267,8 @@ function checkSekMetalBtyType(
   // 验证锂含量
   const inspectionResult1 = currentData['inspectionResult1']
   const liContent = Number(currentData['inspectionItem1Text2'])
-  if (!checkMap[btyType].includes(inspectionResult1))
+  const checkList2 = checkMap[btyType]
+  if (checkList2 && !checkList2.includes(inspectionResult1))
     result.push({ ok: false, result: '检验结果1错误，锂含量取值范围错误' })
   result.push(...liContentScope(btyType, inspectionResult1, liContent))
   // 随附文件 Ion 1125 metal 1126

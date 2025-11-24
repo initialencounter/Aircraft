@@ -39,8 +39,6 @@ async function setupOffscreenDocument(path: string) {
     return;
   }
 
-  const offscreenUrl = chrome.runtime.getURL(path);
-
   // Check if offscreen document already exists
   const existingContexts = await chrome.runtime.getContexts({
     contextTypes: ['OFFSCREEN_DOCUMENT']
@@ -170,30 +168,6 @@ async function entrypoint() {
 
   async function backgroundSleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
-  async function pingServer(aircraftServer: string): Promise<boolean> {
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 1000) // 50ms超时
-
-      const response = await fetch(`${aircraftServer}/ping`, {
-        method: 'GET',
-        mode: 'cors',
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        return false
-      }
-      const result = await response.json()
-      return result === 'pong'
-    } catch (error) {
-      console.error('Ping server failed:', error)
-      return false
-    }
   }
 
   async function getAttachmentInfo(
@@ -575,5 +549,6 @@ async function entrypoint() {
       )
       return true // 保持消息通道开放，等待异步响应
     }
+    return false
   })
 }
