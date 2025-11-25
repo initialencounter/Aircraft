@@ -41,7 +41,6 @@ export default defineConfig({
           // WASM 相关文件
           'aircraft.js',
           'aircraft_bg.wasm',
-          'attachment.js',
         ],
         matches: ['<all_urls>'],
       }
@@ -63,7 +62,6 @@ export default defineConfig({
       'scripting',
       'storage',
       'contextMenus',
-      'offscreen',
     ],
     host_permissions: ['<all_urls>'],
     options_page: 'options.html',

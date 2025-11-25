@@ -2,10 +2,14 @@ import type { GoodsInfo, OtherInfo } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from '../public/aircraft';
 import * as ort from "onnxruntime-web/wasm";
 import { process_output } from '../share/yolo';
+import type * as Aircraft from '../public/aircraft';
+// 直接导入 wasm 模块
+import init, * as AircraftWasm from '../public/aircraft.js';
 
 let session: ort.InferenceSession | null = null;
+
 const yoloClasses = ['9', '9A', 'bty', 'CAO'];
-let isInitialized = false;
+let ortIsInitialized = false;
 // 初始化 ONNX 模型
 async function initializeModel() {
   try {
@@ -15,10 +19,28 @@ async function initializeModel() {
       logSeverityLevel: 3,
       logVerbosityLevel: 0
     });
-    isInitialized = true;
+    ortIsInitialized = true;
     console.log("ONNX Model loaded successfully in worker");
   } catch (e) {
     console.error("Model loading error:", e);
+  }
+}
+
+let wasmModule: typeof Aircraft;
+
+async function initAircraftWasm() {
+  try {
+    const wasmURL = chrome.runtime.getURL('aircraft_bg.wasm');
+
+    // 使用静态导入的 init 函数来初始化 WASM
+    await init(wasmURL);
+
+    // 初始化后，AircraftWasm 就包含了所有导出的函数
+    wasmModule = AircraftWasm as any;
+    console.log('Aircraft WASM initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Aircraft WASM:', error);
+    throw error;
   }
 }
 
@@ -50,37 +72,6 @@ interface SearchPathResponse {
   results: SearchPathResult[]
 }
 
-let creating: Promise<void> | null = null;
-
-async function setupOffscreenDocument(path: string) {
-  // Check if offscreen API is available
-  if (!chrome.offscreen) {
-    console.warn('Offscreen API is not available in this browser');
-    return;
-  }
-
-  // Check if offscreen document already exists
-  const existingContexts = await chrome.runtime.getContexts({
-    contextTypes: ['OFFSCREEN_DOCUMENT']
-  });
-
-  if (existingContexts.length > 0) {
-    return;
-  }
-
-  if (creating) {
-    await creating;
-  } else {
-    creating = chrome.offscreen.createDocument({
-      url: path,
-      reasons: [chrome.offscreen.Reason.WORKERS],
-      justification: 'Run ONNX model',
-    });
-    await creating;
-    creating = null;
-  }
-}
-
 
 export default defineBackground({
   main() {
@@ -91,10 +82,9 @@ export default defineBackground({
 let aircraftServerAvailable = true;
 async function entrypoint() {
   chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
-    if (result.allInWebBrowser !== false) {
+    if (result.allInWebBrowser === true) {
       aircraftServerAvailable = false
-      console.log('allInWebBrowser is true, Loading offscreen document')
-      setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));
+      initAircraftWasm();
     }
     if (result.enableLabelCheck === true) {
       initializeModel();
@@ -118,7 +108,7 @@ async function entrypoint() {
 
       case '概要测试':
         const summaryBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/SEKGZ202508140000 概要.docx")
-        let responseSummary: SummaryInfo = await getSummaryInfo(summaryBuffer!)
+        let responseSummary: SummaryInfo | null = await getSummaryInfo(summaryBuffer!)
         console.log('WASM get-summary response:', responseSummary)
         break
 
@@ -282,39 +272,49 @@ async function entrypoint() {
     return attachmentInfo
   }
 
-  async function getSummaryInfo(summaryBuffer: ArrayBuffer): Promise<SummaryInfo> {
-    const summaryArray = Array.from(new Uint8Array(summaryBuffer))
-    const response: SummaryInfo = await chrome.runtime.sendMessage({
-      action: 'get_summary_info_wasm',
-      input: summaryArray,
-    })
-    return response
+  async function getSummaryInfo(summaryBuffer: ArrayBuffer): Promise<SummaryInfo | null> {
+    try {
+      const summaryArray = new Uint8Array(summaryBuffer)
+      return wasmModule.get_summary_info(summaryArray);
+    }
+    catch (error) {
+      console.error('getSummaryInfo error:', error);
+      return null;
+    }
   }
 
   async function getGoodsInfo(pdfBuffer: ArrayBuffer, label: boolean, is_965: boolean): Promise<GoodsInfo> {
-    const pdfArray = Array.from(new Uint8Array(pdfBuffer))
-    const res: GoodsInfoWasm = await chrome.runtime.sendMessage({
-      action: 'get_goods_info_wasm',
-      input: pdfArray,
-      is_965,
-    })
-    if (!res.image) {
+    const pdfArray = new Uint8Array(pdfBuffer)
+    try {
+      const res: GoodsInfoWasm = wasmModule.get_goods_info(pdfArray, true, is_965);
+      if (!res.image || !ortIsInitialized) {
+        return {
+          projectNo: res.project_no,
+          itemCName: res.item_c_name,
+          labels: [],
+          packageImage: undefined,
+          segmentResults: [],
+        }
+      }
+      const { labels, segmentResults } = await getYOLOSegmentResults(new Uint8Array(res.image), label)
       return {
         projectNo: res.project_no,
         itemCName: res.item_c_name,
+        labels: labels,
+        packageImage: res.image ?? undefined,
+        segmentResults: segmentResults,
+      }
+    } catch (error) {
+      console.error('getGoodsInfo error:', error);
+      return {
+        projectNo: '',
+        itemCName: '',
         labels: [],
         packageImage: undefined,
         segmentResults: [],
       }
     }
-    const { labels, segmentResults } = await getYOLOSegmentResults(new Uint8Array(res.image), label)
-    return {
-      projectNo: res.project_no,
-      itemCName: res.item_c_name,
-      labels: labels,
-      packageImage: res.image ?? undefined,
-      segmentResults: segmentResults,
-    }
+
   }
 
   async function getOtherInfo(projectNo: string): Promise<OtherInfo | null> {
@@ -582,7 +582,7 @@ async function entrypoint() {
 }
 
 async function predict(imageInput: Uint8Array) {
-  if (!session || !isInitialized) {
+  if (!session || !ortIsInitialized) {
     throw new Error('Model not initialized');
   }
 
