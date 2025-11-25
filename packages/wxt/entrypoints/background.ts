@@ -1,6 +1,26 @@
-import { GoodsInfo, OtherInfo, SegmentResult } from 'aircraft-rs';
+import type { GoodsInfo, OtherInfo } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from '../public/aircraft';
+import * as ort from "onnxruntime-web/wasm";
+import { process_output } from '../share/yolo';
 
+let session: ort.InferenceSession | null = null;
+const yoloClasses = ['9', '9A', 'bty', 'CAO'];
+let isInitialized = false;
+// 初始化 ONNX 模型
+async function initializeModel() {
+  try {
+    // 从主线程接收模型 URL
+    const modelUrl = chrome.runtime.getURL('segment.onnx');
+    session = await ort.InferenceSession.create(modelUrl, {
+      logSeverityLevel: 3,
+      logVerbosityLevel: 0
+    });
+    isInitialized = true;
+    console.log("ONNX Model loaded successfully in worker");
+  } catch (e) {
+    console.error("Model loading error:", e);
+  }
+}
 
 
 type CreateProperties = chrome.contextMenus.CreateProperties
@@ -70,11 +90,14 @@ export default defineBackground({
 
 let aircraftServerAvailable = true;
 async function entrypoint() {
-  chrome.storage.local.get('allInWebBrowser').then((result) => {
+  chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
     if (result.allInWebBrowser !== false) {
       aircraftServerAvailable = false
       console.log('allInWebBrowser is true, Loading offscreen document')
       setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));
+    }
+    if (result.enableLabelCheck === true) {
+      initializeModel();
     }
   })
   // A generic onclick callback function.
@@ -100,9 +123,10 @@ async function entrypoint() {
         break
 
       case 'yolo测试':
-        const imgBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/000.png")
-        const imgArray = Array.from(new Uint8Array(imgBuffer!))
-        const responseYolo = await getYOLOSegmentResults(imgArray, true)
+        const imgBase64URL = ''
+        const res = await fetch(imgBase64URL)
+        const imgBuffer = await res.arrayBuffer()
+        const responseYolo = await getYOLOSegmentResults(new Uint8Array(imgBuffer), true)
         console.log('WASM yolo response:', responseYolo)
         break
       default:
@@ -274,7 +298,16 @@ async function entrypoint() {
       input: pdfArray,
       is_965,
     })
-    const { labels, segmentResults } = await getYOLOSegmentResults(res.image, label)
+    if (!res.image) {
+      return {
+        projectNo: res.project_no,
+        itemCName: res.item_c_name,
+        labels: [],
+        packageImage: undefined,
+        segmentResults: [],
+      }
+    }
+    const { labels, segmentResults } = await getYOLOSegmentResults(new Uint8Array(res.image), label)
     return {
       projectNo: res.project_no,
       itemCName: res.item_c_name,
@@ -310,20 +343,15 @@ async function entrypoint() {
     }
   }
 
-  async function getYOLOSegmentResults(image: Array<number> | null, label: boolean) {
+  async function getYOLOSegmentResults(image: Uint8Array | null, label: boolean) {
     const labels: string[] = []
     const segmentResults: any[] = []
 
     if (!image || !label) return { labels, segmentResults }
-    const yoloResponse: {
-      result: SegmentResult[]
-    } = await chrome.runtime.sendMessage({
-      action: 'yolo-inference',
-      input: image,
-    })
+    let result = await predict(image);
 
-    console.log('YOLO inference response:', yoloResponse)
-    for (const item of yoloResponse.result) {
+    console.log('YOLO inference response:', result)
+    for (const item of result) {
       if (item.confidence > 0.5) {
         labels.push(item.label)
         segmentResults.push(item)
@@ -551,4 +579,57 @@ async function entrypoint() {
     }
     return false
   })
+}
+
+async function predict(imageInput: Uint8Array) {
+  if (!session || !isInitialized) {
+    throw new Error('Model not initialized');
+  }
+
+  let rowImageWidth: number;
+  let rowImageHeight: number;
+  const width = 640;
+  const height = 640;
+
+  // 创建 OffscreenCanvas 来处理图片
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext('2d')!;
+
+  // 从 Uint8Array 创建 ImageBitmap
+  // @ts-ignore
+  const blob = new Blob([imageInput], { type: 'image/png' });
+  const imageBitmap = await createImageBitmap(blob);
+
+  rowImageWidth = imageBitmap.width;
+  rowImageHeight = imageBitmap.height;
+
+  // 在 Canvas 上绘制缩放后的图片
+  ctx.drawImage(imageBitmap, 0, 0, width, height);
+  imageBitmap.close();
+
+  // 获取图片数据
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const pixels = imageData.data;
+
+  // 将图片数据转换为 Float32Array
+  const inputData = new Float32Array(1 * 3 * width * height);
+
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      const pixelIndex = (i * width + j) * 4;
+      const r = pixels[pixelIndex] / 255.0;
+      const g = pixels[pixelIndex + 1] / 255.0;
+      const b = pixels[pixelIndex + 2] / 255.0;
+
+      inputData[i * width + j] = r;
+      inputData[width * height + i * width + j] = g;
+      inputData[2 * width * height + i * width + j] = b;
+    }
+  }
+
+  const inputTensor = new ort.Tensor("float32", inputData, [1, 3, 640, 640]);
+  const feeds = { "images": inputTensor };
+
+  const res = await session.run(feeds);
+  return process_output(res['output0']['data'], res['output1']['data'], rowImageWidth, rowImageHeight, yoloClasses);
 }

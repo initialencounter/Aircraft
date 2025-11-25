@@ -36,7 +36,6 @@ export default defineConfig({
 
           // ONNX 模型相关文件
           'segment.onnx',
-          'model.js',
           'ort-wasm-simd-threaded.wasm',
 
           // WASM 相关文件
