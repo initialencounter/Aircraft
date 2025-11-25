@@ -20,7 +20,7 @@ async function initializeModel() {
       logVerbosityLevel: 0
     });
     ortIsInitialized = true;
-    console.log("ONNX Model loaded successfully in worker");
+    console.log("ONNX Model loaded successfully in background");
   } catch (e) {
     console.error("Model loading error:", e);
     ortIsInitialized = false;
