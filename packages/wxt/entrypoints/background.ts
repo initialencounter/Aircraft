@@ -370,7 +370,7 @@ async function entrypoint() {
         if (file.name.includes('评估单') || file.name.includes('堆码评估')) {
           return {
             stackEvaluation: true,
-            projectDir: file.path,
+            projectDir: projectDir,
           }
         }
       }
