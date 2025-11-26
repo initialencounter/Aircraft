@@ -68,7 +68,7 @@ export const Config: Schema<Config> = Schema.intersect([
       .description('每页默认显示100条结果')
       .default(true),
     allInWebBrowser: Schema.boolean()
-      .description('所有功能都在浏览器中实现, 不依赖概要解析器 (但验证速度较慢), 且需要占用200MB内存)')
+      .description('所有功能都在浏览器中实现, 不依赖概要解析器 (此功能不支持 Firefox 浏览器)')
       .default(false),
   }).description('全局设置'),
   // 业务受理 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -162,7 +162,7 @@ export const Config: Schema<Config> = Schema.intersect([
       .description('启用附件解析')
       .default(true),
     enableLabelCheck: Schema.boolean()
-      .description('启用标签检查（识别不准确，不建议开启）')
+      .description('启用标签检查')
       .default(false),
     enableLabelCheckManual: Schema.boolean()
       .description('启用手动标签检查')

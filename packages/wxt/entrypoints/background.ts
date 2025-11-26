@@ -96,11 +96,15 @@ async function entrypoint() {
   try {
     // 启动心跳
     startHeartbeat();
-
+    const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
     chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
       if (result.allInWebBrowser === true) {
-        aircraftServerAvailable = false
-        initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
+        if (isFirefox) {
+          console.warn('Firefox 浏览器不支持 allInWebBrowser 功能，已自动关闭该功能');
+        } else {
+          aircraftServerAvailable = false
+          initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
+        }
       }
       if (result.enableLabelCheck === true) {
         enableLabelCheck = true
