@@ -17,36 +17,17 @@ pub fn replace_whitespace_with_space(text: &str) -> String {
 }
 
 /// 使用 pdf_extract 读取 pdf 文件的文本内容
-pub fn read_pdf_u8(data: &[u8], required_image: bool) -> Result<PdfReadResult, PdfError> {
+pub fn read_pdf_u8(data: &[u8]) -> Result<PdfReadResult, PdfError> {
     match extract_text_from_mem(data) {
         Ok(text) => {
-            let mut images: Option<Vec<u8>> = None;
-            if required_image {
-                images = read_pdf_img_bottom_right(data).unwrap_or_else(|_| None)
-            }
-            Ok(PdfReadResult { text, images })
+            let image: Option<Vec<u8>> = read_pdf_img_bottom_right(data).unwrap_or_else(|_| None);
+            Ok(PdfReadResult { text, image })
         }
         Err(_) => Ok(PdfReadResult {
             text: "".to_string(),
-            images: None,
+            image: None,
         }),
     }
-}
-
-pub fn read_pdf(path: &str, required_image: bool) -> Result<PdfReadResult, PdfError> {
-    let data = std::fs::read(path)?;
-    let text = match extract_text_from_mem(&data) {
-        Ok(text) => text,
-        Err(_) => "".to_string(),
-    };
-    let mut images = None;
-    if required_image {
-        images = match read_pdf_img_bottom_right(&data) {
-            Ok(imgs) => imgs,
-            Err(_) => None,
-        }
-    }
-    Ok(PdfReadResult { text, images })
 }
 
 #[derive(Debug, Clone)]
@@ -220,13 +201,6 @@ pub fn read_pdf_img_bottom_right(data: &[u8]) -> Result<Option<Vec<u8>>, PdfErro
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_read_pdf() {
-        let path = r"C:\\Users\\29115\\RustroverProjects\\extractous\\test.pdf";
-        let result = read_pdf(path, false).unwrap();
-        println!("{:?}", result.text);
-    }
 
     #[test]
     fn test_read_pdf_sorted() {

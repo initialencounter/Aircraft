@@ -79,14 +79,13 @@ export function get_summary_info(buffer) {
 
 /**
  * @param {Uint8Array} buffer
- * @param {boolean} require_image
  * @param {boolean} is_965
  * @returns {GoodsInfoWasm}
  */
-export function get_goods_info(buffer, require_image, is_965) {
+export function get_goods_info(buffer, is_965) {
     const ptr0 = passArray8ToWasm0(buffer, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_goods_info(ptr0, len0, require_image, is_965);
+    const ret = wasm.get_goods_info(ptr0, len0, is_965);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }

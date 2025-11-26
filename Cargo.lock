@@ -5471,7 +5471,6 @@ dependencies = [
  "summary",
  "tokio",
  "warp",
- "yolo",
 ]
 
 [[package]]

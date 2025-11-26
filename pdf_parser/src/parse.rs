@@ -74,15 +74,15 @@ pub fn parse_good_file(pdf_text: String, is_965: bool, package_image: Option<Vec
 
 #[cfg(test)]
 mod tests {
-
-    use crate::read::read_pdf;
+    use crate::read::read_pdf_u8;
 
     use super::*;
 
     #[test]
     fn test_parse_good_file() {
         let path = r"0.pdf";
-        let result = read_pdf(path, false).unwrap();
+        let pdf_buf = std::fs::read(path).unwrap();
+        let result = read_pdf_u8(&pdf_buf).unwrap();
         let goods_pdf = parse_good_file(result.text, true, None);
         println!("{:?}", goods_pdf);
     }

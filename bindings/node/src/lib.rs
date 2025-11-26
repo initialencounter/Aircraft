@@ -10,10 +10,9 @@ use aircraft_types::others::ClipboardHotkey;
 use aircraft_types::others::SearchResult;
 use aircraft_types::project::DataModel;
 use aircraft_types::summary::SummaryInfo;
-use pdf_parser::parse::parse_good_file;
-use pdf_parser::read::{read_pdf, read_pdf_u8};
-use pdf_parser::{GoodsInfo, PdfReadResult};
-use share::attachment_parser::get_attachment_info as get_attachment_info_rs;
+use pdf_parser::read::read_pdf_u8;
+use pdf_parser::PdfReadResult;
+use share::attachment_parser::{get_attachment_info as get_attachment_info_rs};
 use share::logger::Logger;
 use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::manager::hotkey_manager::HotkeyManager;
@@ -127,31 +126,12 @@ impl AircraftRs {
   }
 
   #[napi]
-  pub fn parse_goods_info(&self, path: String, is_965: bool) -> napi::Result<GoodsInfo> {
-    let pdf_text = match read_pdf(&path, false) {
-      Ok(result) => result.text,
-      Err(_) => "".to_string(),
-    };
-    let goods_info = match parse_good_file(pdf_text, is_965, None) {
-      Ok(goods_info) => goods_info,
-      Err(_) => GoodsInfo {
-        project_no: "".to_string(),
-        item_c_name: "".to_string(),
-        labels: vec![],
-        package_image: None,
-        segment_results: vec![],
-      },
-    };
-    Ok(goods_info)
-  }
-
-  #[napi]
   pub async fn get_attachment_info(
     &self,
     project_no: String,
     is_965: bool,
   ) -> napi::Result<AttachmentInfo> {
-    let attachment = get_attachment_info_rs(project_no, false, is_965).await;
+    let attachment = get_attachment_info_rs(project_no, is_965).await;
     match attachment {
       Ok(attachment) => Ok(attachment),
       Err(e) => {
@@ -271,7 +251,7 @@ impl JsFileManager {
   /// 使用 pdf_extract 读取 pdf 文件的文本内容
   #[napi]
   pub async fn read_pdf_buffer(&self, buffer: &[u8]) -> napi::Result<String> {
-    let res: PdfReadResult = read_pdf_u8(buffer, false).unwrap();
+    let res: PdfReadResult = read_pdf_u8(buffer).unwrap();
     Ok(res.text)
   }
 }

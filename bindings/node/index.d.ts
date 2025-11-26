@@ -262,7 +262,7 @@ export interface GoodsInfo {
 }
 export interface PdfReadResult {
   text: string
-  images?: Array<number>
+  image?: Array<number>
 }
 export interface SegmentResult {
   x1: number
@@ -291,7 +291,6 @@ export declare class AircraftRs {
   reloadHotkey(config: HotkeyConfig): void
   getSummaryInfoByPath(path: string): SummaryInfo
   getSummaryInfoByBuffer(buffer: Uint8Array): SummaryInfo
-  parseGoodsInfo(path: string, is965: boolean): GoodsInfo
   getAttachmentInfo(projectNo: string, is965: boolean): Promise<AttachmentInfo>
   getCurrentServerConfig(): ServerConfig
   getCurrentLlmConfig(): LLMConfig

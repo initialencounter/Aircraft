@@ -36,7 +36,6 @@ clipboard-rs = "0.3.0"
 futures-util = "0.3.31"
 bytes = "1.10.1"
 clipboard-win = "5.4.1"
-yolo = { path = "../yolo" }
 summary = { path = "../summary" }
 pdf_parser = { path = "../pdf_parser" }
 aircraft-types = { path = "../types" }

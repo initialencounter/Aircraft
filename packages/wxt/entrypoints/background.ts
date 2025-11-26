@@ -1,4 +1,4 @@
-import type { GoodsInfo, OtherInfo } from 'aircraft-rs';
+import type { AttachmentInfo, GoodsInfo, OtherInfo } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from '../public/aircraft';
 import * as ort from "onnxruntime-web/wasm";
 import { process_output } from '../share/yolo';
@@ -81,13 +81,14 @@ export default defineBackground({
 })
 
 let aircraftServerAvailable = true;
+let enableLabelCheck = false;
 
 function startHeartbeat() {
   // 每20秒发送一次心跳
   setInterval(() => {
     console.log('Service Worker heartbeat:', new Date().toISOString());
     // 可以执行一些轻量级操作来保持活跃
-    chrome.runtime.getPlatformInfo().catch(() => {});
+    chrome.runtime.getPlatformInfo().catch(() => { });
   }, 20000) as unknown as number;
 }
 
@@ -102,6 +103,7 @@ async function entrypoint() {
         initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
       }
       if (result.enableLabelCheck === true) {
+        enableLabelCheck = true
         initializeModel().catch(err => console.error('initializeModel failed:', err));
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
@@ -121,7 +123,7 @@ async function entrypoint() {
           break
         case 'pdf测试':
           const pdfBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/SEKGZ202508140000.pdf")
-          const response4: GoodsInfo = await getGoodsInfo(pdfBuffer!, true, false)
+          const response4: GoodsInfo = await getGoodsInfo(pdfBuffer!, false)
           console.log('WASM get-goods response:', response4)
           break
 
@@ -302,7 +304,7 @@ async function entrypoint() {
       if (goodsPath) {
         const goodsBuffer = await downloadEverythingFile(goodsPath)
         if (goodsBuffer) {
-          attachmentInfo['goods'] = await getGoodsInfo(goodsBuffer, label, is_965)
+          attachmentInfo['goods'] = await getGoodsInfo(goodsBuffer, is_965)
         }
       }
       const summaryPath = await getSummaryPath(searchRes)
@@ -332,27 +334,17 @@ async function entrypoint() {
     }
   }
 
-  async function getGoodsInfo(pdfBuffer: ArrayBuffer, label: boolean, is_965: boolean): Promise<GoodsInfo> {
+  async function getGoodsInfo(pdfBuffer: ArrayBuffer, is_965: boolean): Promise<GoodsInfo> {
     try {
       const pdfArray = new Uint8Array(pdfBuffer)
-      const res: GoodsInfoWasm = wasmModule.get_goods_info(pdfArray, true, is_965);
-      if (!res.image || !ortIsInitialized) {
-        console.log('GoodsInfoWasm', res, ortIsInitialized)
-        return {
-          projectNo: res.project_no,
-          itemCName: res.item_c_name,
-          labels: [],
-          packageImage: undefined,
-          segmentResults: [],
-        }
-      }
-      const { labels, segmentResults } = await getYOLOSegmentResults(new Uint8Array(res.image), label)
+      const res: GoodsInfoWasm = wasmModule.get_goods_info(pdfArray, is_965);
+
       return {
         projectNo: res.project_no,
         itemCName: res.item_c_name,
-        labels: labels,
+        labels: [],
         packageImage: res.image ?? undefined,
-        segmentResults: segmentResults,
+        segmentResults: [],
       }
     } catch (error) {
       console.error('getGoodsInfo error:', error);
@@ -571,38 +563,33 @@ async function entrypoint() {
     }
   }
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     try {
-      // 代理获取 enableLabelCheck
-      if (request.action === 'getEnableLabelCheck') {
-        chrome.storage.local.get('enableLabelCheck').then((result) => {
-          sendResponse(result)
-        }).catch((error) => {
-          console.error('获取 enableLabelCheck 失败:', error)
-          sendResponse({ enableLabelCheck: true }) // 默认值
-        })
-        return true // 保持消息通道开放，等待异步响应
-      }
-
       if (request.action === 'getAttachmentInfo') {
+        let attachmentInfo: AttachmentInfo;
         if (aircraftServerAvailable) {
           console.log('Server is available, using getAttachmentInfo')
-          getAttachmentInfo(
+          attachmentInfo = await getAttachmentInfo(
             request.aircraftServer,
             request.projectNo,
             request.label,
             request.is_965
-          ).then((result) => sendResponse(result))
-            .catch((_error) => sendResponse(null))
+          )
         } else {
           console.log('Server is not available, using wasmGetAttachmentInfo')
-          wasmGetAttachmentInfo(
+          attachmentInfo = await wasmGetAttachmentInfo(
             request.projectNo,
             request.label,
             request.is_965
-          ).then((result) => sendResponse(result))
-            .catch((_error) => sendResponse(null))
+          )
         }
+        if (!attachmentInfo?.goods?.packageImage || !ortIsInitialized || !enableLabelCheck) {
+          return attachmentInfo
+        }
+        const yoloResults = await getYOLOSegmentResults(new Uint8Array(attachmentInfo.goods.packageImage), request.label)
+        attachmentInfo.goods.labels = yoloResults.labels
+        attachmentInfo.goods.segmentResults = yoloResults.segmentResults
+        sendResponse(attachmentInfo)
         return true // 保持消息通道开放,等待异步响应
       }
 

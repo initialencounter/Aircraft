@@ -106,10 +106,8 @@ pub fn apply_webhook(
         .then(
             |project_no: String, params: HashMap<String, String>| async move {
                 // 从 params 中获取 label 参数
-                let label = params.get("label").map(|s| s.as_str()).unwrap_or("1");
                 let is_965 = params.get("is_965").map(|s| s.as_str()).unwrap_or("0") == "1";
-                let return_label = label == "1";
-                match get_attachment_info(project_no, return_label, is_965).await {
+                match get_attachment_info(project_no, is_965).await {
                     Ok(summary_info) => warp::reply::json(&summary_info),
                     Err(e) => warp::reply::json(&CustomError {
                         message: format!("获取项目信息失败: {}", e),
@@ -177,7 +175,7 @@ async fn handle_upload(
                 .to_string();
 
             let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
-            let mut file_content = match read_pdf_u8(&file_data, false) {
+            let mut file_content = match read_pdf_u8(&file_data) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
                     println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);

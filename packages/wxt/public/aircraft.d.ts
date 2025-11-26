@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export function get_summary_info(buffer: Uint8Array): SummaryInfo;
-export function get_goods_info(buffer: Uint8Array, require_image: boolean, is_965: boolean): GoodsInfoWasm;
+export function get_goods_info(buffer: Uint8Array, is_965: boolean): GoodsInfoWasm;
 export interface GoodsInfoWasm {
     project_no: string;
     item_c_name: string;
@@ -89,7 +89,7 @@ export interface DataModel {
 
 export interface PdfReadResult {
     text: string;
-    images: number[] | null;
+    image: number[] | null;
 }
 
 export interface GoodsInfo {
@@ -267,7 +267,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly get_summary_info: (a: number, b: number) => [number, number, number];
-  readonly get_goods_info: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly get_goods_info: (a: number, b: number, c: number) => [number, number, number];
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_externrefs: WebAssembly.Table;

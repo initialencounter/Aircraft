@@ -29,5 +29,5 @@ pub struct GoodsInfo {
 #[serde(rename_all = "camelCase")]
 pub struct PdfReadResult {
     pub text: String,
-    pub images: Option<Vec<u8>>,
+    pub image: Option<Vec<u8>>,
 }

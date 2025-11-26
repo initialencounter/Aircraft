@@ -124,7 +124,7 @@ pub async fn get_report_summary_by_buffer(
     let buffer = BASE64_STANDARD
         .decode(base64_string)
         .map_err(|e| e.to_string())?;
-    let mut pdf_text = match read_pdf_u8(&buffer, false) {
+    let mut pdf_text = match read_pdf_u8(&buffer) {
         Ok(pdf_read_result) => pdf_read_result.text,
         Err(_) => String::new(),
     };

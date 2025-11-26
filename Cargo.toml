@@ -4,7 +4,6 @@ members = [
   "share",
   "src-tauri",
   "bindings/node",
-  "yolo",
   "image_classifier",
   "wasm_utils",
   "summary",

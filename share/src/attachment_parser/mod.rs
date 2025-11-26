@@ -5,13 +5,9 @@ use aircraft_types::{
     others::SearchResult,
     summary::SummaryInfo,
 };
-use pdf_parser::parse::parse_good_file;
-use pdf_parser::read::read_pdf;
+use pdf_parser::{parse::parse_good_file, read::read_pdf_u8};
 use pdf_parser::GoodsInfo;
 use summary::{parse_docx_table, parse_docx_text, read_docx_content};
-
-#[cfg(not(feature = "napi-support"))]
-use yolo::segment::detect_objects_on_image;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -59,35 +55,13 @@ pub async fn get_goods_path(project_no: String) -> Result<String> {
 
 pub async fn get_goods_info(
     project_no: String,
-    required_image: bool,
     is_965: bool,
 ) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
-    let result = read_pdf(&path, required_image)?;
-    #[cfg(not(feature = "napi-support"))]
-    {
-        let mut goods_info = parse_good_file(result.text, is_965, None)?;
-        if required_image {
-            if let Some(images) = result.images {
-                let segment_result = detect_objects_on_image(images.clone());
-                let mut labels = vec![];
-                for result in &segment_result {
-                    if result.confidence > 0.5 && !labels.contains(&result.label) {
-                        labels.push(result.label.clone());
-                    }
-                }
-                goods_info.labels = labels;
-                goods_info.segment_results = segment_result;
-                goods_info.package_image = Some(images);
-            }
-        }
-        Ok(goods_info)
-    }
-    #[cfg(feature = "napi-support")]
-    {
-        let goods_info = parse_good_file(result.text, is_965, None)?;
-        Ok(goods_info)
-    }
+    let pdf_buf = std::fs::read(&path)?;
+    let result = read_pdf_u8(&pdf_buf)?;
+    let goods_info = parse_good_file(result.text, is_965, result.image)?;
+    Ok(goods_info)
 }
 
 pub async fn find_stack_evaluation(project_dir: String) -> bool {
@@ -121,12 +95,11 @@ pub async fn get_other_info(project_no: String) -> Result<OtherInfo> {
 
 pub async fn get_attachment_info(
     project_no: String,
-    required_image: bool,
     is_965: bool,
 ) -> Result<AttachmentInfo> {
     Ok(AttachmentInfo {
         summary: get_summary_info(project_no.clone()).await?,
-        goods: get_goods_info(project_no.clone(), required_image, is_965).await?,
+        goods: get_goods_info(project_no.clone(), is_965).await?,
         other: get_other_info(project_no.clone()).await?,
     })
 }
