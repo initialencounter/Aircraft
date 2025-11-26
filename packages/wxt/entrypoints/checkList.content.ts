@@ -268,6 +268,7 @@ async function entrypoint() {
   function sekVSPek(sekData: FormJSONData, pekData: PekFormJSONData) {
     const diffDataKeys: string[] = []
     const ignoreList = [
+      'taskId',
       'projectId',
       'projectNo',
       'according',
