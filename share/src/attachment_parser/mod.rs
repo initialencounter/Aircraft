@@ -72,7 +72,7 @@ pub async fn get_goods_info(
                 let segment_result = detect_objects_on_image(images.clone());
                 let mut labels = vec![];
                 for result in &segment_result {
-                    if result.confidence > 0.5 {
+                    if result.confidence > 0.5 && !labels.contains(&result.label) {
                         labels.push(result.label.clone());
                     }
                 }

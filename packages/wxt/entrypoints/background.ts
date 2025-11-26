@@ -398,7 +398,9 @@ async function entrypoint() {
       console.log('YOLO inference response:', result)
       for (const item of result) {
         if (item.confidence > 0.5) {
-          labels.push(item.label)
+          if (!labels.includes(item.label)) {
+            labels.push(item.label)
+          }
           segmentResults.push(item)
         }
       }
