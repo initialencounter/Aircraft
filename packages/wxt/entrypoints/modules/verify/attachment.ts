@@ -311,7 +311,9 @@ export function showSegmentMask(image: {
 
   // 双击缩小,恢复初始大小
   container.addEventListener('dblclick', () => {
-    if (img.style.width > minimalSize) {
+    const currentWidth = parseInt(img.style.width)
+    const minWidth = parseInt(minimalSize)
+    if (currentWidth > minWidth) {
       img.style.width = minimalSize
       img.style.height = minimalSize
     }else {
@@ -354,7 +356,9 @@ export function showSegmentMask(image: {
   // 按钮点击事件
   zoomButton.addEventListener('click', (e) => {
     e.stopPropagation()
-    if (img.style.width > minimalSize) {
+    const currentWidth = parseInt(img.style.width)
+    const minWidth = parseInt(minimalSize)
+    if (currentWidth > minWidth) {
       img.style.width = minimalSize
       img.style.height = minimalSize
       zoomButton.innerHTML = '🔍'
