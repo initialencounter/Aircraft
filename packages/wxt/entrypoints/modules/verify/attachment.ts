@@ -302,15 +302,17 @@ export function showSegmentMask(image: {
     id: 'segment-mask-image',
     width: minimalSize,
     height: minimalSize,
-    objectFit: 'cover',
+    objectFit: 'contain',
     opacity: '1',
     transition: 'all 0.3s',
+    cursor: 'pointer',
     margin: '5px',
     border: '5px solid transparent', // 初始时设置透明边框
   })
+  img.title = '点击放大/缩小'
 
   // 双击缩小,恢复初始大小
-  container.addEventListener('dblclick', () => {
+  container.addEventListener('click', () => {
     const currentWidth = parseInt(img.style.width)
     const minWidth = parseInt(minimalSize)
     if (currentWidth > minWidth) {
@@ -321,57 +323,15 @@ export function showSegmentMask(image: {
       img.style.height = image.height + 'px'
     }
   })
-
-  // 创建缩放按钮
-  const zoomButton = document.createElement('button')
-  Object.assign(zoomButton.style, {
-    position: 'absolute',
-    top: '10px',
-    right: '10px',
-    width: '30px',
-    height: '30px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    color: 'white',
-    cursor: 'pointer',
-    fontSize: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: '1000',
-    transition: 'background-color 0.2s',
+  container.addEventListener('mouseenter', () => {
+    img.style.border = '5px solid rgba(0, 123, 255, 0.8)' // 鼠标悬停时设置蓝色边框
   })
-  zoomButton.innerHTML = '🔍'
-  zoomButton.title = '放大/缩小'
-  
-  // 按钮悬停效果
-  zoomButton.addEventListener('mouseenter', () => {
-    zoomButton.style.backgroundColor = 'rgba(0, 0, 0, 0.8)'
-  })
-  zoomButton.addEventListener('mouseleave', () => {
-    zoomButton.style.backgroundColor = 'rgba(0, 0, 0, 0.6)'
-  })
-  
-  // 按钮点击事件
-  zoomButton.addEventListener('click', (e) => {
-    e.stopPropagation()
-    const currentWidth = parseInt(img.style.width)
-    const minWidth = parseInt(minimalSize)
-    if (currentWidth > minWidth) {
-      img.style.width = minimalSize
-      img.style.height = minimalSize
-      zoomButton.innerHTML = '🔍'
-    } else {
-      img.style.width = image.width + 'px'
-      img.style.height = image.height + 'px'
-      zoomButton.innerHTML = '🔍'
-    }
+  container.addEventListener('mouseleave', () => {
+    img.style.border = '5px solid transparent' // 鼠标离开时恢复透明边框
   })
 
   img.src = image.imageData
   container.appendChild(img)
-  container.appendChild(zoomButton)
   document.body.appendChild(container)
 
   // 等待下一帧，确保DOM已经渲染完成，再计算位置
