@@ -91,7 +91,7 @@ impl HotkeyConfig {
     }
 }
 
-#[cfg_attr(feature = "napi-support", napi(object))]
+#[cfg_attr(feature = "napi-support", napi(object, js_name = "LLMConfig"))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "wasm-support", derive(Tsify))]
 #[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]

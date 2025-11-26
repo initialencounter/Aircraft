@@ -165,18 +165,6 @@ export interface Config {
 export interface OtherConfig {
   queryServerHost: string
 }
-export interface LlmConfig {
-  baseUrl: string
-  apiKey: string
-  model: string
-}
-export interface Config {
-  base: BaseConfig
-  server: ServerConfig
-  hotkey: HotkeyConfig
-  llm: LlmConfig
-  other: OtherConfig
-}
 export interface FileUploadResult {
   bytes: number
   createdAt: number
