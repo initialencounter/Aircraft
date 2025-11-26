@@ -81,8 +81,21 @@ export default defineBackground({
 })
 
 let aircraftServerAvailable = true;
+
+function startHeartbeat() {
+  // 每20秒发送一次心跳
+  setInterval(() => {
+    console.log('Service Worker heartbeat:', new Date().toISOString());
+    // 可以执行一些轻量级操作来保持活跃
+    chrome.runtime.getPlatformInfo().catch(() => {});
+  }, 20000) as unknown as number;
+}
+
 async function entrypoint() {
   try {
+    // 启动心跳
+    startHeartbeat();
+
     chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
       if (result.allInWebBrowser === true) {
         aircraftServerAvailable = false
@@ -324,6 +337,7 @@ async function entrypoint() {
       const pdfArray = new Uint8Array(pdfBuffer)
       const res: GoodsInfoWasm = wasmModule.get_goods_info(pdfArray, true, is_965);
       if (!res.image || !ortIsInitialized) {
+        console.log('GoodsInfoWasm', res, ortIsInitialized)
         return {
           projectNo: res.project_no,
           itemCName: res.item_c_name,
