@@ -43,6 +43,13 @@ export function createLabelSelectionUI(localConfig: typeof LocalConfig): void {
   const y = imagePosition.getBoundingClientRect().y
   container.style.top = y + 'px'
 
+  const width = imagePosition.getBoundingClientRect().width
+  const x =
+    imagePosition.getBoundingClientRect().x +
+    width -
+    container.getBoundingClientRect().width
+  container.style.left = x + 'px'
+
   // 动态调整位置
   setInterval(() => {
     const width = imagePosition.getBoundingClientRect().width
