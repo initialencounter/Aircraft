@@ -1,5 +1,17 @@
 # 更新日志
 
+## [v3.0.1] - 2025-11-23
+
+### 修复
+
+- 大尺寸标签图片放大后无法缩小([4c148c5](https://github.com/initialencounter/Aircraft/commit/4c148c5f67bc0c43645f49d40864b9460295baf8))
+
+## [v3.0.0] - 2025-11-24
+
+### 修复
+
+- 单位转换浮点精度问题([8d68d93](https://github.com/initialencounter/Aircraft/commit/8d68d9345c8a853ff53205ebbd7c54415f3160ef))
+
 ## [v3.0.0] - 2025-11-23
 
 ### 新增
