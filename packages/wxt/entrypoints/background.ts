@@ -563,33 +563,36 @@ async function entrypoint() {
     }
   }
 
-  chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     try {
       if (request.action === 'getAttachmentInfo') {
-        let attachmentInfo: AttachmentInfo;
-        if (aircraftServerAvailable) {
-          console.log('Server is available, using getAttachmentInfo')
-          attachmentInfo = await getAttachmentInfo(
-            request.aircraftServer,
-            request.projectNo,
-            request.label,
-            request.is_965
-          )
-        } else {
-          console.log('Server is not available, using wasmGetAttachmentInfo')
-          attachmentInfo = await wasmGetAttachmentInfo(
-            request.projectNo,
-            request.label,
-            request.is_965
-          )
-        }
-        if (!attachmentInfo?.goods?.packageImage || !ortIsInitialized || !enableLabelCheck) {
-          return attachmentInfo
-        }
-        const yoloResults = await getYOLOSegmentResults(new Uint8Array(attachmentInfo.goods.packageImage), request.label)
-        attachmentInfo.goods.labels = yoloResults.labels
-        attachmentInfo.goods.segmentResults = yoloResults.segmentResults
-        sendResponse(attachmentInfo)
+        (async () => {
+          let attachmentInfo: AttachmentInfo;
+          if (aircraftServerAvailable) {
+            console.log('Server is available, using getAttachmentInfo')
+            attachmentInfo = await getAttachmentInfo(
+              request.aircraftServer,
+              request.projectNo,
+              request.label,
+              request.is_965
+            )
+          } else {
+            console.log('Server is not available, using wasmGetAttachmentInfo')
+            attachmentInfo = await wasmGetAttachmentInfo(
+              request.projectNo,
+              request.label,
+              request.is_965
+            )
+          }
+          if (!attachmentInfo?.goods?.packageImage || !ortIsInitialized || !enableLabelCheck) {
+            sendResponse(attachmentInfo);
+            return;
+          }
+          const yoloResults = await getYOLOSegmentResults(new Uint8Array(attachmentInfo.goods.packageImage), request.label)
+          attachmentInfo.goods.labels = yoloResults.labels
+          attachmentInfo.goods.segmentResults = yoloResults.segmentResults
+          sendResponse(attachmentInfo)
+        })();
         return true // 保持消息通道开放,等待异步响应
       }
 
