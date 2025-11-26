@@ -184,10 +184,6 @@ export async function drawSegmentMask(attachmentInfo: AttachmentInfo): Promise<{
         let targetWidth = img.width;
         let targetHeight = img.height;
 
-        targetWidth = 250;
-        // 等比缩放高度
-        targetHeight = (img.height * targetWidth) / img.width;
-
         // 创建 canvas
         const canvas = document.createElement('canvas');
         canvas.width = targetWidth;
@@ -330,7 +326,68 @@ export function showSegmentMask(image: {
     border: '5px solid transparent', // 初始时设置透明边框
   })
 
+  const minimalSize = '200px'
+  img.style.width = minimalSize
+  img.style.height = minimalSize
+
+  // 双击缩小,恢复初始大小
+  container.addEventListener('dblclick', () => {
+    if (img.style.width > minimalSize) {
+      img.style.width = minimalSize
+      img.style.height = minimalSize
+    }else {
+      img.style.width = image.width + 'px'
+      img.style.height = image.height + 'px'
+    }
+  })
+
+  // 创建缩放按钮
+  const zoomButton = document.createElement('button')
+  Object.assign(zoomButton.style, {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    width: '30px',
+    height: '30px',
+    borderRadius: '50%',
+    border: 'none',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    color: 'white',
+    cursor: 'pointer',
+    fontSize: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: '1000',
+    transition: 'background-color 0.2s',
+  })
+  zoomButton.innerHTML = '🔍'
+  zoomButton.title = '放大/缩小'
+  
+  // 按钮悬停效果
+  zoomButton.addEventListener('mouseenter', () => {
+    zoomButton.style.backgroundColor = 'rgba(0, 0, 0, 0.8)'
+  })
+  zoomButton.addEventListener('mouseleave', () => {
+    zoomButton.style.backgroundColor = 'rgba(0, 0, 0, 0.6)'
+  })
+  
+  // 按钮点击事件
+  zoomButton.addEventListener('click', (e) => {
+    e.stopPropagation()
+    if (img.style.width > minimalSize) {
+      img.style.width = minimalSize
+      img.style.height = minimalSize
+      zoomButton.innerHTML = '🔍'
+    } else {
+      img.style.width = image.width + 'px'
+      img.style.height = image.height + 'px'
+      zoomButton.innerHTML = '🔍'
+    }
+  })
+
   img.src = image.imageData
   container.appendChild(img)
+  container.appendChild(zoomButton)
   document.body.appendChild(container)
 }
