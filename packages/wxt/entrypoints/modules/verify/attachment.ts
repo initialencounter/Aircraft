@@ -292,43 +292,22 @@ export function showSegmentMask(image: {
     display: 'flex',
     'flex-direction': 'row',
     position: 'absolute',
+    visibility: 'hidden', // 先隐藏，等位置计算好后再显示
   })
-
-  const y = imagePosition.getBoundingClientRect().y
-  container.style.top = y + 'px'
-
-  const width = imagePosition.getBoundingClientRect().width
-  const x =
-    imagePosition.getBoundingClientRect().x +
-    width -
-    container.getBoundingClientRect().width
-  container.style.left = x + 'px'
-  // 动态调整位置
-  setInterval(() => {
-    const width = imagePosition.getBoundingClientRect().width
-    const x =
-      imagePosition.getBoundingClientRect().x +
-      width -
-      container.getBoundingClientRect().width
-    container.style.left = x + 'px'
-  }, 200)
 
   // 添加标签选择图片
   const img = document.createElement('img')
+  const minimalSize = '200px'
   Object.assign(img.style, {
     id: 'segment-mask-image',
-    width: image.width + 'px',
-    height: image.height + 'px',
+    width: minimalSize,
+    height: minimalSize,
     objectFit: 'cover',
     opacity: '1',
     transition: 'all 0.3s',
     margin: '5px',
     border: '5px solid transparent', // 初始时设置透明边框
   })
-
-  const minimalSize = '200px'
-  img.style.width = minimalSize
-  img.style.height = minimalSize
 
   // 双击缩小,恢复初始大小
   container.addEventListener('dblclick', () => {
@@ -390,4 +369,30 @@ export function showSegmentMask(image: {
   container.appendChild(img)
   container.appendChild(zoomButton)
   document.body.appendChild(container)
+
+  // 等待下一帧，确保DOM已经渲染完成，再计算位置
+  requestAnimationFrame(() => {
+    const y = imagePosition.getBoundingClientRect().y
+    container.style.top = y + 'px'
+
+    const width = imagePosition.getBoundingClientRect().width
+    const x =
+      imagePosition.getBoundingClientRect().x +
+      width -
+      container.getBoundingClientRect().width
+    container.style.left = x + 'px'
+    
+    // 显示容器
+    container.style.visibility = 'visible'
+  })
+
+  // 动态调整位置
+  setInterval(() => {
+    const width = imagePosition.getBoundingClientRect().width
+    const x =
+      imagePosition.getBoundingClientRect().x +
+      width -
+      container.getBoundingClientRect().width
+    container.style.left = x + 'px'
+  }, 200)
 }
