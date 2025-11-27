@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v3.0.6] - 2025-11-28
+
+### 修复
+
+保存前阻止关闭页面, 搭配快捷键使用时仍显示未保存([2bd9631](https://github.com/initialencounter/Aircraft/commit/2bd9631af8de320bedfde76dfde66d1b56f004f1))
+
+### 新增
+
+标记未保存的修改项(需要手动开启)([2bd9631](https://github.com/initialencounter/Aircraft/commit/2bd9631af8de320bedfde76dfde66d1b56f004f1))
+
 ## [v3.0.1] - 2025-11-23
 
 ### 修复
