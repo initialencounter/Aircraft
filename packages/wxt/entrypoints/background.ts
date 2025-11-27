@@ -487,6 +487,7 @@ async function entrypoint() {
         search: path,
         json: '1',
         path: '1',
+        path_column: '1',
       })
       const response = await fetch(`http://127.0.0.1:25456?${params.toString()}`, {
         method: 'GET',
