@@ -1,7 +1,7 @@
 import { Config } from "../entrypoints/options/src/components/Schema"
 
 const LocalConfig: Config = {
-  allInWebBrowser: false,
+  allInWebBrowser: true,
   manualCheckStackEvaluation: false,
   autoCheckStackEvaluation: false,
   hundredRowsResult: true,

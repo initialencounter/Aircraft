@@ -217,9 +217,8 @@ async function entrypoint() {
     // 启动心跳
     startHeartbeat();
     antiCORS();
-    console.log('Entry point initialization started');
     chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
-      if (result.allInWebBrowser === true) {
+      if (result.allInWebBrowser !== false) {
         aircraftServerAvailable = false
         initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
       }
