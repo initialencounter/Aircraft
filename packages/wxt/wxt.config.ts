@@ -26,7 +26,7 @@ export default defineConfig({
   entrypointsDir: './entrypoints',
   manifest: {
     name: 'lims',
-    version: '3.0.2',
+    version: '3.0.3',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
     web_accessible_resources: [
       {
