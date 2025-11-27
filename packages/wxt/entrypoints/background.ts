@@ -376,6 +376,7 @@ async function entrypoint() {
       const projectDir = searchResponses.results[0].path
       const fileItems = await getProjectDirItems(projectDir)
       for (const file of fileItems?.results || []) {
+        if (file.path !== projectDir) continue
         if (file.type === 'dir') continue
         if (file.name.includes('评估单') || file.name.includes('堆码评估')) {
           return {
