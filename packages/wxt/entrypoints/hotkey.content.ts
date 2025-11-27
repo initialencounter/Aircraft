@@ -40,6 +40,7 @@ async function entrypoint() {
   const localConfig = await getLocalConfig()
   const systemId = getSystemId()
   const Qmsg = getQmsg()
+  let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
   await sleep(500)
   // 将项目编号设置为标题
   if (localConfig.enableCopyProjectNo) {
@@ -216,31 +217,59 @@ async function entrypoint() {
   }
 
   function watchInput() {
-    const table = document.getElementById(
-      category === 'chemical' ? 'chemicalInspectForm' : 'batteryInspectForm'
-    )?.children[3]
-    table?.addEventListener('change', function (event: Event) {
+    // 使用事件捕获在文档级别监听,绕过 EasyUI 的事件处理
+    document.addEventListener('input', function (event: Event) {
       if (!document.hasFocus()) return
       const target = event.target as HTMLElement
-      if (target) console.log('Changed tag name:', target.tagName)
-      if (
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLSelectElement ||
-        target instanceof HTMLTextAreaElement
-      ) {
-        console.log('Changed value:', target.value)
+
+      // 检查目标元素是否在表单内
+      const formId = category === 'chemical' ? 'chemicalInspectForm' : 'batteryInspectForm'
+      const form = document.getElementById(formId)
+      if (!form || !form.contains(target)) return
+
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        if (target.parentElement && localConfig.markColorChangedInput) {
+          if (target instanceof HTMLTextAreaElement) {
+            target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
+          } else {
+            if (target.className.includes('textbox-text')) {
+              target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
+            } else {
+              target.parentElement.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
+            }
+          }
+        }
+        changedTarget.push(target)
         changed = true
         document.title = `* ${originalTitle}`
       }
-    })
+    }, true) // 使用捕获阶段
+  }
+
+  function doSaveAction() {
+    changed = false
+    if (localConfig.markColorChangedInput) {
+      changedTarget.forEach((element) => {
+        element.style.background = ''
+        if (element.parentElement)
+          element.parentElement.style.background = ''
+      })
+    }
+    changedTarget = []
+    document.title = originalTitle
   }
 
   function watchSaveBtn() {
+    const saveBtn1 = document.getElementById('saveBtn')
+    if (saveBtn1) {
+      saveBtn1.addEventListener('click', async function () {
+        doSaveAction()
+      })
+    }
     const saveBtn = document.getElementById('saveBtn0')
     if (saveBtn) {
-      saveBtn.addEventListener('click', function () {
-        changed = false
-        document.title = originalTitle
+      saveBtn.addEventListener('click', async function () {
+        doSaveAction()
       })
     }
   }

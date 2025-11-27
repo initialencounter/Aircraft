@@ -6,6 +6,8 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  markColorChangedInput: boolean
+  changedInputBackgroundColor: string
   allInWebBrowser: boolean
   manualCheckStackEvaluation: boolean
   autoCheckStackEvaluation: boolean
@@ -191,6 +193,12 @@ export const Config: Schema<Config> = Schema.intersect([
         `保存前阻止关闭 （当有未保存的数据时，关闭页面时会弹出提示）`
       )
       .default(true),
+    markColorChangedInput: Schema.boolean().default(false).description('当输入框内容被修改后，改变输入框的背景颜色以提示用户'),
+    changedInputBackgroundColor: Schema.string()
+      .description(
+        `更改已修改输入框的背景颜色`
+      )
+      .default('#76EEC6'),
     enableSaveHotKey: Schema.boolean()
       .description(`保存快捷键 （使用快捷键 *Ctrl + S* 将保存检验单）`)
       .default(true),

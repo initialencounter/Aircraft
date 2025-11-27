@@ -43,7 +43,6 @@ export default defineContentScript({
 
     // 如果不是电池类别或未启用验证，则退出
     if (!['battery', 'sodium'].includes(category)) return
-    console.log('localConfig2', JSON.stringify(localConfig, null, 2))
     if (!localConfig.verify) {
       console.log('未启用验证，退出脚本')
       return
