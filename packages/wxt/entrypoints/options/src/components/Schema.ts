@@ -68,7 +68,7 @@ export const Config: Schema<Config> = Schema.intersect([
       .description('每页默认显示100条结果')
       .default(true),
     allInWebBrowser: Schema.boolean()
-      .description('所有功能都在浏览器中实现, 不依赖概要解析器 (此功能不支持 Firefox 浏览器)')
+      .description('所有功能都在浏览器中实现, 不依赖概要解析器')
       .default(false),
   }).description('全局设置'),
   // 业务受理 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

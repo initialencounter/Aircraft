@@ -73,6 +73,126 @@ interface SearchPathResponse {
   results: SearchPathResult[]
 }
 
+function antiCORS() {
+  // CORS Bypass for localhost:25456 - Background Script
+  chrome.webRequest.onHeadersReceived.addListener(
+    function (details) {
+      // 只处理 127.0.0.1:25456 的请求
+      if (!details.url.includes('http://127.0.0.1:25456/')) {
+        return { responseHeaders: details.responseHeaders };
+      }
+
+      console.log('CORS Bypass: Processing request to', details.url);
+
+      const headers = details.responseHeaders || [];
+
+      // 移除原有的 CORS 相关头
+      const corsHeadersToRemove = [
+        'access-control-allow-origin',
+        'access-control-allow-methods',
+        'access-control-allow-headers',
+        'access-control-allow-credentials',
+        'access-control-expose-headers'
+      ];
+
+      const filteredHeaders = headers.filter(header =>
+        !corsHeadersToRemove.includes(header.name.toLowerCase())
+      );
+
+      // 添加允许所有源的 CORS 头
+      filteredHeaders.push({
+        name: 'Access-Control-Allow-Origin',
+        value: '*'
+      });
+
+      filteredHeaders.push({
+        name: 'Access-Control-Allow-Methods',
+        value: 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH'
+      });
+
+      filteredHeaders.push({
+        name: 'Access-Control-Allow-Headers',
+        value: 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Range, User-Agent, responseType, Cache-Control, Pragma'
+      });
+
+      filteredHeaders.push({
+        name: 'Access-Control-Allow-Credentials',
+        value: 'true'
+      });
+
+      filteredHeaders.push({
+        name: 'Access-Control-Expose-Headers',
+        value: 'Content-Length, Content-Range'
+      });
+
+      return { responseHeaders: filteredHeaders };
+    },
+    {
+      urls: ["http://127.0.0.1:25456/*"]
+    },
+    ["blocking", "responseHeaders"]
+  );
+
+  // 处理 OPTIONS 预检请求
+  chrome.webRequest.onBeforeRequest.addListener(
+    function (details) {
+      // 只处理 127.0.0.1:25456 的 OPTIONS 请求
+      if (!details.url.includes('http://127.0.0.1:25456/') || details.method !== 'OPTIONS') {
+        return {};
+      }
+
+      console.log('CORS Bypass: Handling preflight request to', details.url);
+
+      // 直接返回成功的预检响应
+      return {
+        redirectUrl: "data:application/json;charset=utf-8," + JSON.stringify({
+          status: "ok",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization, Range, User-Agent, responseType, Cache-Control, Pragma",
+            "Access-Control-Allow-Credentials": "true"
+          }
+        })
+      };
+    },
+    {
+      urls: ["http://127.0.0.1:25456/*"]
+    },
+    ["blocking"]
+  );
+
+  // 修改请求头，确保 Origin 头正确
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+    function (details) {
+      // 只处理 127.0.0.1:25456 的请求
+      if (!details.url.includes('http://127.0.0.1:25456/')) {
+        return { requestHeaders: details.requestHeaders };
+      }
+
+      let headers = details.requestHeaders || [];
+
+      // 移除可能冲突的 Origin 头
+      headers = headers.filter(header =>
+        header.name.toLowerCase() !== 'origin'
+      );
+
+      // 添加正确的 Origin 头
+      headers.push({
+        name: 'Origin',
+        value: new URL(details.url).origin // 使用请求的 origin
+      });
+
+      return { requestHeaders: headers };
+    },
+    {
+      urls: ["http://127.0.0.1:25456/*"]
+    },
+    ["blocking", "requestHeaders"]
+  );
+
+  console.log('CORS Bypass Extension loaded - Ready to bypass CORS for http://127.0.0.1:25456');
+}
 
 export default defineBackground({
   main() {
@@ -96,15 +216,12 @@ async function entrypoint() {
   try {
     // 启动心跳
     startHeartbeat();
-    const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+    antiCORS();
+    console.log('Entry point initialization started');
     chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
       if (result.allInWebBrowser === true) {
-        if (isFirefox) {
-          console.warn('Firefox 浏览器不支持 allInWebBrowser 功能，已自动关闭该功能');
-        } else {
-          aircraftServerAvailable = false
-          initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
-        }
+        aircraftServerAvailable = false
+        initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
       }
       if (result.enableLabelCheck === true) {
         enableLabelCheck = true
@@ -132,7 +249,7 @@ async function entrypoint() {
           break
 
         case '概要测试':
-          const summaryBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/SEKGZ202508140000 概要.docx")
+          const summaryBuffer = await downloadEverythingFile("E:\\2025\\11\\2026\\11.10安磁 新出 2026（9份）\\A25090200-6 嘉成 112028 空海运\\PEKGZ202511115345 概要.docx")
           let responseSummary: SummaryInfo | null = await getSummaryInfo(summaryBuffer!)
           console.log('WASM get-summary response:', responseSummary)
           break

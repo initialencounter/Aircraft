@@ -62,6 +62,8 @@ export default defineConfig({
       'scripting',
       'storage',
       'contextMenus',
+      "webRequest",
+      "webRequestBlocking",
     ],
     host_permissions: ['<all_urls>'],
     options_page: 'options.html',
