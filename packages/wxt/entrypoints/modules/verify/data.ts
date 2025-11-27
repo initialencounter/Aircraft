@@ -1,8 +1,8 @@
 import { checkPekBtyType, checkPekSodiumBtyType, CheckResult, checkSekBtyType, checkSekSodiumBtyType, type AttachmentInfo, type EntrustData, type PekData, type SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
-import { getProjectAttachmentInfo, getProjectTrace } from '../utils/api'
+import { getLocalAttachmentInfo, getProjectTrace } from '../utils/api'
 import { getProjectYear, type LocalConfig } from '../../../share/utils'
-import { checkAttachment, checkAttachmentFiles, drawSegmentMask, showSegmentMask } from './attachment'
+import { checkLocalAttachment, checkSystemAttachmentFiles, drawSegmentMask, showSegmentMask } from './attachment'
 import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { checkModelWithFactory, checkModel } from './dangetousModel'
@@ -50,7 +50,8 @@ export async function verifyFormData(
     }
   }
 
-  result.push(...(await checkAttachmentFiles(projectNo, projectId)))
+  // 检测系统的是否上传的资料
+  result.push(...(await checkSystemAttachmentFiles(projectNo, projectId)))
 
   let entrustData: null | EntrustData = null
   try {
@@ -67,8 +68,9 @@ export async function verifyFormData(
     is_965 = (dataFromForm as SekData).otherDescribe === '540'
   }
 
+  // 检查本地附件信息
   const attachmentInfo: AttachmentInfo | null =
-    await getProjectAttachmentInfo(projectNo, is_965, localConfig)
+    await getLocalAttachmentInfo(projectNo, is_965, localConfig)
 
   if (entrustData && attachmentInfo) {
     result.push(
@@ -79,7 +81,7 @@ export async function verifyFormData(
       )
     )
     result.push(
-      ...(await checkAttachment(
+      ...(await checkLocalAttachment(
         systemId,
         dataFromForm,
         localConfig,

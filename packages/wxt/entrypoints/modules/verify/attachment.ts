@@ -19,7 +19,7 @@ import {
 /**
  * 检查附件文件
  */
-export async function checkAttachmentFile(
+export async function checkSystemAttachmentFile(
   type: 'goodsfile' | 'batteryfile',
   projectNo: string,
   projectId: string
@@ -40,19 +40,19 @@ export async function checkAttachmentFile(
 /**
  * 检查所有附件文件
  */
-export async function checkAttachmentFiles(
+export async function checkSystemAttachmentFiles(
   projectNo: string,
   projectId: string
 ): Promise<Array<{ ok: boolean; result: string }>> {
-  const check1 = await checkAttachmentFile('goodsfile', projectNo, projectId)
-  const check2 = await checkAttachmentFile('batteryfile', projectNo, projectId)
+  const check1 = await checkSystemAttachmentFile('goodsfile', projectNo, projectId)
+  const check2 = await checkSystemAttachmentFile('batteryfile', projectNo, projectId)
   return [...check1, ...check2]
 }
 
 /**
  * 检查附件内容
  */
-export async function checkAttachment(
+export async function checkLocalAttachment(
   systemId: 'pek' | 'sek',
   dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   localConfig: typeof LocalConfig,
@@ -318,7 +318,7 @@ export function showSegmentMask(image: {
     if (currentWidth > minWidth) {
       img.style.width = minimalSize
       img.style.height = minimalSize
-    }else {
+    } else {
       img.style.width = image.width + 'px'
       img.style.height = image.height + 'px'
     }
@@ -345,7 +345,7 @@ export function showSegmentMask(image: {
       width -
       container.getBoundingClientRect().width
     container.style.left = x + 'px'
-    
+
     // 显示容器
     container.style.visibility = 'visible'
   })

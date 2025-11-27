@@ -73,7 +73,7 @@ export async function getEntrustData(): Promise<string | null> {
 /**
  * 获取项目附件信息
  */
-export async function getProjectAttachmentInfo(
+export async function getLocalAttachmentInfo(
   projectNo: string,
   is_965: boolean,
   localConfig: typeof LocalConfig
