@@ -28,7 +28,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: 'github',
-        link: 'https://github.com/initialencounter/chrome-extensions',
+        link: 'https://github.com/initialencounter/Aircraft',
       },
     ],
   },

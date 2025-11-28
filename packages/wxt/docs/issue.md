@@ -1,1 +1,1 @@
-[点我](https://github.com/initialencounter/chrome-extensions/issues/new)👈反馈问题。
+[点我](https://github.com/initialencounter/Aircraft/issues/new)👈反馈问题。
