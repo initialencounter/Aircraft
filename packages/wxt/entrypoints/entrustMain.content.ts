@@ -40,6 +40,7 @@ interface User {
 }
 
 let immediatePayManual = false
+let importButtonClicked = false
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -69,6 +70,7 @@ async function entrypoint() {
   insertReloadButton()
   startFollow()
   if (localConfig.screenshotItemName === true) addShotListener(Qmsg)
+  if (localConfig.tagNextYear === true) setTagNextYearListener()
   startSyncInterval()
   startListenAmount(localConfig.amount)
   chrome.storage.local.get(
@@ -84,6 +86,18 @@ async function entrypoint() {
   )
 
   // function
+
+  function setTagNextYearListener() {
+    const importButton = document.querySelector("#importbutton")
+    if (importButton) {
+      importButton.addEventListener("click", function () {
+        importButtonClicked = true
+        setTimeout(() => {
+          importButtonClicked = false
+        }, 60000)
+      })
+    }
+  }
 
   function setAmountListener() {
     const immediatePayButton = document.getElementById(
@@ -142,6 +156,7 @@ async function entrypoint() {
 
   function setTagNextYear() {
     if (localConfig.tagNextYear === false) return
+    if (importButtonClicked === false) return
     const nextYear = document.getElementById('nextYear') as HTMLInputElement
     if (nextYear) nextYear.click()
   }
