@@ -1,5 +1,16 @@
 # 更新日志
 
+## [v3.0.8] - 2025-11-28
+
+### 修复
+ - UN3556 荷电状态勾选([d76a242](https://github.com/initialencounter/Aircraft/commit/d76a242590739cef24df55221d1a6bab4e6d4c1f))
+
+## [v3.0.7] - 2025-11-28
+
+### 修复
+
+- 只在导入时标记下一年报告([0601e8d](https://github.com/initialencounter/Aircraft/commit/0601e8d990df3d2ac8bb15a892e80c84a52dfeb2))
+
 ## [v3.0.6] - 2025-11-28
 
 ### 修复
