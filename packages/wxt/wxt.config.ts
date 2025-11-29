@@ -27,7 +27,7 @@ export default defineConfig({
   manifest: {
     name: 'lims',
     version: '3.0.8',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+    description: 'Automates form validation and data entry for battery inspection forms.',
     web_accessible_resources: [
       {
         resources: [
@@ -57,11 +57,8 @@ export default defineConfig({
       '48': 'icon/lims.png',
     },
     permissions: [
-      'activeTab',
       'clipboardWrite',
-      'scripting',
       'storage',
-      'contextMenus',
     ],
     host_permissions: ['<all_urls>'],
     options_page: 'options.html',
