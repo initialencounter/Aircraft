@@ -4,6 +4,8 @@ export function checkConsignor(
   systemIdConsignor: string,
   summaryConsignor: string
 ): CheckResult[] {
+  systemIdConsignor = systemIdConsignor.replace(/\s?\(/g, '（').replace(/\(\s?/g, '）')
+  summaryConsignor = summaryConsignor.replace(/\s?\(/g, '（').replace(/\(\s?/g, '）')
   if (!systemIdConsignor) {
     return [{ ok: false, result: '获取系统委托方失败' }]
   }
