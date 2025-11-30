@@ -1,9 +1,22 @@
 # 更新日志
 
+## [v3.0.9] - 2025-11-30
+
+### 修复
+
+- 概要英文手动换行解析失败([/aaa6aa6](https://github.com/initialencounter/Aircraft/commit/aaa6aa60c105c0d431463c540ce9d3795de00578))
+- 概要图片商标解析失败([f1e5a6f](https://github.com/initialencounter/Aircraft/commit/f1e5a6fc24ef1f63195b635598ae352ac486cd94))
+- 忽略概要委托方和制造商全角与半角括号([30d326e](https://github.com/initialencounter/Aircraft/commit/30d326e286c91d3074dc74c948913113fe087852))
+
+### 新增
+
+- 优化概要解析性能([ff20d3b](https://github.com/initialencounter/Aircraft/commit/ff20d3baee4dd01ba909bb5faab1f17c32ef9dca))
+
 ## [v3.0.8] - 2025-11-28
 
 ### 修复
- - UN3556 荷电状态勾选([d76a242](https://github.com/initialencounter/Aircraft/commit/d76a242590739cef24df55221d1a6bab4e6d4c1f))
+
+- UN3556 荷电状态勾选([d76a242](https://github.com/initialencounter/Aircraft/commit/d76a242590739cef24df55221d1a6bab4e6d4c1f))
 
 ## [v3.0.7] - 2025-11-28
 
@@ -15,11 +28,11 @@
 
 ### 修复
 
-保存前阻止关闭页面, 搭配快捷键使用时仍显示未保存([2bd9631](https://github.com/initialencounter/Aircraft/commit/2bd9631af8de320bedfde76dfde66d1b56f004f1))
+- 保存前阻止关闭页面, 搭配快捷键使用时仍显示未保存([2bd9631](https://github.com/initialencounter/Aircraft/commit/2bd9631af8de320bedfde76dfde66d1b56f004f1))
 
 ### 新增
 
-标记未保存的修改项(需要手动开启)([2bd9631](https://github.com/initialencounter/Aircraft/commit/2bd9631af8de320bedfde76dfde66d1b56f004f1))
+- 标记未保存的修改项(需要手动开启)([2bd9631](https://github.com/initialencounter/Aircraft/commit/2bd9631af8de320bedfde76dfde66d1b56f004f1))
 
 ## [v3.0.1] - 2025-11-23
 
@@ -57,7 +70,6 @@
 ### 修复
 
 - 钠离子电池跌落检查([9b2f6e0](https://github.com/initialencounter/Aircraft/commit/9b2f6e005229bcd7639de35a2efe4007bb51694d))
-
 
 ## [v2.1.7] - 2025-11-10
 
@@ -97,8 +109,6 @@
 
 - 默认关闭初验双击品名截图([d5bf158](https://github.com/initialencounter/Aircraft/commit/d5bf158374de930b31a8c7c56ab7a07f816490e2))
 
-
-
 ## [v2.0.14] - 2025-10-14
 
 ### 新增
@@ -133,24 +143,25 @@
 - 在新标签页打开检验单([9827b58](https://github.com/initialencounter/Aircraft/commit/9827b581fc0c8ebfc999adae44e3da2c0cf08d9f))
 - 自定义项目编号颜色
 
-
 ## [v2.0.10] - 2025-09-17
 
 ### 新增
 
 - 电池型号提示([05c513](https://github.com/initialencounter/Aircraft/commit/05c561388ef9e744640079e7a3044985d19ed53d)) 默认设置了这些型号，可在选项页面添加更多型号。
+
 ```json
 [
-  '27100118P',
-  '28100118',
-  '624475ART',
-  '506795',
-  'INR18650-1.5Ah',
-  'P13001L',
-  '2998125',
-  'BL-18EI',
+  "27100118P",
+  "28100118",
+  "624475ART",
+  "506795",
+  "INR18650-1.5Ah",
+  "P13001L",
+  "2998125",
+  "BL-18EI"
 ]
 ```
+
 ## [v2.0.8] - 2025-09-05
 
 ### 修复
