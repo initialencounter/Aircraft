@@ -1,6 +1,8 @@
 use aircraft_types::summary::SummaryInfo;
 use std::collections::HashMap;
 
+use crate::parse::regex::process_newlines;
+
 use super::match_project_no;
 
 pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
@@ -53,6 +55,10 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
             }
         }
     }
+    if !summary.cn_name.is_empty() {
+        summary.cn_name = process_newlines(&summary.cn_name);
+    }
+
     // 签发日期
     if let Some(last_item) = content.last() {
         summary.issue_date = last_item.clone();
