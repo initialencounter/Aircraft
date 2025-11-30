@@ -51,22 +51,22 @@ pub fn read_docx_content_u8(
     Ok(content)
 }
 
-fn get_summary_info(contents: Vec<String>) -> Result<SummaryInfo, Box<dyn std::error::Error>> {
-    let content = parse_docx_text(&contents[0]);
+fn get_summary_info(xml_content: &str) -> Result<SummaryInfo, Box<dyn std::error::Error>> {
+    let content = parse_docx_text(xml_content);
     let summary = parse_docx_table(content);
     Ok(summary)
 }
 
 pub fn get_summary_info_by_path(path: &str) -> Result<SummaryInfo, Box<dyn std::error::Error>> {
     let contents = read_docx_content(path, vec!["word/document.xml".to_string()])?;
-    get_summary_info(contents)
+    get_summary_info(&contents[0])
 }
 
 pub fn get_summary_info_by_buffer(
     buffer: &[u8],
 ) -> Result<SummaryInfo, Box<dyn std::error::Error>> {
     let contents = read_docx_content_u8(buffer, vec!["word/document.xml".to_string()])?;
-    get_summary_info(contents)
+    get_summary_info(&contents[0])
 }
 
 #[cfg(test)]
