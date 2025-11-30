@@ -59,6 +59,12 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         summary.cn_name = process_newlines(&summary.cn_name);
     }
 
+    if !summary.trademark.is_empty() {
+        if summary.trademark.contains("额定电压") {
+            summary.trademark = "/".to_string();
+        }
+    }
+
     // 签发日期
     if let Some(last_item) = content.last() {
         summary.issue_date = last_item.clone();
@@ -78,12 +84,12 @@ mod tests {
     fn test_parse_docx() {
         let text = read_docx_content(
             // r"C:\Users\29115\RustroverProjects\docx-rs\tests\test.docx",
-            r"C:\Users\29115\Downloads\PEKGZ202412167637 概要.docx",
+            r"C:\Users\29115\Downloads\8.14众凯（影翎 四款套装）\8.14众凯（影翎 四款套装）\8.14 申请鉴定书-KEYLAB2508006--4种套装\1. A1 标续3电套装\体感控\PEKGZ202508141214 概要.docx",
             vec!["word/document.xml".to_string()],
         );
         let content = parse_docx_text(&text.unwrap()[0].clone());
         println!("{}", content.clone().join("\n"));
         let summary = parse_docx_table(content);
-        std::fs::write("test2.json", serde_json::to_string(&summary).unwrap()).unwrap();
+        std::fs::write("test2.json", serde_json::to_string_pretty(&summary).unwrap()).unwrap();
     }
 }
