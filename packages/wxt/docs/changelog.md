@@ -1,5 +1,12 @@
 # 更新日志
 
+
+## [v3.0.10] - 2025-12-01
+
+### 修复
+
+- 获取报告年份错误导致的，无法验证荷电状态([5d3ecb6](https://github.com/initialencounter/Aircraft/commit/5d3ecb6758b76ccaa0956c5e753ff9d912eebfe5))
+
 ## [v3.0.9] - 2025-11-30
 
 ### 修复
