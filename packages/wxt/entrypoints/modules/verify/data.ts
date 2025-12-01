@@ -22,11 +22,11 @@ export async function verifyFormData(
   let dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData
   let model: string
   if (category === 'battery') {
-    const data = await getProjectTrace(projectNo);
+    // const data = await getProjectTrace(projectNo);
     let projectYear: string | undefined = undefined;
-    if (data && data.rows.length > 0 && data.rows[0]) {
-      projectYear = getProjectYear(projectNo, data.rows[0].nextYear)
-    }
+    // if (data && data.rows.length > 0 && data.rows[0]) {
+    //   projectYear = getProjectYear(projectNo, data.rows[0].nextYear)
+    // }
     if (systemId === 'pek') {
 
       dataFromForm = getFormData<PekData>(systemId)
