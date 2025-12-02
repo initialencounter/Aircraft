@@ -244,6 +244,11 @@ function getQmsg() {
         oMsg.close();
       }.bind($elem));
     }
+    // 右键关闭弹窗，屏蔽默认右键菜单
+    $elem.addEventListener('contextmenu', function (this: MsgInstance, e: MouseEvent) {
+      e.preventDefault(); // 屏蔽默认右键菜单
+      this.close(); // 关闭弹窗
+    }.bind(oMsg));
     $elem.addEventListener("animationend", function (this: MsgInstance, e: AnimationEvent) {   // 监听动画完成
       const target = e.target as HTMLElement, animationName = e.animationName;
       if (animationName === STATES['closing']) {
