@@ -106,7 +106,7 @@ async function entrypoint() {
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
     // A generic onclick callback function.
-    chrome.contextMenus.onClicked.addListener(genericOnClick)
+    // chrome.contextMenus.onClicked.addListener(genericOnClick)
   } catch (error) {
     console.error('entrypoint initialization error:', error);
   }
@@ -176,7 +176,7 @@ async function entrypoint() {
           },
         ],
       }
-      createContextMenu(menus)
+      // createContextMenu(menus)
     } catch (error) {
       console.error('onInstalled error:', error);
     }
