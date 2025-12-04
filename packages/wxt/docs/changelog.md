@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v3.0.14] - 2025-12-04
+
+### 优化
+
+- 并行请求，加快验证速度([18191a3](https://github.com/initialencounter/Aircraft/commit/18191a383db7256a96b8743269e31cfcc22b47f5))
+
 ## [v3.0.13] - 2025-12-01
 
 ### 修复
