@@ -50,17 +50,7 @@ export async function verifyFormData(
     }
   }
 
-  // 检测系统的是否上传的资料
-  result.push(...(await checkSystemAttachmentFiles(projectNo, projectId)))
-
-  let entrustData: null | EntrustData = null
-  try {
-    const entrustDataText = await getEntrustData()
-    entrustData = parseEntrust(entrustDataText)
-  } catch {
-    result.push({ ok: false, result: '获取系统委托方和制造商失败' })
-  }
-
+  // 计算 is_965 值，后续并行请求需要用到
   let is_965 = false
   if (systemId === 'pek') {
     is_965 = (dataFromForm as PekData).inspectionItem1 === 0
@@ -68,9 +58,28 @@ export async function verifyFormData(
     is_965 = (dataFromForm as SekData).otherDescribe === '540'
   }
 
-  // 检查本地附件信息
-  const attachmentInfo: AttachmentInfo | null =
-    await getLocalAttachmentInfo(projectNo, is_965, localConfig)
+  // 并行执行三个异步操作以减少等待时间
+  const [attachmentCheckResults, entrustDataResult, attachmentInfo] = await Promise.all([
+    // 检测系统的是否上传的资料
+    checkSystemAttachmentFiles(projectNo, projectId),
+    // 获取系统委托方和制造商
+    getEntrustData()
+      .then(text => ({ success: true, data: parseEntrust(text) }))
+      .catch(() => ({ success: false, data: null })),
+    // 检查本地附件信息
+    getLocalAttachmentInfo(projectNo, is_965, localConfig)
+  ])
+
+  // 处理附件检查结果
+  result.push(...attachmentCheckResults)
+
+  // 处理委托数据结果
+  let entrustData: null | EntrustData = null
+  if (entrustDataResult.success) {
+    entrustData = entrustDataResult.data
+  } else {
+    result.push({ ok: false, result: '获取系统委托方和制造商失败' })
+  }
 
   if (entrustData && attachmentInfo) {
     result.push(
