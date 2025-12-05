@@ -6,6 +6,8 @@ import type * as Aircraft from '../public/aircraft';
 // 直接导入 wasm 模块
 import init, * as AircraftWasm from '../public/aircraft.js';
 
+const EVERYTHING_HTTP_ADDRESS = "http://127.0.0.1:25456";
+
 let session: ort.InferenceSession | null = null;
 
 const yoloClasses = ['9', '9A', 'bty', 'CAO'];
@@ -489,7 +491,7 @@ async function entrypoint() {
         path: '1',
         path_column: '1',
       })
-      const response = await fetch(`http://127.0.0.1:25456?${params.toString()}`, {
+      const response = await fetch(`${EVERYTHING_HTTP_ADDRESS}?${params.toString()}`, {
         method: 'GET',
         cache: 'no-store',
         mode: 'cors',
@@ -517,7 +519,7 @@ async function entrypoint() {
         json: '1',
         path_column: '1',
       })
-      const response = await fetch(`http://127.0.0.1:25456?${params.toString()}`, {
+      const response = await fetch(`${EVERYTHING_HTTP_ADDRESS}?${params.toString()}`, {
         method: 'GET',
         cache: 'no-store',
         mode: 'cors',
@@ -541,7 +543,7 @@ async function entrypoint() {
 
   async function downloadEverythingFile(path: string): Promise<ArrayBuffer | null> {
     try {
-      const response = await fetch(`http://127.0.0.1:25456/${path}`, {
+      const response = await fetch(`${EVERYTHING_HTTP_ADDRESS}/${path}`, {
         method: 'GET',
         cache: 'no-store',
         mode: 'cors',
