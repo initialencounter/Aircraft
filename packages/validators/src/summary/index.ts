@@ -40,6 +40,7 @@ import { checkTitle } from './checkTitle'
 import { checkColor } from './checkColor'
 import { checkT8 } from './checkT8'
 import { PekSodiumData, SekSodiumData } from '../sodium/shared/types'
+import { checkTests } from './checkTests'
 
 export function checkSekAttachment(
   currentData: SekData | SekSodiumData,
@@ -272,6 +273,7 @@ function checkSummaryFromLLM(
   results.push(...checkColor(btyColor, summaryData.shape))
   results.push(...checkMass(batteryWeight, summaryData.mass))
   results.push(...checkLiContent(liContent, summaryData.licontent))
+  results.push(...checkTests(summaryData))
   results.push(...checkT7(btyType, summaryData.test7, summaryData.note))
   results.push(...checkT8(isSodium, summaryData.test8))
   results.push(...checkIssueDate(summaryData.issueDate, currentData.projectNo))
