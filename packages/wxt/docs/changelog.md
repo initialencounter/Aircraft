@@ -1,5 +1,9 @@
 # 更新日志
 
+## [v3.0.15] - 2025-12-12
+
+- T1-T8测试项检查([15b232c](https://github.com/initialencounter/Aircraft/commit/15b232c98178c729e89f209a4a72eb02b32847a8))
+
 ## [v3.0.14] - 2025-12-04
 
 ### 优化
