@@ -38,10 +38,14 @@ impl HttpClient {
         confirm_fn: fn(&str, &str) -> bool,
     ) -> Self {
         let client = Client::builder().cookie_store(true).build().unwrap();
-
+        let fixed_base_url = if base_url.ends_with('/') {
+            base_url.trim_end_matches('/').to_string()
+          }else {
+            base_url
+          };
         HttpClient {
             client,
-            base_url,
+            base_url: fixed_base_url,
             username,
             password,
             debug,
