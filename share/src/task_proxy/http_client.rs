@@ -91,7 +91,8 @@ impl HttpClient {
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(format!(
                 "type=password&username={}&password={}",
-                self.username, self.password
+                urlencoding::encode(&self.username),
+                urlencoding::encode(&self.password)
             ))
             .send()
             .await?;
