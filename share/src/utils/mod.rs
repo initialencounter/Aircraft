@@ -2,7 +2,7 @@ pub mod dialog;
 pub mod fs;
 pub mod uploader;
 
-use chrono::Local;
+use chrono::{Local, NaiveDate, Duration};
 use clipboard_rs::{Clipboard, ClipboardContext};
 pub use dialog::*;
 pub use fs::*;
@@ -37,9 +37,17 @@ pub fn parse_date(date_text: &str) -> Result<(String, String)> {
             format!("{}-{}-31", year, month),
         ))
     } else {
+        // Parse the date and calculate ±15 days range
+        let date_str = format!("{}-{}-{}", year, month, day);
+        let center_date = NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
+            .map_err(|_| "无效的日期格式")?;
+
+        let start_date = center_date - Duration::days(15);
+        let end_date = center_date + Duration::days(15);
+
         Ok((
-            format!("{}-{}-{}", year, month, day),
-            format!("{}-{}-{}", year, month, day),
+            start_date.format("%Y-%m-%d").to_string(),
+            end_date.format("%Y-%m-%d").to_string(),
         ))
     }
 }
@@ -75,7 +83,7 @@ mod tests {
         println!("Start: {}, End: {}", start, end);
 
 
-        let (start, end) = parse_date("PEKGZ202301317777").unwrap();
+        let (start, end) = parse_date("PEKGZ202300317777").unwrap();
         println!("Start: {}, End: {}", start, end);
 
 
