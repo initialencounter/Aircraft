@@ -146,7 +146,7 @@ impl HttpClient {
         let (start_date, end_date) = parse_date(project_no)?;
         let system_id = project_no[0..3].to_lowercase();
         let query_string = format!(
-            "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
+            "systemId={}&category=&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
         );
 
@@ -330,7 +330,7 @@ impl HttpClient {
         let system_id = project_no[0..3].to_lowercase();
 
         let query_string = format!(
-            "systemId={}&category=battery&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
+            "systemId={}&category=&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
             system_id, project_no, start_date, end_date
         );
 
