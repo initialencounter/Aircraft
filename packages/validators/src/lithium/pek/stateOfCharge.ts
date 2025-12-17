@@ -22,7 +22,6 @@ export function stateOfCharge(
     result.push({ ok: false, result: `同时勾选SoC荷电状态≤30%和设备显示电量≤25%` })
   }
   const onlySelectSocCapacity = socCapacity && !deviceBatteryCapacity;
-  const onlySelectDeviceBatteryCapacity = deviceBatteryCapacity && !socCapacity;
   const neitherSelect = !deviceBatteryCapacity && !socCapacity;
 
   switch (pkgInfoSubType) {
