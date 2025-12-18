@@ -20,16 +20,11 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                         let a = a.clone().unwrap();
                         a.key.as_ref() == b"w:fullDate"
                     }) {
-                        match attr {
-                            Ok(attr) => {
-                                let date = String::from_utf8_lossy(attr.value.as_ref());
-                                if let Some(date_only) = date.split('T').next() {
-                                    last_text = date_only.to_string();
-                                    output.push(last_text.clone());
-                                }
-                            }
-                            Err(e) => {
-                                println!("{}", e);
+                        if let Ok(attr) = attr {
+                            let date = String::from_utf8_lossy(attr.value.as_ref());
+                            if let Some(date_only) = date.split('T').next() {
+                                last_text = date_only.to_string();
+                                output.push(last_text.clone());
                             }
                         }
                     }
@@ -73,8 +68,7 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                 path.pop();
             }
             Ok(Event::Eof) => break,
-            Err(e) => {
-                println!("解析错误: {}", e);
+            Err(_) => {
                 break;
             }
             _ => (),

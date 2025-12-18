@@ -209,13 +209,8 @@ mod tests {
 
         // 获取排序后的图片
         let images = read_pdf_img_sorted(&data).unwrap();
-        println!("找到 {} 张图片", images.len());
 
         for (i, img) in images.iter().enumerate() {
-            println!(
-                "图片 {}: 位置({:.2}, {:.2}), 尺寸({:.2}, {:.2})",
-                i, img.x, img.y, img.width, img.height
-            );
             std::fs::write(format!("sorted_image_{}.png", i), &img.data).unwrap();
         }
     }
@@ -227,10 +222,7 @@ mod tests {
 
         // 只获取最右下角的图片
         if let Some(img_data) = read_pdf_img_bottom_right(&data).unwrap() {
-            println!("找到最右下角的图片");
             std::fs::write("bottom_right_image.png", img_data).unwrap();
-        } else {
-            println!("未找到图片");
         }
     }
 }

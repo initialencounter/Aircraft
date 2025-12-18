@@ -94,7 +94,6 @@ mod tests {
             vec!["word/document.xml".to_string()],
         );
         let content = parse_docx_text(&text.unwrap()[0].clone());
-        println!("{}", content.clone().join("\n"));
         let summary = parse_docx_table(content);
         std::fs::write("test2.json", serde_json::to_string_pretty(&summary).unwrap()).unwrap();
     }

@@ -35,7 +35,6 @@ mod tests {
     fn test_insert_space_between_en_and_cn() {
         let text = "锂离子电池 RT PRO 3.7V 3000mAh 11.1Wh（与手机 RT PRO包装在一起）"; // 锂离子电池  RT PRO 3.7V 3000mAh 11.1Wh （与手机  RT PRO 包装在一起）
         let result = replace_whitespace_with_space(&text); // 锂离子电池  RT PRO 3.7V 3000mAh 11.1Wh （与手机  RT PRO 包装在一起）
-        let result = insert_space_between_en_and_cn(&result);
-        println!("{}", result);
+        let _result = insert_space_between_en_and_cn(&result);
     }
 }

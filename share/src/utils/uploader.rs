@@ -374,11 +374,8 @@ mod tests {
         };
         let manage = FileManager::new(config);
         // let result = manage.upload(file_path).unwrap();
-        // println!("{:?}", result.clone());
-        // println!("{:?}", manage.delete(&result));
         // manage.get_file_content("cv26m9supvnh8m4rmvh0");
         let file_list = vec![file_path.to_string()];
-        let json = manage.chat_with_ai(file_list).await.unwrap();
-        println!("json: {:?}", json);
+        let _json = manage.chat_with_ai(file_list).await.unwrap();
     }
 }

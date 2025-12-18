@@ -83,7 +83,6 @@ mod tests {
         let path = r"0.pdf";
         let pdf_buf = std::fs::read(path).unwrap();
         let result = read_pdf_u8(&pdf_buf).unwrap();
-        let goods_pdf = parse_good_file(result.text, true, None);
-        println!("{:?}", goods_pdf);
+        let _goods_pdf = parse_good_file(result.text, true, None);
     }
 }

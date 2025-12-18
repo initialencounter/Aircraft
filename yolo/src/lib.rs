@@ -135,10 +135,7 @@ mod tests {
             r"C:\Users\29115\yolov8\yolov11-seg\datasets\images\train\1716993798.633686.png",
         )
         .unwrap();
-        let result = detect_objects_on_image(img_data);
-        for item in result.iter() {
-            println!("{:?}", item);
-        }
+        let _result = detect_objects_on_image(img_data);
     }
 
     #[test]
@@ -147,9 +144,6 @@ mod tests {
             r"C:\Users\29115\yolov8\yolov11-seg\datasets\images\train\1716993798.633686.png",
         )
         .unwrap();
-        let result = segment::detect_objects_on_image(img_data);
-        for item in result.iter() {
-            println!("seg {:?}", item);
-        }
+        let _result = segment::detect_objects_on_image(img_data);
     }
 }
