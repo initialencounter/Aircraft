@@ -45,6 +45,7 @@ jobs:
           cd packages/wxt
           yarn docs:build
           cd ../..
+          cp updates.json packages/wxt/docs/.vitepress/dist/updates.json
 
       - name: Deploy Docs 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4

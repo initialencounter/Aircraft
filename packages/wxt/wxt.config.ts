@@ -26,7 +26,7 @@ export default defineConfig({
   entrypointsDir: './entrypoints',
   manifest: {
     name: 'lims',
-    version: '3.0.15',
+    version: '3.0.16',
     description: 'Automates form validation and data entry for battery inspection forms.',
     web_accessible_resources: [
       {
@@ -51,6 +51,7 @@ export default defineConfig({
     browser_specific_settings: {
       gecko: {
         id: '{3f8b9a12-a64d-48d8-bb5c-8d9f4e9322b2}',
+        update_url: 'https://lims.initenc.cn/updates.json'
       },
     },
     icons: {

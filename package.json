@@ -9,6 +9,7 @@
   ],
   "type": "module",
   "scripts": {
+    "prepare": "husky",
     "lint": "eslint --fix --ext .ts,.tsx .",
     "format": "prettier --write . ",
     "dep": "yakumo upgrade",
@@ -35,6 +36,7 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "husky": "^9.0.11",
     "prettier": "^3.6.2",
     "vite": "^7.1.10",
     "vue": "^3.6.0-alpha.2",
