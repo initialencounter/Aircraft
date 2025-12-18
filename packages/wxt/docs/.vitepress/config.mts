@@ -21,6 +21,7 @@ export default defineConfig({
           { text: '更新日志', link: '/changelog' },
           { text: '验证规则', link: '/rule' },
           { text: '验证概要', link: '/attachment' },
+          { text: '隐私政策', link: '/privacy'}
         ],
       },
     ],

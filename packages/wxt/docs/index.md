@@ -27,6 +27,9 @@ hero:
     - theme: alt
       text: 问题反馈
       link: /issue
+    - theme: alt
+      text: 隐私权政策
+      link: /privacy
 
 features:
   - title: 🚀 一键操作
