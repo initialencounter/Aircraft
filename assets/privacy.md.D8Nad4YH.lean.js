@@ -1,0 +1,1 @@
+import{_ as l,c as t,o as r,ae as i}from"./chunks/framework.Dh1jimFm.js";const p=JSON.parse('{"title":"隐私权政策","description":"","frontmatter":{},"headers":[],"relativePath":"privacy.md","filePath":"privacy.md"}'),e={name:"privacy.md"};function o(n,a,s,h,d,u){return r(),t("div",null,a[0]||(a[0]=[i("",66)]))}const g=l(e,[["render",o]]);export{p as __pageData,g as default};
