@@ -14,6 +14,7 @@
     "zip:firefox": "wxt zip -b firefox",
     "compile": "vue-tsc --noEmit",
     "postinstall": "wxt prepare",
+    "gen:config": "tsx scripts/generate-config-default.mjs",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
@@ -37,6 +38,7 @@
     "sass-embedded": "^1.93.2",
     "schemastery": "^3.17.1",
     "schemastery-vue": "^7.3.14",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.10",
     "vitepress": "^1.6.4",

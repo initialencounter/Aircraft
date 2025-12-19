@@ -1,6 +1,7 @@
-import { Config } from "../entrypoints/options/src/components/Schema"
+import type { Config } from "../entrypoints/options/src/components/Schema"
+import { defaultConfig } from "./config-default"
 
-const LocalConfig: Config = new Config()
+const LocalConfig: Config = defaultConfig
 
 export const configKeys: (Array<keyof Config>) = Object.keys(LocalConfig) as Array<Array<keyof Config>>[number]
 
