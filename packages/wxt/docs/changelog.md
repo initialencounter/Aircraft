@@ -1,5 +1,13 @@
 # 更新日志
 
+## [v3.0.16] - 2025-12-22
+
+### 修复
+
+- 优化概要项目编号错误提示([d891f0a](https://github.com/initialencounter/Aircraft/commit/d891f0a9150a88c65eed0297a288273e0b402d11))
+
+- 优化CAO标签边框颜色([1278898])(https://github.com/initialencounter/Aircraft/commit/1278898ade55dfd03aaeadd0209fdffdbc644e6e)
+
 ## [v3.0.15] - 2025-12-12
 
 - T1-T8测试项检查([15b232c](https://github.com/initialencounter/Aircraft/commit/15b232c98178c729e89f209a4a72eb02b32847a8))
