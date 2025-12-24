@@ -1,3 +1,2 @@
 node .husky/pre-commit.cjs
-cd packages/wxt && npm run gen:config && cd ../..
-git add packages/wxt/share/config-default.ts
+cd packages/wxt && yarn gen:config && git add share/config-default.ts && cd ../..
