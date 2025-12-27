@@ -271,7 +271,7 @@ async function entrypoint() {
     const button1 = targetParent.children[1].children[0]; // 初验按钮
     for (let i = 0; i < targetParent.children[1].children.length; i++) {
       const buttonText = (targetParent.children[1].children[i] as HTMLAnchorElement).innerText
-      if (['自定义收费', '批量打印样品标签', '批量接收样品'].includes(buttonText)) {
+      if (['自定义收费', '批量打印样品标签'].includes(buttonText)) {
         (targetParent.children[1].children[i] as HTMLAnchorElement).style.width = '0';
         (targetParent.children[1].children[i] as HTMLAnchorElement).style.height = '0';
       }
