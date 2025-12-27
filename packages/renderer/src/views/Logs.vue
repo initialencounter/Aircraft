@@ -19,11 +19,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { computed, onMounted, onBeforeUnmount } from 'vue'
 import { useLogStore, type LogStore } from '../stores/logs'
 
 const BUFFER_SIZE = 1000 // 一次显示的日志数量
-const scrollerRef = ref<HTMLElement | null>(null)
 const visibleLogs = computed(() => {
   return [...logStore.logHistory].reverse().slice(0, BUFFER_SIZE)
 })
