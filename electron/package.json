@@ -15,18 +15,18 @@
     "@maikolib/vite-plugin-yaml": "^1.1.1",
     "@types/auto-launch": "^5.0.5",
     "@types/cors": "^2.8.19",
-    "@types/koa__cors": "^5.0.0",
-    "@types/koa__multer": "^2.0.7",
-    "@types/node": "^24.8.1",
-    "@vitejs/plugin-vue": "^6.0.1",
+    "@types/koa__cors": "^5.0.1",
+    "@types/koa__multer": "^2.0.8",
+    "@types/node": "^24.10.4",
+    "@vitejs/plugin-vue": "^6.0.3",
     "electron": "38.3.0",
-    "electron-builder": "^26.1.0",
+    "electron-builder": "^26.4.0",
     "typescript": "^5.9.3",
-    "vite": "^7.1.10",
+    "vite": "8.0.0-beta.5",
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6",
-    "vue": "^3.6.0-alpha.2",
-    "vue-tsc": "^3.1.1"
+    "vue": "^3.6.0-beta.1",
+    "vue-tsc": "^3.2.1"
   },
   "dependencies": {
     "@aircraft/renderer": "workspace:*",
@@ -36,10 +36,10 @@
     "@koa/multer": "^3.1.0",
     "aircraft-rs": "workspace:*",
     "auto-launch": "^5.0.6",
-    "bufferutil": "^4.0.9",
+    "bufferutil": "^4.1.0",
     "cordis": "^3.18.1",
     "koa-compose": "^4.2.0",
     "multer": "^1.4.5-lts.2",
-    "utf-8-validate": "^6.0.5"
+    "utf-8-validate": "^6.0.6"
   }
 }

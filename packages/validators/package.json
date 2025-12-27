@@ -16,6 +16,7 @@
     "@vueuse/core": "^13.9.0",
     "aircraft-rs": "workspace:*",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vue": "^3.5.26"
   }
 }
