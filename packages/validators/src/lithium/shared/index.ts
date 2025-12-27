@@ -52,7 +52,8 @@ export function baseCheck(
   wattHour: number,
   wattHourFromName: number,
   inspectionItem1: '0' | '1' | '2',
-  isLithium: boolean = true,
+  activeState: boolean,
+  isLithium: boolean,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 尺寸或形状
@@ -79,7 +80,7 @@ export function baseCheck(
   // 尼古丁体积分数验证
   if (isLithium) result.push(...checkNicotineContent(otherDescribeCAddition))
   // 967 防意外启动描述
-  if (isLithium) result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1))
+  if (isLithium) result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1, activeState))
   // 描述格式验证
   result.push(...descriptionFormat(otherDescribeCAddition))
   // 电池数量验证

@@ -111,6 +111,8 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
   if (!market) result.push({ ok: false, result: '技术备注为空' })
   if (otherDescribe.length > 3)
     result.push({ ok: false, result: '其他描述包装方式不唯一' })
+  const activeState = false
+  const isLithium = true
   // 基础检查
   result.push(
     ...baseCheck(
@@ -130,7 +132,9 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
       capacity,
       wattHour,
       wattHourFromName,
-      otherDescribe2Pek
+      otherDescribe2Pek,
+      activeState,
+      isLithium,
     )
   )
   // 包装与其他描述验证

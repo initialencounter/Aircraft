@@ -123,6 +123,8 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
 
   if (currentData['otherDescribeChecked'] !== '1')
     result.push({ ok: false, result: '应勾选附加操作信息' })
+  const activeState = otherDescribe.includes('2796')
+  const isLithium = false
   // 基础检查
   result.push(
     ...baseCheck(
@@ -143,7 +145,8 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
       wattHour,
       wattHourFromName,
       inspectionItem1,
-      false,
+      activeState,
+      isLithium,
     )
   )
   // 电池净重限重
@@ -225,4 +228,3 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
 }
 
 export { checkPekSodiumBtyType }
-

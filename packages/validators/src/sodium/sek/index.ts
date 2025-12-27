@@ -100,6 +100,8 @@ export function checkSekSodiumBtyType(currentData: SekSodiumData): CheckResult[]
   if (!market) result.push({ ok: false, result: '技术备注为空' })
   if (otherDescribe.length > 3)
     result.push({ ok: false, result: '其他描述包装方式不唯一' })
+  const activeState = false
+  const isLithium = false
   // 基础检查
   result.push(
     ...baseCheck(
@@ -120,7 +122,8 @@ export function checkSekSodiumBtyType(currentData: SekSodiumData): CheckResult[]
       wattHour,
       wattHourFromName,
       otherDescribe2Pek,
-      false,
+      activeState,
+      isLithium,
     )
   )
   // 包装与其他描述验证
