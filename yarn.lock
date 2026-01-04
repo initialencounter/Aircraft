@@ -4621,7 +4621,7 @@ __metadata:
     element-plus: "npm:^2.13.0"
     markdown-vue: "npm:^1.0.3"
     npm-run-all2: "npm:^7.0.2"
-    onnxruntime-web: "npm:^1.24.0-dev.20251116-b39e144322"
+    onnxruntime-web: "npm:^1.23.2"
     sass-embedded: "npm:^1.97.1"
     schemastery: "npm:^3.17.2"
     schemastery-vue: "npm:^7.3.15"
@@ -11598,24 +11598,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"onnxruntime-common@npm:1.24.0-dev.20251116-b39e144322":
-  version: 1.24.0-dev.20251116-b39e144322
-  resolution: "onnxruntime-common@npm:1.24.0-dev.20251116-b39e144322"
-  checksum: 10c0/0f93d8bf8b3337667bf1234c74a0e0d4680f969f121fe8f765cc4b6653d0ad9d67fe7b449dbce4e4c3233737b0744b371f3512b706954868d32065681da0efc4
+"onnxruntime-common@npm:1.23.2":
+  version: 1.23.2
+  resolution: "onnxruntime-common@npm:1.23.2"
+  checksum: 10c0/414a6595e3942663bfb005eb8c3bae6600b907a63e86e304c3dcac78c006692ade6f270f325cf3773b77995add7551c271c5b3321529b7487c42848a3eae567c
   languageName: node
   linkType: hard
 
-"onnxruntime-web@npm:^1.24.0-dev.20251116-b39e144322":
-  version: 1.24.0-dev.20251116-b39e144322
-  resolution: "onnxruntime-web@npm:1.24.0-dev.20251116-b39e144322"
+"onnxruntime-web@npm:^1.23.2":
+  version: 1.23.2
+  resolution: "onnxruntime-web@npm:1.23.2"
   dependencies:
     flatbuffers: "npm:^25.1.24"
     guid-typescript: "npm:^1.0.9"
     long: "npm:^5.2.3"
-    onnxruntime-common: "npm:1.24.0-dev.20251116-b39e144322"
+    onnxruntime-common: "npm:1.23.2"
     platform: "npm:^1.3.6"
     protobufjs: "npm:^7.2.4"
-  checksum: 10c0/2cad96ee87ec8d0bde02a997fb3d0758efdad4c844c990a1625b8bc6ff3b131aa34aecc894bc047ae18b4528c234d2214fd35af67946d219eff23d3f57be5d1a
+  checksum: 10c0/c95ce99dbcc481345a2c3e177a709dcc8770ccb8657a8c7a5776929cc830355db7c1858988dbd68eea04d2d935a56dd4a6e7050e55b96def431367d3d56bfd2b
   languageName: node
   linkType: hard
 

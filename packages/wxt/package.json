@@ -20,7 +20,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "onnxruntime-web": "^1.24.0-dev.20251116-b39e144322"
+    "onnxruntime-web": "^1.23.2"
   },
   "devDependencies": {
     "@aircraft/validators": "workspace:*",
