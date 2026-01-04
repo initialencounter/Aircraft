@@ -1,5 +1,16 @@
 # 更新日志
 
+## [v3.1.0] - 2026-01-04
+
+### 修复
+
+- 开启运输防意外启动描述错误提示([26521ee](https://github.com/initialencounter/Aircraft/commit/26521ee7539f570ef05184807fcb93764af85602))
+- 检查地点错误禁止一键分配([6e83b0d](https://github.com/initialencounter/Aircraft/commit/6e83b0d4c0db5a713a7c655270a09593134f2314))
+
+### 新增
+
+- 重复上传附件验证([ffb44e2](https://github.com/initialencounter/Aircraft/commit/ffb44e2b5b9ba26b8567e963f75ea36024e0d65a))
+
 ## [v3.0.16] - 2025-12-22
 
 ### 修复
