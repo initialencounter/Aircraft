@@ -147,7 +147,7 @@ impl HttpClient {
             }
         }
     }
-    pub async fn get_project_id(&self, project_no: &str) -> Result<String> {
+    pub async fn search_project_no(&self, project_no: &str) -> Result<(String, String)> {
         let (start_date, end_date) = parse_date(project_no).unwrap_or(("".to_string(),"".to_string()));
         let system_id = project_no[0..3].to_lowercase();
         let query_string = format!(
@@ -170,7 +170,7 @@ impl HttpClient {
             .await;
             return Err("没有权限修改".into());
         }
-        Ok(result.rows[0].project_id.clone())
+        Ok((result.rows[0].project_id.clone(), result.rows[0].category.clone()))
     }
 
     async fn post_file(
@@ -179,8 +179,13 @@ impl HttpClient {
         file_id: &str,
         file_buffer: Vec<u8>,
         file_name: &str,
-        file_type: &str, // 'goodsfile' 或 'batteryfile'
+        file_type_raw: &str, // 'goodsfile' 或 'batteryfile'
+        category: &str,
     ) -> Result<String> {
+        let mut file_type = file_type_raw;
+        if !(category == "sodium" || category == "battery") {
+          file_type = "goodsfile";
+        }
         let blob = multipart::Part::bytes(file_buffer).file_name(file_name.to_string());
 
         let dir = format!("project/{}/{}", project_id, file_type);
@@ -303,11 +308,16 @@ impl HttpClient {
         };
 
         let project_id: String;
+        let category: String;
         if self.debug {
             project_id = "123456AAAAAAAAAAAAAAAA".to_string();
+            category = "battery".to_string();
         } else {
-            match self.get_project_id(&file_info.project_no).await {
-                Ok(id) => project_id = id,
+            match self.search_project_no(&file_info.project_no).await {
+                Ok(project) => {
+                  project_id = project.0;
+                  category = project.1;
+                },
                 Err(e) => {
                     return Err(e);
                 }
@@ -320,6 +330,7 @@ impl HttpClient {
             file_info.file_buffer,
             &file_info.file_name,
             &file_info.file_type,
+            &category,
         )
         .await
     }

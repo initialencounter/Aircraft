@@ -24,6 +24,7 @@ pub struct ProjectRow {
     pub edit_status: i64,
     pub project_id: String,
     pub project_no: String,
+    pub category: String,
 }
 
 #[cfg_attr(feature = "napi-support", napi(object))]
