@@ -206,6 +206,11 @@ async function entrypoint() {
     const data = getFormData()
     if (!data) return
     var errorContents = []
+
+    if (data.checkLocation !== '8') {
+      errorContents.push('检查地点错误')
+    }
+
     if (isEmpty(data.itemCName)) errorContents.push('物品中文名称不能为空')
     if (isEmpty(data.itemEName)) errorContents.push('物品英文名称不能为空')
 
