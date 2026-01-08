@@ -43,13 +43,13 @@ async function entrypoint() {
   let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
   await sleep(500)
   // 将项目编号设置为标题
-  if (localConfig.enableCopyProjectNo) {
+  if (localConfig.enableCopyProjectNoByClick || localConfig.enableCopyProjectNoByCtrlDouble) {
     const projectNoElement = document.getElementById('projectNo')
     if (projectNoElement) {
       document.title = projectNoElement.innerHTML
       originalTitle = document.title
       // 复制报告编号
-      if (projectNoElement.parentElement) {
+      if (projectNoElement.parentElement && localConfig.enableCopyProjectNoByClick) {
         projectNoElement.parentElement.addEventListener('click', () => {
           setProjectNoToClipText()
           Qmsg.success('已复制项目编号', { timeout: 500 })
@@ -130,7 +130,7 @@ async function entrypoint() {
 
   // 监听 Ctrl 键的弹起事件
   document.addEventListener('keyup', function (event) {
-    if (event.key === 'Control' && localConfig.enableCopyProjectNo) {
+    if (event.key === 'Control' && localConfig.enableCopyProjectNoByCtrlDouble) {
       // 双击 Ctrl 键的检测
       const currentTime = new Date().getTime()
       // 检查两次 Ctrl 按键的时间间隔

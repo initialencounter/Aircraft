@@ -21,7 +21,8 @@ export interface Config {
   openInNewTab: boolean
   dangerousModels: string[]
   dangerousModelsWithFactory: ModelsWithFactory[]
-  enableCopyProjectNo?: boolean
+  enableCopyProjectNoByClick?: boolean
+  enableCopyProjectNoByCtrlDouble?: boolean
   enableCopyProjectName?: boolean
   enablePreventCloseBeforeSave?: boolean
   enableSaveHotKey?: boolean
@@ -178,9 +179,14 @@ export const Config: Schema<Config> = Schema.intersect([
     verifyButtonOnMiddle: Schema.boolean()
       .description('验证按钮放在提交按钮旁边')
       .default(false),
-    enableCopyProjectNo: Schema.boolean()
+    enableCopyProjectNoByClick: Schema.boolean()
       .description(
-        `复制项目编号 （点击项目编号，或者双击 *Ctrl*，即可将项目编号复制到剪切板）`
+        `点击复制项目编号 （点击项目编号，即可将项目编号复制到剪切板）`
+      )
+      .default(true),
+    enableCopyProjectNoByCtrlDouble: Schema.boolean()
+      .description(
+        `双击Ctrl复制项目编号 （双击 *Ctrl* 键，即可将项目编号复制到剪切板）`
       )
       .default(true),
     enableCopyProjectName: Schema.boolean()
