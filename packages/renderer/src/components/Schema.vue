@@ -4,14 +4,13 @@
     <el-button class="schema-button" type="primary" @click="reloadConfig"
       >重载配置</el-button
     >
-    <el-button class="schema-button" type="primary" @click="saveConfig"
-      >保存配置</el-button
-    >
-    <el-button class="schema-button" type="primary" @click="resetConfig"
-      >重置</el-button
-    >
   </div>
-  <k-form class="config-schema" v-model="config" :schema="ConfigSchema" :initial="initial"></k-form>
+  <k-form
+    class="config-schema"
+    v-model="config"
+    :schema="ConfigSchema"
+    :initial="initial"
+  ></k-form>
   <!-- 添加遮罩层 - 现在相对于容器定位 -->
   <div class="loading-mask" v-if="loading" @dblclick="loading = false">
     <div class="loading-content">
@@ -22,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ipcManager } from '../utils/ipcManager'
 import { Config, ConfigSchema } from '../schema'
@@ -66,28 +65,48 @@ const loading = ref(false)
 const config = ref<Config>(defaultConfig)
 const initial = ref<Config>(defaultConfig)
 
+// 防抖函数
+const debounce = (func: Function, delay: number) => {
+  let timeoutId: number
+  return (...args: any[]) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => func.apply(null, args), delay)
+  }
+}
+
+// 防抖保存函数
+const debouncedSave = debounce(() => {
+  saveConfig()
+}, 100)
+
 async function getConfig() {
   const appConfig = await ipcManager.invoke('get_config')
   config.value = appConfig
   config.value.llm.apiKey = appConfig.llm.apiKey
+  watch(
+    config,
+    (newConfig: Config, oldConfig: Config) => {
+      if (oldConfig && newConfig) debouncedSave(newConfig)
+    },
+    {
+      deep: true, // 深度监听对象属性变化
+      immediate: false, // 不立即执行
+    }
+  )
 }
 async function saveConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    const result = await ipcManager.invoke('save_config', {
+    await ipcManager.invoke('save_config', {
       config: tmpConfig,
     })
-    ElMessage.success(`保存成功: ${JSON.stringify(result)}`)
+    ElMessage.success('保存成功')
   } catch (error) {
     ElMessage.error(JSON.stringify(error))
   } finally {
     loading.value = false
   }
-}
-
-function resetConfig() {
-  config.value = initial.value
 }
 
 async function reloadConfig() {

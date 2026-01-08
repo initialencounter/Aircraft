@@ -1,6 +1,5 @@
 <template>
   <div class="home">
-    <h1>首页</h1>
     <!-- 登录界面 -->
     <div v-if="!loginStatus" class="login-container">
       <el-card class="login-card">
@@ -211,5 +210,9 @@ setInterval(async () => {
 
 .welcome-container {
   margin-top: 50px;
+}
+
+:deep(.el-card) {
+  background: #363636;
 }
 </style>
