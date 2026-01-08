@@ -60,45 +60,6 @@ pub async fn run(
         .await;
     client.lock().await.log("INFO", "等待手动登录...").await;
     let client_clone = client.clone();
-    let heartbeat = tokio::spawn(async move {
-        let mut last_heartbeat = std::time::Instant::now();
-        loop {
-            if !debug {
-                // 只有在已登录状态下才执行心跳
-                if LOGIN_STATUS.load(Ordering::Relaxed) {
-                    // 检查距离上次心跳是否超过阈值
-                    if last_heartbeat.elapsed() > std::time::Duration::from_secs(60 * 30) {
-                        client_clone
-                            .lock()
-                            .await
-                            .log(
-                                "WARN",
-                                "检测到较长时间未进行心跳，可能是由于系统睡眠导致，登录状态已失效，请重新登录",
-                            )
-                            .await;
-                        LOGIN_STATUS.store(false, Ordering::Relaxed);
-                    } else {
-                        match client_clone.lock().await.heartbeat().await {
-                            Ok(_) => {
-                                last_heartbeat = std::time::Instant::now();
-                            }
-                            Err(_) => {
-                                LOGIN_STATUS.store(false, Ordering::Relaxed);
-                            }
-                        }
-                    }
-                }
-            } else {
-                LOGIN_STATUS.store(true, Ordering::Relaxed);
-                client_clone
-                    .lock()
-                    .await
-                    .log("INFO", "调试模式，跳过心跳")
-                    .await;
-            }
-            tokio::time::sleep(std::time::Duration::from_secs(60 * 28)).await;
-        }
-    });
 
     let webhook_client = client.clone();
     let file_manager = Arc::new(Mutex::new(FileManager::new(llm_config)));
@@ -110,7 +71,6 @@ pub async fn run(
             _ = shutdown_rx.changed() => {
                 if *shutdown_rx.borrow() {
                     server_handle.abort();
-                    heartbeat.abort();
                     break;
                 }
             }
