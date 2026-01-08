@@ -66,10 +66,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref} from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
-import { useListenStore, type ListenStore } from '../stores/isListen'
 import { ipcManager } from '../utils/ipcManager'
 
 const loginStatus = ref(false)

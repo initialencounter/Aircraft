@@ -22,6 +22,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use summary::{get_summary_info_by_buffer, get_summary_info_by_path};
+use share::task_proxy::LOGIN_STATUS;
 
 #[napi(js_name = "AircraftRs")]
 pub struct AircraftRs {
@@ -308,4 +309,9 @@ pub fn remove_clipboard_snapshot_config(content_name: String) -> napi::Result<()
       format!("移除剪贴板快照配置失败: {}", e),
     )),
   }
+}
+
+#[napi]
+pub fn get_login_status() -> bool {
+  LOGIN_STATUS.load(std::sync::atomic::Ordering::Relaxed)
 }

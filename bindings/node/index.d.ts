@@ -343,6 +343,7 @@ export declare function setClipboardText(text: string): void
 export declare function getClipboardSnapshotConfigs(): Array<ClipboardHotkey>
 export declare function addClipboardSnapshotConfig(config: ClipboardHotkey): void
 export declare function removeClipboardSnapshotConfig(contentName: string): void
+export declare function getLoginStatus(): boolean
 export declare class AircraftRs {
   constructor(appLogDir: string, config: ServerConfig, llmConfig: LLMConfig, hotkeyConfig: HotkeyConfig)
   startServer(): void

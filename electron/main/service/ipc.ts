@@ -132,6 +132,10 @@ class Ipc extends Service {
     ipcMain.handle('reload_clipboard_snapshot_configs', async () => {
       this.ctx.emit('reload_clipboard_snapshot_configs')
     })
+
+    ipcMain.handle('get_login_status', async () => {
+      return this.ctx.bindings.native.getLoginStatus()
+    })
   }
 
 }
