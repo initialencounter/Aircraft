@@ -67,7 +67,7 @@ const initial = ref<Config>(defaultConfig)
 
 // 防抖函数
 const debounce = (func: Function, delay: number) => {
-  let timeoutId: number
+  let timeoutId: any
   return (...args: any[]) => {
     clearTimeout(timeoutId)
     timeoutId = setTimeout(() => func.apply(null, args), delay)
