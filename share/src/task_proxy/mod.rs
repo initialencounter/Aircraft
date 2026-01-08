@@ -58,28 +58,36 @@ pub async fn run(
         .await
         .log("INFO", &format!("debug: {}", debug))
         .await;
-    let _ = client.lock().await.login().await;
+    client.lock().await.log("INFO", "等待手动登录...").await;
     let client_clone = client.clone();
     let heartbeat = tokio::spawn(async move {
         let mut last_heartbeat = std::time::Instant::now();
         loop {
             if !debug {
-                LOGIN_STATUS.store(false, Ordering::Relaxed);
-                // 检查距离上次心跳是否超过阈值
-                if last_heartbeat.elapsed() > std::time::Duration::from_secs(60 * 30) {
-                    client_clone
-                        .lock()
-                        .await
-                        .log(
-                            "WARN",
-                            "检测到较长时间未进行心跳，可能是由于系统睡眠导致，开始重新登录",
-                        )
-                        .await;
-                    client_clone.lock().await.login().await.unwrap();
-                } else {
-                    client_clone.lock().await.heartbeat().await.unwrap();
+                // 只有在已登录状态下才执行心跳
+                if LOGIN_STATUS.load(Ordering::Relaxed) {
+                    // 检查距离上次心跳是否超过阈值
+                    if last_heartbeat.elapsed() > std::time::Duration::from_secs(60 * 30) {
+                        client_clone
+                            .lock()
+                            .await
+                            .log(
+                                "WARN",
+                                "检测到较长时间未进行心跳，可能是由于系统睡眠导致，登录状态已失效，请重新登录",
+                            )
+                            .await;
+                        LOGIN_STATUS.store(false, Ordering::Relaxed);
+                    } else {
+                        match client_clone.lock().await.heartbeat().await {
+                            Ok(_) => {
+                                last_heartbeat = std::time::Instant::now();
+                            }
+                            Err(_) => {
+                                LOGIN_STATUS.store(false, Ordering::Relaxed);
+                            }
+                        }
+                    }
                 }
-                last_heartbeat = std::time::Instant::now();
             } else {
                 LOGIN_STATUS.store(true, Ordering::Relaxed);
                 client_clone

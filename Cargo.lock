@@ -5451,6 +5451,7 @@ name = "share"
 version = "0.1.0"
 dependencies = [
  "aircraft-types",
+ "base64 0.22.1",
  "bytes",
  "chrono",
  "clipboard-rs",

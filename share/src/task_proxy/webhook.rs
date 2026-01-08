@@ -1,6 +1,7 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
 use crate::utils::uploader::FileManager;
+use aircraft_types::others::LoginRequest;
 use bytes::BufMut;
 use futures_util::StreamExt;
 use pdf_parser::read::read_pdf_u8;
@@ -138,6 +139,41 @@ pub fn apply_webhook(
     let ping_route = warp::get()
         .and(warp::path("ping"))
         .map(|| warp::reply::json(&"pong"));
+
+    let get_captcha_route = warp::get()
+        .and(warp::path("get-captcha"))
+        .and(warp::any().map({
+            let client = client.clone();
+            move || client.clone()
+        }))
+        .then(
+            move |client: Arc<Mutex<HttpClient>>| async move {
+                match client.lock().await.get_captcha().await {
+                    Ok(captcha) => warp::reply::json(&captcha),
+                    Err(e) => warp::reply::json(&CustomError {
+                        message: format!("获取验证码失败: {}", e),
+                    }),
+                }
+            },
+        );
+
+    let login_route = warp::post()
+        .and(warp::path("login"))
+        .and(warp::body::json())
+        .and(warp::any().map({
+            let client = client.clone();
+            move || client.clone()
+        }))
+        .then(
+            move |login_req: LoginRequest, client: Arc<Mutex<HttpClient>>| async move {
+                match client.lock().await.login_with_captcha(&login_req.code).await {
+                    Ok(_) => warp::reply::json(&serde_json::json!({"success": true, "message": "登录成功"})),
+                    Err(e) => warp::reply::json(&CustomError {
+                        message: format!("登录失败: {}", e),
+                    }),
+                }
+            },
+        );
     
     let cors = warp::cors()
         .allow_any_origin() // 允许所有来源
@@ -149,6 +185,8 @@ pub fn apply_webhook(
         .or(get_summary_info)
         .or(llm_files_handle)
         .or(ping_route)
+        .or(get_captcha_route)
+        .or(login_route)
         .with(cors);
     // 启动 web 服务器
     let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));

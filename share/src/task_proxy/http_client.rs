@@ -1,8 +1,9 @@
-use aircraft_types::{logger::LogMessage, others::QueryResult};
+use aircraft_types::{logger::LogMessage, others::{QueryResult, CaptchaResponse}};
 use chrono::Local;
 use std::env;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
+use base64::Engine;
 
 use reqwest::header;
 use reqwest::{multipart, Client};
@@ -72,11 +73,53 @@ impl HttpClient {
             Err("心跳失败".into())
         }
     }
-    pub async fn login(&self) -> Result<()> {
+
+    pub async fn get_captcha(&self) -> Result<CaptchaResponse> {
+        if self.debug {
+            self.log("INFO", "调试模式，返回假验证码").await;
+            return Ok(CaptchaResponse {
+                img: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==".to_string(),
+            });
+        }
+
+        let response = self
+            .client
+            .get(format!("{}/captcha/captchaImage", self.base_url))
+            .header(
+                "Host",
+                self.base_url
+                    .to_string()
+                    .replace("http://", "")
+                    .replace("https://", ""),
+            )
+            .header("Referer", self.base_url.to_string())
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            // 获取图片的字节数据
+            let image_bytes = response.bytes().await?;
+            // 转换为base64编码
+            let base64_image = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &image_bytes);
+            // 构建data URI (假设是PNG格式，也可能是JPEG)
+            let img = format!("data:image/jpeg;base64,{}", base64_image);
+            
+            self.log("INFO", "获取验证码成功").await;
+            Ok(CaptchaResponse { img })
+        } else {
+            self.log("ERROR", &format!("获取验证码失败: {:?}", response.text().await?))
+                .await;
+            Err("获取验证码失败".into())
+        }
+    }
+
+    pub async fn login_with_captcha(&self, code: &str) -> Result<()> {
         if self.debug {
             self.log("INFO", "调试模式，跳过登录").await;
+            LOGIN_STATUS.store(true, Ordering::Relaxed);
             return Ok(());
         }
+
         let response = self
             .client
             .post(format!("{}/login", self.base_url))
@@ -90,9 +133,10 @@ impl HttpClient {
             .header("Referer", self.base_url.to_string())
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(format!(
-                "type=password&username={}&password={}",
+                "type=password&username={}&password={}&rememberMe=true&validateCode={}",
                 urlencoding::encode(&self.username),
-                urlencoding::encode(&self.password)
+                urlencoding::encode(&self.password),
+                urlencoding::encode(code)
             ))
             .send()
             .await?;
@@ -108,6 +152,7 @@ impl HttpClient {
             Err("登录失败".into())
         }
     }
+
     pub async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
         let url = format!("{}/rest/inspect/query?{}", self.base_url, query_string);
 

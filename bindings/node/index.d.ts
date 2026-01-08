@@ -232,6 +232,7 @@ export interface ProjectRow {
   editStatus: number
   projectId: string
   projectNo: string
+  category: string
 }
 export interface DirectoryInfo {
   dir: string
@@ -240,6 +241,12 @@ export interface SearchParams {
   search: string
   json: number
   pathColumn: number
+}
+export interface CaptchaResponse {
+  img: string
+}
+export interface LoginRequest {
+  code: string
 }
 export interface GoodsInfo {
   projectNo: string

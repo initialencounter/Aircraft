@@ -71,3 +71,19 @@ pub struct ClipboardHotkey {
     pub hotkeys: Vec<String>,
     pub clipboard_content_name: String,
 }
+
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
+pub struct CaptchaResponse {
+    pub img: String,
+}
+
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
+pub struct LoginRequest {
+    pub code: String,
+}
