@@ -70,6 +70,8 @@ import { ref} from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { ipcManager } from '../utils/ipcManager'
+import { getServerPort } from '../utils/utils'
+import { apiManager } from '../utils/api'
 
 const loginStatus = ref(false)
 
@@ -83,20 +85,9 @@ const loadingCaptcha = ref(false)
 const loggingIn = ref(false)
 const serverPort = ref(25455)
 
-const getServerPort = async () => {
-  try {
-    const config = await ipcManager.invoke('get_config')
-    if (config && config.server && config.server.port) {
-      serverPort.value = config.server.port
-    }
-  } catch (error) {
-    console.error('获取服务端口失败:', error)
-  }
-}
-
 const getCaptcha = async () => {
   loadingCaptcha.value = true
-  await getServerPort()
+  serverPort.value = await getServerPort()
   try {
     const response = await fetch(`http://127.0.0.1:${serverPort.value}/get-captcha`)
     const data = await response.json()
@@ -128,6 +119,11 @@ const handleLogin = async () => {
 
   loggingIn.value = true
   try {
+    // 获取最新的配置信息
+    const config = await apiManager.get('get-config')
+    const username = config?.server?.username || ''
+    const password = config?.server?.password || ''
+    
     const response = await fetch(`http://127.0.0.1:${serverPort.value}/login`, {
       method: 'POST',
       headers: {
@@ -135,6 +131,8 @@ const handleLogin = async () => {
       },
       body: JSON.stringify({
         code: loginForm.value.code,
+        username: username,
+        password: password,
       }),
     })
     

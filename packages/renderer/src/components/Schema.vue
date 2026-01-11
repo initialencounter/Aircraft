@@ -23,8 +23,8 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ipcManager } from '../utils/ipcManager'
 import { Config, ConfigSchema } from '../schema'
+import { apiManager } from '../utils/api'
 
 const defaultConfig: Config = {
   server: {
@@ -64,6 +64,8 @@ const defaultConfig: Config = {
 const loading = ref(false)
 const config = ref<Config>(defaultConfig)
 const initial = ref<Config>(defaultConfig)
+const serverPort = ref(25455)
+
 
 // 防抖函数
 const debounce = (func: Function, delay: number) => {
@@ -80,9 +82,13 @@ const debouncedSave = debounce(() => {
 }, 100)
 
 async function getConfig() {
-  const appConfig = await ipcManager.invoke('get_config')
-  config.value = appConfig
-  config.value.llm.apiKey = appConfig.llm.apiKey
+  try {
+    const appConfigResponse = await apiManager.get('get-config')
+    config.value =  appConfigResponse
+  } catch (error) {
+    console.error('获取服务端口失败:', error)
+  }
+
   watch(
     config,
     (newConfig: Config, oldConfig: Config) => {
@@ -98,9 +104,7 @@ async function saveConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    await ipcManager.invoke('save_config', {
-      config: tmpConfig,
-    })
+    await apiManager.post('save-config',tmpConfig)
     ElMessage.success('保存成功')
   } catch (error) {
     ElMessage.error(JSON.stringify(error))
@@ -113,7 +117,7 @@ async function reloadConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    await ipcManager.invoke('reload_config', { config: tmpConfig })
+    await apiManager.post('reload-config',tmpConfig)
     ElMessage.success('重载成功')
   } catch {
     ElMessage.error('重载失败')
@@ -122,7 +126,7 @@ async function reloadConfig() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   getConfig()
 })
 </script>

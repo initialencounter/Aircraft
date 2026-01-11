@@ -17,6 +17,7 @@ use share::logger::Logger;
 use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::manager::hotkey_manager::HotkeyManager;
 use share::manager::server_manager::ServerManager;
+use share::task_proxy::webhook::SERVER_PORT;
 use share::utils::uploader::FileManager;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
@@ -66,35 +67,6 @@ impl AircraftRs {
   #[napi]
   pub fn stop_server(&self) -> napi::Result<()> {
     self.server_manager.stop();
-    Ok(())
-  }
-
-  #[napi]
-  pub async fn reload_server(
-    &self,
-    server_config: ServerConfig,
-    llm_config: LLMConfig,
-  ) -> napi::Result<()> {
-    self.server_manager.reload(server_config, llm_config).await;
-    Ok(())
-  }
-
-  #[napi]
-  pub fn start_hotkey(&self) -> napi::Result<()> {
-    self.hotkey_manager.start();
-    Ok(())
-  }
-  #[napi]
-  pub fn stop_hotkey(&self) -> napi::Result<()> {
-    self.hotkey_manager.stop();
-    Ok(())
-  }
-
-  #[napi]
-  pub fn reload_hotkey(&self, config: HotkeyConfig) -> napi::Result<()> {
-    self.stop_hotkey()?;
-    self.hotkey_manager.save_config(config);
-    self.start_hotkey()?;
     Ok(())
   }
 
@@ -204,21 +176,7 @@ impl JsFileManager {
     });
     Self { manager }
   }
-  #[napi]
-  pub async unsafe fn reload(
-    &mut self,
-    base_url: String,
-    api_key: String,
-    model: String,
-  ) -> napi::Result<()> {
-    let llm_config = LLMConfig {
-      base_url,
-      api_key,
-      model,
-    };
-    let _ = self.manager.reload(llm_config);
-    Ok(())
-  }
+
   /// 直接读取pdf文件路径，输出解析结果，所有操作通过API完成
   #[napi]
   pub async fn parse_pdf(&self, path: Vec<String>) -> napi::Result<String> {
@@ -314,4 +272,15 @@ pub fn remove_clipboard_snapshot_config(content_name: String) -> napi::Result<()
 #[napi]
 pub fn get_login_status() -> bool {
   LOGIN_STATUS.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+#[napi]
+pub fn get_config() -> napi::Result<Config> {
+  let config = share::config::ConfigManager::get_config();
+  Ok(config)
+}
+
+#[napi]
+pub fn get_server_port() -> u16 {
+  SERVER_PORT.load(std::sync::atomic::Ordering::Relaxed) as u16
 }

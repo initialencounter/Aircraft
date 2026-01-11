@@ -2,6 +2,8 @@ pub mod dialog;
 pub mod fs;
 pub mod uploader;
 
+use std::net::{Ipv4Addr, SocketAddr, TcpListener};
+
 use chrono::{Local, NaiveDate, Duration};
 use clipboard_rs::{Clipboard, ClipboardContext};
 pub use dialog::*;
@@ -91,4 +93,21 @@ mod tests {
         println!("Start: {}, End: {}", start, end);
 
     }
+}
+
+
+pub fn find_available_port(start_port: u16) -> Option<u16> {
+    // 限制最大尝试次数，避免无限循环
+    const MAX_ATTEMPTS: u16 = 1000;
+    
+    for port in start_port..start_port + MAX_ATTEMPTS {
+        let addr = SocketAddr::from((Ipv4Addr::LOCALHOST, port));
+        
+        match TcpListener::bind(addr) {
+            Ok(_) => return Some(port),
+            Err(_) => continue,
+        }
+    }
+    println!("No available port found starting from {}", start_port);
+    None
 }

@@ -1,5 +1,7 @@
+use crate::config::ConfigManager;
+use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
+use crate::manager::hotkey_manager::HotkeyManager;
 use crate::utils::uploader::FileManager;
-use aircraft_types::config::LLMConfig;
 use aircraft_types::logger::LogMessage;
 use http_client::HttpClient;
 use std::sync::atomic::Ordering;
@@ -14,56 +16,32 @@ pub use http_client::LOGIN_STATUS;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-pub async fn run(
-    base_url: String,
-    username: String,
-    password: String,
-    port: u16,
-    debug: bool,
-    mut shutdown_rx: watch::Receiver<bool>,
-    log_tx: Sender<LogMessage>,
-    llm_config: LLMConfig,
-) -> Result<()> {
+pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessage>) -> Result<()> {
+    let config = ConfigManager::get_config();
     let client = Arc::new(Mutex::new(HttpClient::new(
-        base_url.clone(),
-        username.clone(),
-        password.clone(),
-        debug,
+        config.server.base_url.clone(),
+        config.server.debug,
         log_tx.clone(),
         popup_message,
     )));
     client.lock().await.log("INFO", "开始运行").await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("base_url: {}", base_url))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("username: {}", username))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("password: {}", password))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("port: {}", port))
-        .await;
-    client
-        .lock()
-        .await
-        .log("INFO", &format!("debug: {}", debug))
-        .await;
-    client.lock().await.log("INFO", "等待手动登录...").await;
-    let client_clone = client.clone();
 
     let webhook_client = client.clone();
-    let file_manager = Arc::new(Mutex::new(FileManager::new(llm_config)));
-    let server_handle = webhook::apply_webhook(port, webhook_client, file_manager);
+    let file_manager = Arc::new(Mutex::new(FileManager::new(config.llm)));
+    let hotkey_manager = Arc::new(Mutex::new(HotkeyManager::new(
+        crate::config::ConfigManager::get_config().hotkey,
+        log_tx.clone(),
+    )));
+    hotkey_manager.lock().await.start();
+    let clipboard_snapshot_manager = Arc::new(Mutex::new(ClipboardSnapshotManager::new()));
+    clipboard_snapshot_manager.lock().await.start();
+    let server_handle = webhook::apply_webhook(
+        config.server.port,
+        webhook_client,
+        file_manager,
+        hotkey_manager,
+        clipboard_snapshot_manager,
+    ).await;
 
     loop {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;

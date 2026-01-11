@@ -9,9 +9,6 @@ import type {} from '../service/bindings'
 import type {
   AircraftRs,
   AttachmentInfo,
-  HotkeyConfig,
-  LLMConfig,
-  ServerConfig,
   SummaryInfo,
 } from 'aircraft-rs'
 
@@ -20,9 +17,6 @@ declare module 'cordis' {
     core: AircraftCore
   }
   interface Events {
-    'reload-server': (serverConfig: ServerConfig, llmConfig: LLMConfig) => void
-    'reload-llm': (llmConfig: LLMConfig) => void
-    'reload-hotkey': (hotkey: HotkeyConfig) => void
     'write-log': (level: string, message: string) => void
     'reload_clipboard_snapshot_configs': () => void
   }
@@ -44,18 +38,9 @@ class AircraftCore extends Service {
       )
       // 启动核心服务
       this.bindings.startServer()
-      this.bindings.startHotkey()
       this.bindings.startClipboardSnapshotManager()
     })
 
-    ctx.on('reload-server', async (serverConfig, llmConfig) => {
-      ctx.emit('write-log', 'INFO', 'Reloading Server Config...')
-      this.bindings.reloadServer(serverConfig, llmConfig)
-    })
-    ctx.on('reload-hotkey', async (hotkey: HotkeyConfig) => {
-      ctx.emit('write-log', 'INFO', 'Reloading Hotkey Config...')
-      this.bindings.reloadHotkey(hotkey)
-    })
     ctx.on('reload_clipboard_snapshot_configs', async () => {
       ctx.emit('write-log', 'INFO', 'Reloading Clipboard Snapshot Configs...')
       this.bindings

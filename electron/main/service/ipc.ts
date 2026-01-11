@@ -82,15 +82,7 @@ class Ipc extends Service {
       this.ctx.configManager.reloadConfig(config)
     })
 
-    ipcMain.handle(
-      'get_report_summary_by_buffer',
-      async (_, { base64String }) => {
-        let res = await this.ctx.llm.uploadLLMFiles(
-          Buffer.from(base64String, 'base64')
-        )
-        return res
-      }
-    )
+
     ipcMain.handle(
       'get_summary_info_by_buffer',
       async (_, { base64String }) => {
@@ -135,6 +127,10 @@ class Ipc extends Service {
 
     ipcMain.handle('get_login_status', async () => {
       return this.ctx.bindings.native.getLoginStatus()
+    })
+
+    ipcMain.handle('get_server_port', async () => {
+      return this.ctx.bindings.native.getServerPort()
     })
   }
 

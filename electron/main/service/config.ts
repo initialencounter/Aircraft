@@ -85,9 +85,6 @@ class ConfigManager extends Service {
     }
   }
   reloadConfig(config: Config) {
-    this.ctx.emit('reload-llm', config.llm)
-    this.ctx.emit('reload-hotkey', config.hotkey)
-    this.ctx.emit('reload-server', config.server, config.llm)
     this.ctx.emit(
       'auto-launch-switch',
       config.base.autoStart,

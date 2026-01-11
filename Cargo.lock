@@ -2941,6 +2941,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "known-folders"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d463f34ca3c400fde3a054da0e0b8c6ffa21e4590922f3e18281bb5eeef4cbdc"
+dependencies = [
+ "windows-sys 0.60.2",
+]
+
+[[package]]
 name = "kuchikiki"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5462,6 +5471,7 @@ dependencies = [
  "enigo",
  "flextrek",
  "futures-util",
+ "known-folders",
  "lazy_static",
  "native-dialog",
  "pdf_parser",

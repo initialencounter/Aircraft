@@ -1,4 +1,5 @@
 import { DataModel } from "aircraft-rs"
+import { ipcManager } from "./ipcManager"
 
 function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp)
@@ -73,5 +74,9 @@ export async function projectTracking(query: string): Promise<DataModel[]> {
   return data.rows
 }
 
+
+export async function getServerPort(): Promise<number> {
+  return await ipcManager.invoke('get_server_port')
+}
 
 export { formatTimestamp, calculateColorBrightness }

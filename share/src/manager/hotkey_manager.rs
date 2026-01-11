@@ -2,7 +2,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 
-use crate::hotkey_handler::copy::copy_file_to_here;
+use crate::{config::ConfigManager, hotkey_handler::copy::copy_file_to_here};
 use crate::hotkey_handler::copy2::copy2_callback;
 use crate::hotkey_handler::upload::upload_file;
 use aircraft_types::config::HotkeyConfig;
@@ -146,8 +146,15 @@ impl HotkeyManager {
             .store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
-    pub fn save_config(&self, config: HotkeyConfig) {
+    pub fn update_config(&self, config: HotkeyConfig) {
         *self.config.lock().unwrap() = config;
+    }
+
+    pub fn reload(&self) {
+        self.stop();
+        let config = ConfigManager::get_config();
+        self.update_config(config.hotkey);
+        self.start();
     }
 
     pub fn is_listening(&self) -> bool {

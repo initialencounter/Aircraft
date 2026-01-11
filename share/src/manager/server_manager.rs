@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
+use crate::config::ConfigManager;
 use crate::task_proxy::run as task_proxy_run;
 use aircraft_types::config::{LLMConfig, ServerConfig};
 use aircraft_types::logger::LogMessage;
@@ -29,21 +30,13 @@ impl ServerManager {
     }
 
     pub fn start(&self) {
-        let config = self.config.lock().unwrap().clone();
         let (shutdown_tx, shutdown_rx) = watch::channel(false);
         let log_tx = self.log_tx.clone();
         *self.shutdown_tx.lock().unwrap() = shutdown_tx;
-        let llm_config = self.llm_config.lock().unwrap().clone();
         *self.handle.lock().unwrap() = Some(tokio::spawn(async move {
             let _ = task_proxy_run(
-                config.base_url,
-                config.username,
-                config.password,
-                config.port,
-                config.debug,
                 shutdown_rx,
                 log_tx,
-                llm_config,
             )
             .await;
         }));
@@ -63,10 +56,11 @@ impl ServerManager {
         *self.llm_config.lock().unwrap() = llm_config;
     }
 
-    pub async fn reload(&self, config: ServerConfig, llm_config: LLMConfig) {
+    pub async fn reload(&self) {
         self.stop();
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
-        self.update_config(config, llm_config);
+        let config = ConfigManager::get_config();
+        self.update_config(config.server, config.llm);
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
         self.start();
     }

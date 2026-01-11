@@ -1,7 +1,13 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
+use crate::config::ConfigManager;
+use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
+use crate::manager::hotkey_manager::HotkeyManager;
+use crate::utils::find_available_port;
 use crate::utils::uploader::FileManager;
+use aircraft_types::config::Config;
 use aircraft_types::others::LoginRequest;
+use aircraft_types::summary::SummaryInfo;
 use bytes::BufMut;
 use futures_util::StreamExt;
 use pdf_parser::read::read_pdf_u8;
@@ -9,7 +15,9 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
+use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
+use summary::get_summary_info_by_buffer;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use warp::multipart::FormData;
@@ -34,11 +42,25 @@ struct DirectoryInfo {
     dir: String,
 }
 
-pub fn apply_webhook(
+pub static SERVER_PORT: AtomicU64 = AtomicU64::new(25455);
+
+pub async fn apply_webhook(
     port: u16,
     client: Arc<Mutex<HttpClient>>,
     file_manager: Arc<Mutex<FileManager>>,
+    hotkey_manager: Arc<Mutex<HotkeyManager>>,
+    clipboard_snapshot_manager: Arc<Mutex<ClipboardSnapshotManager>>,
 ) -> JoinHandle<()> {
+    let current_port = find_available_port(port).unwrap();
+    client
+        .lock()
+        .await
+        .log(
+            "INFO",
+            &format!("Webhook 服务器正在监听端口: {}", current_port),
+        )
+        .await;
+    SERVER_PORT.store(current_port as u64, std::sync::atomic::Ordering::Relaxed);
     // 设置 webhook 路由
     let routes = warp::post()
         .and(warp::path("upload"))
@@ -117,6 +139,19 @@ pub fn apply_webhook(
             },
         );
 
+    let summary_info_route = warp::get()
+        .and(warp::path("get-summary-info-by-buffer"))
+        .and(warp::multipart::form().max_length(10_000_000))
+        .then(move |form| async move {
+            let res = handle_summary_parse(form).await;
+            match res {
+                Ok(reply) => Ok(reply),
+                Err(e) => Err(warp::reply::json(&CustomError {
+                    message: format!("Summary Parse err:{:?}", e),
+                })),
+            }
+        });
+
     let llm_files_handle = warp::post()
         .and(warp::path("upload-llm-files"))
         .and(warp::multipart::form().max_length(10_000_000))
@@ -135,7 +170,7 @@ pub fn apply_webhook(
                 }
             },
         );
-    
+
     let ping_route = warp::get()
         .and(warp::path("ping"))
         .map(|| warp::reply::json(&"pong"));
@@ -146,16 +181,14 @@ pub fn apply_webhook(
             let client = client.clone();
             move || client.clone()
         }))
-        .then(
-            move |client: Arc<Mutex<HttpClient>>| async move {
-                match client.lock().await.get_captcha().await {
-                    Ok(captcha) => warp::reply::json(&captcha),
-                    Err(e) => warp::reply::json(&CustomError {
-                        message: format!("获取验证码失败: {}", e),
-                    }),
-                }
-            },
-        );
+        .then(move |client: Arc<Mutex<HttpClient>>| async move {
+            match client.lock().await.get_captcha().await {
+                Ok(captcha) => warp::reply::json(&captcha),
+                Err(e) => warp::reply::json(&CustomError {
+                    message: format!("获取验证码失败: {}", e),
+                }),
+            }
+        });
 
     let login_route = warp::post()
         .and(warp::path("login"))
@@ -166,30 +199,89 @@ pub fn apply_webhook(
         }))
         .then(
             move |login_req: LoginRequest, client: Arc<Mutex<HttpClient>>| async move {
-                match client.lock().await.login_with_captcha(&login_req.code).await {
-                    Ok(_) => warp::reply::json(&serde_json::json!({"success": true, "message": "登录成功"})),
+                match client
+                    .lock()
+                    .await
+                    .login_with_captcha(&login_req.code, &login_req.username, &login_req.password)
+                    .await
+                {
+                    Ok(_) => warp::reply::json(
+                        &serde_json::json!({"success": true, "message": "登录成功"}),
+                    ),
                     Err(e) => warp::reply::json(&CustomError {
                         message: format!("登录失败: {}", e),
                     }),
                 }
             },
         );
+
+    let get_config_route = warp::get()
+        .and(warp::path("get-config"))
+        .map(|| warp::reply::json(&ConfigManager::get_config()));
+    let save_config_route = warp::post()
+        .and(warp::path("save-config"))
+        .and(warp::body::json())
+        .map(|config: Config| {
+            ConfigManager::save_config(&config);
+            warp::reply::json(&serde_json::json!({"success": true, "message": "配置已保存"}))
+        });
+
+    let reload_config_route = warp::post()
+        .and(warp::path("reload-config"))
+        .and(warp::body::json())
+        .and(warp::any().map({
+            let hotkey_manager = hotkey_manager.clone();
+            let clipboard_snapshot_manager = clipboard_snapshot_manager.clone();
+            move || (hotkey_manager.clone(), clipboard_snapshot_manager.clone())
+        }))
+        .then(
+            move |config: Config,
+                  (hotkey_manager, clipboard_snapshot_manager): (
+                Arc<Mutex<HotkeyManager>>,
+                Arc<Mutex<ClipboardSnapshotManager>>,
+            )| async move {
+                ConfigManager::save_config(&config);
+                hotkey_manager.lock().await.reload();
+                clipboard_snapshot_manager.lock().await.reload();
+                warp::reply::json(&serde_json::json!({"success": true, "message": "配置已重载"}))
+            },
+        );
+
+
+    
+    let reload_config_clipkeeper_route = warp::post()
+        .and(warp::path("reload-clipkeeper-config"))
+        .and(warp::any().map({
+            let clipboard_snapshot_manager = clipboard_snapshot_manager.clone();
+            move || clipboard_snapshot_manager.clone()
+        }))
+        .then(
+            move |clipboard_snapshot_manager: Arc<Mutex<ClipboardSnapshotManager>>| async move {
+                clipboard_snapshot_manager.lock().await.reload();
+                warp::reply::json(&serde_json::json!({"success": true, "message": "剪贴板配置已重载"}))
+            },
+        );
     
     let cors = warp::cors()
         .allow_any_origin() // 允许所有来源
-        .allow_headers(vec!["content-type"]) // 允许的请求头
-        .allow_methods(vec!["POST", "GET", "OPTIONS"]); // 允许的HTTP方法
+        .allow_headers(vec!["content-type", "authorization", "accept"]) // 允许的请求头
+        .allow_methods(vec!["POST", "GET", "OPTIONS", "PUT", "DELETE"]); // 允许的HTTP方法
     let combined_routes = routes
         .or(doc_routes)
         .or(selected_routes)
         .or(get_summary_info)
         .or(llm_files_handle)
+        .or(summary_info_route)
         .or(ping_route)
         .or(get_captcha_route)
         .or(login_route)
+        .or(get_config_route)
+        .or(save_config_route)
+        .or(reload_config_route)
+        .or(reload_config_clipkeeper_route)
         .with(cors);
     // 启动 web 服务器
-    let server = warp::serve(combined_routes).run(([127, 0, 0, 1], port));
+    let server = warp::serve(combined_routes).run(([127, 0, 0, 1], current_port));
     tokio::spawn(server)
 }
 
@@ -258,4 +350,15 @@ async fn convert_file_part_to_vec_u8(mut warp_part: warp::multipart::Part) -> Ve
     }
 
     file_data
+}
+
+async fn handle_summary_parse(mut form: FormData) -> Result<impl Reply, Rejection> {
+    let part = form
+        .next()
+        .await
+        .ok_or_else(|| warp::reject::custom(UploadError))?;
+    let part: warp::multipart::Part = part.map_err(|_e| warp::reject::custom(UploadError))?;
+    let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
+    let summary_info = get_summary_info_by_buffer(&file_data).unwrap_or(SummaryInfo::default());
+    Ok(warp::reply::json(&summary_info))
 }

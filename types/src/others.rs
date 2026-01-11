@@ -86,4 +86,6 @@ pub struct CaptchaResponse {
 #[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct LoginRequest {
     pub code: String,
+    pub username: String,
+    pub password: String,
 }

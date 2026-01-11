@@ -27,6 +27,7 @@ import { onMounted, ref, watch } from 'vue'
 import { ElLoading } from 'element-plus'
 import { ipcManager } from '../utils/ipcManager'
 import { Config, DataModel } from 'aircraft-rs'
+import { apiManager } from '../utils/api'
 
 const searchStore = useSearchStore()
 const props = defineProps<{
@@ -46,11 +47,9 @@ const dataList = ref<DataModel[]>(searchStore.searchResults[props.type])
 
 const saveHost = async () => {
   try {
-    const currentConfig: Config = await ipcManager.invoke('get_config')
+    const currentConfig: Config = await apiManager.get('get-config')
     currentConfig.other.queryServerHost = host.value
-    await ipcManager.invoke('save_config', {
-      config: currentConfig,
-    })
+    await apiManager.post('save-config', currentConfig)
     alert('保存成功')
   } catch (error) {
     console.error('保存配置出错:', error)
@@ -82,7 +81,7 @@ const submitQuery = async () => {
 }
 
 onMounted(() => {
-  ipcManager.invoke('get_config').then((res: Config) => {
+  apiManager.get('get-config').then((res: Config) => {
     if (res) {
       host.value = res.other.queryServerHost
     }

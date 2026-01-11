@@ -1,9 +1,13 @@
-use aircraft_types::{logger::LogMessage, others::{QueryResult, CaptchaResponse}};
+use aircraft_types::{
+    logger::LogMessage,
+    others::{CaptchaResponse, QueryResult},
+};
+use base64::engine::general_purpose;
+use base64::Engine;
 use chrono::Local;
 use std::env;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
-use base64::Engine;
 
 use reqwest::header;
 use reqwest::{multipart, Client};
@@ -22,8 +26,6 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>
 pub struct HttpClient {
     pub client: Client,
     pub base_url: String,
-    pub username: String,
-    pub password: String,
     pub debug: bool,
     pub log_tx: Sender<LogMessage>,
     pub confirm_fn: fn(&str, &str) -> bool,
@@ -32,8 +34,6 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new(
         base_url: String,
-        username: String,
-        password: String,
         debug: bool,
         log_tx: Sender<LogMessage>,
         confirm_fn: fn(&str, &str) -> bool,
@@ -41,14 +41,12 @@ impl HttpClient {
         let client = Client::builder().cookie_store(true).build().unwrap();
         let fixed_base_url = if base_url.ends_with('/') {
             base_url.trim_end_matches('/').to_string()
-          }else {
+        } else {
             base_url
-          };
+        };
         HttpClient {
             client,
             base_url: fixed_base_url,
-            username,
-            password,
             debug,
             log_tx,
             confirm_fn,
@@ -74,13 +72,16 @@ impl HttpClient {
         }
     }
 
-    pub async fn get_captcha(&self) -> Result<CaptchaResponse> {
+    pub async fn get_captcha(&mut self) -> Result<CaptchaResponse> {
         if self.debug {
             self.log("INFO", "调试模式，返回假验证码").await;
             return Ok(CaptchaResponse {
                 img: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==".to_string(),
             });
         }
+
+        self.log("INFO", &format!("username: {}", self.base_url))
+            .await;
 
         let response = self
             .client
@@ -100,20 +101,31 @@ impl HttpClient {
             // 获取图片的字节数据
             let image_bytes = response.bytes().await?;
             // 转换为base64编码
-            let base64_image = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &image_bytes);
+            let base64_image = general_purpose::STANDARD.encode(&image_bytes);
             // 构建data URI (假设是PNG格式，也可能是JPEG)
             let img = format!("data:image/jpeg;base64,{}", base64_image);
-            
+
             self.log("INFO", "获取验证码成功").await;
             Ok(CaptchaResponse { img })
         } else {
-            self.log("ERROR", &format!("获取验证码失败: {:?}", response.text().await?))
-                .await;
+            self.log(
+                "ERROR",
+                &format!("获取验证码失败: {:?}", response.text().await?),
+            )
+            .await;
             Err("获取验证码失败".into())
         }
     }
 
-    pub async fn login_with_captcha(&self, code: &str) -> Result<()> {
+    pub async fn login_with_captcha(
+        &self,
+        code: &str,
+        username: &str,
+        password: &str,
+    ) -> Result<()> {
+        self.log("INFO", &format!("username: {}", username)).await;
+        self.log("INFO", &format!("password: {}", password)).await;
+
         if self.debug {
             self.log("INFO", "调试模式，跳过登录").await;
             LOGIN_STATUS.store(true, Ordering::Relaxed);
@@ -134,8 +146,8 @@ impl HttpClient {
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(format!(
                 "type=password&username={}&password={}&rememberMe=true&validateCode={}",
-                urlencoding::encode(&self.username),
-                urlencoding::encode(&self.password),
+                urlencoding::encode(username),
+                urlencoding::encode(password),
                 urlencoding::encode(code)
             ))
             .send()
@@ -193,7 +205,8 @@ impl HttpClient {
         }
     }
     pub async fn search_project_no(&self, project_no: &str) -> Result<(String, String)> {
-        let (start_date, end_date) = parse_date(project_no).unwrap_or(("".to_string(),"".to_string()));
+        let (start_date, end_date) =
+            parse_date(project_no).unwrap_or(("".to_string(), "".to_string()));
         let system_id = project_no[0..3].to_lowercase();
         let query_string = format!(
             "systemId={}&category=&projectNo={}&startDate={}&endDate={}&page=1&rows=10",
@@ -215,7 +228,10 @@ impl HttpClient {
             .await;
             return Err("没有权限修改".into());
         }
-        Ok((result.rows[0].project_id.clone(), result.rows[0].category.clone()))
+        Ok((
+            result.rows[0].project_id.clone(),
+            result.rows[0].category.clone(),
+        ))
     }
 
     async fn post_file(
@@ -229,7 +245,7 @@ impl HttpClient {
     ) -> Result<String> {
         let mut file_type = file_type_raw;
         if !(category == "sodium" || category == "battery") {
-          file_type = "goodsfile";
+            file_type = "goodsfile";
         }
         let blob = multipart::Part::bytes(file_buffer).file_name(file_name.to_string());
 
@@ -301,6 +317,7 @@ impl HttpClient {
     }
 
     pub async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
+        println!("上传热键触发，文件列表3: {:?}", file_list.clone());
         let raw_file_info = match_file_list(file_list);
         self.post_raw_file(raw_file_info).await
     }
@@ -360,9 +377,9 @@ impl HttpClient {
         } else {
             match self.search_project_no(&file_info.project_no).await {
                 Ok(project) => {
-                  project_id = project.0;
-                  category = project.1;
-                },
+                    project_id = project.0;
+                    category = project.1;
+                }
                 Err(e) => {
                     return Err(e);
                 }

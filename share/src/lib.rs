@@ -4,3 +4,4 @@ pub mod logger;
 pub mod manager;
 pub mod task_proxy;
 pub mod utils;
+pub mod config;

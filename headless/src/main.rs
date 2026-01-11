@@ -1,7 +1,7 @@
 mod config;
 mod tray;
 mod utils;
-use aircraft_types::config::{LLMConfig, ServerConfig};
+use aircraft_types::config::ServerConfig;
 use config::read_env_to_config;
 use is_elevated::is_elevated;
 use share::{logger::Logger, task_proxy::run as task_proxy_run};
@@ -60,14 +60,8 @@ async fn main() -> Result<()> {
     let log_tx = logger.lock().unwrap().log_tx.clone();
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
     let _ = tokio::spawn(task_proxy_run(
-        config.base_url,
-        config.username,
-        config.password,
-        config.port,
-        config.debug,
         shutdown_rx,
         log_tx,
-        LLMConfig::default(),
     ));
 
     // 运行事件循环

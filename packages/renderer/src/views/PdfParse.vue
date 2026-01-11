@@ -1,8 +1,7 @@
 <script lang="ts" setup xmlns="">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import { ref } from 'vue'
-import { ipcManager } from '../utils/ipcManager'
+import { onMounted, ref } from 'vue'
 import summaryTable from '../components/SummaryTable.vue'
 import type { SummaryFromLLM } from '@aircraft/validators'
 import { ElMessage } from 'element-plus'
@@ -12,6 +11,8 @@ import { convertSummaryInfo2SummaryFromLLM } from '@aircraft/validators/src/lith
 import { useSummaryStore } from '../stores/summary'
 import { SummaryInfo } from 'aircraft-rs'
 import { Loading } from '@element-plus/icons-vue'
+import { getServerPort } from '../utils/utils'
+
 interface ParseReportFiles {
   pdf: File
   docx: File
@@ -23,6 +24,8 @@ const labelPosition = ref('summary')
 const verifyResult = ref<string[]>(summaryStore.result)
 const parseResult = ref<SummaryFromLLM>(summaryStore.pdf)
 const llmResult = ref<SummaryFromLLM>(summaryStore.docx)
+const serverPort = ref(25455)
+
 document.oncontextmenu = function () {
   return false
 }
@@ -43,17 +46,24 @@ const handleParseReport = async (files: ParseReportFiles) => {
       loading.value = false
       return
     }
-    const pdfBase64 = pdfDataUrl.split(',')[1]
-    const docxBase64 = docxDataUrl.split(',')[1]
-    const pdfRes: SummaryFromLLM = JSON.parse(
-      await ipcManager.invoke('get_report_summary_by_buffer', {
-        base64String: pdfBase64,
-      })
-    )
-    const docxRes: SummaryInfo = await ipcManager.invoke(
-      'get_summary_info_by_buffer',
-      { base64String: docxBase64 }
-    )
+
+    const pdfFileData = await fileTransfer(files.pdf)
+    const docxFileData = await fileTransfer(files.docx)
+    if (!pdfFileData || !docxFileData) {
+      ElMessage.error('文件解析失败')
+      loading.value = false
+      return
+    }
+
+    const pdfRes: SummaryFromLLM | null = await getReportInfo(pdfFileData)
+    const docxRes: SummaryInfo | null = await getSummaryInfo(docxFileData)
+
+    if (!pdfRes || !docxRes) {
+      ElMessage.error('文件解析失败')
+      loading.value = false
+      return
+    }
+
     llmResult.value = pdfRes as SummaryFromLLM
     summaryStore.setPdf(llmResult.value)
     parseResult.value = convertSummaryInfo2SummaryFromLLM(docxRes)
@@ -86,6 +96,96 @@ function fileToBase64(file: File): Promise<string> {
     reader.readAsDataURL(file)
   })
 }
+
+interface FileData {
+  name: string
+  type: string
+  data: number[]
+}
+
+async function fileTransfer(file: File): Promise<FileData | null> {
+  const reader = new FileReader()
+  await new Promise<void>((resolve) => {
+    reader.onload = () => {
+      const arrayBuffer = reader.result
+      const uint8Array = new Uint8Array(arrayBuffer as ArrayBuffer)
+      return {
+        name: file.name,
+        type: file.type,
+        data: Array.from(uint8Array),
+      }
+      resolve()
+    }
+    reader.readAsArrayBuffer(file)
+  })
+  return null
+}
+
+async function getSummaryInfo(file: FileData) {
+  try {
+    const formData = new FormData()
+    const uint8Array = new Uint8Array(file.data)
+    formData.append(
+      'file',
+      new Blob([uint8Array], { type: file.type }),
+      file.name
+    )
+    const response = await fetch(
+      `http://127.0.0.1:${serverPort.value}/get-summary-info`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: formData,
+      }
+    )
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json()
+    return data as SummaryInfo
+  } catch (error) {
+    console.error('获取docx概要信息失败:', error)
+    ElMessage.error('获取docx概要信息失败:' + error)
+    return null
+  }
+}
+
+async function getReportInfo(file: FileData) {
+  try {
+    const formData = new FormData()
+    const uint8Array = new Uint8Array(file.data)
+    formData.append(
+      'file',
+      new Blob([uint8Array], { type: file.type }),
+      file.name
+    )
+    const response = await fetch(
+      `http://127.0.0.1:${serverPort.value}/upload-llm-files`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: formData,
+      }
+    )
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json()
+    return data as SummaryFromLLM
+  } catch (error) {
+    console.error('获取docx概要信息失败:', error)
+    ElMessage.error('获取docx概要信息失败:' + error)
+    return null
+  }
+}
+
+onMounted(async () => {
+  serverPort.value = await getServerPort()
+})
 </script>
 
 <template>

@@ -54,6 +54,11 @@ impl ClipboardSnapshotManager {
             handle.unregister();
         }
     }
+
+    pub fn reload(&self) {
+        self.stop();
+        self.start();
+    }
 }
 
 pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {

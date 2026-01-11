@@ -7,6 +7,8 @@ use reqwest::multipart::Part;
 use reqwest::{multipart, Client};
 use std::error::Error;
 
+use crate::config::ConfigManager;
+
 fn extract_json(input: &str) -> Option<String> {
     // 定义起始和结束标记
     let start_tag = "```json";
@@ -39,7 +41,8 @@ impl FileManager {
         }
     }
 
-    pub fn reload(&mut self, config: LLMConfig) {
+    pub fn reload(&mut self) {
+        let config = ConfigManager::get_config().llm;
         self.base_url = config.base_url;
         self.api_key = config.api_key;
         self.model = config.model;
