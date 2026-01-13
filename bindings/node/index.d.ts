@@ -266,7 +266,6 @@ export interface SegmentResult {
   mask: Array<Array<number>>
 }
 export declare function getDefaultConfig(): Config
-export declare function searchFile(fileName: string): Promise<Array<SearchResult>>
 export declare function searchProperty(url: string, searchText: string): Promise<Array<DataModel>>
 export declare function openLocalDir(target: string): void
 export declare function setClipboardText(text: string): void

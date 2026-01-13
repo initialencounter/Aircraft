@@ -1,6 +1,7 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
 use crate::config::ConfigManager;
+use crate::hotkey_handler::copy::search;
 use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use crate::manager::hotkey_manager::HotkeyManager;
 use crate::utils::uploader::FileManager;
@@ -112,6 +113,7 @@ pub async fn apply_webhook(
             post(reload_clipkeeper_config_handler),
         )
         .route("/set-clipboard-text", post(set_clipboard_text_handler))
+        .route("/search-file", post(search_file_handler))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -261,6 +263,10 @@ async fn reload_clipkeeper_config_handler(
 async fn set_clipboard_text_handler(Json(text): Json<String>) -> Json<serde_json::Value> {
     set_clipboard_text(text);
     Json(serde_json::json!({"success": true, "message": "剪贴板文本已设置"}))
+}
+
+async fn search_file_handler(Json(file_name): Json<String>) -> Json<serde_json::Value> {
+    Json(serde_json::json!(search(file_name).await))
 }
 
 // 自定义错误类型,处理可能的错误

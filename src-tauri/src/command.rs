@@ -1,7 +1,5 @@
 use aircraft_types::config::Config;
 use aircraft_types::logger::LogMessage;
-use aircraft_types::others::SearchResult;
-use share::hotkey_handler::copy::search;
 use share::logger::Logger;
 use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::task_proxy::webhook::SERVER_PORT;
@@ -104,11 +102,6 @@ pub async fn reload_config(
 ) -> Result<(), String> {
     set_auto_start(app.clone(), config.base.auto_start)?;
     Ok(())
-}
-
-#[tauri::command]
-pub async fn search_file(file_name: String) -> Vec<SearchResult> {
-    search(file_name).await
 }
 
 #[tauri::command]

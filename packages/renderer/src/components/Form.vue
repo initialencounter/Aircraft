@@ -112,9 +112,8 @@ async function openINFolder(projectNo: string) {
 }
 
 async function getGoodsPath(projectNo: string): Promise<string> {
-  const searchRes = (await ipcManager.invoke('search_file', {
-    fileName: projectNo,
-  })) as SearchResult[]
+  const searchRes = (await apiManager.post('/search-file', projectNo)) as SearchResult[]
+  console.log('Search results for projectNo', projectNo, searchRes)
   return (
     searchRes.filter((item) => item.name.endsWith(`${projectNo}.pdf`))[0]
       ?.path || ''

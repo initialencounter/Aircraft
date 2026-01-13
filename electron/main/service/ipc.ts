@@ -1,7 +1,7 @@
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
-import { DataModel, SearchResult } from 'aircraft-rs'
+import { DataModel } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
@@ -94,10 +94,6 @@ class Ipc extends Service {
 
     ipcMain.handle('open_local_dir', (_, { target }) => {
       return this.ctx.bindings.native.openLocalDir(target)
-    })
-
-    ipcMain.handle('search_file', async (_, { fileName }) => {
-      return await this.ctx.bindings.native.searchFile(fileName) as SearchResult[]
     })
 
     ipcMain.handle('search_property', async (_, { url, searchText }) => {
