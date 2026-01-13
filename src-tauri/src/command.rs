@@ -117,11 +117,6 @@ pub async fn search_property(url: String, search_text: String) -> Vec<DataModel>
 }
 
 #[tauri::command]
-pub fn set_clipboard_text(text: String) {
-    share::utils::set_clipboard_text(text);
-}
-
-#[tauri::command]
 pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {
     get_clipboard_snapshot_configs_source()
 }

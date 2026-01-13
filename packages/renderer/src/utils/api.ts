@@ -15,7 +15,7 @@ class APIManager {
       
       if (isDev) {
         // 开发环境：使用相对路径，由 Vite 代理处理
-        url = `/${endpoint}`
+        url = `${endpoint}`
       } else {
         // 生产环境：使用完整 URL
         if (!this.serverPort) {
@@ -49,7 +49,7 @@ class APIManager {
       
       if (isDev) {
         // 开发环境：使用相对路径，由 Vite 代理处理
-        url = `/${endpoint}`
+        url = `${endpoint}`
       } else {
         // 生产环境：使用完整 URL
         if (!this.serverPort) {

@@ -3,7 +3,7 @@ use crate::attachment_parser::get_attachment_info;
 use crate::config::ConfigManager;
 use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use crate::manager::hotkey_manager::HotkeyManager;
-use crate::utils::find_available_port;
+use crate::utils::{find_available_port, set_clipboard_text};
 use crate::utils::uploader::FileManager;
 use aircraft_types::config::Config;
 use aircraft_types::others::LoginRequest;
@@ -261,6 +261,14 @@ pub async fn apply_webhook(
                 warp::reply::json(&serde_json::json!({"success": true, "message": "剪贴板配置已重载"}))
             },
         );
+
+    let set_clipboard_text_route = warp::post()
+        .and(warp::path("set-clipboard-text"))
+        .and(warp::body::json())
+        .map(|text: String| {
+            set_clipboard_text(text);
+            warp::reply::json(&serde_json::json!({"success": true, "message": "剪贴板文本已设置"}))
+        });
     
     let cors = warp::cors()
         .allow_any_origin() // 允许所有来源
@@ -279,6 +287,7 @@ pub async fn apply_webhook(
         .or(save_config_route)
         .or(reload_config_route)
         .or(reload_config_clipkeeper_route)
+        .or(set_clipboard_text_route)
         .with(cors);
     // 启动 web 服务器
     let server = warp::serve(combined_routes).run(([127, 0, 0, 1], current_port));

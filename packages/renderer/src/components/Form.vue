@@ -78,6 +78,7 @@ import { ElMessage } from 'element-plus'
 import { Folder } from '@element-plus/icons-vue'
 import { ipcManager } from '../utils/ipcManager'
 import { DataModel, SearchResult } from 'aircraft-rs'
+import { apiManager } from '../utils/api'
 
 defineProps<{
   tableData: DataModel[]
@@ -121,12 +122,18 @@ async function getGoodsPath(projectNo: string): Promise<string> {
 }
 
 // 处理单元格点击事件
-const handleCellClick = (_row: any, _column: any, cell: HTMLTableCellElement, _event: Event) => {
+const handleCellClick = (
+  _row: any,
+  _column: any,
+  cell: HTMLTableCellElement,
+  _event: Event
+) => {
   const text = cell.innerText.trim() // 获取单元格内容
   if (text) {
     // 使用隐藏的输入框进行复制
-    ipcManager.invoke('set_clipboard_text', { text })
-    ElMessage.success('已复制到剪贴板'+': ' + text)
+    console.log('Copying text to clipboard:', text)
+    apiManager.post('/set-clipboard-text', text) // 通过 webhook 设置剪贴板内容
+    ElMessage.success('已复制到剪贴板' + ': ' + text)
   }
 }
 </script>

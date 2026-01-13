@@ -83,7 +83,7 @@ const debouncedSave = debounce(() => {
 
 async function getConfig() {
   try {
-    const appConfigResponse = await apiManager.get('get-config')
+    const appConfigResponse = await apiManager.get('/get-config')
     config.value =  appConfigResponse
   } catch (error) {
     console.error('获取服务端口失败:', error)
@@ -104,7 +104,7 @@ async function saveConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    await apiManager.post('save-config',tmpConfig)
+    await apiManager.post('/save-config',tmpConfig)
     ElMessage.success('保存成功')
   } catch (error) {
     ElMessage.error(JSON.stringify(error))
@@ -117,7 +117,7 @@ async function reloadConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    await apiManager.post('reload-config',tmpConfig)
+    await apiManager.post('/reload-config',tmpConfig)
     ElMessage.success('重载成功')
   } catch {
     ElMessage.error('重载失败')

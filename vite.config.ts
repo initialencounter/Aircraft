@@ -67,7 +67,7 @@ export default defineConfig(async () => ({
       : undefined,
     proxy: {
       // 代理特定的 API 端点到后端服务器，避免 CORS 问题
-      '^/(save-config|get-config|reload-config|upload|upload-selected|get-project-info|get-attachment-info|upload-llm-files|ping|get-captcha|login|reload-clipkeeper-config)': {
+      '^/(save-config|get-config|reload-config|upload|upload-selected|get-project-info|get-attachment-info|upload-llm-files|ping|get-captcha|login|reload-clipkeeper-config|set-clipboard-text)': {
         target: 'http://127.0.0.1:25455',
         changeOrigin: true,
       },

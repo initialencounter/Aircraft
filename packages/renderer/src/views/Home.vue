@@ -120,7 +120,7 @@ const handleLogin = async () => {
   loggingIn.value = true
   try {
     // 获取最新的配置信息
-    const config = await apiManager.get('get-config')
+    const config = await apiManager.get('/get-config')
     const username = config?.server?.username || ''
     const password = config?.server?.password || ''
     

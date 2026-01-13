@@ -104,10 +104,6 @@ class Ipc extends Service {
       return await this.ctx.bindings.native.searchProperty(url, searchText) as DataModel[]
     })
 
-    ipcMain.handle('set_clipboard_text', async (_, { text }) => {
-      return this.ctx.bindings.native.setClipboardText(text)
-    })
-
     ipcMain.handle('get_clipboard_snapshot_configs', async () => {
       return this.ctx.bindings.native.getClipboardSnapshotConfigs()
     })

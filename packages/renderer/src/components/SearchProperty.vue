@@ -47,9 +47,9 @@ const dataList = ref<DataModel[]>(searchStore.searchResults[props.type])
 
 const saveHost = async () => {
   try {
-    const currentConfig: Config = await apiManager.get('get-config')
+    const currentConfig: Config = await apiManager.get('/get-config')
     currentConfig.other.queryServerHost = host.value
-    await apiManager.post('save-config', currentConfig)
+    await apiManager.post('/save-config', currentConfig)
     alert('保存成功')
   } catch (error) {
     console.error('保存配置出错:', error)

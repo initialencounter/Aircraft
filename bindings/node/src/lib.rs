@@ -237,11 +237,6 @@ pub fn open_local_dir(target: String) {
 }
 
 #[napi]
-pub fn set_clipboard_text(text: String) {
-  share::utils::set_clipboard_text(text);
-}
-
-#[napi]
 pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {
   share::manager::clipboard_snapshot_manager::get_clipboard_snapshot_configs()
 }
