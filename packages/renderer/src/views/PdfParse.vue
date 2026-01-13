@@ -54,8 +54,7 @@ const handleParseReport = async (files: ParseReportFiles) => {
       loading.value = false
       return
     }
-
-    const pdfRes: SummaryFromLLM | null = await getReportInfo(pdfFileData)
+    const pdfRes: SummaryFromLLM | null = JSON.parse(await getReportInfo(pdfFileData) ?? "{}") as SummaryFromLLM
     const docxRes: SummaryInfo | null = await getSummaryInfo(docxFileData)
 
     if (!pdfRes || !docxRes) {
@@ -104,21 +103,22 @@ interface FileData {
 }
 
 async function fileTransfer(file: File): Promise<FileData | null> {
-  const reader = new FileReader()
-  await new Promise<void>((resolve) => {
+  return new Promise<FileData | null>((resolve, reject) => {
+    const reader = new FileReader()
     reader.onload = () => {
       const arrayBuffer = reader.result
       const uint8Array = new Uint8Array(arrayBuffer as ArrayBuffer)
-      return {
+      resolve({
         name: file.name,
         type: file.type,
         data: Array.from(uint8Array),
-      }
-      resolve()
+      })
+    }
+    reader.onerror = (error) => {
+      reject(error)
     }
     reader.readAsArrayBuffer(file)
   })
-  return null
 }
 
 async function getSummaryInfo(file: FileData) {
@@ -133,10 +133,7 @@ async function getSummaryInfo(file: FileData) {
     const response = await fetch(
       `http://127.0.0.1:${serverPort.value}/get-summary-info`,
       {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: 'POST',
         body: formData,
       }
     )
@@ -164,10 +161,7 @@ async function getReportInfo(file: FileData) {
     const response = await fetch(
       `http://127.0.0.1:${serverPort.value}/upload-llm-files`,
       {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: 'POST',
         body: formData,
       }
     )
@@ -175,7 +169,7 @@ async function getReportInfo(file: FileData) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json()
-    return data as SummaryFromLLM
+    return data as string
   } catch (error) {
     console.error('获取docx概要信息失败:', error)
     ElMessage.error('获取docx概要信息失败:' + error)

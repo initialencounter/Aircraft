@@ -97,8 +97,8 @@ pub async fn apply_webhook(
             get(get_attachment_info_handler),
         )
         .route(
-            "/get-summary-info-by-buffer",
-            get(get_summary_info_by_buffer_handler),
+            "/get-summary-info",
+            post(get_summary_info_handler),
         )
         .route("/upload-llm-files", post(upload_llm_files_handler))
         .route("/ping", get(ping_handler))
@@ -172,7 +172,8 @@ async fn get_attachment_info_handler(
     }
 }
 
-async fn get_summary_info_by_buffer_handler(mut multipart: Multipart) -> Response {
+async fn get_summary_info_handler(mut multipart: Multipart) -> Response {
+    println!("get_summary_info_handler called");
     match handle_summary_parse(&mut multipart).await {
         Ok(summary_info) => Json(summary_info).into_response(),
         Err(e) => Json(CustomError {
@@ -183,6 +184,7 @@ async fn get_summary_info_by_buffer_handler(mut multipart: Multipart) -> Respons
 }
 
 async fn upload_llm_files_handler(State(state): State<AppState>, multipart: Multipart) -> Response {
+    println!("upload_llm_files_handler called");
     match handle_upload(multipart, state.file_manager).await {
         Ok(json) => Json(json).into_response(),
         Err(e) => Json(CustomError {
@@ -281,27 +283,19 @@ async fn handle_upload(
 
     while let Some(field) = multipart.next_field().await? {
         if field.name() == Some("file") {
-            let filename = field.file_name().ok_or(UploadError)?.to_string();
-
             let file_data = field.bytes().await?;
             let file_data_vec: Vec<u8> = file_data.to_vec();
 
-            let mut file_content = match read_pdf_u8(&file_data_vec) {
+            let file_content = match read_pdf_u8(&file_data_vec) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
                     println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);
-                    "".to_string()
+                    return Err("读取 pdf Vec<u8> 失败".into());
                 }
             };
 
             if file_content.trim().is_empty() {
-                file_content = file_manager
-                    .get_u8_text(filename, file_data_vec)
-                    .await
-                    .unwrap_or_else(|e| {
-                        println!("Error: OCR {:?}", e);
-                        "".to_string()
-                    });
+                return Err("读取 pdf Vec<u8> 失败".into());
             }
             file_contents.push(file_content);
         }
