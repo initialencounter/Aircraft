@@ -1,7 +1,6 @@
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
-import { DataModel } from 'aircraft-rs'
 
 declare module 'cordis' {
   interface Context {
@@ -94,10 +93,6 @@ class Ipc extends Service {
 
     ipcMain.handle('open_local_dir', (_, { target }) => {
       return this.ctx.bindings.native.openLocalDir(target)
-    })
-
-    ipcMain.handle('search_property', async (_, { url, searchText }) => {
-      return await this.ctx.bindings.native.searchProperty(url, searchText) as DataModel[]
     })
 
     ipcMain.handle('get_clipboard_snapshot_configs', async () => {

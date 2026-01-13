@@ -42,3 +42,14 @@ pub struct DataModel {
 pub struct SearchPropertyParams {
     pub search_text: String,
 }
+
+
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
+#[serde(rename_all = "camelCase")]
+pub struct SearchProperty {
+    pub url: String,
+    pub search_text: String,
+}

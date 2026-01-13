@@ -1,7 +1,7 @@
 use crate::utils::popup_message;
 use aircraft_types::{
     others::{SearchParams, SearchResponse, SearchResult},
-    project::{DataModel, SearchPropertyParams},
+    project::{DataModel, SearchProperty, SearchPropertyParams},
 };
 use copypasta::{ClipboardContext, ClipboardProvider};
 use lazy_static::lazy_static;
@@ -53,10 +53,10 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
     }
 }
 
-pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
+pub async fn search_property(data: SearchProperty) -> Vec<DataModel> {
     let client = Client::new();
-    let query = SearchPropertyParams { search_text };
-    let response = client.get(&url).query(&query).send().await;
+    let query = SearchPropertyParams { search_text: data.search_text };
+    let response = client.get(&data.url).query(&query).send().await;
     let response = match response {
         Ok(res) => res,
         Err(e) => {

@@ -10,8 +10,6 @@ use tauri::Manager;
 use tauri_plugin_autostart::ManagerExt;
 
 use aircraft_types::others::ClipboardHotkey;
-use aircraft_types::project::DataModel;
-use share::hotkey_handler::copy::search_property as search_property_source;
 use share::manager::clipboard_snapshot_manager::{
     add_clipboard_snapshot_config as add_clipboard_snapshot_config_source,
     get_clipboard_snapshot_configs as get_clipboard_snapshot_configs_source,
@@ -104,10 +102,6 @@ pub async fn reload_config(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
-    search_property_source(url, search_text).await
-}
 
 #[tauri::command]
 pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {

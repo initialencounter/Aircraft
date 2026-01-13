@@ -189,6 +189,10 @@ export interface DataModel {
 export interface SearchPropertyParams {
   searchText: string
 }
+export interface SearchProperty {
+  url: string
+  searchText: string
+}
 export interface SummaryInfo {
   /** 项目ID */
   id: string
@@ -266,9 +270,7 @@ export interface SegmentResult {
   mask: Array<Array<number>>
 }
 export declare function getDefaultConfig(): Config
-export declare function searchProperty(url: string, searchText: string): Promise<Array<DataModel>>
 export declare function openLocalDir(target: string): void
-export declare function setClipboardText(text: string): void
 export declare function getClipboardSnapshotConfigs(): Array<ClipboardHotkey>
 export declare function addClipboardSnapshotConfig(config: ClipboardHotkey): void
 export declare function removeClipboardSnapshotConfig(contentName: string): void

@@ -7,7 +7,6 @@ use aircraft_types::attachment::AttachmentInfo;
 use aircraft_types::config::{Config, HotkeyConfig, LLMConfig, ServerConfig};
 use aircraft_types::logger::LogMessage;
 use aircraft_types::others::ClipboardHotkey;
-use aircraft_types::project::DataModel;
 use aircraft_types::summary::SummaryInfo;
 use pdf_parser::read::read_pdf_u8;
 use pdf_parser::PdfReadResult;
@@ -218,11 +217,6 @@ impl JsFileManager {
 pub fn get_default_config() -> napi::Result<Config> {
   let config = Config::default();
   Ok(config)
-}
-
-#[napi]
-pub async fn search_property(url: String, search_text: String) -> Vec<DataModel> {
-  share::hotkey_handler::copy::search_property(url, search_text).await
 }
 
 #[napi]

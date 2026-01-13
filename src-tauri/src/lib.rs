@@ -44,7 +44,6 @@ pub async fn run() {
             cmd::maximize_window,
             cmd::unmaximize_window,
             cmd::hide_window,
-            cmd::search_property,
             cmd::get_clipboard_snapshot_configs,
             cmd::add_clipboard_snapshot_config,
             cmd::remove_clipboard_snapshot_config,

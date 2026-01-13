@@ -25,7 +25,6 @@ import { useSearchStore } from '../stores/search'
 import DataForm from './Form.vue'
 import { onMounted, ref, watch } from 'vue'
 import { ElLoading } from 'element-plus'
-import { ipcManager } from '../utils/ipcManager'
 import { Config, DataModel } from 'aircraft-rs'
 import { apiManager } from '../utils/api'
 
@@ -66,7 +65,7 @@ const submitQuery = async () => {
 
   try {
     const endpoint = props.endpoint
-    const data = (await ipcManager.invoke('search_property', {
+    const data = (await apiManager.post('/search-property', {
       url: `http://${host.value}:4000/${endpoint}`,
       searchText: queryText.value.trim(),
     })) as DataModel[]

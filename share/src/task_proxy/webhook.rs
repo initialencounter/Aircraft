@@ -1,13 +1,14 @@
 use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
 use crate::config::ConfigManager;
-use crate::hotkey_handler::copy::search;
+use crate::hotkey_handler::copy::{search, search_property};
 use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use crate::manager::hotkey_manager::HotkeyManager;
 use crate::utils::uploader::FileManager;
 use crate::utils::{find_available_port, set_clipboard_text};
 use aircraft_types::config::Config;
 use aircraft_types::others::LoginRequest;
+use aircraft_types::project::SearchProperty;
 use aircraft_types::summary::SummaryInfo;
 use axum::{
     extract::{Multipart, Path, Query, State},
@@ -97,10 +98,7 @@ pub async fn apply_webhook(
             "/get-attachment-info/{project_no}",
             get(get_attachment_info_handler),
         )
-        .route(
-            "/get-summary-info",
-            post(get_summary_info_handler),
-        )
+        .route("/get-summary-info", post(get_summary_info_handler))
         .route("/upload-llm-files", post(upload_llm_files_handler))
         .route("/ping", get(ping_handler))
         .route("/get-captcha", get(get_captcha_handler))
@@ -114,6 +112,7 @@ pub async fn apply_webhook(
         )
         .route("/set-clipboard-text", post(set_clipboard_text_handler))
         .route("/search-file", post(search_file_handler))
+        .route("/search-property", post(search_property_handler))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -267,6 +266,10 @@ async fn set_clipboard_text_handler(Json(text): Json<String>) -> Json<serde_json
 
 async fn search_file_handler(Json(file_name): Json<String>) -> Json<serde_json::Value> {
     Json(serde_json::json!(search(file_name).await))
+}
+
+async fn search_property_handler(Json(request): Json<SearchProperty>) -> Json<serde_json::Value> {
+    Json(serde_json::json!(search_property(request).await))
 }
 
 // 自定义错误类型,处理可能的错误
