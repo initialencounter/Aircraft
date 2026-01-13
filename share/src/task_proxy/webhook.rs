@@ -3,26 +3,29 @@ use crate::attachment_parser::get_attachment_info;
 use crate::config::ConfigManager;
 use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use crate::manager::hotkey_manager::HotkeyManager;
-use crate::utils::{find_available_port, set_clipboard_text};
 use crate::utils::uploader::FileManager;
+use crate::utils::{find_available_port, set_clipboard_text};
 use aircraft_types::config::Config;
 use aircraft_types::others::LoginRequest;
 use aircraft_types::summary::SummaryInfo;
-use bytes::BufMut;
-use futures_util::StreamExt;
+use axum::{
+    extract::{Multipart, Path, Query, State},
+    http::StatusCode,
+    response::{IntoResponse, Json, Response},
+    routing::{get, post},
+    Router,
+};
 use pdf_parser::read::read_pdf_u8;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;
+use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
 use summary::get_summary_info_by_buffer;
-use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
-use warp::multipart::FormData;
-use warp::reject::Reject;
-use warp::{Filter, Rejection, Reply};
+use tower_http::cors::CorsLayer;
 // 自定义错误类型
 #[derive(Debug, Serialize)]
 struct CustomError {
@@ -35,7 +38,13 @@ impl fmt::Display for CustomError {
     }
 }
 
-impl Reject for CustomError {}
+impl std::error::Error for CustomError {}
+
+impl IntoResponse for CustomError {
+    fn into_response(self) -> Response {
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(self)).into_response()
+    }
+}
 
 #[derive(serde::Deserialize, serde::Serialize)]
 struct DirectoryInfo {
@@ -44,288 +53,250 @@ struct DirectoryInfo {
 
 pub static SERVER_PORT: AtomicU64 = AtomicU64::new(25455);
 
+// 应用状态
+#[derive(Clone)]
+struct AppState {
+    client: Arc<HttpClient>,
+    file_manager: Arc<FileManager>,
+    hotkey_manager: Arc<HotkeyManager>,
+    clipboard_snapshot_manager: Arc<ClipboardSnapshotManager>,
+}
+
 pub async fn apply_webhook(
     port: u16,
-    client: Arc<Mutex<HttpClient>>,
-    file_manager: Arc<Mutex<FileManager>>,
-    hotkey_manager: Arc<Mutex<HotkeyManager>>,
-    clipboard_snapshot_manager: Arc<Mutex<ClipboardSnapshotManager>>,
+    client: Arc<HttpClient>,
+    file_manager: Arc<FileManager>,
+    hotkey_manager: Arc<HotkeyManager>,
+    clipboard_snapshot_manager: Arc<ClipboardSnapshotManager>,
 ) -> JoinHandle<()> {
     let current_port = find_available_port(port).unwrap();
     client
-        .lock()
-        .await
         .log(
             "INFO",
             &format!("Webhook 服务器正在监听端口: {}", current_port),
         )
         .await;
     SERVER_PORT.store(current_port as u64, std::sync::atomic::Ordering::Relaxed);
-    // 设置 webhook 路由
-    let routes = warp::post()
-        .and(warp::path("upload"))
-        .and(warp::body::content_length_limit(1024 * 16))
-        .and(warp::body::json())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |dir: DirectoryInfo, client: Arc<Mutex<HttpClient>>| async move {
-                let files = client
-                    .lock()
-                    .await
-                    .post_file_from_directory(PathBuf::from(&dir.dir))
-                    .await;
-                warp::reply::json(&files)
-            },
-        );
-    let selected_routes = warp::post()
-        .and(warp::path("upload-selected"))
-        .and(warp::body::content_length_limit(1024 * 16))
-        .and(warp::body::json())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |file_list: Vec<String>, client: Arc<Mutex<HttpClient>>| async move {
-                let files = client
-                    .lock()
-                    .await
-                    .post_file_from_file_list(file_list)
-                    .await;
-                warp::reply::json(&files)
-            },
-        );
-    let doc_routes = warp::get()
-        .and(warp::path("get-project-info"))
-        .and(warp::path::param::<String>())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |project_no: String, client: Arc<Mutex<HttpClient>>| async move {
-                client
-                    .lock()
-                    .await
-                    .log("INFO", &format!("GET /get-project-info: {:?}", project_no))
-                    .await;
 
-                // 处理所有可能的错误情况
-                match client.lock().await.get_project_info(&project_no).await {
-                    Ok(result) => warp::reply::json(&result),
-                    Err(e) => warp::reply::json(&CustomError {
-                        message: format!("获取项目信息失败: {}", e),
-                    }),
-                }
-            },
-        );
-    let get_summary_info = warp::get()
-        .and(warp::path("get-attachment-info"))
-        .and(warp::path::param::<String>())
-        .and(warp::query::<HashMap<String, String>>())
-        .then(
-            |project_no: String, params: HashMap<String, String>| async move {
-                // 从 params 中获取 label 参数
-                let is_965 = params.get("is_965").map(|s| s.as_str()).unwrap_or("0") == "1";
-                match get_attachment_info(project_no, is_965).await {
-                    Ok(summary_info) => warp::reply::json(&summary_info),
-                    Err(e) => warp::reply::json(&CustomError {
-                        message: format!("获取项目信息失败: {}", e),
-                    }),
-                }
-            },
-        );
+    let state = AppState {
+        client,
+        file_manager,
+        hotkey_manager,
+        clipboard_snapshot_manager,
+    };
 
-    let summary_info_route = warp::get()
-        .and(warp::path("get-summary-info-by-buffer"))
-        .and(warp::multipart::form().max_length(10_000_000))
-        .then(move |form| async move {
-            let res = handle_summary_parse(form).await;
-            match res {
-                Ok(reply) => Ok(reply),
-                Err(e) => Err(warp::reply::json(&CustomError {
-                    message: format!("Summary Parse err:{:?}", e),
-                })),
-            }
-        });
+    let app = Router::new()
+        .route("/upload", post(upload_handler))
+        .route("/upload-selected", post(upload_selected_handler))
+        .route(
+            "/get-project-info/{project_no}",
+            get(get_project_info_handler),
+        )
+        .route(
+            "/get-attachment-info/{project_no}",
+            get(get_attachment_info_handler),
+        )
+        .route(
+            "/get-summary-info-by-buffer",
+            get(get_summary_info_by_buffer_handler),
+        )
+        .route("/upload-llm-files", post(upload_llm_files_handler))
+        .route("/ping", get(ping_handler))
+        .route("/get-captcha", get(get_captcha_handler))
+        .route("/login", post(login_handler))
+        .route("/get-config", get(get_config_handler))
+        .route("/save-config", post(save_config_handler))
+        .route("/reload-config", post(reload_config_handler))
+        .route(
+            "/reload-clipkeeper-config",
+            post(reload_clipkeeper_config_handler),
+        )
+        .route("/set-clipboard-text", post(set_clipboard_text_handler))
+        .layer(CorsLayer::permissive())
+        .with_state(state);
 
-    let llm_files_handle = warp::post()
-        .and(warp::path("upload-llm-files"))
-        .and(warp::multipart::form().max_length(10_000_000))
-        .and(warp::any().map({
-            let file_manager = file_manager.clone();
-            move || file_manager.clone()
-        }))
-        .then(
-            move |form, file_manager: Arc<Mutex<FileManager>>| async move {
-                let res = handle_upload(form, file_manager).await;
-                match res {
-                    Ok(reply) => Ok(reply),
-                    Err(e) => Err(warp::reply::json(&CustomError {
-                        message: format!("LLM Parse err:{:?}", e),
-                    })),
-                }
-            },
-        );
+    let addr = SocketAddr::from(([127, 0, 0, 1], current_port));
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
-    let ping_route = warp::get()
-        .and(warp::path("ping"))
-        .map(|| warp::reply::json(&"pong"));
-
-    let get_captcha_route = warp::get()
-        .and(warp::path("get-captcha"))
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(move |client: Arc<Mutex<HttpClient>>| async move {
-            match client.lock().await.get_captcha().await {
-                Ok(captcha) => warp::reply::json(&captcha),
-                Err(e) => warp::reply::json(&CustomError {
-                    message: format!("获取验证码失败: {}", e),
-                }),
-            }
-        });
-
-    let login_route = warp::post()
-        .and(warp::path("login"))
-        .and(warp::body::json())
-        .and(warp::any().map({
-            let client = client.clone();
-            move || client.clone()
-        }))
-        .then(
-            move |login_req: LoginRequest, client: Arc<Mutex<HttpClient>>| async move {
-                match client
-                    .lock()
-                    .await
-                    .login_with_captcha(&login_req.code, &login_req.username, &login_req.password)
-                    .await
-                {
-                    Ok(_) => warp::reply::json(
-                        &serde_json::json!({"success": true, "message": "登录成功"}),
-                    ),
-                    Err(e) => warp::reply::json(&CustomError {
-                        message: format!("登录失败: {}", e),
-                    }),
-                }
-            },
-        );
-
-    let get_config_route = warp::get()
-        .and(warp::path("get-config"))
-        .map(|| warp::reply::json(&ConfigManager::get_config()));
-    let save_config_route = warp::post()
-        .and(warp::path("save-config"))
-        .and(warp::body::json())
-        .map(|config: Config| {
-            ConfigManager::save_config(&config);
-            warp::reply::json(&serde_json::json!({"success": true, "message": "配置已保存"}))
-        });
-
-    let reload_config_route = warp::post()
-        .and(warp::path("reload-config"))
-        .and(warp::body::json())
-        .and(warp::any().map({
-            let hotkey_manager = hotkey_manager.clone();
-            let clipboard_snapshot_manager = clipboard_snapshot_manager.clone();
-            move || (hotkey_manager.clone(), clipboard_snapshot_manager.clone())
-        }))
-        .then(
-            move |config: Config,
-                  (hotkey_manager, clipboard_snapshot_manager): (
-                Arc<Mutex<HotkeyManager>>,
-                Arc<Mutex<ClipboardSnapshotManager>>,
-            )| async move {
-                ConfigManager::save_config(&config);
-                hotkey_manager.lock().await.reload();
-                clipboard_snapshot_manager.lock().await.reload();
-                warp::reply::json(&serde_json::json!({"success": true, "message": "配置已重载"}))
-            },
-        );
-
-
-    
-    let reload_config_clipkeeper_route = warp::post()
-        .and(warp::path("reload-clipkeeper-config"))
-        .and(warp::any().map({
-            let clipboard_snapshot_manager = clipboard_snapshot_manager.clone();
-            move || clipboard_snapshot_manager.clone()
-        }))
-        .then(
-            move |clipboard_snapshot_manager: Arc<Mutex<ClipboardSnapshotManager>>| async move {
-                clipboard_snapshot_manager.lock().await.reload();
-                warp::reply::json(&serde_json::json!({"success": true, "message": "剪贴板配置已重载"}))
-            },
-        );
-
-    let set_clipboard_text_route = warp::post()
-        .and(warp::path("set-clipboard-text"))
-        .and(warp::body::json())
-        .map(|text: String| {
-            set_clipboard_text(text);
-            warp::reply::json(&serde_json::json!({"success": true, "message": "剪贴板文本已设置"}))
-        });
-    
-    let cors = warp::cors()
-        .allow_any_origin() // 允许所有来源
-        .allow_headers(vec!["content-type", "authorization", "accept"]) // 允许的请求头
-        .allow_methods(vec!["POST", "GET", "OPTIONS", "PUT", "DELETE"]); // 允许的HTTP方法
-    let combined_routes = routes
-        .or(doc_routes)
-        .or(selected_routes)
-        .or(get_summary_info)
-        .or(llm_files_handle)
-        .or(summary_info_route)
-        .or(ping_route)
-        .or(get_captcha_route)
-        .or(login_route)
-        .or(get_config_route)
-        .or(save_config_route)
-        .or(reload_config_route)
-        .or(reload_config_clipkeeper_route)
-        .or(set_clipboard_text_route)
-        .with(cors);
-    // 启动 web 服务器
-    let server = warp::serve(combined_routes).run(([127, 0, 0, 1], current_port));
-    tokio::spawn(server)
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    })
 }
 
-// 自定义错误类型，处理可能的错误（需实现 Reject）
+// 路由处理器
+async fn upload_handler(State(state): State<AppState>, Json(dir): Json<DirectoryInfo>) -> Response {
+    let files = state
+        .client
+        .post_file_from_directory(PathBuf::from(&dir.dir))
+        .await;
+    Json(files).into_response()
+}
+
+async fn upload_selected_handler(
+    State(state): State<AppState>,
+    Json(file_list): Json<Vec<String>>,
+) -> Response {
+    let files = state.client.post_file_from_file_list(file_list).await;
+    Json(files).into_response()
+}
+
+async fn get_project_info_handler(
+    State(state): State<AppState>,
+    Path(project_no): Path<String>,
+) -> Response {
+    state
+        .client
+        .log("INFO", &format!("GET /get-project-info: {:?}", project_no))
+        .await;
+
+    match state.client.get_project_info(&project_no).await {
+        Ok(result) => Json(result).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("获取项目信息失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn get_attachment_info_handler(
+    Path(project_no): Path<String>,
+    Query(params): Query<HashMap<String, String>>,
+) -> Response {
+    let is_965 = params.get("is_965").map(|s| s.as_str()).unwrap_or("0") == "1";
+    match get_attachment_info(project_no, is_965).await {
+        Ok(summary_info) => Json(summary_info).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("获取项目信息失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn get_summary_info_by_buffer_handler(mut multipart: Multipart) -> Response {
+    match handle_summary_parse(&mut multipart).await {
+        Ok(summary_info) => Json(summary_info).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("Summary Parse err:{:?}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn upload_llm_files_handler(State(state): State<AppState>, multipart: Multipart) -> Response {
+    match handle_upload(multipart, state.file_manager).await {
+        Ok(json) => Json(json).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("LLM Parse err:{:?}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn ping_handler() -> Json<&'static str> {
+    Json("pong")
+}
+
+async fn get_captcha_handler(State(state): State<AppState>) -> Response {
+    match state.client.get_captcha().await {
+        Ok(captcha) => Json(captcha).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("获取验证码失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn login_handler(
+    State(state): State<AppState>,
+    Json(login_req): Json<LoginRequest>,
+) -> Response {
+    match state
+        .client
+        .login_with_captcha(&login_req.code, &login_req.username, &login_req.password)
+        .await
+    {
+        Ok(_) => Json(serde_json::json!({"success": true, "message": "登录成功"})).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("登录失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn get_config_handler() -> Json<Config> {
+    Json(ConfigManager::get_config())
+}
+
+async fn save_config_handler(Json(config): Json<Config>) -> Json<serde_json::Value> {
+    ConfigManager::save_config(&config);
+    if config.server.debug {
+        crate::task_proxy::http_client::DEBUG_MODE
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    } else {
+        crate::task_proxy::http_client::DEBUG_MODE
+            .store(false, std::sync::atomic::Ordering::Relaxed);
+    }
+    Json(serde_json::json!({"success": true, "message": "配置已保存"}))
+}
+
+async fn reload_config_handler(
+    State(state): State<AppState>,
+    Json(config): Json<Config>,
+) -> Json<serde_json::Value> {
+    ConfigManager::save_config(&config);
+    state.hotkey_manager.reload();
+    state.clipboard_snapshot_manager.reload();
+    Json(serde_json::json!({"success": true, "message": "配置已重载"}))
+}
+
+async fn reload_clipkeeper_config_handler(
+    State(state): State<AppState>,
+) -> Json<serde_json::Value> {
+    state.clipboard_snapshot_manager.reload();
+    Json(serde_json::json!({"success": true, "message": "剪贴板配置已重载"}))
+}
+
+async fn set_clipboard_text_handler(Json(text): Json<String>) -> Json<serde_json::Value> {
+    set_clipboard_text(text);
+    Json(serde_json::json!({"success": true, "message": "剪贴板文本已设置"}))
+}
+
+// 自定义错误类型,处理可能的错误
 #[derive(Debug)]
 struct UploadError;
-impl Reject for UploadError {}
+
+impl fmt::Display for UploadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Upload error")
+    }
+}
+
+impl std::error::Error for UploadError {}
 
 async fn handle_upload(
-    mut form: FormData,
-    file_manager: Arc<Mutex<FileManager>>,
-) -> Result<impl Reply, Rejection> {
+    mut multipart: Multipart,
+    file_manager: Arc<FileManager>,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let mut file_contents: Vec<String> = vec![];
-    while let Some(part) = form.next().await {
-        let part: warp::multipart::Part = part.map_err(|_e| warp::reject::custom(UploadError))?;
 
-        if part.name() == "file" {
-            let filename = part
-                .filename()
-                .ok_or_else(|| warp::reject::custom(UploadError))?
-                .to_string();
+    while let Some(field) = multipart.next_field().await? {
+        if field.name() == Some("file") {
+            let filename = field.file_name().ok_or(UploadError)?.to_string();
 
-            let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
-            let mut file_content = match read_pdf_u8(&file_data) {
+            let file_data = field.bytes().await?;
+            let file_data_vec: Vec<u8> = file_data.to_vec();
+
+            let mut file_content = match read_pdf_u8(&file_data_vec) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
                     println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);
                     "".to_string()
                 }
             };
+
             if file_content.trim().is_empty() {
                 file_content = file_manager
-                    .lock()
-                    .await
-                    .get_u8_text(filename, file_data)
+                    .get_u8_text(filename, file_data_vec)
                     .await
                     .unwrap_or_else(|e| {
                         println!("Error: OCR {:?}", e);
@@ -335,39 +306,25 @@ async fn handle_upload(
             file_contents.push(file_content);
         }
     }
+
     let res = file_manager
-        .lock()
-        .await
         .chat_with_ai_fast_and_cheap(file_contents)
         .await;
 
     match res {
-        Ok(json) => Ok(warp::reply::json(&json)),
-        Err(e) => Ok(warp::reply::json(&CustomError {
+        Ok(json) => Ok(serde_json::json!(json)),
+        Err(e) => Err(Box::new(CustomError {
             message: format!("获取项目信息失败: {}", e),
-        })),
+        }) as Box<dyn std::error::Error>),
     }
 }
 
-async fn convert_file_part_to_vec_u8(mut warp_part: warp::multipart::Part) -> Vec<u8> {
-    let mut file_data: Vec<u8> = Vec::new();
-
-    // field.data() only returns a piece of the content, you should call over it until it replies None
-    while let Some(content) = warp_part.data().await {
-        let content = content.unwrap();
-        file_data.put(content);
-    }
-
-    file_data
-}
-
-async fn handle_summary_parse(mut form: FormData) -> Result<impl Reply, Rejection> {
-    let part = form
-        .next()
-        .await
-        .ok_or_else(|| warp::reject::custom(UploadError))?;
-    let part: warp::multipart::Part = part.map_err(|_e| warp::reject::custom(UploadError))?;
-    let file_data: Vec<u8> = convert_file_part_to_vec_u8(part).await;
-    let summary_info = get_summary_info_by_buffer(&file_data).unwrap_or(SummaryInfo::default());
-    Ok(warp::reply::json(&summary_info))
+async fn handle_summary_parse(
+    multipart: &mut Multipart,
+) -> Result<SummaryInfo, Box<dyn std::error::Error>> {
+    let field = multipart.next_field().await?.ok_or(UploadError)?;
+    let file_data = field.bytes().await?;
+    let file_data_vec: Vec<u8> = file_data.to_vec();
+    let summary_info = get_summary_info_by_buffer(&file_data_vec).unwrap_or(SummaryInfo::default());
+    Ok(summary_info)
 }

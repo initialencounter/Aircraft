@@ -20,13 +20,13 @@ use crate::utils::{
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
+pub static DEBUG_MODE: AtomicBool = AtomicBool::new(false);
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 pub struct HttpClient {
     pub client: Client,
     pub base_url: String,
-    pub debug: bool,
     pub log_tx: Sender<LogMessage>,
     pub confirm_fn: fn(&str, &str) -> bool,
 }
@@ -34,7 +34,6 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new(
         base_url: String,
-        debug: bool,
         log_tx: Sender<LogMessage>,
         confirm_fn: fn(&str, &str) -> bool,
     ) -> Self {
@@ -47,7 +46,6 @@ impl HttpClient {
         HttpClient {
             client,
             base_url: fixed_base_url,
-            debug,
             log_tx,
             confirm_fn,
         }
@@ -72,15 +70,15 @@ impl HttpClient {
         }
     }
 
-    pub async fn get_captcha(&mut self) -> Result<CaptchaResponse> {
-        if self.debug {
+    pub async fn get_captcha(&self) -> Result<CaptchaResponse> {
+        if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，返回假验证码").await;
             return Ok(CaptchaResponse {
                 img: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==".to_string(),
             });
         }
 
-        self.log("INFO", &format!("username: {}", self.base_url))
+        self.log("INFO", &format!("base_url: {}", self.base_url))
             .await;
 
         let response = self
@@ -126,7 +124,7 @@ impl HttpClient {
         self.log("INFO", &format!("username: {}", username)).await;
         self.log("INFO", &format!("password: {}", password)).await;
 
-        if self.debug {
+        if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，跳过登录").await;
             LOGIN_STATUS.store(true, Ordering::Relaxed);
             return Ok(());
@@ -272,7 +270,7 @@ impl HttpClient {
             .part("file", blob);
 
         let url: String;
-        if self.debug {
+        if DEBUG_MODE.load(Ordering::Relaxed) {
             url = format!("{}/rest/document/upload", "http://127.0.0.1:3000");
         } else {
             url = format!("{}/rest/document/upload", self.base_url);
@@ -371,7 +369,7 @@ impl HttpClient {
 
         let project_id: String;
         let category: String;
-        if self.debug {
+        if DEBUG_MODE.load(Ordering::Relaxed) {
             project_id = "123456AAAAAAAAAAAAAAAA".to_string();
             category = "battery".to_string();
         } else {
@@ -398,9 +396,6 @@ impl HttpClient {
     }
 
     pub async fn get_project_info(&self, project_no: &str) -> Result<QueryResult> {
-        self.log("INFO", &format!("GET /get-project-info: {:?}", project_no))
-            .await;
-
         // 处理日期解析错误
         let (start_date, end_date) =
             parse_date(&project_no).map_err(|e| format!("解析日期失败: {}", e))?;

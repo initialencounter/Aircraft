@@ -6,6 +6,7 @@ use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use reqwest::multipart::Part;
 use reqwest::{multipart, Client};
 use std::error::Error;
+use std::sync::Mutex;
 
 use crate::config::ConfigManager;
 
@@ -23,29 +24,29 @@ fn extract_json(input: &str) -> Option<String> {
     Some(input[start..end].trim().to_string())
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct FileManager {
     pub client: Client,
-    pub base_url: String,
-    pub api_key: String,
-    pub model: String,
+    pub base_url: Mutex<String>,
+    pub api_key: Mutex<String>,
+    pub model: Mutex<String>,
 }
 impl FileManager {
     pub fn new(config: LLMConfig) -> Self {
         let client = Client::new();
         Self {
             client,
-            base_url: config.base_url,
-            api_key: config.api_key,
-            model: config.model,
+            base_url: Mutex::new(config.base_url),
+            api_key: Mutex::new(config.api_key),
+            model: Mutex::new(config.model),
         }
     }
 
-    pub fn reload(&mut self) {
+    pub fn reload(&self) {
         let config = ConfigManager::get_config().llm;
-        self.base_url = config.base_url;
-        self.api_key = config.api_key;
-        self.model = config.model;
+        *self.base_url.lock().unwrap() = config.base_url;
+        *self.api_key.lock().unwrap() = config.api_key;
+        *self.model.lock().unwrap() = config.model;
     }
 
     async fn upload(&self, file_path: &str) -> Result<String, Box<dyn Error>> {
@@ -80,8 +81,11 @@ impl FileManager {
         // 发送请求
         let response = self
             .client
-            .post(&format!("{}/files", &self.base_url))
-            .header(AUTHORIZATION, format!("Bearer {}", &self.api_key))
+            .post(&format!("{}/files", *&self.base_url.lock().unwrap()))
+            .header(
+                AUTHORIZATION,
+                format!("Bearer {}", *&self.api_key.lock().unwrap()),
+            )
             .multipart(form)
             .send()
             .await?;
@@ -110,8 +114,15 @@ impl FileManager {
         // 发送请求
         let response = self
             .client
-            .delete(&format!("{}/files/{}", &self.base_url, file_id))
-            .header(AUTHORIZATION, format!("Bearer {}", &self.api_key))
+            .delete(&format!(
+                "{}/files/{}",
+                *&self.base_url.lock().unwrap(),
+                file_id
+            ))
+            .header(
+                AUTHORIZATION,
+                format!("Bearer {}", *&self.api_key.lock().unwrap()),
+            )
             .send()
             .await
             .unwrap();
@@ -127,8 +138,15 @@ impl FileManager {
         // 发送请求
         let response = self
             .client
-            .get(&format!("{}/files/{}/content", &self.base_url, file_id))
-            .header(AUTHORIZATION, format!("Bearer {}", &self.api_key))
+            .get(&format!(
+                "{}/files/{}/content",
+                *&self.base_url.lock().unwrap(),
+                file_id
+            ))
+            .header(
+                AUTHORIZATION,
+                format!("Bearer {}", *&self.api_key.lock().unwrap()),
+            )
             .send()
             .await
             .unwrap();
@@ -323,9 +341,13 @@ export interface SummaryFromLLM {
                 role: "system".to_string(),
             });
         }
+        let model = {
+            let guard = self.model.lock().unwrap();
+            guard.clone()
+        };
         let payload = ChatRequest {
             messages,
-            model: self.model.clone(),
+            model,
             temperature: 0.3,
             response_format: ResponseFormat {
                 response_format_type: "json_object".to_string(),
@@ -333,8 +355,14 @@ export interface SummaryFromLLM {
         };
         let response = self
             .client
-            .post(&format!("{}/chat/completions", &self.base_url))
-            .header(AUTHORIZATION, format!("Bearer {}", &self.api_key))
+            .post(&format!(
+                "{}/chat/completions",
+                *&self.base_url.lock().unwrap()
+            ))
+            .header(
+                AUTHORIZATION,
+                format!("Bearer {}", *&self.api_key.lock().unwrap()),
+            )
             .header(CONTENT_TYPE, "application/json")
             .body(serde_json::to_string(&payload)?)
             .send()
