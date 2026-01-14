@@ -75,7 +75,7 @@ pub async fn apply_webhook(
     client
         .log(
             "INFO",
-            &format!("Webhook 服务器正在监听端口: {}", current_port),
+            &format!("AXUM 服务器正在监听端口: {}", current_port),
         )
         .await;
     SERVER_PORT.store(current_port as u64, std::sync::atomic::Ordering::Relaxed);
