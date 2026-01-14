@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useMaskStore } from '../stores/mask'
 import {
   Box,
   Document,
@@ -14,16 +13,7 @@ import {
 import Clip from '../assets/svg/Clip.vue'
 
 const router = useRouter()
-const maskStore = useMaskStore()
 const activeIndex = ref('1')
-
-// 使用 computed 属性来根据解锁状态过滤菜单项
-const visibleMenuItems = computed(() => {
-  return menuItems.filter((item) => {
-    // 如果需要解锁且未解锁，则不显示该菜单项
-    return !(item.requiresUnlock && !maskStore.isUnlocked)
-  })
-})
 
 const menuItems = [
   {
@@ -31,56 +21,48 @@ const menuItems = [
     path: '/home',
     label: '首页',
     icon: House,
-    requiresUnlock: false,
   },
   {
     index: '2',
     path: '/schema',
     label: '设置',
     icon: Setting,
-    requiresUnlock: false,
   },
   {
     index: '3',
     path: '/stack',
     label: '堆码计算',
     icon: Box,
-    requiresUnlock: false,
   },
   {
     index: '4',
     path: '/md5',
     label: 'MD5',
     icon: Clip,
-    requiresUnlock: false,
   },
   {
     index: '5',
     path: '/summary_parse',
     label: '概要解析',
     icon: MoonNight,
-    requiresUnlock: false,
   },
   {
     index: '6',
     path: '/logs',
     label: '日志',
     icon: Document,
-    requiresUnlock: false,
   },
   {
     index: '7',
     path: '/searchTNotes',
     label: '技术部备注',
     icon: Search,
-    requiresUnlock: false,
   },
   {
     index: '8',
     path: '/clipkeeper',
     label: '剪贴板快照',
     icon: Notebook,
-    requiresUnlock: false,
   },
 ]
 
@@ -100,7 +82,7 @@ const handleSelect = (index: string) => {
   >
     <el-menu-item
       class="sidebar-menu-item"
-      v-for="item in visibleMenuItems"
+      v-for="item in menuItems"
       :key="item.index"
       :index="item.index"
     >

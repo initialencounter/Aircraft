@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import { useMaskStore } from '../stores/mask'
 import Home from '../views/Home.vue'
 import Schema from '../components/Schema.vue'
 import Logs from '../views/Logs.vue'
@@ -55,16 +54,6 @@ const router = createRouter({
       component: Clipkeeper,
     },
   ],
-})
-
-router.beforeEach((to, _from, next) => {
-  const maskStore = useMaskStore()
-
-  if (to.meta.requiresUnlock && !maskStore.isUnlocked) {
-    next('/')
-  } else {
-    next()
-  }
 })
 
 export default router
