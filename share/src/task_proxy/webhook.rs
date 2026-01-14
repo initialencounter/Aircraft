@@ -11,7 +11,7 @@ use aircraft_types::others::LoginRequest;
 use aircraft_types::project::SearchProperty;
 use aircraft_types::summary::SummaryInfo;
 use axum::{
-    extract::{Multipart, Path, Query, State},
+    extract::{DefaultBodyLimit, Multipart, Path, Query, State},
     http::StatusCode,
     response::{IntoResponse, Json, Response},
     routing::{get, post},
@@ -113,6 +113,7 @@ pub async fn apply_webhook(
         .route("/set-clipboard-text", post(set_clipboard_text_handler))
         .route("/search-file", post(search_file_handler))
         .route("/search-property", post(search_property_handler))
+        .layer(DefaultBodyLimit::max(100 * 1024 * 1024)) // 设置最大请求体为 100MB
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -174,24 +175,28 @@ async fn get_attachment_info_handler(
 }
 
 async fn get_summary_info_handler(mut multipart: Multipart) -> Response {
-    println!("get_summary_info_handler called");
     match handle_summary_parse(&mut multipart).await {
         Ok(summary_info) => Json(summary_info).into_response(),
-        Err(e) => Json(CustomError {
-            message: format!("Summary Parse err:{:?}", e),
-        })
-        .into_response(),
+        Err(e) => {
+            eprintln!("Summary Parse error: {:?}", e);
+            Json(CustomError {
+                message: format!("Summary Parse err:{:?}", e),
+            })
+            .into_response()
+        }
     }
 }
 
 async fn upload_llm_files_handler(State(state): State<AppState>, multipart: Multipart) -> Response {
-    println!("upload_llm_files_handler called");
     match handle_upload(multipart, state.file_manager).await {
         Ok(json) => Json(json).into_response(),
-        Err(e) => Json(CustomError {
-            message: format!("LLM Parse err:{:?}", e),
-        })
-        .into_response(),
+        Err(e) => {
+            eprintln!("LLM Parse error: {:?}", e);
+            Json(CustomError {
+                message: format!("LLM Parse err:{:?}", e),
+            })
+            .into_response()
+        }
     }
 }
 
@@ -290,15 +295,21 @@ async fn handle_upload(
 ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let mut file_contents: Vec<String> = vec![];
 
-    while let Some(field) = multipart.next_field().await? {
+    while let Some(field) = multipart.next_field().await.map_err(|e| {
+        eprintln!("Failed to read multipart field: {:?}", e);
+        format!("Failed to read multipart field: {}", e)
+    })? {
         if field.name() == Some("file") {
-            let file_data = field.bytes().await?;
+            let file_data = field.bytes().await.map_err(|e| {
+                eprintln!("Failed to read file bytes: {:?}", e);
+                format!("Failed to read file bytes: {}", e)
+            })?;
             let file_data_vec: Vec<u8> = file_data.to_vec();
 
             let file_content = match read_pdf_u8(&file_data_vec) {
                 Ok(pdf) => pdf.text,
                 Err(e) => {
-                    println!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);
+                    eprintln!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);
                     return Err("读取 pdf Vec<u8> 失败".into());
                 }
             };
@@ -328,6 +339,7 @@ async fn handle_summary_parse(
     let field = multipart.next_field().await?.ok_or(UploadError)?;
     let file_data = field.bytes().await?;
     let file_data_vec: Vec<u8> = file_data.to_vec();
+
     let summary_info = get_summary_info_by_buffer(&file_data_vec).unwrap_or(SummaryInfo::default());
     Ok(summary_info)
 }

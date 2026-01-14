@@ -125,11 +125,9 @@ async function getSummaryInfo(file: FileData) {
   try {
     const formData = new FormData()
     const uint8Array = new Uint8Array(file.data)
-    formData.append(
-      'file',
-      new Blob([uint8Array], { type: file.type }),
-      file.name
-    )
+    const blob = new Blob([uint8Array], { type: file.type })
+    formData.append('file', blob, file.name)
+    
     const response = await fetch(
       `http://127.0.0.1:${serverPort.value}/get-summary-info`,
       {
@@ -137,14 +135,17 @@ async function getSummaryInfo(file: FileData) {
         body: formData,
       }
     )
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorText = await response.text()
+      console.error('getSummaryInfo HTTP 错误:', errorText)
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
     }
     const data = await response.json()
     return data as SummaryInfo
   } catch (error) {
     console.error('获取docx概要信息失败:', error)
-    ElMessage.error('获取docx概要信息失败:' + error)
+    ElMessage.error('获取docx概要信息失败: ' + error)
     return null
   }
 }
@@ -153,11 +154,9 @@ async function getReportInfo(file: FileData) {
   try {
     const formData = new FormData()
     const uint8Array = new Uint8Array(file.data)
-    formData.append(
-      'file',
-      new Blob([uint8Array], { type: file.type }),
-      file.name
-    )
+    const blob = new Blob([uint8Array], { type: file.type })
+    formData.append('file', blob, file.name)
+    
     const response = await fetch(
       `http://127.0.0.1:${serverPort.value}/upload-llm-files`,
       {
@@ -165,14 +164,17 @@ async function getReportInfo(file: FileData) {
         body: formData,
       }
     )
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorText = await response.text()
+      console.error('getReportInfo HTTP 错误:', errorText)
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
     }
     const data = await response.json()
     return data as string
   } catch (error) {
-    console.error('获取docx概要信息失败:', error)
-    ElMessage.error('获取docx概要信息失败:' + error)
+    console.error('获取PDF报告信息失败:', error)
+    ElMessage.error('获取PDF报告信息失败: ' + error)
     return null
   }
 }
