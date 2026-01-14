@@ -12,7 +12,6 @@ import { ConfigManager } from './service/config'
 import { RustBindings } from './service/bindings'
 import { LoggerService } from './service/logger'
 import { Launch } from './plugins/launch'
-import { LLM } from './service/llm'
 
 const context = new Context()
 context.plugin(Undios)
@@ -27,5 +26,4 @@ context.plugin(Hotkey)
 context.plugin(Ipc)
 context.plugin(LoggerService)
 context.plugin(Launch)
-context.plugin(LLM)
 export { context }
