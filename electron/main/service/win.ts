@@ -1,8 +1,9 @@
 import path from 'path'
+import { globalShortcut } from 'electron'
 
 import type { Context } from 'cordis'
 import { Logger, Service } from 'cordis'
-import type {} from '../service/app'
+import type { } from '../service/app'
 import { BrowserWindow, shell } from 'electron'
 
 import type { BaseConfig } from 'aircraft-rs'
@@ -52,7 +53,10 @@ class Window extends Service {
         'VITE_DEV_SERVER_URL' + this.ctx.app.VITE_DEV_SERVER_URL
       )
       // Open devTool if the app is not packaged
-      this.win?.webContents.openDevTools()
+      // this.win?.webContents.openDevTools()
+      globalShortcut.register('CommandOrControl+Shift+C', () => {
+        this.ctx.win.win?.webContents.openDevTools()
+      })
     } else {
       await this.win?.loadFile(this.ctx.app.indexHtml)
     }

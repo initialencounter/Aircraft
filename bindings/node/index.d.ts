@@ -12,120 +12,6 @@ export interface AttachmentInfo {
   goods: GoodsInfo
   other: OtherInfo
 }
-export interface SearchResult {
-  path: string
-  name: string
-}
-export interface SearchResponse {
-  results: Array<SearchResult>
-}
-export interface DataModel {
-  id: number
-  appraiserName: string
-  assigneeName: string
-  auditorName?: string
-  conclusions?: number
-  displayStatus: string
-  nextYear?: number
-  principalName?: string
-  projectId: string
-  projectNo?: string
-  repeat: number
-  reportType: number
-  submitDate: string
-  surveyorNames?: string
-  systemId: string
-  selfId: string
-  itemCName?: string
-  itemEName?: string
-  mnotes?: string
-  reportNo?: string
-  tnotes?: string
-}
-export interface SearchPropertyParams {
-  searchText: string
-}
-export interface LogMessage {
-  timeStamp: string
-  level: string
-  message: string
-}
-export interface ClipboardHotkey {
-  hotkeys: Array<string>
-  clipboardContentName: string
-}
-export interface GoodsInfo {
-  projectNo: string
-  itemCName: string
-  labels: Array<string>
-}
-export interface SummaryInfo {
-  /** 项目ID */
-  id: string
-  /** 项目ID */
-  projectId: string
-  /** 委托方 */
-  consignor: string
-  /** 委托方信息 */
-  consignorInfo: string
-  /** 制造商 */
-  manufacturer: string
-  /** 制造商信息 */
-  manufacturerInfo: string
-  /** 测试实验室 */
-  testlab: string
-  /** 测试实验室信息 */
-  testlabInfo: string
-  /** 中文名称 */
-  cnName: string
-  /** 英文名称 */
-  enName: string
-  /** 电池/电芯类别 */
-  classification: string
-  /** 型号 */
-  type: string
-  /** 商标 */
-  trademark: string
-  /** 电压 */
-  voltage: string
-  /** 容量 */
-  capacity: string
-  /** 瓦数 */
-  watt: string
-  /** 颜色 */
-  color: string
-  /** 形状 */
-  shape: string
-  /** 质量 */
-  mass: string
-  /** 锂含量 */
-  licontent: string
-  /** 测试报告编号 */
-  testReportNo: string
-  /** 测试日期 */
-  testDate: string
-  /** 测试标准 */
-  testManual: string
-  /** 测试项目 */
-  test1: string
-  test2: string
-  test3: string
-  test4: string
-  test5: string
-  test6: string
-  test7: string
-  test8: string
-  un38f: string
-  un38g: string
-  /** 备注 */
-  note: string
-  /** 标题 */
-  title: string
-  /** 项目编号 */
-  projectNo: string
-  /** 签发日期 */
-  issueDate: string
-}
 export interface BaseConfig {
   nothing: string
   autoStart: boolean
@@ -223,6 +109,11 @@ export interface Usage {
 export interface ResponseFormat {
   responseFormatType: string
 }
+export interface LogMessage {
+  timeStamp: string
+  level: string
+  message: string
+}
 export interface QueryResult {
   rows: Array<ProjectRow>
 }
@@ -242,6 +133,17 @@ export interface SearchParams {
   json: number
   pathColumn: number
 }
+export interface SearchResult {
+  path: string
+  name: string
+}
+export interface SearchResponse {
+  results: Array<SearchResult>
+}
+export interface ClipboardHotkey {
+  hotkeys: Array<string>
+  clipboardContentName: string
+}
 export interface CaptchaResponse {
   img: string
 }
@@ -260,6 +162,32 @@ export interface GoodsInfo {
 export interface PdfReadResult {
   text: string
   image?: Array<number>
+}
+export interface DataModel {
+  id: number
+  appraiserName: string
+  assigneeName: string
+  auditorName?: string
+  conclusions?: number
+  displayStatus: string
+  nextYear?: number
+  principalName?: string
+  projectId: string
+  projectNo?: string
+  repeat: number
+  reportType: number
+  submitDate: string
+  surveyorNames?: string
+  systemId: string
+  selfId: string
+  itemCName?: string
+  itemEName?: string
+  mnotes?: string
+  reportNo?: string
+  tnotes?: string
+}
+export interface SearchPropertyParams {
+  searchText: string
 }
 export interface SearchProperty {
   url: string
@@ -343,36 +271,12 @@ export interface SegmentResult {
 }
 export declare function getDefaultConfig(): Config
 export declare function openLocalDir(target: string): void
-export declare function getClipboardSnapshotConfigs(): Array<ClipboardHotkey>
-export declare function addClipboardSnapshotConfig(config: ClipboardHotkey): void
-export declare function removeClipboardSnapshotConfig(contentName: string): void
 export declare function getLoginStatus(): boolean
 export declare function getConfig(): Config
+export declare function saveConfig(config: Config): void
 export declare function getServerPort(): number
 export declare class AircraftRs {
-  constructor(appLogDir: string, config: ServerConfig, llmConfig: LLMConfig, hotkeyConfig: HotkeyConfig)
-  startServer(): void
-  stopServer(): void
-  getSummaryInfoByPath(path: string): SummaryInfo
-  getSummaryInfoByBuffer(buffer: Uint8Array): SummaryInfo
-  getAttachmentInfo(projectNo: string, is965: boolean): Promise<AttachmentInfo>
-  getCurrentServerConfig(): ServerConfig
-  getCurrentLlmConfig(): LLMConfig
-  getCurrentHotkeyConfig(): HotkeyConfig
+  constructor(appLogDir: string)
   writeLog(log: LogMessage): void
   tryGetLogs(): Array<LogMessage>
-  reloadClipboardSnapshotConfigs(): void
-  startClipboardSnapshotManager(): void
-}
-export type JsFileManager = FileManager
-export declare class FileManager {
-  constructor(baseUrl: string, apiKey: string, model: string)
-  /** 直接读取pdf文件路径，输出解析结果，所有操作通过API完成 */
-  parsePdf(path: Array<string>): Promise<string>
-  /** 使用 API 上传文件并获取 OCR 内容 */
-  parsePdfU8(filename: string, buffer: Array<number>): Promise<string>
-  /** 输出 pdf 文本，输出解析结果 */
-  chatWithAiFastAndCheap(fileContents: Array<string>): Promise<string>
-  /** 使用 pdf_extract 读取 pdf 文件的文本内容 */
-  readPdfBuffer(buffer: Uint8Array): Promise<string>
 }

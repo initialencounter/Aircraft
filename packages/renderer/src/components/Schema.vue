@@ -25,6 +25,7 @@ import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Config, ConfigSchema } from '../schema'
 import { apiManager } from '../utils/api'
+import { ipcManager } from '../utils/ipcManager'
 
 const defaultConfig: Config = {
   server: {
@@ -78,12 +79,11 @@ const debounce = (func: Function, delay: number) => {
 // 防抖保存函数
 const debouncedSave = debounce(() => {
   saveConfig()
-}, 100)
+}, 1000)
 
 async function getConfig() {
   try {
     const appConfigResponse = await apiManager.get('/get-config')
-    console.log('获取到的配置:', appConfigResponse)
     config.value =  appConfigResponse
   } catch (error) {
     console.error('获取配置失败:', error)
@@ -105,6 +105,7 @@ async function saveConfig() {
   loading.value = true
   try {
     await apiManager.post('/save-config',tmpConfig)
+    ipcManager.invoke('reload_config', tmpConfig)
     ElMessage.success('保存成功')
   } catch (error) {
     ElMessage.error(JSON.stringify(error))

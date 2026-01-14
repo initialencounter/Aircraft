@@ -7,8 +7,6 @@ import { WindowManager } from './plugins/windowManager'
 import { CustomTray as Tray } from './service/tray'
 import { Window } from './service/win'
 import { Ipc } from './service/ipc'
-import { Hotkey } from './service/hotkey'
-import { ConfigManager } from './service/config'
 import { RustBindings } from './service/bindings'
 import { LoggerService } from './service/logger'
 import { Launch } from './plugins/launch'
@@ -21,8 +19,6 @@ context.plugin(App)
 context.plugin(Window)
 context.plugin(Tray)
 context.plugin(WindowManager)
-context.plugin(ConfigManager)
-context.plugin(Hotkey)
 context.plugin(Ipc)
 context.plugin(LoggerService)
 context.plugin(Launch)

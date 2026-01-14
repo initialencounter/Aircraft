@@ -4,7 +4,6 @@ import { BrowserWindow, Menu } from 'electron'
 import type {} from '../service/tray'
 import type {} from '../service/win'
 import type {} from '../service/app'
-import type {} from '../service/config'
 
 declare module 'cordis' {
   interface Events {
@@ -16,13 +15,13 @@ declare module 'cordis' {
 export const logger = new Logger('win')
 
 class WindowManager {
-  static inject = ['app', 'win', 'tray', 'configManager']
+  static inject = ['app', 'win', 'tray', 'bindings']
   constructor(ctx: Context) {
     ctx.emit('write-log', 'INFO', 'WindowManager initializing')
     // 创建窗口
     ctx.app.app.whenReady().then(async () => {
       ctx.emit('electron-ready')
-      const baseConfig = ctx.configManager.getConfig().base
+      const baseConfig = ctx.bindings.native.getConfig().base
       await ctx.win.createWindow(baseConfig)
       ctx.tray.createTray()
     })
@@ -60,7 +59,7 @@ class WindowManager {
       if (allWindows.length) {
         allWindows[0].focus()
       } else {
-        const baseConfig = ctx.configManager.getConfig().base
+        const baseConfig = ctx.bindings.native.getConfig().base
         ctx.win.createWindow(baseConfig)
       }
     })

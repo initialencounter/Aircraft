@@ -1,3 +1,4 @@
+import { Config } from 'aircraft-rs'
 import type { Context } from 'cordis'
 import { Service } from 'cordis'
 import { BrowserWindow, ipcMain } from 'electron'
@@ -16,9 +17,7 @@ class Ipc extends Service {
   static inject = [
     'app',
     'win',
-    'configManager',
     'loggerService',
-    'llm',
     'core',
     'bindings',
   ]
@@ -71,45 +70,9 @@ class Ipc extends Service {
     ipcMain.handle('get_server_logs', async () => {
       return this.ctx.loggerService.tryGetLogs()
     })
-    ipcMain.handle(`save_config`, async (_, { config }) => {
-      this.ctx.configManager.saveConfig(config)
-    })
-    ipcMain.handle(`get_config`, async () => {
-      return this.ctx.configManager.getConfig()
-    })
-    ipcMain.handle('reload_config', async (_, { config }) => {
-      this.ctx.configManager.reloadConfig(config)
-    })
-
-
-    ipcMain.handle(
-      'get_summary_info_by_buffer',
-      async (_, { base64String }) => {
-        return await this.ctx.core.getSummaryInfoByBuffer(
-          Buffer.from(base64String, 'base64')
-        )
-      }
-    )
 
     ipcMain.handle('open_local_dir', (_, { target }) => {
       return this.ctx.bindings.native.openLocalDir(target)
-    })
-
-    ipcMain.handle('get_clipboard_snapshot_configs', async () => {
-      return this.ctx.bindings.native.getClipboardSnapshotConfigs()
-    })
-
-    ipcMain.handle('add_clipboard_snapshot_config', async (_, { config }) => {
-      console.log('IPC add config:', config)
-      return this.ctx.bindings.native.addClipboardSnapshotConfig(JSON.parse(config))
-    })
-
-    ipcMain.handle('remove_clipboard_snapshot_config', async (_, { id }) => {
-      return this.ctx.bindings.native.removeClipboardSnapshotConfig(id)
-    })
-
-    ipcMain.handle('reload_clipboard_snapshot_configs', async () => {
-      this.ctx.emit('reload_clipboard_snapshot_configs')
     })
 
     ipcMain.handle('get_login_status', async () => {
@@ -118,6 +81,10 @@ class Ipc extends Service {
 
     ipcMain.handle('get_server_port', async () => {
       return this.ctx.bindings.native.getServerPort()
+    })
+
+    ipcMain.handle('reload_config', (_, config: Config) => {
+      this.ctx.emit('auto-launch-switch', config.base.autoStart, config.base.silentStart)
     })
   }
 
