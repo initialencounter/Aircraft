@@ -12,8 +12,6 @@ lazy_static! {
     static ref PROJECT_NO_REGEX: Regex = Regex::new(r"[P|S|A|R]EK.{2}\d{12}").unwrap();
 }
 
-use enigo::{Direction::Click, Enigo, Key, Keyboard, Settings};
-
 pub async fn search(file_path: String) -> Vec<SearchResult> {
     let client = Client::new();
     let query = SearchParams {
@@ -84,14 +82,6 @@ pub async fn search_property(data: SearchProperty) -> Vec<DataModel> {
     }
 }
 
-fn simulate_f5_press() {
-    if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
-        if let Err(e) = enigo.key(Key::F5, Click) {
-            eprintln!("Failed to simulate F5 press: {}", e);
-        }
-    }
-}
-
 fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) {
     let mut file_list = vec![];
     for result in search_result {
@@ -122,8 +112,6 @@ fn copy_to_here(search_result: Vec<SearchResult>, target_path: String) {
             eprintln!("Failed to copy {} to {}: {}", source_path, target_path, e);
         }
     }
-
-    simulate_f5_press();
 }
 
 fn get_clip_text() -> Option<String> {
