@@ -2,9 +2,9 @@ pub mod dialog;
 pub mod fs;
 pub mod uploader;
 
-use std::net::{Ipv4Addr, SocketAddr, TcpListener};
+use std::net::SocketAddr;
 
-use chrono::{Local, NaiveDate, Duration};
+use chrono::{Duration, Local, NaiveDate};
 use clipboard_rs::{Clipboard, ClipboardContext};
 pub use dialog::*;
 pub use fs::*;
@@ -41,8 +41,8 @@ pub fn parse_date(date_text: &str) -> Result<(String, String)> {
     } else {
         // Parse the date and calculate ±15 days range
         let date_str = format!("{}-{}-{}", year, month, day);
-        let center_date = NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| "无效的日期格式")?;
+        let center_date =
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| "无效的日期格式")?;
 
         let start_date = center_date - Duration::days(15);
         let end_date = center_date + Duration::days(15);
@@ -84,30 +84,39 @@ mod tests {
         let (start, end) = parse_date("PEKGZ202301017777").unwrap();
         println!("Start: {}, End: {}", start, end);
 
-
         let (start, end) = parse_date("PEKGZ202300317777").unwrap();
         println!("Start: {}, End: {}", start, end);
 
-
         let (start, end) = parse_date("PEKGZ202312317777").unwrap();
         println!("Start: {}, End: {}", start, end);
-
     }
 }
 
-
-pub fn find_available_port(start_port: u16) -> Option<u16> {
-    // 限制最大尝试次数，避免无限循环
+/// 异步版本：查找可用端口并返回已绑定的 TcpListener
+/// 这样可以避免在查找端口和绑定端口之间出现竞态条件
+pub async fn bind_available_port(
+    start_port: u16,
+) -> std::io::Result<(tokio::net::TcpListener, u16)> {
     const MAX_ATTEMPTS: u16 = 1000;
-    
-    for port in start_port..start_port + MAX_ATTEMPTS {
-        let addr = SocketAddr::from((Ipv4Addr::LOCALHOST, port));
-        
-        match TcpListener::bind(addr) {
-            Ok(_) => return Some(port),
-            Err(_) => continue,
+
+    for port in start_port..start_port.saturating_add(MAX_ATTEMPTS) {
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+        match tokio::net::TcpListener::bind(addr).await {
+            Ok(listener) => {
+                return Ok((listener, port));
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AddrInUse => {
+                continue;
+            }
+            Err(e) => {
+                return Err(e);
+            }
         }
     }
-    println!("No available port found starting from {}", start_port);
-    None
+
+    Err(std::io::Error::new(
+        std::io::ErrorKind::AddrInUse,
+        format!("No available port found starting from {}", start_port),
+    ))
 }

@@ -5,7 +5,7 @@ use crate::hotkey_handler::copy::{search, search_property};
 use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use crate::manager::hotkey_manager::HotkeyManager;
 use crate::utils::uploader::FileManager;
-use crate::utils::{find_available_port, set_clipboard_text};
+use crate::utils::{bind_available_port, set_clipboard_text};
 use aircraft_types::config::Config;
 use aircraft_types::others::LoginRequest;
 use aircraft_types::project::SearchProperty;
@@ -21,7 +21,6 @@ use pdf_parser::read::read_pdf_u8;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;
-use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
@@ -71,7 +70,8 @@ pub async fn apply_webhook(
     hotkey_manager: Arc<HotkeyManager>,
     clipboard_snapshot_manager: Arc<ClipboardSnapshotManager>,
 ) -> JoinHandle<()> {
-    let current_port = find_available_port(port).unwrap();
+    let (listener, current_port) = bind_available_port(port).await.unwrap();
+
     client
         .log(
             "INFO",
@@ -116,9 +116,6 @@ pub async fn apply_webhook(
         .layer(DefaultBodyLimit::max(100 * 1024 * 1024)) // 设置最大请求体为 100MB
         .layer(CorsLayer::permissive())
         .with_state(state);
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], current_port));
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
     tokio::spawn(async move {
         axum::serve(listener, app).await.unwrap();
