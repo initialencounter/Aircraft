@@ -101,7 +101,7 @@ pub async fn apply_webhook(
         .route("/get-summary-info", post(get_summary_info_handler))
         .route("/upload-llm-files", post(upload_llm_files_handler))
         .route("/ping", get(ping_handler))
-        .route("/get-captcha", get(get_captcha_handler))
+        .route("/get-captcha", post(get_captcha_handler))
         .route("/login", post(login_handler))
         .route("/get-config", get(get_config_handler))
         .route("/save-config", post(save_config_handler))
@@ -201,8 +201,11 @@ async fn ping_handler() -> Json<&'static str> {
     Json("pong")
 }
 
-async fn get_captcha_handler(State(state): State<AppState>) -> Response {
-    match state.client.get_captcha().await {
+async fn get_captcha_handler(
+    State(state): State<AppState>,
+    Json(base_url): Json<String>,
+) -> Response {
+    match state.client.get_captcha(base_url).await {
         Ok(captcha) => Json(captcha).into_response(),
         Err(e) => Json(CustomError {
             message: format!("获取验证码失败: {}", e),

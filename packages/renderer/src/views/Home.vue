@@ -9,11 +9,28 @@
           </div>
         </template>
         <el-form :model="loginForm" label-width="80px">
+          <el-form-item label="服务器">
+            <el-input
+              v-model="loginForm.baseUrl"
+              placeholder="请输入服务器地址"
+            />
+          </el-form-item>
+          <el-form-item label="用户名">
+            <el-input v-model="loginForm.username" placeholder="请输入用户名" />
+          </el-form-item>
+          <el-form-item label="密码">
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              placeholder="请输入密码"
+              show-password
+            />
+          </el-form-item>
           <el-form-item label="验证码">
             <div class="captcha-container">
-              <el-image 
-                v-if="captchaImage" 
-                :src="captchaImage" 
+              <el-image
+                v-if="captchaImage"
+                :src="captchaImage"
                 fit="contain"
                 class="captcha-image"
                 @click="getCaptcha"
@@ -25,8 +42,8 @@
                   </div>
                 </template>
               </el-image>
-              <el-button 
-                type="primary" 
+              <el-button
+                type="primary"
                 @click="getCaptcha"
                 :loading="loadingCaptcha"
               >
@@ -35,18 +52,18 @@
             </div>
           </el-form-item>
           <el-form-item label="验证码">
-            <el-input 
-              v-model="loginForm.code" 
+            <el-input
+              v-model="loginForm.code"
               placeholder="请输入验证码"
               @keyup.enter="handleLogin"
             />
           </el-form-item>
           <el-form-item>
-            <el-button 
-              type="primary" 
+            <el-button
+              type="primary"
               @click="handleLogin"
               :loading="loggingIn"
-              :disabled="!loginForm.code || !captchaUuid"
+              :disabled="!loginForm.code"
               style="width: 100%"
             >
               登录
@@ -56,44 +73,37 @@
       </el-card>
     </div>
     <div v-else class="welcome-container">
-      <el-result
-        icon="success"
-        title="登录成功"
-      >
-      </el-result>
+      <el-result icon="success" title="登录成功"> </el-result>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref} from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { ipcManager } from '../utils/ipcManager'
-import { getServerPort } from '../utils/utils'
 import { apiManager } from '../utils/api'
 
 const loginStatus = ref(false)
 
 const loginForm = ref({
+  baseUrl: '',
+  username: '',
+  password: '',
   code: '',
 })
 
 const captchaImage = ref('')
-const captchaUuid = ref('')
 const loadingCaptcha = ref(false)
 const loggingIn = ref(false)
 const serverPort = ref(25455)
 
 const getCaptcha = async () => {
   loadingCaptcha.value = true
-  serverPort.value = await getServerPort()
   try {
-    const response = await fetch(`http://127.0.0.1:${serverPort.value}/get-captcha`)
-    const data = await response.json()
-    
+    const data = await apiManager.post('/get-captcha', loginForm.value.baseUrl)
     if (data.img) {
-      captchaUuid.value = '1' // 现在不需要uuid了，保持兼容
       captchaImage.value = data.img
       loginForm.value.code = '' // 清空验证码输入
     } else if (data.message) {
@@ -107,23 +117,20 @@ const getCaptcha = async () => {
 }
 
 const handleLogin = async () => {
-  if (!loginForm.value.code) {
-    ElMessage.warning('请输入验证码')
-    return
-  }
-  
-  if (!captchaUuid.value) {
-    ElMessage.warning('请先获取验证码')
+  if (
+    loginForm.value.code.length === 0 ||
+    !loginForm.value.baseUrl ||
+    !loginForm.value.username ||
+    !loginForm.value.password
+  ) {
+    ElMessage.warning('请填充完整的登录信息')
     return
   }
 
+  await saveLoginInfo()
   loggingIn.value = true
   try {
-    // 获取最新的配置信息
-    const config = await apiManager.get('/get-config')
-    const username = config?.server?.username || ''
-    const password = config?.server?.password || ''
-    
+    // 使用用户在表单中填写或修改的账号密码
     const response = await fetch(`http://127.0.0.1:${serverPort.value}/login`, {
       method: 'POST',
       headers: {
@@ -131,13 +138,14 @@ const handleLogin = async () => {
       },
       body: JSON.stringify({
         code: loginForm.value.code,
-        username: username,
-        password: password,
+        username: loginForm.value.username,
+        password: loginForm.value.password,
+        baseUrl: loginForm.value.baseUrl,
       }),
     })
-    
+
     const data = await response.json()
-    
+
     if (data.success) {
       ElMessage.success('登录成功')
     } else if (data.message) {
@@ -153,10 +161,26 @@ const handleLogin = async () => {
   }
 }
 
+async function saveLoginInfo() {
+  let oldConfig = await apiManager.get('/get-config')
+  oldConfig.server.baseUrl = loginForm.value.baseUrl
+  oldConfig.server.username = loginForm.value.username
+  oldConfig.server.password = loginForm.value.password
+  await apiManager.post('/save-config', oldConfig)
+}
+
+onMounted(async () => {
+  const config = await apiManager.get('/get-config')
+  if (config?.server) {
+    loginForm.value.baseUrl = config.server.baseUrl || ''
+    loginForm.value.username = config.server.username || ''
+    loginForm.value.password = config.server.password || ''
+  }
+})
+
 setInterval(async () => {
   loginStatus.value = await ipcManager.invoke('get_login_status')
 }, 200)
-
 </script>
 
 <style scoped>
@@ -168,7 +192,7 @@ setInterval(async () => {
 }
 
 .login-container {
-  margin-top: 50px;
+  margin-top: 20px;
   width: 100%;
   max-width: 400px;
 }

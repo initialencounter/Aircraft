@@ -5,9 +5,10 @@ use aircraft_types::{
 use base64::engine::general_purpose;
 use base64::Engine;
 use chrono::Local;
-use std::env;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
+use std::sync::RwLock;
+use std::{env, sync::Arc};
 
 use reqwest::header;
 use reqwest::{multipart, Client};
@@ -26,7 +27,7 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>
 
 pub struct HttpClient {
     pub client: Client,
-    pub base_url: String,
+    pub host: Arc<RwLock<String>>,
     pub log_tx: Sender<LogMessage>,
     pub confirm_fn: fn(&str, &str) -> bool,
 }
@@ -38,14 +39,16 @@ impl HttpClient {
         confirm_fn: fn(&str, &str) -> bool,
     ) -> Self {
         let client = Client::builder().cookie_store(true).build().unwrap();
-        let fixed_base_url = if base_url.ends_with('/') {
-            base_url.trim_end_matches('/').to_string()
-        } else {
-            base_url
-        };
+        let host = base_url
+            .replace("http://", "")
+            .replace("https://", "")
+            .split('/')
+            .next()
+            .unwrap_or("")
+            .to_string();
         HttpClient {
             client,
-            base_url: fixed_base_url,
+            host: Arc::new(RwLock::new(host)),
             log_tx,
             confirm_fn,
         }
@@ -70,28 +73,31 @@ impl HttpClient {
         }
     }
 
-    pub async fn get_captcha(&self) -> Result<CaptchaResponse> {
+    pub async fn get_captcha(&self, base_url: String) -> Result<CaptchaResponse> {
         if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，返回假验证码").await;
             return Ok(CaptchaResponse {
                 img: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==".to_string(),
             });
         }
-
-        self.log("INFO", &format!("base_url: {}", self.base_url))
-            .await;
-
+        let host = base_url
+            .replace("http://", "")
+            .replace("https://", "")
+            .split('/')
+            .next()
+            .unwrap_or("")
+            .to_string();
+        // 写入新的 host
+        {
+            let mut writer = self.host.write().unwrap();
+            *writer = host.clone();
+        }
+        self.log("INFO", &format!("HOST: {}", &host)).await;
         let response = self
             .client
-            .get(format!("{}/captcha/captchaImage", self.base_url))
-            .header(
-                "Host",
-                self.base_url
-                    .to_string()
-                    .replace("http://", "")
-                    .replace("https://", ""),
-            )
-            .header("Referer", self.base_url.to_string())
+            .get(format!("https://{}/captcha/captchaImage", &host))
+            .header("Host", &host)
+            .header("Referer", format!("https://{}/", &host))
             .send()
             .await?;
 
@@ -124,6 +130,8 @@ impl HttpClient {
         self.log("INFO", &format!("username: {}", username)).await;
         self.log("INFO", &format!("password: {}", password)).await;
 
+        let host = self.host.read().unwrap().clone();
+
         if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，跳过登录").await;
             LOGIN_STATUS.store(true, Ordering::Relaxed);
@@ -132,15 +140,9 @@ impl HttpClient {
 
         let response = self
             .client
-            .post(format!("{}/login", self.base_url))
-            .header(
-                "Host",
-                self.base_url
-                    .to_string()
-                    .replace("http://", "")
-                    .replace("https://", ""),
-            )
-            .header("Referer", self.base_url.to_string())
+            .post(format!("https://{}/login", &host))
+            .header("Host", &host)
+            .header("Referer", format!("https://{}/", &host))
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(format!(
                 "type=password&username={}&password={}&rememberMe=true&validateCode={}",
@@ -164,19 +166,14 @@ impl HttpClient {
     }
 
     pub async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
-        let url = format!("{}/rest/inspect/query?{}", self.base_url, query_string);
+        let host = self.host.read().unwrap().clone();
+        let url = format!("https://{}/rest/inspect/query?{}", &host, query_string);
 
         let response = match self
             .client
             .get(&url)
-            .header(
-                "Host",
-                self.base_url
-                    .to_string()
-                    .replace("http://", "")
-                    .replace("https://", ""),
-            )
-            .header("Referer", self.base_url.to_string())
+            .header("Host", &host)
+            .header("Referer", format!("https://{}/", &host))
             .header(header::ACCEPT, "application/json")
             .send()
             .await
@@ -241,6 +238,8 @@ impl HttpClient {
         file_type_raw: &str, // 'goodsfile' 或 'batteryfile'
         category: &str,
     ) -> Result<String> {
+        let host = self.host.read().unwrap().clone();
+
         let mut file_type = file_type_raw;
         if !(category == "sodium" || category == "battery") {
             file_type = "goodsfile";
@@ -273,7 +272,7 @@ impl HttpClient {
         if DEBUG_MODE.load(Ordering::Relaxed) {
             url = format!("{}/rest/document/upload", "http://127.0.0.1:3000");
         } else {
-            url = format!("{}/rest/document/upload", self.base_url);
+            url = format!("https://{}/rest/document/upload", &host);
         }
         let response = self.client.post(url).multipart(form).send().await?;
 
