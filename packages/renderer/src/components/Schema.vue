@@ -64,7 +64,6 @@ const defaultConfig: Config = {
 const loading = ref(false)
 const config = ref<Config>(defaultConfig)
 const initial = ref<Config>(defaultConfig)
-const serverPort = ref(25455)
 
 
 // 防抖函数
