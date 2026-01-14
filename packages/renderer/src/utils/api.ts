@@ -12,7 +12,7 @@ class APIManager {
       // 在生产环境中使用完整 URL
       const isDev = import.meta.env.DEV
       let url: string
-      
+
       if (isDev) {
         // 开发环境：使用相对路径，由 Vite 代理处理
         url = `${endpoint}`
@@ -21,9 +21,9 @@ class APIManager {
         if (!this.serverPort) {
           this.serverPort = await getServerPort()
         }
-        url = `http://127.0.0.1:${this.serverPort}/${endpoint}`
+        url = `http://127.0.0.1:${this.serverPort}${endpoint}`
       }
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -46,7 +46,7 @@ class APIManager {
       // 在生产环境中使用完整 URL
       const isDev = import.meta.env.DEV
       let url: string
-      
+
       if (isDev) {
         // 开发环境：使用相对路径，由 Vite 代理处理
         url = `${endpoint}`
@@ -55,9 +55,9 @@ class APIManager {
         if (!this.serverPort) {
           this.serverPort = await getServerPort()
         }
-        url = `http://127.0.0.1:${this.serverPort}/${endpoint}`
+        url = `http://127.0.0.1:${this.serverPort}${endpoint}`
       }
-      
+
       const response = await fetch(url)
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`)
