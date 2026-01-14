@@ -83,9 +83,10 @@ const debouncedSave = debounce(() => {
 async function getConfig() {
   try {
     const appConfigResponse = await apiManager.get('/get-config')
+    console.log('获取到的配置:', appConfigResponse)
     config.value =  appConfigResponse
   } catch (error) {
-    console.error('获取服务端口失败:', error)
+    console.error('获取配置失败:', error)
   }
 
   watch(
