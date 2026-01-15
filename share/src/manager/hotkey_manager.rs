@@ -2,9 +2,9 @@ use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 
-use crate::{config::ConfigManager, hotkey_handler::copy::copy_file_to_here};
 use crate::hotkey_handler::copy2::copy2_callback;
 use crate::hotkey_handler::upload::upload_file;
+use crate::{config::ConfigManager, hotkey_handler::copy::copy_file_to_here};
 use aircraft_types::config::HotkeyConfig;
 use aircraft_types::logger::LogMessage;
 use chrono::Local;

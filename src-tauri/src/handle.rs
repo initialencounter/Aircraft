@@ -1,7 +1,7 @@
 use crate::utils::{check_update, hide_or_show, restart};
 use crate::{menu, Link};
-use std::env;
 use share::config::ConfigManager;
+use std::env;
 use tauri::menu::{MenuBuilder, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::{App, AppHandle, Emitter, Manager, WindowEvent, Wry};

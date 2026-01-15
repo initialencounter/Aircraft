@@ -34,11 +34,7 @@ impl ServerManager {
         let log_tx = self.log_tx.clone();
         *self.shutdown_tx.lock().unwrap() = shutdown_tx;
         *self.handle.lock().unwrap() = Some(tokio::spawn(async move {
-            let _ = task_proxy_run(
-                shutdown_rx,
-                log_tx,
-            )
-            .await;
+            let _ = task_proxy_run(shutdown_rx, log_tx).await;
         }));
     }
 

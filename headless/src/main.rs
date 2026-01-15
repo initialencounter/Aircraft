@@ -59,10 +59,7 @@ async fn main() -> Result<()> {
     )));
     let log_tx = logger.lock().unwrap().log_tx.clone();
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
-    let _ = tokio::spawn(task_proxy_run(
-        shutdown_rx,
-        log_tx,
-    ));
+    let _ = tokio::spawn(task_proxy_run(shutdown_rx, log_tx));
 
     // 运行事件循环
     event_loop.run(move |event, _, control_flow| {

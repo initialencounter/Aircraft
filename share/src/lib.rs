@@ -1,7 +1,7 @@
 pub mod attachment_parser;
+pub mod config;
 pub mod hotkey_handler;
 pub mod logger;
 pub mod manager;
 pub mod task_proxy;
 pub mod utils;
-pub mod config;

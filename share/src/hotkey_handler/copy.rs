@@ -53,7 +53,9 @@ pub async fn search(file_path: String) -> Vec<SearchResult> {
 
 pub async fn search_property(data: SearchProperty) -> Vec<DataModel> {
     let client = Client::new();
-    let query = SearchPropertyParams { search_text: data.search_text };
+    let query = SearchPropertyParams {
+        search_text: data.search_text,
+    };
     let response = client.get(&data.url).query(&query).send().await;
     let response = match response {
         Ok(res) => res,

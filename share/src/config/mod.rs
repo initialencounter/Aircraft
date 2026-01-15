@@ -39,7 +39,6 @@ impl ConfigManager {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
 

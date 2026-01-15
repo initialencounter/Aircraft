@@ -23,10 +23,7 @@ pub struct GoodsInfoWasm {
 }
 
 #[wasm_bindgen]
-pub fn get_goods_info(
-    buffer: &[u8],
-    is_965: bool,
-) -> Result<GoodsInfoWasm, JsValue> {
+pub fn get_goods_info(buffer: &[u8], is_965: bool) -> Result<GoodsInfoWasm, JsValue> {
     let pdf = match read_pdf_u8(buffer) {
         Ok(result) => result,
         Err(e) => return Err(JsValue::from_str(&format!("Failed to read PDF: {}", e))),

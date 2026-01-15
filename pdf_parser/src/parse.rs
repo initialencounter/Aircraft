@@ -52,7 +52,11 @@ fn find_package_index(pdf_text: Vec<&str>) -> usize {
     }
     pdf_text.len() - 1
 }
-pub fn parse_good_file(pdf_text: String, is_965: bool, package_image: Option<Vec<u8>>) -> Result<GoodsInfo> {
+pub fn parse_good_file(
+    pdf_text: String,
+    is_965: bool,
+    package_image: Option<Vec<u8>>,
+) -> Result<GoodsInfo> {
     let project_no = match RE_PROJECT_NO.captures(&pdf_text) {
         Some(caps) => match caps.get(1) {
             Some(cap) => cap.as_str().trim().to_string(),

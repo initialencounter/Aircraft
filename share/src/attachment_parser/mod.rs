@@ -5,8 +5,8 @@ use aircraft_types::{
     others::SearchResult,
     summary::SummaryInfo,
 };
-use pdf_parser::{parse::parse_good_file, read::read_pdf_u8};
 use pdf_parser::GoodsInfo;
+use pdf_parser::{parse::parse_good_file, read::read_pdf_u8};
 use summary::{parse_docx_table, parse_docx_text, read_docx_content};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -53,10 +53,7 @@ pub async fn get_goods_path(project_no: String) -> Result<String> {
     Ok(file_list[0].clone())
 }
 
-pub async fn get_goods_info(
-    project_no: String,
-    is_965: bool,
-) -> Result<GoodsInfo> {
+pub async fn get_goods_info(project_no: String, is_965: bool) -> Result<GoodsInfo> {
     let path = get_goods_path(project_no).await?;
     let pdf_buf = std::fs::read(&path)?;
     let result = read_pdf_u8(&pdf_buf)?;
@@ -93,10 +90,7 @@ pub async fn get_other_info(project_no: String) -> Result<OtherInfo> {
     })
 }
 
-pub async fn get_attachment_info(
-    project_no: String,
-    is_965: bool,
-) -> Result<AttachmentInfo> {
+pub async fn get_attachment_info(project_no: String, is_965: bool) -> Result<AttachmentInfo> {
     Ok(AttachmentInfo {
         summary: get_summary_info(project_no.clone()).await?,
         goods: get_goods_info(project_no.clone(), is_965).await?,

@@ -7,7 +7,7 @@ use super::match_project_no;
 
 pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
     let mut summary = SummaryInfo::default();
-    
+
     // 预先构建字段映射表，避免在循环中重复创建
     let mut field_mappings: HashMap<&str, &mut String> = HashMap::from([
         ("委托单位", &mut summary.consignor),
@@ -37,7 +37,7 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         ("UN38.3.3.1(g)", &mut summary.un38_g),
         ("备注", &mut summary.note),
     ]);
-    
+
     for (index, item) in content.iter().enumerate() {
         // 标题
         if item.contains("概要") && item.contains("Test Summary") {
@@ -53,7 +53,7 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         if item.contains("测试标准") && index > 0 {
             summary.test_date = content[index - 1].clone();
         }
-        
+
         // 使用更高效的方式处理字段映射
         for (key, field) in field_mappings.iter_mut() {
             if item.contains(*key) && index + 1 < content.len() {
@@ -96,6 +96,10 @@ mod tests {
         let content = parse_docx_text(&text.unwrap()[0].clone());
         println!("{}", content.clone().join("\n"));
         let summary = parse_docx_table(content);
-        std::fs::write("test2.json", serde_json::to_string_pretty(&summary).unwrap()).unwrap();
+        std::fs::write(
+            "test2.json",
+            serde_json::to_string_pretty(&summary).unwrap(),
+        )
+        .unwrap();
     }
 }

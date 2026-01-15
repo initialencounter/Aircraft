@@ -131,7 +131,7 @@ pub fn match_file_list(file_list: Vec<String>) -> Vec<RawFileInfo> {
         let docx_file_path = path.with_extension("docx");
 
         // 如果 doc 源文件不存在，则说明 pdf 不是 doc 转换而来的，直接跳过
-        if !doc_file_path.exists() && !docx_file_path.exists(){
+        if !doc_file_path.exists() && !docx_file_path.exists() {
             continue;
         }
 

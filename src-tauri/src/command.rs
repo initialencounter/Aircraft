@@ -94,14 +94,10 @@ pub fn unmaximize_window(app: tauri::AppHandle) {
 
 // 保存配置, 并重启服务器
 #[tauri::command]
-pub async fn reload_config(
-    app: tauri::AppHandle,
-    config: Config,
-) -> Result<(), String> {
+pub async fn reload_config(app: tauri::AppHandle, config: Config) -> Result<(), String> {
     set_auto_start(app.clone(), config.base.auto_start)?;
     Ok(())
 }
-
 
 #[tauri::command]
 pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {
