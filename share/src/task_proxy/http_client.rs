@@ -97,7 +97,8 @@ impl HttpClient {
             .client
             .get(format!("https://{}/captcha/captchaImage", &host))
             .header("Host", &host)
-            .header("Referer", format!("https://{}/", &host))
+            .header("Referer", format!("https://{}/login", &host))
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
             .send()
             .await?;
 
@@ -142,8 +143,9 @@ impl HttpClient {
             .client
             .post(format!("https://{}/login", &host))
             .header("Host", &host)
-            .header("Referer", format!("https://{}/", &host))
+            .header("Referer", format!("https://{}/login", &host))
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
             .body(format!(
                 "type=password&username={}&password={}&rememberMe=true&validateCode={}",
                 urlencoding::encode(username),
@@ -173,7 +175,8 @@ impl HttpClient {
             .client
             .get(&url)
             .header("Host", &host)
-            .header("Referer", format!("https://{}/", &host))
+            .header("Referer", format!("https://{}/inspect/query/main", &host))
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
             .header(header::ACCEPT, "application/json")
             .send()
             .await
@@ -274,7 +277,12 @@ impl HttpClient {
         } else {
             url = format!("https://{}/rest/document/upload", &host);
         }
-        let response = self.client.post(url).multipart(form).send().await?;
+        let response = self.client.post(url)
+          .multipart(form)
+          .header("Host", &host)
+          .header("Referer", format!("https://{}/document/multiupload?dir={}&fileType={}&typeId={}&refresh=true&allowedFileTypes=pdf&checkpdf=true", &host, &dir, &file_type, &project_id))
+          .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
+          .send().await?;
 
         if response.status().is_success() {
             self.log(
