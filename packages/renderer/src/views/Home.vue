@@ -84,6 +84,7 @@ import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { ipcManager } from '../utils/ipcManager'
 import { apiManager } from '../utils/api'
+import { Config } from 'aircraft-rs'
 
 const loginStatus = ref(false)
 
@@ -162,10 +163,11 @@ const handleLogin = async () => {
 }
 
 async function saveLoginInfo() {
-  let oldConfig = await apiManager.get('/get-config')
+  let oldConfig: Config = await apiManager.get('/get-config')
   oldConfig.server.baseUrl = loginForm.value.baseUrl
   oldConfig.server.username = loginForm.value.username
   oldConfig.server.password = loginForm.value.password
+  oldConfig.server.debug = false
   await apiManager.post('/save-config', oldConfig)
 }
 
