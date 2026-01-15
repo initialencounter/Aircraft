@@ -10,6 +10,9 @@ use std::sync::mpsc::Sender;
 use std::sync::RwLock;
 use std::{env, sync::Arc};
 
+use tokio::task;
+use tokio::time::{sleep, Duration};
+
 use reqwest::header;
 use reqwest::{multipart, Client};
 
@@ -83,7 +86,7 @@ impl HttpClient {
         if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，返回假验证码").await;
             return Ok(CaptchaResponse {
-              img: FAKE_IMAGE.to_string(),
+                img: FAKE_IMAGE.to_string(),
             });
         }
         let host = base_url
@@ -164,6 +167,17 @@ impl HttpClient {
         if response.status().is_success() {
             LOGIN_STATUS.store(true, Ordering::Relaxed);
             self.log("INFO", "登录成功").await;
+            let log_tx = self.log_tx.clone();
+            task::spawn(async move {
+                sleep(Duration::from_millis(3600 * 1000 * 24)).await;
+                LOGIN_STATUS.store(false, Ordering::Relaxed);
+                let current_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+                let _ = log_tx.send(LogMessage {
+                    time_stamp: current_time,
+                    level: "ERROR".to_string(),
+                    message: "登录状态已过期，请重新登录".to_string(),
+                });
+            });
             Ok(())
         } else {
             LOGIN_STATUS.store(false, Ordering::Relaxed);
