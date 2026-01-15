@@ -23,6 +23,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
 pub static DEBUG_MODE: AtomicBool = AtomicBool::new(false);
 
+const EMPTY_JSON_ARRAY: &str = "[]";
+const ALLOWED_FILE_TYPES: &str = "pdf";
+const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
+const DEBUG_HOST: &str = "http://127.0.0.1:3000";
+const FAKE_IMAGE: &str = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 pub struct HttpClient {
@@ -77,7 +83,7 @@ impl HttpClient {
         if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，返回假验证码").await;
             return Ok(CaptchaResponse {
-                img: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==".to_string(),
+              img: FAKE_IMAGE.to_string(),
             });
         }
         let host = base_url
@@ -98,7 +104,7 @@ impl HttpClient {
             .get(format!("https://{}/captcha/captchaImage", &host))
             .header("Host", &host)
             .header("Referer", format!("https://{}/login", &host))
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
+            .header("User-Agent", USER_AGENT)
             .send()
             .await?;
 
@@ -145,7 +151,7 @@ impl HttpClient {
             .header("Host", &host)
             .header("Referer", format!("https://{}/login", &host))
             .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
+            .header("User-Agent", USER_AGENT)
             .body(format!(
                 "type=password&username={}&password={}&rememberMe=true&validateCode={}",
                 urlencoding::encode(username),
@@ -176,7 +182,7 @@ impl HttpClient {
             .get(&url)
             .header("Host", &host)
             .header("Referer", format!("https://{}/inspect/query/main", &host))
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
+            .header("User-Agent", USER_AGENT)
             .header(header::ACCEPT, "application/json")
             .send()
             .await
@@ -241,50 +247,61 @@ impl HttpClient {
         file_type_raw: &str, // 'goodsfile' 或 'batteryfile'
         category: &str,
     ) -> Result<String> {
+        // 常量定义
         let host = self.host.read().unwrap().clone();
 
-        let mut file_type = file_type_raw;
-        if !(category == "sodium" || category == "battery") {
-            file_type = "goodsfile";
-        }
-        let blob = multipart::Part::bytes(file_buffer).file_name(file_name.to_string());
+        // 根据类别确定文件类型
+        let file_type = if category == "sodium" || category == "battery" {
+            file_type_raw.to_string()
+        } else {
+            "goodsfile".to_string()
+        };
 
+        // 构建文件路径和表单数据
         let dir = format!("project/{}/{}", project_id, file_type);
-        let initial_preview = "[]";
-        let initial_preview_config = "[]";
-        let initial_preview_thumb_tags = "[]";
+        let blob = multipart::Part::bytes(file_buffer).file_name(file_name.to_string());
 
         let form = multipart::Form::new()
             .text("file", file_name.to_string())
             .text("fileId", file_id.to_string())
-            .text("initialPreview", initial_preview.to_string())
-            .text("initialPreviewConfig", initial_preview_config.to_string())
-            .text(
-                "initialPreviewThumbTags",
-                initial_preview_thumb_tags.to_string(),
-            )
-            .text("dir", dir)
-            .text("fileType", file_type.to_string())
+            .text("initialPreview", EMPTY_JSON_ARRAY)
+            .text("initialPreviewConfig", EMPTY_JSON_ARRAY)
+            .text("initialPreviewThumbTags", EMPTY_JSON_ARRAY)
+            .text("dir", dir.clone())
+            .text("fileType", file_type.clone())
             .text("typeId", project_id.to_string())
             .text("refresh", "true")
-            .text("allowedFileTypes", "pdf")
+            .text("allowedFileTypes", ALLOWED_FILE_TYPES)
             .text("checkpdf", "true")
             .part("file", blob);
 
-        let url: String;
-        if DEBUG_MODE.load(Ordering::Relaxed) {
-            url = format!("{}/rest/document/upload", "http://127.0.0.1:3000");
+        // 构建上传 URL
+        let url = if DEBUG_MODE.load(Ordering::Relaxed) {
+            format!("{}/rest/document/upload", DEBUG_HOST)
         } else {
-            url = format!("https://{}/rest/document/upload", &host);
-        }
-        let response = self.client.post(url)
-          .multipart(form)
-          .header("Host", &host)
-          .header("Referer", format!("https://{}/document/multiupload?dir={}&fileType={}&typeId={}&refresh=true&allowedFileTypes=pdf&checkpdf=true", &host, &dir, &file_type, &project_id))
-          .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
-          .send().await?;
+            format!("https://{}/rest/document/upload", host)
+        };
 
-        if response.status().is_success() {
+        // 构建 Referer header
+        let referer = format!(
+            "https://{}/document/multiupload?dir={}&fileType={}&typeId={}&refresh=true&allowedFileTypes={}&checkpdf=true",
+            host, dir, file_type, project_id, ALLOWED_FILE_TYPES
+        );
+
+        // 发送请求
+        let response = self
+            .client
+            .post(&url)
+            .multipart(form)
+            .header("Host", &host)
+            .header("Referer", referer)
+            .header("User-Agent", USER_AGENT)
+            .send()
+            .await?;
+
+        // 处理响应
+        let status = response.status();
+        if status.is_success() {
             self.log(
                 "INFO",
                 &format!("文件上传成功: {:?}", response.text().await?),
