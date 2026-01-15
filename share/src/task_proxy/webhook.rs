@@ -2,12 +2,15 @@ use super::http_client::HttpClient;
 use crate::attachment_parser::get_attachment_info;
 use crate::config::ConfigManager;
 use crate::hotkey_handler::copy::{search, search_property};
-use crate::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
+use crate::manager::clipboard_snapshot_manager::{
+    add_clipboard_snapshot_config, get_clipboard_snapshot_configs,
+    remove_clipboard_snapshot_config, ClipboardSnapshotManager,
+};
 use crate::manager::hotkey_manager::HotkeyManager;
 use crate::utils::uploader::FileManager;
 use crate::utils::{bind_available_port, set_clipboard_text};
 use aircraft_types::config::Config;
-use aircraft_types::others::LoginRequest;
+use aircraft_types::others::{ClipboardHotkey, LoginRequest};
 use aircraft_types::project::SearchProperty;
 use aircraft_types::summary::SummaryInfo;
 use axum::{
@@ -113,6 +116,22 @@ pub async fn apply_webhook(
         .route("/set-clipboard-text", post(set_clipboard_text_handler))
         .route("/search-file", post(search_file_handler))
         .route("/search-property", post(search_property_handler))
+        .route(
+            "/get_clipboard_snapshot_configs",
+            get(get_clipboard_snapshot_configs_handler),
+        )
+        .route(
+            "/add_clipboard_snapshot_config",
+            post(add_clipboard_snapshot_config_handler),
+        )
+        .route(
+            "/remove_clipboard_snapshot_config",
+            post(remove_clipboard_snapshot_config_handler),
+        )
+        .route(
+            "/reload_clipboard_snapshot_configs",
+            post(reload_clipboard_snapshot_configs_handler),
+        )
         .layer(DefaultBodyLimit::max(100 * 1024 * 1024)) // 设置最大请求体为 100MB
         .layer(CorsLayer::permissive())
         .with_state(state);
@@ -342,4 +361,40 @@ async fn handle_summary_parse(
 
     let summary_info = get_summary_info_by_buffer(&file_data_vec).unwrap_or(SummaryInfo::default());
     Ok(summary_info)
+}
+
+async fn get_clipboard_snapshot_configs_handler() -> Json<Vec<ClipboardHotkey>> {
+    Json(get_clipboard_snapshot_configs())
+}
+
+async fn add_clipboard_snapshot_config_handler(
+    State(state): State<AppState>,
+    Json(config): Json<ClipboardHotkey>,
+) -> Json<serde_json::Value> {
+    let _ = add_clipboard_snapshot_config(config);
+    state.clipboard_snapshot_manager.reload();
+    Json(serde_json::json!({"success": true, "message": "ok"}))
+}
+
+async fn remove_clipboard_snapshot_config_handler(
+    State(state): State<AppState>,
+    Json(content_name): Json<String>,
+) -> Response {
+    match remove_clipboard_snapshot_config(&content_name) {
+        Ok(_) => {
+            state.clipboard_snapshot_manager.reload();
+            Json(serde_json::json!({"success": true, "message": "配置已移除"})).into_response()
+        }
+        Err(e) => Json(CustomError {
+            message: format!("移除剪贴板快照配置失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+async fn reload_clipboard_snapshot_configs_handler(
+    State(state): State<AppState>,
+) -> Json<serde_json::Value> {
+    state.clipboard_snapshot_manager.reload();
+    Json(serde_json::json!({"success": true, "message": "剪贴板快照配置已重载"}))
 }

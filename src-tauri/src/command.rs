@@ -1,7 +1,6 @@
 use aircraft_types::config::Config;
 use aircraft_types::logger::LogMessage;
 use share::logger::Logger;
-use share::manager::clipboard_snapshot_manager::ClipboardSnapshotManager;
 use share::task_proxy::webhook::SERVER_PORT;
 use std::path::Path;
 use std::sync::atomic::Ordering;
@@ -9,12 +8,6 @@ use std::sync::{Arc, Mutex};
 use tauri::Manager;
 use tauri_plugin_autostart::ManagerExt;
 
-use aircraft_types::others::ClipboardHotkey;
-use share::manager::clipboard_snapshot_manager::{
-    add_clipboard_snapshot_config as add_clipboard_snapshot_config_source,
-    get_clipboard_snapshot_configs as get_clipboard_snapshot_configs_source,
-    remove_clipboard_snapshot_config as remove_clipboard_snapshot_config_source,
-};
 use share::manager::hotkey_manager::HotkeyManager;
 use share::task_proxy::LOGIN_STATUS;
 
@@ -97,35 +90,6 @@ pub fn unmaximize_window(app: tauri::AppHandle) {
 pub async fn reload_config(app: tauri::AppHandle, config: Config) -> Result<(), String> {
     set_auto_start(app.clone(), config.base.auto_start)?;
     Ok(())
-}
-
-#[tauri::command]
-pub fn get_clipboard_snapshot_configs() -> Vec<ClipboardHotkey> {
-    get_clipboard_snapshot_configs_source()
-}
-
-#[tauri::command]
-pub fn add_clipboard_snapshot_config(config: ClipboardHotkey) -> Result<(), String> {
-    match add_clipboard_snapshot_config_source(config) {
-        Ok(_) => Ok(()),
-        Err(e) => Err("添加剪贴板快照配置失败: ".to_string() + &e.to_string()),
-    }
-}
-
-#[tauri::command]
-pub fn remove_clipboard_snapshot_config(content_name: &str) -> Result<(), String> {
-    match remove_clipboard_snapshot_config_source(content_name) {
-        Ok(_) => Ok(()),
-        Err(e) => Err("移除剪贴板快照配置失败: ".to_string() + &e.to_string()),
-    }
-}
-
-#[tauri::command]
-pub fn reload_clipboard_snapshot_configs(
-    clipboard_snapshot_manager: tauri::State<'_, ClipboardSnapshotManager>,
-) {
-    clipboard_snapshot_manager.stop();
-    clipboard_snapshot_manager.start();
 }
 
 #[tauri::command]

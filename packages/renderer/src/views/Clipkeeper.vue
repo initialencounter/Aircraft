@@ -132,7 +132,7 @@ import {
   type FormRules,
 } from 'element-plus'
 import { Plus, Delete, Refresh } from '@element-plus/icons-vue'
-import { ipcManager } from '../utils/ipcManager'
+import { apiManager } from '../utils/api'
 
 interface ClipboardHotkey {
   hotkeys: string[]
@@ -173,7 +173,7 @@ const rules: FormRules = {
 // 加载配置列表
 const loadConfigs = async () => {
   try {
-    const result = await ipcManager.invoke('get_clipboard_snapshot_configs')
+    const result = await apiManager.get('/get_clipboard_snapshot_configs')
     configs.value = result || []
   } catch (error) {
     ElMessage.error('加载配置失败: ' + (error as Error).message)
@@ -241,9 +241,7 @@ const handleAdd = async () => {
 
     adding.value = true
     try {
-      await ipcManager.invoke('add_clipboard_snapshot_config', {
-        config: newConfig.value,
-      })
+      await apiManager.post('/add_clipboard_snapshot_config', newConfig.value)
       ElMessage.success('添加成功')
       dialogVisible.value = false
       await loadConfigs()
@@ -269,9 +267,7 @@ const handleDelete = async (contentName: string) => {
       }
     )
 
-    await ipcManager.invoke('remove_clipboard_snapshot_config', {
-      contentName,
-    })
+    await apiManager.post('/remove_clipboard_snapshot_config', contentName)
     ElMessage.success('删除成功')
     await loadConfigs()
   } catch (error) {
@@ -286,7 +282,7 @@ const handleDelete = async (contentName: string) => {
 const handleReload = async () => {
   reloading.value = true
   try {
-    await ipcManager.invoke('reload_clipboard_snapshot_configs')
+    await apiManager.post('/reload_clipboard_snapshot_configs', {})
     ElMessage.success('重载成功')
     await loadConfigs()
   } catch (error) {
