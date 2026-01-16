@@ -27,12 +27,17 @@ class CustomTray extends Service {
     this.tray = new Tray(icon)
     this.tray.setToolTip('Aircraft')
     this.tray.on('click', () => {
-      if (this.ctx.win.win?.isVisible()) {
-        this.ctx.win.win?.hide()
+      const win = this.ctx.win.win
+      if (!win) return
+
+      if (win.isVisible()) {
+        win.hide()
       } else {
-        this.ctx.win.win?.show()
-        if (this.ctx.win.win?.isMinimized())
-          this.ctx.win.win?.restore()
+        if (win.isMinimized()) {
+          win.restore()
+        }
+        win.show()
+        win.focus()
       }
     })
     const contextMenu = Menu.buildFromTemplate([
