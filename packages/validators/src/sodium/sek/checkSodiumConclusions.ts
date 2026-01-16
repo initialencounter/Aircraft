@@ -1,6 +1,5 @@
-import { properShippingNameMap } from "../../lithium/shared/consts/properShippingNameMap"
-import { CheckResult } from "../../lithium/shared/types"
-
+import { properShippingNameMap } from '../../lithium/shared/consts/properShippingNameMap'
+import { CheckResult } from '../../lithium/shared/types'
 
 type UnnoKey = keyof typeof properShippingNameMap
 
@@ -34,11 +33,7 @@ export function checkSodiumConclusions(
   classOrDiv = classOrDiv.trim()
   if (conclusions === 1) {
     // 危险品
-    if (
-      unno === 'UN3558' ||
-      unno === 'UN3551' ||
-      unno === 'UN3552'
-    ) {
+    if (['UN3558', 'UN3551', 'UN3552'].includes(unno)) {
       let unKey: UnnoKey = unno as UnnoKey
       if (unno === 'UN3552') {
         // 内置
@@ -56,27 +51,33 @@ export function checkSodiumConclusions(
         })
       }
     } else {
-      if (['≤100Wh', '≤20Wh'].includes(inspectionResult1)) {
-        result.push({
-          ok: false,
-          result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
-        })
-      }
-      // 单独运输
-      if (otherDescribe === '540' && unno !== 'UN3551') {
-        result.push({
-          ok: false,
-          result: '结论错误，单独运输，UN编号应为UN3551',
-        })
-      }
-
-      // 危险品，设备内置或与设备包装在一起的电池
-      if (otherDescribe !== '540' && unno !== 'UN3552')
-        result.push({
-          ok: false,
-          result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3481',
-        })
+      result.push({
+        ok: false,
+        result: '结论错误，钠离子电池危险品，UN编号应为UN3558或UN3551或UN3552',
+      })
     }
+    if (['≤100Wh', '≤20Wh'].includes(inspectionResult1)) {
+      result.push({
+        ok: false,
+        result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
+      })
+    }
+    // 单独运输
+    if (otherDescribe === '540' && unno !== 'UN3551') {
+      result.push({
+        ok: false,
+        result: '结论错误，单独运输，UN编号应为UN3551',
+      })
+    }
+
+    // 危险品，设备内置或与设备包装在一起的电池
+    if (otherDescribe !== '540' && !['UN3552', 'UN3558'].includes(unno))
+      result.push({
+        ok: false,
+        result:
+          '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3552或UN3558',
+      })
+
     if (classOrDiv !== '9') {
       result.push({
         ok: false,
