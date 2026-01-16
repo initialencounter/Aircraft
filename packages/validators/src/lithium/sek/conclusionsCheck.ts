@@ -26,7 +26,7 @@ export function conclusionsCheck(
   classOrDiv: string,
   isIon: boolean,
   properShippingName: string,
-  projectYear?: string,
+  projectYear?: string
 ): CheckResult[] {
   const result: CheckResult[] = []
   unno = unno.trim()
@@ -68,44 +68,49 @@ export function conclusionsCheck(
         })
       }
     } else {
-      if (['≤1g', '≤2g'].includes(inspectionResult1)) {
-        result.push({
-          ok: false,
-          result: '结论错误，锂含量小于1g或2g，应为非限制性',
-        })
-      }
-      if (['≤100Wh', '≤20Wh'].includes(inspectionResult1)) {
-        result.push({
-          ok: false,
-          result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
-        })
-      }
-      // 单独运输
-      if (otherDescribe === '540' && isIon && unno !== 'UN3480') {
-        result.push({
-          ok: false,
-          result: '结论错误，单独运输，UN编号应为UN3480',
-        })
-      }
-      if (otherDescribe === '540' && !isIon && unno !== 'UN3090') {
-        result.push({
-          ok: false,
-          result: '结论错误，单独运输，UN编号应为UN3090',
-        })
-      }
-
-      // 危险品，设备内置或与设备包装在一起的电池
-      if (otherDescribe !== '540' && unno !== 'UN3481' && isIon)
-        result.push({
-          ok: false,
-          result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3481',
-        })
-      if (otherDescribe !== '540' && unno !== 'UN3091' && !isIon)
-        result.push({
-          ok: false,
-          result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3091',
-        })
+      result.push({
+        ok: false,
+        result: 'UN编号错误',
+      })
     }
+
+    if (['≤1g', '≤2g'].includes(inspectionResult1)) {
+      result.push({
+        ok: false,
+        result: '结论错误，锂含量小于1g或2g，应为非限制性',
+      })
+    }
+    if (['≤100Wh', '≤20Wh'].includes(inspectionResult1)) {
+      result.push({
+        ok: false,
+        result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
+      })
+    }
+    // 单独运输
+    if (otherDescribe === '540' && isIon && unno !== 'UN3480') {
+      result.push({
+        ok: false,
+        result: '结论错误，单独运输，UN编号应为UN3480',
+      })
+    }
+    if (otherDescribe === '540' && !isIon && unno !== 'UN3090') {
+      result.push({
+        ok: false,
+        result: '结论错误，单独运输，UN编号应为UN3090',
+      })
+    }
+
+    // 危险品，设备内置或与设备包装在一起的电池
+    if (otherDescribe !== '540' && unno !== 'UN3481' && isIon)
+      result.push({
+        ok: false,
+        result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3481',
+      })
+    if (otherDescribe !== '540' && unno !== 'UN3091' && !isIon)
+      result.push({
+        ok: false,
+        result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3091',
+      })
     if (classOrDiv !== '9') {
       result.push({
         ok: false,
