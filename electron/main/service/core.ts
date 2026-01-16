@@ -18,7 +18,7 @@ declare module 'cordis' {
 }
 
 class AircraftCore extends Service {
-  static inject = ['http', 'app', 'bindings']
+  static inject = ['app', 'bindings']
   core!: AircraftRs
   constructor(ctx: Context) {
     super(ctx, 'core')

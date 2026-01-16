@@ -1,5 +1,4 @@
 import { Context } from 'cordis'
-import Undios from '@cordisjs/plugin-http'
 
 import { AircraftCore } from './service/core'
 import { App } from './service/app'
@@ -12,7 +11,6 @@ import { LoggerService } from './service/logger'
 import { Launch } from './plugins/launch'
 
 const context = new Context()
-context.plugin(Undios)
 context.plugin(RustBindings)
 context.plugin(AircraftCore)
 context.plugin(App)

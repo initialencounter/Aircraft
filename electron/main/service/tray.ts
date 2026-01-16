@@ -14,7 +14,7 @@ declare module 'cordis' {
 }
 
 class CustomTray extends Service {
-  static inject = ['app', 'win', 'http']
+  static inject = ['app', 'win']
   tray!: Tray | null
   constructor(ctx: Context) {
     super(ctx, 'tray')
@@ -31,7 +31,7 @@ class CustomTray extends Service {
         this.ctx.win.win?.hide()
       } else {
         this.ctx.win.win?.show()
-        if (this.ctx.win.win?.isMinimized()) 
+        if (this.ctx.win.win?.isMinimized())
           this.ctx.win.win?.restore()
       }
     })
