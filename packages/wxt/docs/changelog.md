@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v3.1.4] - 2026-01-16
+
+### 修复
+
+- 修复海运瓦时数结论验证([38d927c](https://github.com/initialencounter/Aircraft/commit/38d927ce77dfb1e42661382de7acc9733c52152b))([55bd4b1](https://github.com/initialencounter/Aircraft/commit/55bd4b134b63aa581b8e205850e8fd810fbe0989))([3b67044](https://github.com/initialencounter/Aircraft/commit/3b67044a68d52ce07099d8546416b31ee18891b6))
+
 ## [v3.1.1] - 2026-01-04
 
 ### 修复
