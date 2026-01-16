@@ -53,6 +53,7 @@ class App extends Service {
     if (process.platform === 'win32')
       this.app.setAppUserModelId(this.app.getName())
 
+    // 禁止多实例
     if (!this.app.requestSingleInstanceLock()) {
       this.app.quit()
       process.exit(0)

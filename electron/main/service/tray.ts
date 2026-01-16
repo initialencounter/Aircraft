@@ -5,7 +5,6 @@ import type { Context } from 'cordis'
 import { Service } from 'cordis'
 import type {} from '../service/app'
 import type {} from '../service/win'
-import type {} from '@cordisjs/plugin-http'
 
 declare module 'cordis' {
   interface Context {
