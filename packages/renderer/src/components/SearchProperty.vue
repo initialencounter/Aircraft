@@ -80,7 +80,7 @@ const submitQuery = async () => {
 }
 
 onMounted(() => {
-  apiManager.get('get-config').then((res: Config) => {
+  apiManager.get('/get-config').then((res: Config) => {
     if (res) {
       host.value = res.other.queryServerHost
     }
