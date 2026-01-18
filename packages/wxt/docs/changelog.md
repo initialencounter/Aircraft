@@ -1,5 +1,12 @@
 # 更新日志
 
+
+## [v3.1.5] - 2026-01-18
+
+### 修复
+
+- 堆码评估单反向验证([58f57a8](https://github.com/initialencounter/Aircraft/commit/58f57a818f924ecedc11729d3938a8db269d595f))
+
 ## [v3.1.4] - 2026-01-16
 
 ### 修复

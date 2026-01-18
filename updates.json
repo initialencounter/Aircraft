@@ -3,6 +3,10 @@
     "{3f8b9a12-a64d-48d8-bb5c-8d9f4e9322b2}": {
       "updates": [
         {
+          "version": "v3.1.5",
+          "update_link": "https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.1.5/lims-v3.1.5.firefox.xpi"
+        },
+        {
           "version": "v3.1.4",
           "update_link": "https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.1.4/lims-v3.1.4.firefox.xpi"
         },
