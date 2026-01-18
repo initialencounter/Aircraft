@@ -139,16 +139,20 @@ export function checkSummary(
     if (systemId === 'pek') {
       let results: Array<{ ok: boolean; result: string }> = []
       if (localConfig.autoCheckStackEvaluation === true) {
+        if (!attachmentInfo?.other?.projectDir) {
+          results.push({ ok: false, result: '找不到项目文件夹' })
+        }
         if (
           dataFromForm.otherDescribe.includes(
             '2c9180849267773c0192dc73c77e5fb2'
           )
         ) {
-          if (!attachmentInfo?.other?.projectDir) {
-            results.push({ ok: false, result: '找不到项目文件夹' })
-          }
           if (attachmentInfo?.other?.stackEvaluation === false) {
-            results.push({ ok: false, result: `项目文件夹内找不到堆码评估单` })
+            results.push({ ok: false, result: `项目文件夹内不存在堆码评估单` })
+          }
+        } else {
+          if (attachmentInfo?.other?.stackEvaluation === true) {
+            results.push({ ok: false, result: '项目文件夹内存在堆码评估单' })
           }
         }
       }
