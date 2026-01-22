@@ -79,6 +79,13 @@ function updateManifest(options) {
     updates = updates.slice(0, MAX_VERSIONS);
   }
 
+  for (const u of updates) {
+    if (u.version.startsWith('v')) {
+      u.version = u.version.slice(1);
+    }
+  }
+  console.log(updates);
+
   // 构建最终的 JSON 对象
   const manifestData = {
     addons: {
