@@ -10,8 +10,7 @@ export default defineConfig({
       minify: false,
       rollupOptions: {
         output: {
-          // 将所有依赖打包到一起
-          inlineDynamicImports: true,
+          // 移除 inlineDynamicImports，因为有多个入口点
           manualChunks: undefined,
         },
       },
@@ -36,7 +35,7 @@ export default defineConfig({
 
           // ONNX 模型相关文件
           'segment.onnx',
-          'ort-wasm-simd-threaded.wasm',
+          'best.onnx',
 
           // WASM 相关文件
           'aircraft.js',
@@ -60,14 +59,44 @@ export default defineConfig({
     permissions: [
       'clipboardWrite',
       'storage',
+      'contextMenus',
+      'offscreen',
     ],
     host_permissions: ['<all_urls>'],
     options_page: 'options.html',
   },
   hooks: {
-    'build:manifestGenerated': (_wxt, manifest) => {
+    'build:manifestGenerated': (wxt, manifest) => {
       // 删除自动生成的 options_ui 字段
       delete manifest.options_ui;
+      const webAccessibleResources = manifest.web_accessible_resources as Array<{
+        resources: string[];
+        matches: string[];
+      }>;
+
+      if (webAccessibleResources && webAccessibleResources.length > 0) {
+        if (wxt.config.browser === 'chrome') {
+          webAccessibleResources[0].resources.push('ort-wasm-simd-threaded.asyncify.wasm');
+          webAccessibleResources[0].resources.push('offscreen.html');
+        } else {
+          webAccessibleResources[0].resources.push('ort-wasm-simd-threaded.wasm');
+        }
+      }
+    },
+    'build:publicAssets': (wxt, files) => {
+      const excludeFile = wxt.config.browser === 'chrome'
+        ? 'ort-wasm-simd-threaded.wasm'
+        : 'ort-wasm-simd-threaded.asyncify.wasm';
+
+      // 从文件列表中移除不需要的文件
+      const indexToRemove = files.findIndex(file =>
+        'absoluteSrc' in file && file.absoluteSrc.endsWith(excludeFile)
+      );
+
+      if (indexToRemove !== -1) {
+        files.splice(indexToRemove, 1);
+        console.log(`Excluded: ${excludeFile} (not needed for ${wxt.config.browser})`);
+      }
     },
   },
 })

@@ -7,6 +7,10 @@
           "update_link": "https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.1.5/lims-v3.1.5.firefox.xpi"
         },
         {
+          "version": "3.1.5",
+          "update_link": "https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.1.5/lims-v3.1.5.firefox.xpi"
+        },
+        {
           "version": "3.1.4",
           "update_link": "https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.1.4/lims-v3.1.4.firefox.xpi"
         },

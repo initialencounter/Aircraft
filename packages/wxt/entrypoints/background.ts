@@ -1,51 +1,9 @@
-import type { AttachmentInfo, GoodsInfo, OtherInfo } from 'aircraft-rs';
+import type { AttachmentInfo, GoodsInfo, OtherInfo, SegmentResult } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from '../public/aircraft';
 import * as ort from "onnxruntime-web/wasm";
 import { process_output } from '../share/yolo';
 import type * as Aircraft from '../public/aircraft';
-// 直接导入 wasm 模块
 import init, * as AircraftWasm from '../public/aircraft.js';
-
-const EVERYTHING_HTTP_ADDRESS = "http://127.0.0.1:25456";
-
-let session: ort.InferenceSession | null = null;
-
-const yoloClasses = ['9', '9A', 'bty', 'CAO'];
-let ortIsInitialized = false;
-// 初始化 ONNX 模型
-async function initializeModel() {
-  try {
-    // 从主线程接收模型 URL
-    const modelUrl = chrome.runtime.getURL('segment.onnx');
-    session = await ort.InferenceSession.create(modelUrl, {
-      logSeverityLevel: 3,
-      logVerbosityLevel: 0
-    });
-    ortIsInitialized = true;
-    console.log("ONNX Model loaded successfully in background");
-  } catch (e) {
-    console.error("Model loading error:", e);
-    ortIsInitialized = false;
-  }
-}
-
-let wasmModule: typeof Aircraft;
-
-async function initAircraftWasm() {
-  try {
-    const wasmURL = chrome.runtime.getURL('aircraft_bg.wasm');
-
-    // 使用静态导入的 init 函数来初始化 WASM
-    await init(wasmURL);
-
-    // 初始化后，AircraftWasm 就包含了所有导出的函数
-    wasmModule = AircraftWasm as any;
-    console.log('Aircraft WASM initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize Aircraft WASM:', error);
-    // 不再抛出错误，避免崩溃
-  }
-}
 
 
 type CreateProperties = chrome.contextMenus.CreateProperties
@@ -75,14 +33,77 @@ interface SearchPathResponse {
   results: SearchPathResult[]
 }
 
-export default defineBackground({
-  main() {
-    entrypoint()
-  },
-})
+const EVERYTHING_HTTP_ADDRESS = "http://127.0.0.1:25456";
 
+let session: ort.InferenceSession | null = null;
+let wasmModule: typeof Aircraft;
+let creating: Promise<void> | null = null;
+
+const yoloClasses = ['9', '9A', 'bty', 'CAO'];
+let ortIsInitialized = false;
 let aircraftServerAvailable = true;
 let enableLabelCheck = false;
+// 检测浏览器类型
+const isFirefox = typeof browser !== "undefined";
+let useWebGPU = isFirefox;
+
+// 创建 Offscreen Document（仅 Chrome）
+async function setupOffscreenDocument(path: string) {
+  // Check if offscreen API is available
+  if (!chrome.offscreen) {
+    console.warn('Offscreen API is not available in this browser');
+    return;
+  }
+
+  // Check if offscreen document already exists
+  const existingContexts = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT']
+  });
+
+  if (existingContexts.length > 0) {
+    return;
+  }
+
+  if (creating) {
+    await creating;
+  } else {
+    creating = chrome.offscreen.createDocument({
+      url: path,
+      reasons: [chrome.offscreen.Reason.WORKERS],
+      justification: 'Run ONNX model',
+    });
+    await creating;
+    creating = null;
+  }
+}
+
+// 初始化 ONNX 模型（Firefox 使用 WASM 后端）
+async function initializeModel() {
+  try {
+    const modelUrl = chrome.runtime.getURL('segment.onnx');
+    ort.env.wasm.simd = true;
+    session = await ort.InferenceSession.create(modelUrl, {
+      executionProviders: ['wasm'],
+    });
+    ortIsInitialized = true;
+    console.log("ONNX Model loaded successfully in background with WASM backend (Firefox)");
+  } catch (e) {
+    console.error("Model loading error:", e);
+    ortIsInitialized = false;
+  }
+}
+
+
+async function initAircraftWasm() {
+  try {
+    const wasmURL = chrome.runtime.getURL('aircraft_bg.wasm');
+    await init(wasmURL);
+    wasmModule = AircraftWasm as any;
+    console.log('Aircraft WASM initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Aircraft WASM:', error);
+  }
+}
 
 function startHeartbeat() {
   // 每20秒发送一次心跳
@@ -92,6 +113,13 @@ function startHeartbeat() {
     chrome.runtime.getPlatformInfo().catch(() => { });
   }, 20000) as unknown as number;
 }
+
+export default defineBackground({
+  main() {
+    entrypoint()
+  },
+})
+
 
 async function entrypoint() {
   try {
@@ -104,11 +132,14 @@ async function entrypoint() {
       }
       if (result.enableLabelCheck === true) {
         enableLabelCheck = true
-        initializeModel().catch(err => console.error('initializeModel failed:', err));
+        if (useWebGPU) {
+          setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));
+        } else {
+          initializeModel().catch(err => console.error('initializeModel failed:', err));
+        }
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
-    // A generic onclick callback function.
-    // chrome.contextMenus.onClicked.addListener(genericOnClick)
+    chrome.contextMenus.onClicked.addListener(genericOnClick)
   } catch (error) {
     console.error('entrypoint initialization error:', error);
   }
@@ -134,11 +165,13 @@ async function entrypoint() {
           break
 
         case 'yolo测试':
-          const imgBase64URL = ''
-          const res = await fetch(imgBase64URL)
-          const imgBuffer = await res.arrayBuffer()
-          const responseYolo = await getYOLOSegmentResults(new Uint8Array(imgBuffer), true)
-          console.log('WASM yolo response:', responseYolo)
+          const imgBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/000.png")
+          console.time("yolo测试")
+          for (let i = 0; i < 100; i++) {
+            const responseYolo = await getYOLOSegmentResults(new Uint8Array(imgBuffer!), true)
+            console.log('WASM yolo response:', i, responseYolo.labels)
+          }
+          console.timeEnd("yolo测试")
           break
         default:
           console.log('Standard context menu item clicked.')
@@ -178,7 +211,7 @@ async function entrypoint() {
           },
         ],
       }
-      // createContextMenu(menus)
+      createContextMenu(menus)
     } catch (error) {
       console.error('onInstalled error:', error);
     }
@@ -246,40 +279,6 @@ async function entrypoint() {
     } catch (error) {
       console.error('getAttachmentInfo error:', error);
       return null;
-    }
-  }
-
-  interface FileData {
-    name: string
-    type: string
-    data: number[]
-  }
-
-  async function uploadLLMFiles(aircraftServer: string, files: FileData[]) {
-    try {
-      const formData = new FormData()
-      for (const file of files) {
-        const uint8Array = new Uint8Array(file.data)
-        formData.append(
-          'file',
-          new Blob([uint8Array], { type: file.type }),
-          file.name
-        )
-      }
-      const response = await fetch(`${aircraftServer}/upload-llm-files`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        console.error(`上传失败！${await response.text()}`)
-        throw new Error(`上传失败！${await response.text()}`)
-      }
-      const result = await response.text()
-      return result
-    } catch (error) {
-      console.error('uploadLLMFiles error:', error);
-      throw error;
     }
   }
 
@@ -400,7 +399,13 @@ async function entrypoint() {
       const segmentResults: any[] = []
 
       if (!image || !label) return { labels, segmentResults }
-      let result = await predict(image);
+
+      let result;
+      if (useWebGPU) {
+        result = await predictWithOffscreen(Array.from(image));
+      } else {
+        result = await predict(image);
+      }
 
       console.log('YOLO inference response:', result)
       for (const item of result) {
@@ -419,6 +424,28 @@ async function entrypoint() {
       return { labels: [], segmentResults: [] };
     }
   }
+
+  async function predictWithOffscreen(image: Array<number>): Promise<SegmentResult[]> {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({
+        action: 'yolo-inference',
+        input: image,
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('predictWithOffscreen error:', chrome.runtime.lastError);
+          reject(chrome.runtime.lastError);
+          return;
+        }
+        if (!response || !response.result) {
+          console.error('predictWithOffscreen: Invalid response', response);
+          resolve([]);
+          return;
+        }
+        resolve(response.result);
+      });
+    });
+  }
+
 
   async function getSummaryPath(searchRes: SearchResponse): Promise<string | null> {
     try {
@@ -596,13 +623,6 @@ async function entrypoint() {
           sendResponse(attachmentInfo)
         })();
         return true // 保持消息通道开放,等待异步响应
-      }
-
-      if (request.action === 'uploadLLMFiles') {
-        uploadLLMFiles(request.aircraftServer, request.files)
-          .then((result) => sendResponse(result))
-          .catch((error) => sendResponse(error))
-        return true // 保持消息通道开放，等待异步响应
       }
 
       if (request.action === 'search') {
