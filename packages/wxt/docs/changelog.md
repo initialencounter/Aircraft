@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v3.2.0] - 2026-02-08
+
+### 修复
+
+- chrome 使用 webGPU 加速标签识别速度([bb2f69c](https://github.com/initialencounter/Aircraft/commit/bb2f69cbf2bab5b479479fafb944ce601e8ebc64))
+- 使用 YOLO26 预训练模型重新训练, 加速标签识别速度([650cba5](https://github.com/initialencounter/Aircraft/commit/650cba5c97b382327fc14526ceb2b2f15959f080))
 
 ## [v3.1.5] - 2026-01-18
 
