@@ -167,7 +167,7 @@ async function entrypoint() {
           const imgBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/000.png")
           console.time("yolo测试")
           for (let i = 0; i < 100; i++) {
-            const responseYolo = await getYOLOSegmentResults(new Uint8Array(imgBuffer!), true)
+            const responseYolo = await getYOLOSegmentResults(Array.from(new Uint8Array(imgBuffer!)), true)
             console.log('WASM yolo response:', i, responseYolo.labels)
           }
           console.timeEnd("yolo测试")
@@ -392,7 +392,7 @@ async function entrypoint() {
     }
   }
 
-  async function getYOLOSegmentResults(image: Uint8Array | null, label: boolean) {
+  async function getYOLOSegmentResults(image: Array<number> | null, label: boolean) {
     try {
       const labels: string[] = []
       const segmentResults: any[] = []
@@ -401,9 +401,12 @@ async function entrypoint() {
 
       let result;
       if (useWebGPU) {
-        result = await predictWithOffscreen(Array.from(image));
+        result = await predictWithOffscreen(image);
       } else {
-        result = await predict(image);
+        if (!ortIsInitialized) {
+          console.error('ONNX Runtime is not initialized, cannot perform YOLO inference');
+        }
+        result = await predict_yolo26(session, Uint8Array.from(image));
       }
 
       console.log('YOLO inference response:', result)
@@ -425,24 +428,12 @@ async function entrypoint() {
   }
 
   async function predictWithOffscreen(image: Array<number>): Promise<SegmentResult[]> {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({
-        action: 'yolo-inference',
-        input: image,
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          console.error('predictWithOffscreen error:', chrome.runtime.lastError);
-          reject(chrome.runtime.lastError);
-          return;
-        }
-        if (!response || !response.result) {
-          console.error('predictWithOffscreen: Invalid response', response);
-          resolve([]);
-          return;
-        }
-        resolve(response.result);
-      });
+    const result = await chrome.runtime.sendMessage({
+      action: 'yolo-inference',
+      input: image,
     });
+    console.log('Received YOLO inference result from offscreen:', result);
+    return result.result;
   }
 
 
@@ -612,11 +603,11 @@ async function entrypoint() {
               request.is_965
             )
           }
-          if (!attachmentInfo?.goods?.packageImage || !ortIsInitialized || !enableLabelCheck) {
+          if (!attachmentInfo?.goods?.packageImage || !enableLabelCheck) {
             sendResponse(attachmentInfo);
             return;
           }
-          const yoloResults = await getYOLOSegmentResults(new Uint8Array(attachmentInfo.goods.packageImage), request.label)
+          const yoloResults = await getYOLOSegmentResults(attachmentInfo.goods.packageImage, request.label)
           attachmentInfo.goods.labels = yoloResults.labels
           attachmentInfo.goods.segmentResults = yoloResults.segmentResults
           sendResponse(attachmentInfo)
