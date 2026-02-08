@@ -59,7 +59,6 @@ export default defineConfig({
     permissions: [
       'clipboardWrite',
       'storage',
-      'contextMenus',
       'offscreen',
     ],
     host_permissions: ['<all_urls>'],

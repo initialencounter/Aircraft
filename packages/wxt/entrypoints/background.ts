@@ -6,11 +6,6 @@ import type * as Aircraft from '../public/aircraft';
 import init, * as AircraftWasm from '../public/aircraft.js';
 
 
-type CreateProperties = chrome.contextMenus.CreateProperties
-type ExtendedCreateProperties = CreateProperties & {
-  child?: ExtendedCreateProperties[]
-}
-
 const IFRAME_RECT_MAP: Record<number, DOMRect> = {}
 
 interface SearchResult {
@@ -138,119 +133,122 @@ async function entrypoint() {
         }
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
-    chrome.contextMenus.onClicked.addListener(genericOnClick)
+    // chrome.contextMenus.onClicked.addListener(genericOnClick)
   } catch (error) {
     console.error('entrypoint initialization error:', error);
   }
 
+  // type CreateProperties = chrome.contextMenus.CreateProperties
+  // type ExtendedCreateProperties = CreateProperties & {
+  //   child?: ExtendedCreateProperties[]
+  // }
 
-  // A generic onclick callback function.
-  async function genericOnClick(info: chrome.contextMenus.OnClickData) {
-    try {
-      switch (info.menuItemId) {
-        case 'lims_onekey_assign':
-          await sendMessageToActiveTab('lims_onekey_assign')
-          break
-        case 'pdf测试':
-          const pdfBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/SEKGZ202508140000.pdf")
-          const response4: GoodsInfo = await getGoodsInfo(pdfBuffer!, false)
-          console.log('WASM get-goods response:', response4)
-          break
+  // async function genericOnClick(info: chrome.contextMenus.OnClickData) {
+  //   try {
+  //     switch (info.menuItemId) {
+  //       case 'lims_onekey_assign':
+  //         await sendMessageToActiveTab('lims_onekey_assign')
+  //         break
+  //       case 'pdf测试':
+  //         const pdfBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/SEKGZ202508140000.pdf")
+  //         const response4: GoodsInfo = await getGoodsInfo(pdfBuffer!, false)
+  //         console.log('WASM get-goods response:', response4)
+  //         break
 
-        case '概要测试':
-          const summaryBuffer = await downloadEverythingFile("E:\\2025\\11\\2026\\11.10安磁 新出 2026（9份）\\A25090200-6 嘉成 112028 空海运\\PEKGZ202511115345 概要.docx")
-          let responseSummary: SummaryInfo | null = await getSummaryInfo(summaryBuffer!)
-          console.log('WASM get-summary response:', responseSummary)
-          break
+  //       case '概要测试':
+  //         const summaryBuffer = await downloadEverythingFile("E:\\2025\\11\\2026\\11.10安磁 新出 2026（9份）\\A25090200-6 嘉成 112028 空海运\\PEKGZ202511115345 概要.docx")
+  //         let responseSummary: SummaryInfo | null = await getSummaryInfo(summaryBuffer!)
+  //         console.log('WASM get-summary response:', responseSummary)
+  //         break
 
-        case 'yolo测试':
-          const imgBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/000.png")
-          console.time("yolo测试")
-          for (let i = 0; i < 100; i++) {
-            const responseYolo = await getYOLOSegmentResults(Array.from(new Uint8Array(imgBuffer!)), true)
-            console.log('WASM yolo response:', i, responseYolo.labels)
-          }
-          console.timeEnd("yolo测试")
-          break
-        default:
-          console.log('Standard context menu item clicked.')
-      }
-    } catch (error) {
-      console.error('genericOnClick error:', error);
-    }
-  }
+  //       case 'yolo测试':
+  //         const imgBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/000.png")
+  //         console.time("yolo测试")
+  //         for (let i = 0; i < 100; i++) {
+  //           const responseYolo = await getYOLOSegmentResults(Array.from(new Uint8Array(imgBuffer!)), true)
+  //           console.log('WASM yolo response:', i, responseYolo.labels)
+  //         }
+  //         console.timeEnd("yolo测试")
+  //         break
+  //       default:
+  //         console.log('Standard context menu item clicked.')
+  //     }
+  //   } catch (error) {
+  //     console.error('genericOnClick error:', error);
+  //   }
+  // }
 
-  chrome.runtime.onInstalled.addListener(async function () {
-    try {
-      const version = chrome.runtime.getManifest().version
-      await backgroundSleep(500)
-      const menus: ExtendedCreateProperties = {
-        title: '当前插件版本：' + version,
-        id: 'lims',
-        child: [
-          { title: 'pdf测试', id: 'pdf测试' },
-          { title: '概要测试', id: '概要测试' },
-          { title: 'yolo测试', id: 'yolo测试' },
-          {
-            title: '其他',
-            id: 'other_menu',
-            child: [
-              { title: 'pek1', id: 'pek1' },
-              { title: 'pek2', id: 'pek2' },
-              {
-                title: 'pek3',
-                id: 'pek3',
-                child: [
-                  { title: 'pek31', id: 'pek31' },
-                  { title: 'pek32', id: 'pek32' },
-                  { title: 'pek33', id: 'pek33' },
-                ],
-              },
-            ],
-          },
-        ],
-      }
-      createContextMenu(menus)
-    } catch (error) {
-      console.error('onInstalled error:', error);
-    }
-  })
+  // chrome.runtime.onInstalled.addListener(async function () {
+  //   try {
+  //     const version = chrome.runtime.getManifest().version
+  //     await backgroundSleep(500)
+  //     const menus: ExtendedCreateProperties = {
+  //       title: '当前插件版本：' + version,
+  //       id: 'lims',
+  //       child: [
+  //         { title: 'pdf测试', id: 'pdf测试' },
+  //         { title: '概要测试', id: '概要测试' },
+  //         { title: 'yolo测试', id: 'yolo测试' },
+  //         {
+  //           title: '其他',
+  //           id: 'other_menu',
+  //           child: [
+  //             { title: 'pek1', id: 'pek1' },
+  //             { title: 'pek2', id: 'pek2' },
+  //             {
+  //               title: 'pek3',
+  //               id: 'pek3',
+  //               child: [
+  //                 { title: 'pek31', id: 'pek31' },
+  //                 { title: 'pek32', id: 'pek32' },
+  //                 { title: 'pek33', id: 'pek33' },
+  //               ],
+  //             },
+  //           ],
+  //         },
+  //       ],
+  //     }
+  //     createContextMenu(menus)
+  //   } catch (error) {
+  //     console.error('onInstalled error:', error);
+  //   }
+  // })
 
-  function createContextMenu(
-    createProperties: ExtendedCreateProperties,
-    id?: number | string
-  ) {
-    try {
-      createProperties['parentId'] = id
-      const { child, ...properties } = createProperties
-      const parentId = chrome.contextMenus.create(properties)
-      if (!createProperties.child) {
-        return
-      }
-      for (let i = 0; i < createProperties.child.length; i++) {
-        createContextMenu(createProperties.child[i], parentId)
-      }
-    } catch (error) {
-      console.error('createContextMenu error:', error);
-    }
-  }
+  // function createContextMenu(
+  //   createProperties: ExtendedCreateProperties,
+  //   id?: number | string
+  // ) {
+  //   try {
+  //     createProperties['parentId'] = id
+  //     const { child, ...properties } = createProperties
+  //     const parentId = chrome.contextMenus.create(properties)
+  //     if (!createProperties.child) {
+  //       return
+  //     }
+  //     for (let i = 0; i < createProperties.child.length; i++) {
+  //       createContextMenu(createProperties.child[i], parentId)
+  //     }
+  //   } catch (error) {
+  //     console.error('createContextMenu error:', error);
+  //   }
+  // }
 
-  async function sendMessageToActiveTab(message: string) {
-    try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        lastFocusedWindow: true,
-      })
-      if (!tab.id) return
-      await chrome.tabs.sendMessage(tab.id, message)
-    } catch (error) {
-      console.error('sendMessageToActiveTab error:', error);
-    }
-  }
+  // async function sendMessageToActiveTab(message: string) {
+  //   try {
+  //     const [tab] = await chrome.tabs.query({
+  //       active: true,
+  //       lastFocusedWindow: true,
+  //     })
+  //     if (!tab.id) return
+  //     await chrome.tabs.sendMessage(tab.id, message)
+  //   } catch (error) {
+  //     console.error('sendMessageToActiveTab error:', error);
+  //   }
+  // }
 
-  async function backgroundSleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
+  // async function backgroundSleep(ms: number) {
+  //   return new Promise((resolve) => setTimeout(resolve, ms))
+  // }
 
   async function getAttachmentInfo(
     aircraftServer: string,
