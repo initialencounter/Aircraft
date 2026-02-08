@@ -1,7 +1,7 @@
 import type { AttachmentInfo, GoodsInfo, OtherInfo, SegmentResult } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from '../public/aircraft';
 import * as ort from "onnxruntime-web/wasm";
-import { process_output } from '../share/yolo';
+import { predict_yolo26 } from '../share/yolo';
 import type * as Aircraft from '../public/aircraft';
 import init, * as AircraftWasm from '../public/aircraft.js';
 
@@ -39,13 +39,12 @@ let session: ort.InferenceSession | null = null;
 let wasmModule: typeof Aircraft;
 let creating: Promise<void> | null = null;
 
-const yoloClasses = ['9', '9A', 'bty', 'CAO'];
 let ortIsInitialized = false;
 let aircraftServerAvailable = true;
 let enableLabelCheck = false;
 // 检测浏览器类型
 const isFirefox = typeof browser !== "undefined";
-let useWebGPU = isFirefox;
+let useWebGPU = !isFirefox;
 
 // 创建 Offscreen Document（仅 Chrome）
 async function setupOffscreenDocument(path: string) {
@@ -676,62 +675,4 @@ async function entrypoint() {
     }
     return false
   })
-}
-
-async function predict(imageInput: Uint8Array) {
-  try {
-    if (!session || !ortIsInitialized) {
-      throw new Error('Model not initialized');
-    }
-
-    let rowImageWidth: number;
-    let rowImageHeight: number;
-    const width = 640;
-    const height = 640;
-
-    // 创建 OffscreenCanvas 来处理图片
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext('2d')!;
-
-    // 从 Uint8Array 创建 ImageBitmap
-    // @ts-ignore
-    const blob = new Blob([imageInput], { type: 'image/png' });
-    const imageBitmap = await createImageBitmap(blob);
-
-    rowImageWidth = imageBitmap.width;
-    rowImageHeight = imageBitmap.height;
-
-    // 在 Canvas 上绘制缩放后的图片
-    ctx.drawImage(imageBitmap, 0, 0, width, height);
-    imageBitmap.close();
-
-    // 获取图片数据
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const pixels = imageData.data;
-
-    // 将图片数据转换为 Float32Array
-    const inputData = new Float32Array(1 * 3 * width * height);
-
-    for (let i = 0; i < height; i++) {
-      for (let j = 0; j < width; j++) {
-        const pixelIndex = (i * width + j) * 4;
-        const r = pixels[pixelIndex] / 255.0;
-        const g = pixels[pixelIndex + 1] / 255.0;
-        const b = pixels[pixelIndex + 2] / 255.0;
-
-        inputData[i * width + j] = r;
-        inputData[width * height + i * width + j] = g;
-        inputData[2 * width * height + i * width + j] = b;
-      }
-    }
-
-    const inputTensor = new ort.Tensor("float32", inputData, [1, 3, 640, 640]);
-    const feeds = { "images": inputTensor };
-
-    const res = await session.run(feeds);
-    return process_output(res['output0']['data'], res['output1']['data'], rowImageWidth, rowImageHeight, yoloClasses);
-  } catch (error) {
-    console.error('predict error:', error);
-    return [];
-  }
 }
