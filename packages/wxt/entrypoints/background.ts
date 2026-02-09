@@ -279,13 +279,8 @@ async function entrypoint() {
     }
   }
 
-  async function wasmGetAttachmentInfo(
-    projectNo: string,
-    label: boolean,
-    is_965: boolean
-  ) {
+  async function wasmGetAttachmentInfo(projectNo: string, is_965: boolean) {
     try {
-      console.log('WASM getAttachmentInfo called', projectNo, label, is_965)
       const attachmentInfo: any = {
         goods: null,
         summary: null,
@@ -296,22 +291,23 @@ async function entrypoint() {
         console.error('概要结果为空')
         return null
       }
-      const goodsPath = await getGoodsPath(searchRes, projectNo)
-      if (goodsPath) {
-        const goodsBuffer = await downloadEverythingFile(goodsPath)
-        if (goodsBuffer) {
-          attachmentInfo['goods'] = await getGoodsInfo(goodsBuffer, is_965)
-        }
-      }
-      const summaryPath = await getSummaryPath(searchRes)
-      if (summaryPath) {
-        const summaryBuffer = await downloadEverythingFile(summaryPath)
-        if (summaryBuffer) {
-          attachmentInfo['summary'] = await getSummaryInfo(summaryBuffer)
-        }
-      }
+      const projectDir = searchRes.results[0].path
+      const [goodsPath, summaryPath] = await Promise.all([getGoodsPath(searchRes, projectNo), getSummaryPath(searchRes)])
 
-      attachmentInfo['other'] = await getOtherInfo(projectNo)
+      const [goodsBuffer, summaryBuffer, fileItems] = await Promise.all([
+        goodsPath ? downloadEverythingFile(goodsPath) : Promise.resolve(null),
+        summaryPath ? downloadEverythingFile(summaryPath) : Promise.resolve(null),
+        getProjectDirItems(projectDir),
+      ]);
+
+      const [attachmentInfoGoods, attachmentInfoSummary] = await Promise.all([
+        goodsBuffer ? getGoodsInfo(goodsBuffer, is_965) : Promise.resolve(null),
+        summaryBuffer ? getSummaryInfo(summaryBuffer) : Promise.resolve(null),
+      ])
+
+      attachmentInfo['goods'] = attachmentInfoGoods
+      attachmentInfo['summary'] = attachmentInfoSummary
+      attachmentInfo['other'] = await getOtherInfo(fileItems, projectDir)
       return attachmentInfo
     } catch (error) {
       console.error('wasmGetAttachmentInfo error:', error);
@@ -355,38 +351,26 @@ async function entrypoint() {
 
   }
 
-  async function getOtherInfo(projectNo: string): Promise<OtherInfo | null> {
-    try {
-      const searchResponses: SearchResponse | null = await searchAttachment(projectNo + '.doc')
-      if (!searchResponses?.results?.[0]) {
-        console.error('搜索结果为空')
-        return {
-          stackEvaluation: false,
-          projectDir: '',
-        }
-      }
-      const projectDir = searchResponses.results[0].path
-      const fileItems = await getProjectDirItems(projectDir)
-      for (const file of fileItems?.results || []) {
-        if (file.path !== projectDir) continue
-        if (file.type === 'dir') continue
-        if (file.name.includes('评估单') || file.name.includes('堆码评估')) {
-          return {
-            stackEvaluation: true,
-            projectDir: projectDir,
-          }
-        }
-      }
-      return {
-        stackEvaluation: false,
-        projectDir: projectDir,
-      }
-    } catch (error) {
-      console.error('getOtherInfo error:', error);
+  async function getOtherInfo(fileItems: SearchPathResponse | null, projectDir: string): Promise<OtherInfo | null> {
+    if (fileItems === null) {
       return {
         stackEvaluation: false,
         projectDir: '',
-      };
+      }
+    }
+    for (const file of fileItems?.results || []) {
+      if (file.path !== projectDir) continue
+      if (file.type === 'dir') continue
+      if (file.name.includes('评估单') || file.name.includes('堆码评估')) {
+        return {
+          stackEvaluation: true,
+          projectDir: projectDir,
+        }
+      }
+    }
+    return {
+      stackEvaluation: false,
+      projectDir: projectDir,
     }
   }
 
@@ -416,7 +400,7 @@ async function entrypoint() {
           segmentResults.push(item)
         }
       }
-      console.log('Detected labels:', labels)
+
 
       return { labels, segmentResults }
     } catch (error) {
@@ -430,7 +414,6 @@ async function entrypoint() {
       action: 'yolo-inference',
       input: image,
     });
-    console.log('Received YOLO inference result from offscreen:', result);
     return result.result;
   }
 
@@ -598,7 +581,6 @@ async function entrypoint() {
             attachmentInfo = await wasmGetAttachmentInfo(
               request.projectNo,
               request.label,
-              request.is_965
             )
           }
           if (!attachmentInfo?.goods?.packageImage || !enableLabelCheck) {
