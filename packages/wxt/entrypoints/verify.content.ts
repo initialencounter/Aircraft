@@ -20,6 +20,7 @@ import { createLabelSelectionUI } from './modules/ui/labels'
 
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
+import { warmUp } from './modules/utils/api'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -35,6 +36,9 @@ export default defineContentScript({
     // 读取本地配置
     const localConfig = await getLocalConfig()
     await sleep(200)
+    if (localConfig.warmUp) {
+      warmUp(getCurrentProjectNo() ?? '', localConfig.enableLabelCheck)
+    }
 
     // 获取系统信息
     const Qmsg = getNotification()

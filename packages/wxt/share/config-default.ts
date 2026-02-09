@@ -21,6 +21,7 @@ export const defaultConfig: Config = {
   "freshHotkey": true,
   "autoRefreshDuration": 10000,
   "verify": true,
+  "warmUp": true,
   "dangerousModels": [
     "27100118P",
     "28100118",

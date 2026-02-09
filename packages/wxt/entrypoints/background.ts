@@ -563,6 +563,26 @@ async function entrypoint() {
     }
   }
 
+  async function warmUp(projectNo: string, label: boolean) {
+    console.time('warmUp')
+    // console.time('getAttachmentInfo')
+    let attachmentInfo = await wasmGetAttachmentInfo(
+      projectNo,
+      true,
+    )
+    // console.timeEnd('getAttachmentInfo')
+    if (!attachmentInfo?.goods?.packageImage || !enableLabelCheck) {
+      return;
+    }
+    //console.time('getAttachmentInfo YOLO')
+    const yoloResults = await getYOLOSegmentResults(attachmentInfo.goods.packageImage, label)
+    //console.timeEnd('getAttachmentInfo YOLO')
+    attachmentInfo.goods.labels = yoloResults.labels
+    attachmentInfo.goods.segmentResults = yoloResults.segmentResults
+
+    console.timeEnd('warmUp')
+  }
+
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     try {
       if (request.action === 'getAttachmentInfo') {
@@ -638,6 +658,12 @@ async function entrypoint() {
           IFRAME_RECT_MAP[sender.tab!.id!] ||
           DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 })
         )
+        return true // 保持消息通道开放，等待异步响应
+      }
+
+      if (request.action === 'warmUp') {
+        warmUp(request.projectNo, request.label)
+        sendResponse('ok')
         return true // 保持消息通道开放，等待异步响应
       }
     } catch (error) {

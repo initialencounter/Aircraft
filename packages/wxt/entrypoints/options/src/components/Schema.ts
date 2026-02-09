@@ -48,6 +48,7 @@ export interface Config {
   nextYearColor?: string
   nextYearBgColor?: string
   verify?: boolean
+  warmUp?: boolean
   verifyButtonOnMiddle?: boolean
   checkAssignUser?: boolean
   showInspectFormLink?: boolean
@@ -142,6 +143,9 @@ export const Config: Schema<Config> = Schema.intersect([
       .description(
         '表单验证（仅支持锂电池和钠离子电池），验证规则详见[rule](https://lims.initenc.cn/rule.html)，欢迎补充'
       )
+      .default(true),
+    warmUp: Schema.boolean()
+      .description('预热附件解析引擎，加速验证，可能导致电脑卡顿')
       .default(true),
     dangerousModels: Schema.array(String)
       .default([
