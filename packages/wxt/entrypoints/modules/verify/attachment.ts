@@ -55,26 +55,6 @@ export async function checkSystemAttachmentFile(
 }
 
 /**
- * 检查所有附件文件
- */
-export async function checkSystemAttachmentFiles(
-  projectNo: string,
-  projectId: string
-): Promise<Array<{ ok: boolean; result: string }>> {
-  const check1 = await checkSystemAttachmentFile(
-    'goodsfile',
-    projectNo,
-    projectId
-  )
-  const check2 = await checkSystemAttachmentFile(
-    'batteryfile',
-    projectNo,
-    projectId
-  )
-  return [...check1, ...check2]
-}
-
-/**
  * 检查附件内容
  */
 export async function checkLocalAttachment(

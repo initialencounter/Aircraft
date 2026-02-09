@@ -1,8 +1,8 @@
-import { checkPekBtyType, checkPekSodiumBtyType, CheckResult, checkSekBtyType, checkSekSodiumBtyType, type AttachmentInfo, type EntrustData, type PekData, type SekData } from '@aircraft/validators'
+import { checkPekBtyType, checkPekSodiumBtyType, CheckResult, checkSekBtyType, checkSekSodiumBtyType, type EntrustData, type PekData, type SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
-import { getLocalAttachmentInfo, getProjectTrace } from '../utils/api'
-import { getProjectYear, type LocalConfig } from '../../../share/utils'
-import { checkLocalAttachment, checkSystemAttachmentFiles, drawSegmentMask, showSegmentMask } from './attachment'
+import { getLocalAttachmentInfo } from '../utils/api'
+import { type LocalConfig } from '../../../share/utils'
+import { checkLocalAttachment, checkSystemAttachmentFile, drawSegmentMask, showSegmentMask } from './attachment'
 import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { checkModelWithFactory, checkModel } from './dangetousModel'
@@ -59,9 +59,10 @@ export async function verifyFormData(
   }
 
   // 并行执行三个异步操作以减少等待时间
-  const [attachmentCheckResults, entrustDataResult, attachmentInfo] = await Promise.all([
+  const [goodsfileCheckResults, batteryfileCheckResults, entrustDataResult, attachmentInfo] = await Promise.all([
     // 检测系统的是否上传的资料
-    checkSystemAttachmentFiles(projectNo, projectId),
+    checkSystemAttachmentFile('goodsfile', projectNo, projectId),
+    checkSystemAttachmentFile('batteryfile', projectNo, projectId),
     // 获取系统委托方和制造商
     getEntrustData()
       .then(text => ({ success: true, data: parseEntrust(text) }))
@@ -71,7 +72,8 @@ export async function verifyFormData(
   ])
 
   // 处理附件检查结果
-  result.push(...attachmentCheckResults)
+  result.push(...goodsfileCheckResults)
+  result.push(...batteryfileCheckResults)
 
   // 处理委托数据结果
   let entrustData: null | EntrustData = null
