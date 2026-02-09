@@ -1,5 +1,12 @@
 # 更新日志
 
+## [v3.2.2] - 2026-02-10
+
+### 新增
+
+- 并行处理加快验证速度([2abd7e3](https://github.com/initialencounter/Aircraft/commit/2abd7e3c78769f7711b397794a5ffc4ca6848d48))
+- 程序预热加快验证速度([0151f87](https://github.com/initialencounter/Aircraft/commit/0151f87b226dd22b0cb5bf577acb788cf3cdb22e))
+
 ## [v3.2.1] - 2026-02-08
 
 ### 修复
