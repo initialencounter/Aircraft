@@ -563,23 +563,11 @@ async function entrypoint() {
     }
   }
 
-  async function warmUp(projectNo: string, label: boolean) {
+  async function warmUp(projectNo: string) {
     console.time('warmUp')
-    // console.time('getAttachmentInfo')
-    let attachmentInfo = await wasmGetAttachmentInfo(
+    await searchAttachment(
       projectNo,
-      true,
     )
-    // console.timeEnd('getAttachmentInfo')
-    if (!attachmentInfo?.goods?.packageImage || !enableLabelCheck) {
-      return;
-    }
-    //console.time('getAttachmentInfo YOLO')
-    const yoloResults = await getYOLOSegmentResults(attachmentInfo.goods.packageImage, label)
-    //console.timeEnd('getAttachmentInfo YOLO')
-    attachmentInfo.goods.labels = yoloResults.labels
-    attachmentInfo.goods.segmentResults = yoloResults.segmentResults
-
     console.timeEnd('warmUp')
   }
 
@@ -662,7 +650,7 @@ async function entrypoint() {
       }
 
       if (request.action === 'warmUp') {
-        warmUp(request.projectNo, request.label)
+        warmUp(request.projectNo)
         sendResponse('ok')
         return true // 保持消息通道开放，等待异步响应
       }

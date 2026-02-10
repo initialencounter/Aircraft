@@ -222,7 +222,7 @@ async function entrypoint() {
   function watchInput() {
     // 使用事件捕获在文档级别监听,绕过 EasyUI 的事件处理
     document.addEventListener('input', function (event: Event) {
-      debouncedWarmUp(projectNo ?? '', localConfig.enableLabelCheck)
+      debouncedWarmUp(projectNo ?? '')
       if (!localConfig.enablePreventCloseBeforeSave || fromQuery) return
       if (!document.hasFocus()) return
       const target = event.target as HTMLElement
@@ -484,10 +484,10 @@ async function entrypoint() {
   }
 
   // 防抖保存函数
-  function debouncedWarmUp(projectNo: string, enableLabelCheck: boolean) {
+  function debouncedWarmUp(projectNo: string) {
     if (!localConfig.warmUp) return
     debounce(() => {
-      warmUp(projectNo, enableLabelCheck)
+      warmUp(projectNo)
     }, 8000)()
   }
 }

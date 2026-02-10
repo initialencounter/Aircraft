@@ -37,7 +37,7 @@ export default defineContentScript({
     const localConfig = await getLocalConfig()
     await sleep(200)
     if (localConfig.warmUp) {
-      warmUp(getCurrentProjectNo() ?? '', localConfig.enableLabelCheck)
+      warmUp(getCurrentProjectNo() ?? '')
     }
 
     // 获取系统信息
