@@ -96,6 +96,18 @@ export default defineConfig({
         files.splice(indexToRemove, 1);
         console.log(`Excluded: ${excludeFile} (not needed for ${wxt.config.browser})`);
       }
+
+      // 移除 TypeScript 声明文件
+      const dtsFilesToRemove = ['aircraft_bg.wasm.d.ts', 'aircraft.d.ts'];
+      dtsFilesToRemove.forEach(dtsFile => {
+        const dtsIndexToRemove = files.findIndex(file =>
+          'absoluteSrc' in file && file.absoluteSrc.endsWith(dtsFile)
+        );
+        if (dtsIndexToRemove !== -1) {
+          files.splice(dtsIndexToRemove, 1);
+          console.log(`Excluded: ${dtsFile} (TypeScript declaration file)`);
+        }
+      });
     },
   },
 })
