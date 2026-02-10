@@ -82,6 +82,18 @@ export default defineConfig({
         }
       }
     },
+    'entrypoints:resolved': (wxt, entrypoints) => {
+      // Firefox 构建时移除 model.ts 入口点
+      if (wxt.config.browser === 'firefox') {
+        const modelIndex = entrypoints.findIndex((entry: any) => 
+          entry.inputPath && entry.inputPath.includes('model.ts')
+        );
+        if (modelIndex !== -1) {
+          entrypoints.splice(modelIndex, 1);
+          console.log('Excluded model.ts entrypoint for Firefox build');
+        }
+      }
+    },
     'build:publicAssets': (wxt, files) => {
       const excludeFile = wxt.config.browser === 'chrome'
         ? 'ort-wasm-simd-threaded.wasm'
