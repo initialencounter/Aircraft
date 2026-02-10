@@ -588,7 +588,7 @@ async function entrypoint() {
             console.log('Server is not available, using wasmGetAttachmentInfo')
             attachmentInfo = await wasmGetAttachmentInfo(
               request.projectNo,
-              request.label,
+              request.is_965
             )
           }
           if (!attachmentInfo?.goods?.packageImage || !enableLabelCheck) {
