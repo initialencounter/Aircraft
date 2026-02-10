@@ -223,7 +223,7 @@ async function entrypoint() {
     // 使用事件捕获在文档级别监听,绕过 EasyUI 的事件处理
     document.addEventListener('input', function (event: Event) {
       debouncedWarmUp(projectNo ?? '', localConfig.enableLabelCheck)
-      if (!(!localConfig.enablePreventCloseBeforeSave && !fromQuery)) return
+      if (!localConfig.enablePreventCloseBeforeSave || fromQuery) return
       if (!document.hasFocus()) return
       const target = event.target as HTMLElement
 
