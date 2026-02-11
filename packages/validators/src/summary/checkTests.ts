@@ -10,8 +10,6 @@ export function checkTests(
         ok: false,
         result: `概要测试项T${testNum}缺失`,
       })
-    }else {
-      console.log(`概要测试项T${testNum}存在`)
     }
   }
   return results

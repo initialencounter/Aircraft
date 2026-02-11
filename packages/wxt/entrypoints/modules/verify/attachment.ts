@@ -61,8 +61,8 @@ export async function checkLocalAttachment(
   systemId: 'pek' | 'sek',
   dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   localConfig: typeof LocalConfig,
-  entrustData: EntrustData,
-  attachmentInfo: AttachmentInfo,
+  entrustData: EntrustData | null,
+  attachmentInfo: AttachmentInfo | null,
   isSodium: boolean
 ): Promise<Array<{ ok: boolean; result: string }>> {
   if (localConfig.enableCheckAttachment === false) return []
@@ -70,25 +70,40 @@ export async function checkLocalAttachment(
     const results: Array<{ ok: boolean; result: string }> = []
     const projectNo = getCurrentProjectNo()
     if (!projectNo) return []
-    if (!attachmentInfo?.goods) {
-      results.push({ ok: false, result: '无法获取本地的图片' })
-    }
-    if (!attachmentInfo?.summary) {
-      results.push({ ok: false, result: '无法获取本地的概要' })
-    }
 
-    if (!localConfig.enableLabelCheck) {
+    if (!localConfig.enableLabelCheck && attachmentInfo) {
       attachmentInfo.goods.labels = ['pass']
     }
 
-    results.push(...checkSummary(
-      systemId,
-      dataFromForm,
-      attachmentInfo,
-      entrustData,
-      localConfig,
-      isSodium
-    ))
+    if (isSodium) {
+      if (systemId === 'pek') {
+        results.push(...checkPekSodiumAttachment(
+          dataFromForm as PekSodiumData,
+          attachmentInfo,
+          entrustData
+        ))
+      } else {
+        results.push(...checkSekSodiumAttachment(
+          dataFromForm as SekSodiumData,
+          attachmentInfo,
+          entrustData
+        ))
+      }
+    } else {
+      if (systemId === 'pek') {
+        results.push(...checkPekAttachment(
+          dataFromForm as PekData,
+          attachmentInfo,
+          entrustData
+        ))
+      } else {
+        results.push(...checkSekAttachment(
+          dataFromForm as SekData,
+          attachmentInfo,
+          entrustData
+        ))
+      }
+    }
     return results
   } catch (e) {
     console.log(e)
@@ -96,82 +111,6 @@ export async function checkLocalAttachment(
   }
 }
 
-/**
- * 检查摘要
- */
-export function checkSummary(
-  systemId: 'pek' | 'sek',
-  dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
-  attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData,
-  localConfig: typeof LocalConfig,
-  isSodium = false
-): Array<{ ok: boolean; result: string }> {
-  if (isSodium) {
-    if (systemId === 'pek') {
-      return checkPekSodiumAttachment(
-        dataFromForm as PekSodiumData,
-        attachmentInfo,
-        entrustData
-      )
-    } else {
-      return checkSekSodiumAttachment(
-        dataFromForm as SekSodiumData,
-        attachmentInfo,
-        entrustData
-      )
-    }
-  } else {
-    if (systemId === 'pek') {
-      let results: Array<{ ok: boolean; result: string }> = []
-      if (localConfig.autoCheckStackEvaluation === true) {
-        if (!attachmentInfo?.other?.projectDir) {
-          results.push({ ok: false, result: '找不到项目文件夹' })
-        }
-        if (
-          dataFromForm.otherDescribe.includes(
-            '2c9180849267773c0192dc73c77e5fb2'
-          )
-        ) {
-          if (attachmentInfo?.other?.stackEvaluation === false) {
-            results.push({ ok: false, result: `项目文件夹内不存在堆码评估单` })
-          }
-        } else {
-          if (attachmentInfo?.other?.stackEvaluation === true) {
-            results.push({ ok: false, result: '项目文件夹内存在堆码评估单' })
-          }
-        }
-      }
-
-      if (localConfig.manualCheckStackEvaluation === true) {
-        const stackTest = String(dataFromForm['inspectionItem6']) === '1' // 堆码
-        const stackTestEvaluation = dataFromForm.otherDescribe.includes(
-          '2c9180849267773c0192dc73c77e5fb2'
-        )
-        if (stackTestEvaluation || stackTest) {
-          results.push({
-            ok: true,
-            result: `你已勾选${stackTest ? '堆码报告' : '评估单'}, 请确认`,
-          })
-        }
-      }
-      results.push(
-        ...checkPekAttachment(
-          dataFromForm as PekData,
-          attachmentInfo,
-          entrustData
-        )
-      )
-      return results
-    } else {
-      return checkSekAttachment(
-        dataFromForm as SekData,
-        attachmentInfo,
-        entrustData
-      )
-    }
-  }
-}
 
 const LABEL_RGB_MAP = {
   '9': [255, 0, 0],

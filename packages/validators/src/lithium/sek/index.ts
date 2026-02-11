@@ -145,6 +145,14 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
       isChargeBoxOrRelated
     )
   )
+  // 检验结果不符合检查
+  for (let resultIndex = 2; resultIndex <= 9; resultIndex++) {
+    const resultName = 'inspectionResult' + String(resultIndex)
+    // @ts-ignore
+    if (String(currentData[resultName]) === '1') {
+      result.push({ ok: false, result: `${resultName}不符合` })
+    }
+  }
   // 检验结果3
   const inspectionResult3 = currentData['inspectionResult3']
   if (inspectionResult3 !== '0')

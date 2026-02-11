@@ -18,7 +18,7 @@ export function checkSekGoods(
   goodsInfo: GoodsInfo | null
 ): CheckResult[] {
   if (!goodsInfo) {
-    return [{ ok: false, result: '无法获取本地的图片' }]
+    return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称' }]
   }
   const results: CheckResult[] = []
   const expectedLabel = getSekExpectedLabel(conclusions, UNNO)
@@ -36,7 +36,7 @@ export function checkPekGoods(
   goodsInfo: GoodsInfo | null
 ): CheckResult[] {
   if (!goodsInfo) {
-    return [{ ok: false, result: '无法获取本地的图片' }]
+    return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称和标签' }]
   }
   const results: CheckResult[] = []
   const expectedLabel = getPekExpectedLabel(pkgInfoSubType, netWeight)

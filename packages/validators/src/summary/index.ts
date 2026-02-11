@@ -44,11 +44,11 @@ import { checkTests } from './checkTests'
 
 export function checkSekAttachment(
   currentData: SekData | SekSodiumData,
-  attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData
+  attachmentInfo: AttachmentInfo | null,
+  entrustData: EntrustData | null
 ) {
-  const summaryData: SummaryInfo | null = attachmentInfo.summary
-  const goodsInfo: GoodsInfo | null = attachmentInfo.goods
+  const summaryData: SummaryInfo | null = attachmentInfo?.summary ?? null
+  const goodsInfo: GoodsInfo | null = attachmentInfo?.goods ?? null
   const btyType = currentData['btyType'] as SekBtyType
   const {
     // 中文品名
@@ -126,12 +126,12 @@ export function checkSekAttachment(
 }
 export function checkPekAttachment(
   currentData: PekData | PekSodiumData,
-  attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData,
+  attachmentInfo: AttachmentInfo | null,
+  entrustData: EntrustData | null,
   isSodium: boolean = false,
 ) {
-  const summaryData: SummaryInfo | null = attachmentInfo.summary
-  const goodsInfo: GoodsInfo | null = attachmentInfo.goods
+  const summaryData: SummaryInfo | null = attachmentInfo?.summary ?? null
+  const goodsInfo: GoodsInfo | null = attachmentInfo?.goods ?? null
   const btyType = getBtyTypeCode(currentData, isSodium)
   // 品名
   const {
@@ -233,12 +233,12 @@ interface SummaryCheckParams {
 function checkSummaryFromLLM(
   currentData: PekData | SekData | PekSodiumData | SekSodiumData,
   summaryData: AttachmentInfo["summary"] | null,
-  entrustData: EntrustData,
+  entrustData: EntrustData | null,
   summaryCheckParams: SummaryCheckParams,
   isSodium: boolean = false,
 ) {
   if (!summaryData) {
-    return [{ ok: false, result: '无法获取本地的概要' }]
+    return [{ ok: false, result: 'everything搜不到概要, 无法验证概要' }]
   }
   const results: CheckResult[] = []
   const {
@@ -281,9 +281,9 @@ function checkSummaryFromLLM(
   results.push(...checkT8(isSodium, summaryData.test8))
   results.push(...checkIssueDate(summaryData.issueDate, currentData.projectNo))
   results.push(...checkProjectNo(currentData.projectNo, summaryData.projectNo))
-  results.push(...checkConsignor(entrustData.consignor, summaryData.consignor))
+  results.push(...checkConsignor(entrustData?.consignor, summaryData.consignor))
   results.push(
-    ...checkManufacturer(entrustData.manufacturer, summaryData.manufacturer)
+    ...checkManufacturer(entrustData?.manufacturer, summaryData.manufacturer)
   )
   results.push(...checkMarket(market, summaryData.testReportNo))
   // @ts-ignore
@@ -293,16 +293,16 @@ function checkSummaryFromLLM(
 
 export function checkSekSodiumAttachment(
   currentData: SekSodiumData,
-  attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData
+  attachmentInfo: AttachmentInfo | null,
+  entrustData: EntrustData | null
 ) {
   return checkSekAttachment(currentData, attachmentInfo, entrustData)
 }
 
 export function checkPekSodiumAttachment(
   currentData: PekSodiumData,
-  attachmentInfo: AttachmentInfo,
-  entrustData: EntrustData
+  attachmentInfo: AttachmentInfo | null,
+  entrustData: EntrustData | null
 ) {
   return checkPekAttachment(currentData, attachmentInfo, entrustData, true)
 }
