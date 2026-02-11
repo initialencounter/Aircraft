@@ -38,7 +38,13 @@ async function entrypoint() {
       'freshHotkey',
       'autoRefreshDuration',
     ],
-    async function (result) {
+    async function (result: {
+      onekeyRollback: boolean,
+      nextYearColor: string,
+      nextYearBgColor: string,
+      freshHotkey: boolean,
+      autoRefreshDuration: number,
+    }) {
       if (!(result.freshHotkey === false)) {
         await listenFreshHotkeyInspectList()
         listenVisibilityChangeInspectList(result?.autoRefreshDuration ?? 10000)

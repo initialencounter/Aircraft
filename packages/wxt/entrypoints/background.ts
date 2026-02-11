@@ -469,7 +469,7 @@ async function entrypoint() {
 
   async function getProjectDirItems(projectDir: string): Promise<SearchPathResponse | null> {
     try {
-      const pathResponses: SearchPathResponse | null = await searchEverythinPacth(projectDir)
+      const pathResponses: SearchPathResponse | null = await searchEverythingPath(projectDir)
       if (pathResponses === null || pathResponses.totalResults === 0) {
         console.error('路径搜索结果为空')
         return null
@@ -481,7 +481,7 @@ async function entrypoint() {
     }
   }
 
-  async function searchEverythinPacth(path: string): Promise<SearchPathResponse | null> {
+  async function searchEverythingPath(path: string): Promise<SearchPathResponse | null> {
     try {
       const params = new URLSearchParams({
         search: path,
