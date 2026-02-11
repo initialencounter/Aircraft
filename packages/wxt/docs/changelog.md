@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v3.2.4] - 2026-02-10
+
+### 新增
+
+- 优化验证逻辑，更新错误信息提示([d6777a7](https://github.com/initialencounter/Aircraft/commit/d6777a71a161dd7979edb49e74ea3b3414c24eb5))
+
 ## [v3.2.3] - 2026-02-10
 
 ### 新增
