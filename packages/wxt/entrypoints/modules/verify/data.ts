@@ -83,6 +83,9 @@ export async function verifyFormData(
     result.push({ ok: false, result: '获取系统委托方和制造商失败' })
   }
 
+  if (!attachmentInfo) {
+    result.push({ ok: false, result: '无法获取本地的图片概要' })
+  }
   if (entrustData && attachmentInfo) {
     result.push(
       ...checkModelWithFactory(

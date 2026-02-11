@@ -1,4 +1,4 @@
-import type { AttachmentInfo } from 'aircraft-rs'
+import type { AttachmentInfo, GoodsInfo, SummaryInfo } from 'aircraft-rs'
 import type {
   CheckResult,
   PekData,
@@ -47,8 +47,8 @@ export function checkSekAttachment(
   attachmentInfo: AttachmentInfo,
   entrustData: EntrustData
 ) {
-  const summaryData = attachmentInfo.summary
-  const goodsInfo = attachmentInfo.goods
+  const summaryData: SummaryInfo | null = attachmentInfo.summary
+  const goodsInfo: GoodsInfo | null = attachmentInfo.goods
   const btyType = currentData['btyType'] as SekBtyType
   const {
     // 中文品名
@@ -130,8 +130,8 @@ export function checkPekAttachment(
   entrustData: EntrustData,
   isSodium: boolean = false,
 ) {
-  const summaryData = attachmentInfo.summary
-  const goodsInfo = attachmentInfo.goods
+  const summaryData: SummaryInfo | null = attachmentInfo.summary
+  const goodsInfo: GoodsInfo | null = attachmentInfo.goods
   const btyType = getBtyTypeCode(currentData, isSodium)
   // 品名
   const {
@@ -232,11 +232,14 @@ interface SummaryCheckParams {
 
 function checkSummaryFromLLM(
   currentData: PekData | SekData | PekSodiumData | SekSodiumData,
-  summaryData: AttachmentInfo["summary"],
+  summaryData: AttachmentInfo["summary"] | null,
   entrustData: EntrustData,
   summaryCheckParams: SummaryCheckParams,
   isSodium: boolean = false,
 ) {
+  if (!summaryData) {
+    return [{ ok: false, result: '无法获取本地的概要' }]
+  }
   const results: CheckResult[] = []
   const {
     itemCName,

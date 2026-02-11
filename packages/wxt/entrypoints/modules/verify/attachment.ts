@@ -67,23 +67,29 @@ export async function checkLocalAttachment(
 ): Promise<Array<{ ok: boolean; result: string }>> {
   if (localConfig.enableCheckAttachment === false) return []
   try {
+    const results: Array<{ ok: boolean; result: string }> = []
     const projectNo = getCurrentProjectNo()
     if (!projectNo) return []
-    if (!attachmentInfo?.goods || !attachmentInfo?.summary)
-      return [{ ok: false, result: '无法获取本地的图片概要' }]
+    if (!attachmentInfo?.goods) {
+      results.push({ ok: false, result: '无法获取本地的图片' })
+    }
+    if (!attachmentInfo?.summary) {
+      results.push({ ok: false, result: '无法获取本地的概要' })
+    }
 
     if (!localConfig.enableLabelCheck) {
       attachmentInfo.goods.labels = ['pass']
     }
 
-    return checkSummary(
+    results.push(...checkSummary(
       systemId,
       dataFromForm,
       attachmentInfo,
       entrustData,
       localConfig,
       isSodium
-    )
+    ))
+    return results
   } catch (e) {
     console.log(e)
     return [{ ok: false, result: '附件解析失败' }]

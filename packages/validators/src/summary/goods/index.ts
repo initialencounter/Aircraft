@@ -15,8 +15,11 @@ export function checkSekGoods(
   UNNO: string,
   itemCName: string,
   projectNo: string,
-  goodsInfo: GoodsInfo
+  goodsInfo: GoodsInfo | null
 ): CheckResult[] {
+  if (!goodsInfo) {
+    return [{ ok: false, result: '无法获取本地的图片' }]
+  }
   const results: CheckResult[] = []
   const expectedLabel = getSekExpectedLabel(conclusions, UNNO)
   results.push(...checkLabel(expectedLabel, goodsInfo.labels))
@@ -30,8 +33,11 @@ export function checkPekGoods(
   netWeight: number,
   itemCName: string,
   projectNo: string,
-  goodsInfo: GoodsInfo
+  goodsInfo: GoodsInfo | null
 ): CheckResult[] {
+  if (!goodsInfo) {
+    return [{ ok: false, result: '无法获取本地的图片' }]
+  }
   const results: CheckResult[] = []
   const expectedLabel = getPekExpectedLabel(pkgInfoSubType, netWeight)
   results.push(...checkLabel(expectedLabel, goodsInfo.labels))
