@@ -72,6 +72,7 @@ Lims 插件（以下简称"本插件"）是一个专为电池检验管理系统�
 | `storage` | 保存用户配置和偏好设置 |
 | `clipboardWrite` | 一键复制项目编号、名称等信息 |
 | `host_permissions` | 在 LIMS 系统页面注入脚本以提供功能增强 |
+| `offscreen` | chrome 创建 offscreen 用于 onnxruntime/webgpu 推理 YOLO 模型 |
 
 ## 网络通信
 
