@@ -147,7 +147,7 @@ export function matchTotalNetweight(sourceText: string): number {
 function getBtyTypeCode(currentData: PekData | PekSodiumData, isSodium: boolean = false): SekBtyType {
   const isIon: boolean = String(currentData['type1']) === '1'
   const isCell: boolean = String(currentData['type2']) === '1'
-  const isSingleCell: boolean = currentData['otherDescribe'].includes('1790')
+  const isSingleCell: boolean = currentData['otherDescribe'].includes('1790') || currentData['otherDescribe'].includes('2790')
   if (isSodium) {
     if (isSingleCell) {
       return '602'
