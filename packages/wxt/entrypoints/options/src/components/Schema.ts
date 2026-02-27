@@ -37,7 +37,7 @@ export interface Config {
   enableSetImportClassification?: boolean
   enableDisplayEntrustEName?: boolean
   enableSetEntrust: boolean
-  category?: 0 | 1 | 2 | 3
+  category?: 0 | 1 | 2 | 3 | 4
   moonPay?: boolean
   amount?: string
   tagNextYear?: boolean
@@ -109,8 +109,9 @@ export const Config: Schema<Config> = Schema.intersect([
       category: Schema.union([
         Schema.const(0).description('化学品'),
         Schema.const(1).description('锂电池类'),
-        Schema.const(2).description('器械类'),
-        Schema.const(3).description('磁性物质'),
+        Schema.const(2).description('钠离子电池类'),
+        Schema.const(3).description('器械类'),
+        Schema.const(4).description('磁性物质'),
       ])
         .description(`分类`)
         .default(1),
