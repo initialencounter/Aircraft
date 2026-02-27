@@ -259,7 +259,7 @@ function checkSummaryFromLLM(
   } = summaryCheckParams
   results.push(...checkTitle(summaryData.title))
   results.push(
-    ...checkName(packageType, itemEName, itemCName, btyKind, summaryData.cnName)
+    ...checkName(packageType, itemEName, itemCName, btyKind, summaryData.cnName, summaryData.enName)
   )
   results.push(...checkBatteryType(btyType, summaryData.classification))
   // @ts-ignore

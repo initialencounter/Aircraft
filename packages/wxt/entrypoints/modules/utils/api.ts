@@ -7,7 +7,7 @@ import type {
 import type { LocalConfig } from '../../../share/utils'
 import { getProjectDate } from '../../../share/utils'
 import { getHost } from './helpers'
-import { ProjectTraceResponse } from '../../../share/types'
+import { BatteryTestSummary, ProjectTraceResponse } from '../../../share/types'
 
 /**
  * 获取项目数据
@@ -167,4 +167,25 @@ export async function warmUp(projectNo: string) {
     action: 'warmUp',
     projectNo,
   })
+}
+
+/**
+ * 获取电池试验概要
+ */
+export async function getBatteryTestSummary(): Promise<BatteryTestSummary[]> {
+  const projectId = new URLSearchParams(window.location.search).get('projectId')
+  if (!projectId) return []
+  const response = await fetch(
+    `${window.location.origin}/rest/inspect/batterytest/project?projectId=${projectId}`,
+    {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json, text/javascript, */*; q=0.01',
+        Referer: `${window.location.origin}/inspect/batterytest/project/main?`,
+      },
+    }
+  )
+  if (!response.ok) return []
+  return await response.json()
 }

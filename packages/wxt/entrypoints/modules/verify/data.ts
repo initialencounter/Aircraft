@@ -1,11 +1,12 @@
 import { checkInspectData, checkModel, checkModelWithFactory, CheckResult, checkStackEvaluation, type PekData, type SekData } from '@aircraft/validators'
 import { getFormData } from '../utils/form'
-import { getLocalAttachmentInfo } from '../utils/api'
+import { getBatteryTestSummary, getLocalAttachmentInfo } from '../utils/api'
 import { type LocalConfig } from '../../../share/utils'
 import { checkLocalAttachment, checkSystemAttachmentFile, drawSegmentMask, showSegmentMask } from './attachment'
 import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types'
+import { batteryTestSummaryToSummaryInfo } from '../utils/helpers'
 
 /**
  * 验证表单数据
@@ -37,7 +38,7 @@ export async function verifyFormData(
   }
 
   // 并行执行三个异步操作以减少等待时间
-  const [goodsfileCheckResults, batteryfileCheckResults, entrustData, attachmentInfo] = await Promise.all([
+  let [goodsfileCheckResults, batteryfileCheckResults, entrustData, attachmentInfo, batteryTestSummary] = await Promise.all([
     // 检测系统的是否上传的资料
     checkSystemAttachmentFile('goodsfile', projectNo, projectId),
     checkSystemAttachmentFile('batteryfile', projectNo, projectId),
@@ -46,8 +47,16 @@ export async function verifyFormData(
       .then(text => (parseEntrust(text)))
       .catch(() => (null)),
     // 检查本地附件信息
-    getLocalAttachmentInfo(projectNo, is_965, localConfig)
+    getLocalAttachmentInfo(projectNo, is_965, localConfig),
+    getBatteryTestSummary()
   ])
+
+  if (batteryTestSummary.length > 0) {
+    batteryfileCheckResults = []
+    if (attachmentInfo) {
+      attachmentInfo.summary = batteryTestSummaryToSummaryInfo(batteryTestSummary[0])
+    }
+  }
 
   console.log('验证元数据:', { localConfig, dataFromForm, model, projectYear, systemId, category, is_965, entrustData, attachmentInfo })
 

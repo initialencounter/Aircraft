@@ -6,11 +6,16 @@ export function checkName(
   formEName: string,
   formCName: string,
   model: string,
-  summaryCName: string
+  summaryCName: string,
+  summaryEName: string,
 ): CheckResult[] {
   formCName = formCName.trim().replace(/<[^>]+>/g, '')
   formEName = formEName.trim().replace(/<[^>]+>/g, '')
   summaryCName = summaryCName.trim().replace(/<[^>]+>/g, '')
+  summaryEName = summaryEName.trim().replace(/<[^>]+>/g, '')
+  if (!summaryEName) {
+    summaryEName = summaryCName
+  }
   model = model.trim()
   let formCNameText = ''
   let formENameText = ''
@@ -43,10 +48,10 @@ export function checkName(
       result: `中文电池名称不一致, 系统上为${formCNameText}, 概要上为${summaryCName}`,
     })
   }
-  if (!summaryCName.includes(formENameText)) {
+  if (!summaryEName.includes(formENameText)) {
     result.push({
       ok: false,
-      result: `英文电池名称不一致, 系统上为${formENameText}, 概要上为${summaryCName}`,
+      result: `英文电池名称不一致, 系统上为${formENameText}, 概要上为${summaryEName}`,
     })
   }
   return result

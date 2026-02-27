@@ -20,7 +20,8 @@ export function checkSummaryFromLLM(
     ...checkName(
       String(summaryFromLLM.cnName),
       String(summaryFromLLM.enName),
-      summaryInfo.cnName
+      summaryInfo.cnName,
+      summaryInfo.enName,
     )
   )
   // 电池类型验证
