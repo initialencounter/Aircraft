@@ -255,7 +255,7 @@ function checkSekIonBtyType(
         result: `瓦时数与项目名称不匹配${wattHour} !== ${wattHourFromName}`,
       })
   }
-  result.push(...wattHourScope(btyType, inspectionResult1, wattHourFromName))
+  result.push(...wattHourScope(btyType, inspectionResult1, wattHour))
   // 随附文件 Ion 1125 metal 1126
   if (currentData['inspectionItem7'] !== '1125')
     result.push({ ok: false, result: '随附文件错误，未勾选锂离子电池' })

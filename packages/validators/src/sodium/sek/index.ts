@@ -240,6 +240,6 @@ function checkSekSodiumIonBtyType(
         result: `瓦时数与项目名称不匹配${wattHour} !== ${wattHourFromName}`,
       })
   }
-  result.push(...wattHourScope(btyType, inspectionResult1, wattHourFromName))
+  result.push(...wattHourScope(btyType, inspectionResult1, wattHour))
   return result
 }
