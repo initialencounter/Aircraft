@@ -1,5 +1,18 @@
 # 更新日志
 
+## [v3.2.5] - 2026-02-27
+
+### 新增
+
+- 验证系统电池试验概要([f1572b0](https://github.com/initialencounter/Aircraft/commit/f1572b05fc463feb5f17d1fd3792502ea3c86e18))
+
+### 修复
+
+- 更新初验物品种类选项([ab9111a](https://github.com/initialencounter/Aircraft/commit/ab9111ac194add241b07cfebccb8f30a519cc293))
+
+- 海运瓦时数范围错误([78f30e7](https://github.com/initialencounter/Aircraft/commit/78f30e76aae5a94d62c95c0122c5295296449819))
+
+
 ## [v3.2.4] - 2026-02-10
 
 ### 新增
