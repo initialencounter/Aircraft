@@ -29,6 +29,7 @@ export default defineContentScript({
     'https://*/bill/receivable',
     'https://*/bill/receivable/summary',
     'https://*/bill/bills',
+    'https://*/inspect/batterytest*',
   ],
   allFrames: true,
   async main() {
