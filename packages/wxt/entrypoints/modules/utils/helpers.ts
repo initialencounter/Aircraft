@@ -97,7 +97,7 @@ export function batteryTestSummaryToSummaryInfo(
     color: data.color,
     shape: data.shape,
     mass: data.mass + "g",
-    licontent: data.licontent,
+    licontent: data.licontent + "g",
     testReportNo: data.testReportNo,
     testDate: data.testDate,
     testManual: data.testManual,
