@@ -41,6 +41,7 @@ import { checkColor } from './checkColor'
 import { checkT8 } from './checkT8'
 import { PekSodiumData, SekSodiumData } from '../sodium/shared/types'
 import { checkTests } from './checkTests'
+import { checkT1_6 } from './checkT1_6'
 
 export function checkSekAttachment(
   currentData: SekData | SekSodiumData,
@@ -279,6 +280,7 @@ function checkSummaryFromLLM(
   results.push(...checkTests(summaryData))
   results.push(...checkT7(btyType, summaryData.test7, summaryData.note))
   results.push(...checkT8(isSodium, summaryData.test8))
+  results.push(...checkT1_6(summaryData))
   results.push(...checkIssueDate(summaryData.issueDate, currentData.projectNo))
   results.push(...checkProjectNo(currentData.projectNo, summaryData.projectNo))
   results.push(...checkConsignor(entrustData?.consignor, summaryData.consignor))
