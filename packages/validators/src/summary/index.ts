@@ -273,7 +273,7 @@ function checkSummaryFromLLM(
   }
   results.push(...checkWattHour(wattHour, summaryData.watt))
   results.push(...checkShape(btyShape, summaryData.shape))
-  results.push(...checkColor(btyColor, summaryData.shape))
+  results.push(...checkColor(btyColor, summaryData.shape, summaryData.color))
   results.push(...checkMass(batteryWeight, summaryData.mass))
   results.push(...checkLiContent(liContent, summaryData.licontent))
   results.push(...checkTests(summaryData))

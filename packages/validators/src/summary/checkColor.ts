@@ -5,25 +5,41 @@ export function removeNonChineseCharacters(str: string): string {
   // 使用正则表达式匹配所有非中文字符并替换为空字符串
   return str.replace(/[^\u4e00-\u9fa5]/g, '')
 }
-
+export function isChinese(str: string): boolean {
+  const chineseRegex = /^[\u4e00-\u9fa5]+$/
+  return chineseRegex.test(str)
+}
 export function checkColor(
   formColorId: string,
-  summaryShape: string
+  summaryShape: string,
+  summaryColorId: string,
 ): CheckResult[] {
-  summaryShape = removeNonChineseCharacters(summaryShape.trim())
-  const spiltTexts = summaryShape.split('色')
-  const shapeText = spiltTexts[spiltTexts.length - 1]
-  const colorText = summaryShape.replace(shapeText, '')
   let formColorChineseName = ''
-  let summaryColorId = ''
-  colorMap.forEach((item) => {
-    if (item.chineseName === colorText) {
-      summaryColorId = item.id
-    }
-    if (formColorId === item.id) {
-      formColorChineseName = item.chineseName
-    }
-  })
+  let colorText = ''
+  if (isChinese(summaryShape)) {
+    summaryShape = removeNonChineseCharacters(summaryShape.trim())
+    const spiltTexts = summaryShape.split('色')
+    const shapeText = spiltTexts[spiltTexts.length - 1]
+    colorText = summaryShape.replace(shapeText, '')
+    colorMap.forEach((item) => {
+      if (item.chineseName === colorText) {
+        summaryColorId = item.id
+      }
+      if (formColorId === item.id) {
+        formColorChineseName = item.chineseName
+      }
+    })
+  } else {
+    colorMap.forEach((item) => {
+      if (item.id === summaryColorId) {
+        colorText = item.chineseName
+      }
+      if (item.id === formColorId) {
+        formColorChineseName = item.chineseName
+      }
+    })
+  }
+
   if (summaryColorId && summaryColorId !== formColorId) {
     return [
       {
