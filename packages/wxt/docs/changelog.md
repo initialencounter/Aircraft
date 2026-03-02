@@ -4,6 +4,12 @@
 
 ### 修复
 
+- 跳过系统概要签发日期验证([6b1ec73](https://github.com/initialencounter/Aircraft/commit/6b1ec73faaf73c899fde26789292dff3f9625859))
+
+## [v3.2.6] - 2026-02-27
+
+### 修复
+
 - 空运单电芯钠离子电池类型验证([5fc98a0](https://github.com/initialencounter/Aircraft/commit/5fc98a039b741aa4828984006fa195d60d37c2d2))
 
 ## [v3.2.5] - 2026-02-27
