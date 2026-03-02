@@ -11,7 +11,6 @@ export const defaultConfig: Config = {
   "showInspectFormLink": true,
   "enableDisplayEntrustEName": true,
   "enableSetEntrust": true,
-  "screenshotItemName": false,
   "category": 1,
   "moonPay": true,
   "amount": "500.00",

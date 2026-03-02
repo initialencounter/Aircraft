@@ -1,7 +1,6 @@
 import { getLocalConfig, sleep } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { addShotListener, startSyncInterval } from '../share/screenshot'
 import type { EntrustFormData } from './modules/amount/types'
 import { startListenAmount } from './modules/amount'
 import { getFormData } from './modules/amount'
@@ -69,9 +68,7 @@ async function entrypoint() {
   setAmountListener()
   insertReloadButton()
   startFollow()
-  if (localConfig.screenshotItemName === true) addShotListener(Qmsg)
   if (localConfig.tagNextYear === true) setTagNextYearListener()
-  startSyncInterval()
   startListenAmount(localConfig.amount)
   chrome.storage.local.get(
     ['assignUser', 'saveAndAssign', 'checkAssignUser'],
