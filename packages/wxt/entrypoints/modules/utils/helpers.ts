@@ -67,6 +67,46 @@ export function isInspectPage(): boolean {
   return new URLSearchParams(window.location.search).get('from') === null
 }
 
+const classificationMap: { [key: string]: string } = {
+  '2500': '锂离子电池',
+  '2501': '锂离子电芯',
+  '2502': '锂金属电池',
+  '2503': '锂金属电芯',
+  '2504': '单电芯锂金属电池',
+  '2505': '单电芯锂离子电池',
+  '2510': '钠离子电池',
+  '2511': '钠离子电芯',
+  '2512': '单电芯钠离子电池',
+}
+
+const TEST_MANUAL_MAP: { [key: string]: string } = {
+  '2911': '联合国《试验和标准手册》（第8版修订1）38.3节',
+  '2906': '联合国《试验和标准手册》（第8版）38.3节',
+  '2905': '联合国《试验和标准手册》（第7版修订1）38.3节',
+  '2904': '联合国《试验和标准手册》（第7版）38.3节',
+  '2903': '联合国《关于危险货物运输的建议书-试验和标准手册》（第6版修订1）38.3节',
+  '2902': '联合国《关于危险货物运输的建议书-试验和标准手册》（第6版）38.3节',
+  '2901': '联合国《关于危险货物运输的建议书-试验和标准手册》（第5版修订1和修订2）38.3节',
+  '2910': '联合国《关于危险货物运输的建议书-试验和标准手册》（第5版）38.3节',
+  '2909': '联合国《关于危险货物运输的建议书-试验和标准手册》（第4版修订2）38.3节',
+  '2908': '联合国《关于危险货物运输的建议书-试验和标准手册》（第4版修订1）38.3节',
+  '2907': '联合国《关于危险货物运输的建议书-试验和标准手册》（第4版）38.3节',
+}
+
+const TEST_MANUAL_EN_MAP: { [key: string]: string } = {
+  '2911': 'UN "Manual of Tests and Criteria" ST/SG/AC.10/11/Rev.8/Amend1/Subsection 38.3',
+  '2906': 'UN "Manual of Tests and Criteria" ST/SG/AC.10/11/Rev.8/Subsection 38.3',
+  '2905': 'UN "Manual of Tests and Criteria" ST/SG/AC.10/11/Rev.7/Amend1/Subsection 38.3',
+  '2904': 'UN "Manual of Tests and Criteria" ST/SG/AC.10/11/Rev.7/Subsection 38.3',
+  '2903': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.6/Amend 1/Subsection 38.3',
+  '2902': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.6/Subsection 38.3',
+  '2901': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.5/Amend.1 and Amend.2/Subsection 38.3',
+  '2910': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.5Subsection 38.3',
+  '2909': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.4/ Amend.2/Subsection 38.3',
+  '2908': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.4/Amend.1/Subsection 38.3',
+  '2907': 'UN Recommendations on the Transport of Dangerous Goods Manual of Tests and Criteria ST/SG/AC.10/11/Rev.4/Subsection 38.3',
+}
+
 /**
  * 系统电池试验概要转为本地概要信息
  */
@@ -87,7 +127,7 @@ export function batteryTestSummaryToSummaryInfo(
     testlabInfo: data.testlabInfo,
     cnName: data.cnName,
     enName: data.enName,
-    classification: data.classification,
+    classification: classificationMap[data.classification],
     type: data.type,
     model: data.type,
     trademark: data.trademark,
@@ -100,7 +140,7 @@ export function batteryTestSummaryToSummaryInfo(
     licontent: data.licontent + "g",
     testReportNo: data.testReportNo,
     testDate: data.testDate,
-    testManual: data.testManual,
+    testManual: TEST_MANUAL_MAP[data.testManual] + "\n" + TEST_MANUAL_EN_MAP[data.testManual],
     test1: formatTestResult(data.test1),
     test2: formatTestResult(data.test2),
     test3: formatTestResult(data.test3),
