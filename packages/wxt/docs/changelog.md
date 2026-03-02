@@ -1,6 +1,26 @@
 # 更新日志
 
-## [v3.2.6] - 2026-02-27
+## [v3.3.0] - 2026-03-03
+
+### 新增
+
+- 验证系统电池试验概要([f1572b0](https://github.com/initialencounter/Aircraft/commit/f1572b05fc463feb5f17d1fd3792502ea3c86e18))
+
+- 新增T1-T6验证([1e42351](https://github.com/initialencounter/Aircraft/commit/1e423519598be4ae60f69272dfda7a6155f3208c))
+
+- 在概要编辑页面增加保存快捷键和手动输入日期功能([c846d30](https://github.com/initialencounter/Aircraft/commit/c846d305bdf2a066a3f665f5ce22016e653b2436))
+
+- 在概要打印预览旁边加上打开概要编辑页面([c2f89ab](https://github.com/initialencounter/Aircraft/commit/c2f89ab2455dfa7dddfacb59d42b6284c96547c9))
+
+### 修复
+
+- 锂含量单位换算错误([8b52ce1](https://github.com/initialencounter/Aircraft/commit/8b52ce17f732011246f9046ac089d3e147a2ee97))
+
+- 电池形状颜色验证([2f54457](https://github.com/initialencounter/Aircraft/commit/2f544570724bba7d38e898e844bcffc39258eedc)),([3b96c8f](https://github.com/initialencounter/Aircraft/commit/3b96c8fee338f98b5dffb57ad3659765c5320d3d))
+
+- 无法验证电池类型([762f186](https://github.com/initialencounter/Aircraft/commit/762f1860c43813935e175d1161e32928af4b7d86))
+
+## [v3.2.7] - 2026-03-02
 
 ### 修复
 
