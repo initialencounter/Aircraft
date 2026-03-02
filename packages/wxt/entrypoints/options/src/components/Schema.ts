@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  setTitleWithProjectNo: boolean
   markColorChangedInput: boolean
   changedInputBackgroundColor: string
   allInWebBrowser: boolean
@@ -72,6 +73,9 @@ export const Config: Schema<Config> = Schema.intersect([
       .default(true),
     allInWebBrowser: Schema.boolean()
       .description('所有功能都在浏览器中实现, 不依赖概要解析器')
+      .default(true),
+    setTitleWithProjectNo: Schema.boolean()
+      .description('在检验单和概要页面标题显示项目编号')
       .default(true),
   }).description('全局设置'),
   // 业务受理 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

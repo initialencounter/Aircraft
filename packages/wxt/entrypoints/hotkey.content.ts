@@ -45,13 +45,17 @@ async function entrypoint() {
   let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
   await sleep(500)
   const projectNo = getCurrentProjectNo()
+  
   // 将项目编号设置为标题
+  if (localConfig.setTitleWithProjectNo) {
+    document.title = projectNo ? projectNo : document.title
+  }
+  originalTitle = document.title
+
+  // 复制报告编号
   if (localConfig.enableCopyProjectNoByClick || localConfig.enableCopyProjectNoByCtrlDouble) {
     const projectNoElement = document.getElementById('projectNo')
     if (projectNoElement) {
-      document.title = projectNoElement.innerHTML
-      originalTitle = document.title
-      // 复制报告编号
       if (projectNoElement.parentElement && localConfig.enableCopyProjectNoByClick) {
         projectNoElement.parentElement.addEventListener('click', () => {
           setProjectNoToClipText()

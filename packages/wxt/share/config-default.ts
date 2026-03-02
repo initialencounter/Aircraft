@@ -5,6 +5,7 @@ import { Config } from "../entrypoints/options/src/components/Schema"
 export const defaultConfig: Config = {
   "hundredRowsResult": true,
   "allInWebBrowser": true,
+  "setTitleWithProjectNo": true,
   "onekeyAssign": true,
   "assignExperiment": true,
   "checkAssignUser": true,
