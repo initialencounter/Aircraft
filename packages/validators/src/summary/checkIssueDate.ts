@@ -6,6 +6,9 @@ export function checkIssueDate(
   projectNo: string
 ): CheckResult[] {
   // 解析输入的日期
+  if(issue_date === null) {
+    return []
+  }
   const inputDate = new Date(issue_date)
   const today = new Date()
   today.setHours(23, 59, 59, 999)
