@@ -1,5 +1,6 @@
 import { shapeMap } from '../lithium/shared/appearence'
 import type { CheckResult } from '../lithium/shared/types'
+import { isChinese } from './checkColor'
 
 function removeNonChineseCharacters(str: string): string {
   // 使用正则表达式匹配所有非中文字符并替换为空字符串
@@ -10,19 +11,33 @@ export function checkShape(
   formShape: string,
   summaryShape: string
 ): CheckResult[] {
-  summaryShape = removeNonChineseCharacters(summaryShape.trim())
-  const splitTexts = summaryShape.split('色')
-  const shapeText = splitTexts[splitTexts.length - 1]
   let formShapeChineseName = ''
   let summaryShapeId = ''
-  shapeMap.forEach((item) => {
-    if (formShape === item.id) {
-      formShapeChineseName = item.chineseName
-    }
-    if (item.chineseName === shapeText) {
-      summaryShapeId = item.id
-    }
-  })
+  let shapeText = ''
+  if (isChinese(summaryShape)) {
+    summaryShape = removeNonChineseCharacters(summaryShape.trim())
+    const splitTexts = summaryShape.split('色')
+    shapeText = splitTexts[splitTexts.length - 1]
+    shapeMap.forEach((item) => {
+      if (formShape === item.id) {
+        formShapeChineseName = item.chineseName
+      }
+      if (item.chineseName === shapeText) {
+        summaryShapeId = item.id
+      }
+    })
+  } else {
+    summaryShapeId = summaryShape
+    shapeMap.forEach((item) => {
+      if (item.id === summaryShape) {
+        shapeText = item.chineseName
+      }
+      if (item.id === formShape) {
+        formShapeChineseName = item.chineseName
+      }
+    })
+  }
+
   if (formShape !== summaryShapeId && summaryShapeId) {
     return [
       {
