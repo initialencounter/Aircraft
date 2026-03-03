@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v3.4.0] - 2026-03-04
+
+### 新增
+
+- 自动填充概要([439024ee](https://github.com/initialencounter/Aircraft/commit/439024eef3073b8162ca5034430b738777ef42dc))
+
 ## [v3.3.2] - 2026-03-03
 
 ### 修复
