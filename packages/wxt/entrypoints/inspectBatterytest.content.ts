@@ -52,7 +52,7 @@ async function entrypoint() {
   function myCustomSaveFunction() {
     const button = document.getElementById('saveBtn0')
     if (button) {
-      // button.click()
+      button.click()
       Qmsg.success('保存成功', { timeout: 500 })
     } else {
       console.log('Button not found')
