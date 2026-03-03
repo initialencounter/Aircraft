@@ -1,5 +1,16 @@
 # 更新日志
 
+## [v3.3.1] - 2026-03-03
+
+### 新增
+
+- 锂电池T8验证([8cae1c3](https://github.com/initialencounter/Aircraft/commit/8cae1c3a401689c57572a091b2479384aa78d399))
+
+- 概要数据对比([577f348](https://github.com/initialencounter/Aircraft/commit/577f348ceb1f9c74846e30184f6b75e2c784e1e9)) 
+
+- 将验证结果显示在验证按钮上，鼠标悬停即可查看([e104f38](https://github.com/initialencounter/Aircraft/commit/e104f38011fdbc890cb936c7586b15ed76be946c))
+
+
 ## [v3.3.0] - 2026-03-03
 
 ### 新增
