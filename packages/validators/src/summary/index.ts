@@ -14,6 +14,8 @@ import {
   getPkgInfoSubType,
   matchBatteryWeight,
   matchCapacity,
+  matchDeviceModel,
+  matchDeviceName,
   matchNumber,
   matchTotalNetweight,
   matchVoltage,
@@ -258,9 +260,11 @@ function checkSummaryFromLLM(
     btyBrand,
     market,
   } = summaryCheckParams
+  const deviceModel = matchDeviceModel(currentData['otherDescribeCAddition'])
+  const deviceCName = matchDeviceName(currentData['otherDescribeCAddition'])
   results.push(...checkTitle(summaryData.title))
   results.push(
-    ...checkName(packageType, itemEName, itemCName, btyKind, summaryData.cnName, summaryData.enName)
+    ...checkName(packageType, itemEName, itemCName, btyKind, deviceCName, deviceModel, summaryData.cnName, summaryData.enName)
   )
   results.push(...checkBatteryType(btyType, summaryData.classification))
   // @ts-ignore
