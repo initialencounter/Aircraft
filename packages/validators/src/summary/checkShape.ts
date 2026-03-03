@@ -7,6 +7,12 @@ function removeNonChineseCharacters(str: string): string {
   return str.replace(/[^\u4e00-\u9fa5]/g, '')
 }
 
+export function matchShape(summaryShape: string): string {
+  summaryShape = removeNonChineseCharacters(summaryShape.trim())
+  const splitTexts = summaryShape.split('色')
+  return splitTexts[splitTexts.length - 1]
+}
+
 export function checkShape(
   formShape: string,
   summaryShape: string
@@ -15,9 +21,7 @@ export function checkShape(
   let summaryShapeId = ''
   let shapeText = ''
   if (isContainsChinese(summaryShape)) {
-    summaryShape = removeNonChineseCharacters(summaryShape.trim())
-    const splitTexts = summaryShape.split('色')
-    shapeText = splitTexts[splitTexts.length - 1]
+    shapeText = matchShape(summaryShape)
     shapeMap.forEach((item) => {
       if (formShape === item.id) {
         formShapeChineseName = item.chineseName

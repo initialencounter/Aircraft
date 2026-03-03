@@ -9,6 +9,14 @@ export function isContainsChinese(str: string): boolean {
   const chineseRegex = /[\u4e00-\u9fa5]/
   return chineseRegex.test(str)
 }
+
+export function matchColor(summaryShape: string): string {
+  summaryShape = removeNonChineseCharacters(summaryShape.trim())
+  const spiltTexts = summaryShape.split('色')
+  const shapeText = spiltTexts[spiltTexts.length - 1]
+  return summaryShape.replace(shapeText, '')
+}
+
 export function checkColor(
   formColorId: string,
   summaryShape: string,
@@ -17,10 +25,7 @@ export function checkColor(
   let formColorChineseName = ''
   let colorText = ''
   if (isContainsChinese(summaryShape)) {
-    summaryShape = removeNonChineseCharacters(summaryShape.trim())
-    const spiltTexts = summaryShape.split('色')
-    const shapeText = spiltTexts[spiltTexts.length - 1]
-    colorText = summaryShape.replace(shapeText, '')
+    colorText = matchColor(summaryShape)
     colorMap.forEach((item) => {
       if (item.chineseName === colorText) {
         summaryColorId = item.id
