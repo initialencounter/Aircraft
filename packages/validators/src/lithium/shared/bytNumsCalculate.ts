@@ -48,6 +48,9 @@ function check(
   if (matchedBytCountPeerDevice === 0) {
     return []
   }
+  if (matchedBytCount === 0) {
+    return []
+  }
   if (btyCount !== matchedBytCount) {
     return [
       {
