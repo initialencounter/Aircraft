@@ -617,6 +617,14 @@ async function entrypoint() {
         sendResponse('ok')
         return true // 保持消息通道开放，等待异步响应
       }
+
+      if (request.action === 'get-summary-info') {
+        (async () => {
+          const summaryInfo = await getSummaryInfo(request.summaryBuffer)
+          sendResponse(summaryInfo)
+        })();
+        return true
+      }
     } catch (error) {
       console.error('chrome.runtime.onMessage error:', error);
       sendResponse({ error: error instanceof Error ? error.message : String(error) });

@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  summaryDataFillEnabled: boolean
   setTitleWithProjectNo: boolean
   markColorChangedInput: boolean
   changedInputBackgroundColor: string
@@ -237,6 +238,10 @@ export const Config: Schema<Config> = Schema.intersect([
       customIcon: Schema.const(false),
     })
   ]),
+
+  Schema.object({
+      summaryDataFillEnabled: Schema.boolean().default(false).description('启用概要数据填充（在电池试验概要页面，将概要 word 拖入）'),
+  }).description('电池试验概要'),
 
   // 样品检验-导入 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({
