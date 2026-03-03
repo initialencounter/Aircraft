@@ -59,6 +59,7 @@ export const defaultConfig: Config = {
   "sekProjectNoColor": "#3e8ed0",
   "aekProjectNoColor": "#8c1af6",
   "rekProjectNoColor": "#ea3323",
+  "summaryDataFillEnabled": false,
   "enableSetImportProjectNo": true,
   "enableSetImportClassification": true,
   "autoProjectNoPreset": false,

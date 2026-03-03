@@ -6,8 +6,6 @@ import type * as Aircraft from '../public/aircraft';
 import init, * as AircraftWasm from '../public/aircraft.js';
 
 
-const IFRAME_RECT_MAP: Record<number, DOMRect> = {}
-
 interface SearchResult {
   name: string
   path: string
@@ -571,7 +569,7 @@ async function entrypoint() {
     console.timeEnd('warmUp')
   }
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     try {
       if (request.action === 'getAttachmentInfo') {
         (async () => {
@@ -611,41 +609,6 @@ async function entrypoint() {
             .then((res) => sendResponse(res))
             .catch((error) => sendResponse({ error: error.message }))
         }
-        return true // 保持消息通道开放，等待异步响应
-      }
-
-      // 截图
-      if (request.action === 'captureVisibleTab') {
-        chrome.tabs.captureVisibleTab(
-          { format: 'png', quality: 100 },
-          (dataUrl) => {
-            if (chrome.runtime.lastError) {
-              console.error(
-                'chrome.runtime.lastError',
-                chrome.runtime.lastError.message
-              )
-              sendResponse({ error: chrome.runtime.lastError.message })
-            } else {
-              console.log('dataUrl:', dataUrl)
-              sendResponse(dataUrl)
-            }
-          }
-        )
-        return true // 保持异步响应
-      }
-
-      // 同步 iframe 的 rect
-      if (request.action === 'syncIframeRect') {
-        IFRAME_RECT_MAP[sender.tab!.id!] = request.rect
-        sendResponse('ok')
-        return true // 保持消息通道开放，等待异步响应
-      }
-
-      if (request.action === 'getIframeRect') {
-        sendResponse(
-          IFRAME_RECT_MAP[sender.tab!.id!] ||
-          DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 })
-        )
         return true // 保持消息通道开放，等待异步响应
       }
 
