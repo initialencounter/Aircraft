@@ -1,100 +1,117 @@
 # 快速开始
 
-本章节主要介绍插件的安装、配置和使用。
+本章节主要介绍插件的**安装、配置和使用**，帮助您快速上手。
 
 ## 系统要求
 
-- Chrome 系浏览器（Chrome、Edge、360浏览器等）或 Firefox 浏览器
+| 浏览器 | 支持版本 |
+| --- | --- |
+| Chrome 系 | Chrome、Edge、360 浏览器等 |
+| Firefox | 最新稳定版 |
+
+---
 
 ## 安装插件
 
-### Chrome 系浏览器安装
+### 方式一：商店安装（推荐）
 
-以下部分适用于 Chrome 系浏览器，包括：
-- Google Chrome
-- Microsoft Edge
-- 360浏览器
-- 其他基于 Chromium 的浏览器
+> v3 版本起已将插件上传至各大应用商店，**通过商店安装后将自动更新**，无需手动维护。
 
-::: warning 注意
-Chrome 系浏览器除非是拖拽安装，安装完成后不要删除或移动解压的插件。
-某些旧版浏览器仅支持临时加载，退出浏览器后需要重新加载。如遇到此问题，建议更新浏览器。
-:::
+| 商店 | 操作 |
+| --- | --- |
+| 360 应用商店 | [前往安装 →](https://ext.se.360.cn/#/extension-detail?id=dngoclgjgjoeonfakahfnkmgjkgnkjkp) |
+| Microsoft Edge 外接程序 | [前往安装 →](https://microsoftedge.microsoft.com/addons/detail/lims/jpmajilpebfnbecdifmdcnajgikbjfdf) |
+| Chrome 网上应用店 | [前往安装 →](https://chromewebstore.google.com/detail/lims/dngoclgjgjoeonfakahfnkmgjkgnkjkp) |
 
-#### 1. 下载插件
+---
 
-[点击下载 Chrome 版本](http://mines.initenc.cn:9191/https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.0.6/lims-v3.0.6.chrome.zip) 👈 最新版本
+### 方式二：手动安装
 
-下载后解压到本地文件夹。
+#### Chrome — 拖拽安装（`.crx`）
 
-#### 2. 加载插件
+::: details 点我展开
+1. 在地址栏输入 `chrome://extensions` 并回车，进入扩展管理页面
+2. 打开右上角的 **开发者模式** 开关
+3. 将 `lims-xxx.chrome.crx` 文件**直接拖拽**到浏览器窗口中
+::: 
 
-1. 在浏览器地址栏输入 `chrome://extensions` 并回车
-2. 打开右上角的**开发者模式**开关
-3. 点击**加载已解压的扩展程序**按钮
-4. 选择解压后的文件夹
+#### Chrome — 解压安装（`.zip`）
+
+::: details 点我展开
+
+1. [点击下载 Chrome 版本](http://mines.initenc.cn:9191/https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.0.6/lims-v3.0.6.chrome.zip)，下载完成后**解压到本地文件夹**
+2. 在地址栏输入 `chrome://extensions` 并回车
+3. 打开右上角的 **开发者模式** 开关
+4. 点击 **加载已解压的扩展程序**，选择第 1 步解压的文件夹
 
 ![加载Chrome插件](./assets/load-chrome.png)
 
+::: warning 注意
+手动安装新版本后，请务必**移除或停用**旧版插件，避免冲突。
+:::
 
-### Firefox 系浏览器安装
 
-#### 1. 下载插件
+#### Firefox — `.xpi` 安装
 
-[点击下载 Firefox 版本](http://mines.initenc.cn:9191/https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.0.6/lims-v3.0.6.firefox.xpi) 👈 最新版本
+::: details 点我展开
+1. [点击下载 Firefox 版本](http://mines.initenc.cn:9191/https://github.com/initialencounter/Aircraft/releases/download/wxt-v3.0.6/lims-v3.0.6.firefox.xpi)
+2. 将 `lims-xxx.firefox.xpi` 文件拖拽到 Firefox 浏览器窗口中
 
-#### 2. 安装插件
-
-1. 在浏览器地址栏输入 `about:addons` 并回车
-2. 点击右上角的**齿轮图标**
-3. 选择**从文件安装附加组件**
-4. 选择下载的 `.xpi` 文件
-5. 在弹出的确认对话框中点击**添加**
-
-![加载Firefox插件](./assets/load_firefox.png)
-![选择XPI文件](./assets/select-xpi.png)
+::: info 检查更新（Firefox v3.2+）
+v3.2 起支持**插件内检查更新**：点击插件的齿轮图标 → 检查更新，此方式**不会丢失已有配置**。
+:::
+---
 
 ## 初始配置
 
-### 访问插件选项
+安装完成后，进入插件选项页面完成初始配置：
 
-安装完成后，需要配置插件以适应您的工作习惯：
+::: details Chrome 系浏览器
 
-**Chrome 系浏览器：**
-1. 点击浏览器工具栏的插件图标
-2. 右键点击 "Lims" 插件
-3. 选择**选项**
+1. 点击浏览器工具栏中的插件图标
+2. 右键点击 **Lims** 插件图标
+3. 选择 **选项**
 
-**Firefox 浏览器：**
-1. 打开 `about:addons`
-2. 找到 "Lims" 插件
-3. 点击插件旁边的**齿轮图标**
-4. 选择**选项**
+:::
 
+::: details Firefox 浏览器
+
+1. 在地址栏输入 `about:addons` 并回车
+2. 找到 **Lims** 插件
+3. 点击插件旁的**齿轮图标** → 选择**选项**
+
+:::
+
+---
 
 ## 常见问题
 
-### 1. 插件安装后不生效？
+### 插件安装后不生效？
 
-- 确认插件已启用
-- 刷新 LIMS 系统页面
+- 确认插件状态为**已启用**
+- 刷新 LIMS 系统页面后重试
 
-### 2. Chrome 浏览器每次启动都要重新加载插件？
+### Chrome 浏览器每次启动都要重新加载插件？
 
-- 这是某些旧版浏览器的限制
+- 这是部分旧版浏览器的已知限制，建议升级浏览器或改用商店版本
 
-### 3. 附件解析功能无法使用？
+### 附件解析功能无法使用？
 
-检查以下几点：
-- Everything 是否已启动
-- Everything 是否能搜到项目概要 (.docx) 和图片 (.pdf)
+请逐项检查：
+
+- **Everything** 是否已启动并正在运行
+- Everything 能否搜索到项目概要文件（`.docx`）
+- Everything 能否搜索到图片文件（`.pdf`）
+
+---
 
 ## 获取帮助
 
-如果遇到问题或有建议，可以：
-- 查看 [功能介绍文档](./about.md)
-- 查看 [附件验证文档](./attachment.md)
-- 查看 [大模型验证文档](./llm.md)
-- 查看 [验证规则文档](./rule.md)
-- 查看 [更新日志](./changelog.md)
-- [提交问题反馈](./issue.md)
+如果遇到问题或有功能建议，可通过以下渠道获取支持：
+
+- [功能介绍](./about.md) — 了解插件的完整功能
+- [附件验证](./attachment.md) — 附件解析相关说明
+- [大模型验证](./llm.md) — AI 辅助验证使用指南
+- [验证规则](./rule.md) — 自定义验证规则配置
+- [更新日志](./changelog.md) — 查看各版本变更记录
+- [提交问题反馈](./issue.md) — 报告 Bug 或提出建议
