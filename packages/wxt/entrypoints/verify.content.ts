@@ -113,13 +113,13 @@ export default defineContentScript({
       } finally {
         document.getElementById('lims-verifyButton-icon')!.innerHTML = tempHtml
         if (!result.length) {
-          updateVerifyButtonStatus('#54a124')
+          updateVerifyButtonStatus('#54a124', '验证通过')
           Qmsg.success('初步验证通过', { timeout: 500 })
           return
         }
-
-        updateVerifyButtonStatus('#fa5e55')
-        Qmsg.warning('初步验证未通过' + JSON.stringify(result.map((result) => result), null, 2), {
+        const failedResults = JSON.stringify(result.map((result) => result), null, 2)
+        updateVerifyButtonStatus('#fa5e55', failedResults)
+        Qmsg.warning('初步验证未通过' + failedResults, {
           showClose: true,
           timeout: 4000,
         })

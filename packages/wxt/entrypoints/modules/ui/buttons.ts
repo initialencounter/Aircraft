@@ -80,12 +80,18 @@ function createButton(
 /**
  * 更新验证按钮状态
  */
-export function updateVerifyButtonStatus(color: string): void {
+export function updateVerifyButtonStatus(color: string, title: string): void {
   const verifyButton = document.getElementById('lims-verifyButton')?.children[0]
     ?.children[1] as SVGAElement
   const verifyButton2 = document.getElementById('lims-verifyButton2')
     ?.children[0]?.children[1] as SVGAElement
 
-  if (verifyButton) verifyButton.setAttribute('fill', color)
-  if (verifyButton2) verifyButton2.setAttribute('fill', color)
+  if (verifyButton) {
+    verifyButton.setAttribute('fill', color)
+    document.getElementById('lims-verifyButton')?.setAttribute('title', title)
+  }
+  if (verifyButton2) {
+    verifyButton2.setAttribute('fill', color)
+    document.getElementById('lims-verifyButton2')?.setAttribute('title', title)
+  }
 }
