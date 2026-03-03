@@ -38,9 +38,10 @@ export function checkName(
         return []
       }
       const deviceCNamePosition = formCName.indexOf(deviceCName)
+      const deviceModelPosition = formCName.indexOf(deviceModel)
       const modelPosition = formCName.indexOf(model)
       // 设备名称在前面
-      if (deviceCNamePosition < modelPosition) {
+      if (deviceCNamePosition < modelPosition && deviceModelPosition < modelPosition) {
         const indexKeyWord = formCName.search(/与(.+)包装在一起/)
         const indexKeyEWord = formEName.search(/[Pp]acked\s[Ww]ith/)
         if (deviceModel.includes(model)) {
