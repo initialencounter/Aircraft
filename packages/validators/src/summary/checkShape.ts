@@ -1,6 +1,6 @@
 import { shapeMap } from '../lithium/shared/appearence'
 import type { CheckResult } from '../lithium/shared/types'
-import { isChinese } from './checkColor'
+import { isContainsChinese } from './checkColor'
 
 function removeNonChineseCharacters(str: string): string {
   // 使用正则表达式匹配所有非中文字符并替换为空字符串
@@ -14,7 +14,7 @@ export function checkShape(
   let formShapeChineseName = ''
   let summaryShapeId = ''
   let shapeText = ''
-  if (isChinese(summaryShape)) {
+  if (isContainsChinese(summaryShape)) {
     summaryShape = removeNonChineseCharacters(summaryShape.trim())
     const splitTexts = summaryShape.split('色')
     shapeText = splitTexts[splitTexts.length - 1]
