@@ -1,5 +1,13 @@
 # 更新日志
 
+## [v3.3.2] - 2026-03-03
+
+### 修复
+
+- 966电池中英文验证([e091589](https://github.com/initialencounter/Aircraft/commit/e091589e58ce6019436b835ac168dd90cb5de1b2))
+
+- WORD概要形状颜色验证([552720](https://github.com/initialencounter/Aircraft/commit/552720ab5435a58b1742dfe384655442b81cdd49))
+
 ## [v3.3.1] - 2026-03-03
 
 ### 新增
