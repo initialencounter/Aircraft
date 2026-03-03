@@ -1,5 +1,5 @@
 import { getQmsg } from "../share/qmsg"
-import { getLocalConfig, getSystemId, sleep } from "../share/utils"
+import { getLocalConfig, getSystemId, setProjectNoToClipText, sleep } from "../share/utils"
 import { switchFaviconBySystemId } from "./modules/ui/favicon"
 import '../assets/message.min.css'
 
@@ -24,6 +24,18 @@ async function entrypoint() {
     const projectNoElement = document.querySelector("#projectNo")
     if (projectNoElement) {
       document.title = '概要:' + projectNoElement.innerHTML
+    }
+  }
+
+  if (localConfig.enableCopyProjectNoByClick) {
+    const projectNoElement = document.getElementById('projectNo')
+    if (projectNoElement) {
+      if (projectNoElement.parentElement && localConfig.enableCopyProjectNoByClick) {
+        projectNoElement.parentElement.addEventListener('click', () => {
+          setProjectNoToClipText()
+          Qmsg.success('已复制项目编号', { timeout: 500 })
+        })
+      }
     }
   }
 
