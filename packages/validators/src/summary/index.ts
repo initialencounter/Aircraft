@@ -239,7 +239,7 @@ function checkSummaryFromLLM(
   isSodium: boolean = false,
 ) {
   if (!summaryData) {
-    return [{ ok: false, result: 'everything搜不到概要, 无法验证概要' }]
+    return [{ ok: false, result: '未找到系统和本地概要, 无法验证概要' }]
   }
   const results: CheckResult[] = []
   const {
