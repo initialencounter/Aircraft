@@ -13,7 +13,7 @@ import { matchShape } from '../../validators/src/summary/checkShape'
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: ['https://*/inspect/batterytest*'],
+  matches: ['https://*/inspect/batterytest?*'],
   allFrames: true,
   async main() {
     chrome.storage.local.get(

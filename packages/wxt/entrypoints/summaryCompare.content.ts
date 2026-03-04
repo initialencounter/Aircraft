@@ -4,7 +4,7 @@ import '../assets/message.min.css'
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: ['https://*/inspect/batterytest*'],
+  matches: ['https://*/inspect/batterytest?*'],
   allFrames: true,
   async main() {
     chrome.storage.local.get(
