@@ -8,6 +8,7 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new(); // 记录每个标签的计数
     let mut output = Vec::<String>::new();
     let mut last_path_str: String = "w:document[1]/w:body[1]/w:p[1]//".to_string();
+    let mut last_path_str_wp: String = "w:document[1]/w:body[1]/w:p[1]//".to_string();
     let mut last_text: String = "".to_string();
     loop {
         match reader.read_event_into(&mut buf) {
@@ -55,6 +56,17 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                             })
                             .collect::<Vec<_>>()
                             .join("/");
+                        let path_str_wp = path
+                            .iter()
+                            .map(|(tag, idx)| {
+                                if tag == "w:t" || tag == "w:r" {
+                                    "".to_string()
+                                } else {
+                                    format!("{}[{}]", tag, idx)
+                                }
+                            })
+                            .collect::<Vec<_>>()
+                            .join("/");
                         let text = reader.decoder().decode(&e).unwrap_or_default().to_string();
                         if last_path_str.is_empty() {
                             last_path_str = path_str.clone();
@@ -62,10 +74,15 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                         if path_str.clone() != last_path_str.clone() {
                             output.push(last_text.clone());
                             last_text = text.clone();
-                        } else {
-                            last_text = format!("{}{}", last_text, text);
+                        }else {
+                            if last_path_str_wp.clone() == path_str_wp.clone() {
+                                last_text = format!("{}{}", last_text, text);
+                            } else {
+                                last_text = format!("{}\n{}", last_text, text);
+                            }
                         }
                         last_path_str = path_str;
+                        last_path_str_wp = path_str_wp;
                     }
                 }
             }
