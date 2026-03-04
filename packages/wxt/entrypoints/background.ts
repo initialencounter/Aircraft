@@ -122,7 +122,7 @@ async function entrypoint() {
         aircraftServerAvailable = false
         initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
       }
-      if (result.enableLabelCheck === true) {
+      if (!(result.enableLabelCheck === false)) {
         enableLabelCheck = true
         if (useWebGPU) {
           setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));

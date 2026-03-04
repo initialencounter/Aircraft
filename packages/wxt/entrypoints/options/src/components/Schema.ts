@@ -172,7 +172,7 @@ export const Config: Schema<Config> = Schema.intersect([
       .default(true),
     enableLabelCheck: Schema.boolean()
       .description('启用标签检查（自动识别包装标签）')
-      .default(false),
+      .default(true),
     enableLabelCheckManual: Schema.boolean()
       .description('启用手动标签检查')
       .default(false),
