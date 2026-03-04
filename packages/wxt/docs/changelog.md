@@ -1,5 +1,14 @@
 # 更新日志
 
+## [v3.4.2] - 2026-03-04
+
+### 修复
+
+- 965电池中英文验证([4478367](https://github.com/initialencounter/Aircraft/commit/4478367787d231338233e0602e0b00cad2b15fa4))
+
+- 概要填充瓦时和锂含量为0([fc8c51c](https://github.com/initialencounter/Aircraft/commit/fc8c51c9517345a23fb5ee5d43fc3cfe6f0db83d))
+
+
 ## [v3.4.1] - 2026-03-04
 
 ### 新增
