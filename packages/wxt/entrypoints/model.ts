@@ -8,13 +8,22 @@ export default defineUnlistedScript(() => {
     try {
       const modelUrl = chrome.runtime.getURL('segment.onnx');
       console.log("Loading model from", modelUrl);
-      session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: ['webgpu'],
-      });
-      console.log("Model loaded successfully");
+      try {
+        session = await ort.InferenceSession.create(modelUrl, {
+          executionProviders: ['webgpu'],
+        });
+        console.log("Model loaded successfully with WebGPU");
+      } catch (webgpuError) {
+        console.warn("WebGPU unavailable, falling back to wasm:", webgpuError);
+        session = await ort.InferenceSession.create(modelUrl, {
+          executionProviders: ['wasm'],
+        });
+        console.log("Model loaded successfully with wasm");
+      }
       chrome.runtime.sendMessage({ action: 'madeModel', input: session.inputNames });
     }
     catch (e) {
+      console.error("Error loading model:", e);
       chrome.runtime.sendMessage({ action: 'madeModel', input: "Model Import Error" });
     }
 
