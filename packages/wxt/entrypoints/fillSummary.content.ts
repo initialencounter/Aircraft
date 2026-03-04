@@ -137,10 +137,14 @@ async function entrypoint() {
 
   function setCommonData(data: FormJSONData) {
     const fields = [
+      'consignor',
       'consignorInfo',
-      'cnName',
+      'manufacturer',
       'manufacturerInfo',
+      'testlab',
       'testlabInfo',
+      'cnName',
+      'enName',
       'type',
       'trademark',
       'voltage',
@@ -181,19 +185,29 @@ async function entrypoint() {
     const testManual = matchTestManual(summaryInfo.testManual)
     const wattHour = String(matchWattHour(' ' + summaryInfo.watt) ?? '')
     const licontent = String(matchBatteryWeight('为' + summaryInfo.licontent) ?? '')
-    console.log({ classification, color, shape, testManual })
+
+    const resolveInfo = (info: string | undefined, base: string): string =>
+      !info && base.includes('\n')
+        ? base.split('\n').slice(1).join('\n').trim()
+        : (info ?? base ?? '')
+
+    const consignorInfo = resolveInfo(summaryInfo.consignorInfo, summaryInfo.consignor)
+    const manufacturerInfo = resolveInfo(summaryInfo.manufacturerInfo, summaryInfo.manufacturer)
+    const testlabInfo = resolveInfo(summaryInfo.testlabInfo, summaryInfo.testlab)
+    const enName = resolveInfo(summaryInfo.enName, summaryInfo.cnName)
+
     return {
       projectNo: summaryInfo.projectNo ?? '',
       id: summaryInfo.id ?? '',
       projectId: summaryInfo.projectId ?? '',
-      consignor: summaryInfo.consignor ?? '',
-      consignorInfo: summaryInfo.consignor ?? '',
-      manufacturer: summaryInfo.manufacturer ?? '',
-      manufacturerInfo: summaryInfo.manufacturer ?? '',
-      testlab: summaryInfo.testlab ?? '',
-      testlabInfo: summaryInfo.testlab ?? '',
-      cnName: summaryInfo.cnName ?? '',
-      enName: summaryInfo.enName ?? '',
+      consignor: summaryInfo.consignor.split('\n')[0] ?? '',
+      consignorInfo,
+      manufacturer: summaryInfo.manufacturer.split('\n')[0] ?? '',
+      manufacturerInfo,
+      testlab: summaryInfo.testlab.split('\n')[0] ?? '',
+      testlabInfo,
+      cnName: summaryInfo.cnName.split('\n')[0] ?? '',
+      enName,
       classification: CLASSIFICATION_ID_MAP[classification as keyof typeof CLASSIFICATION_ID_MAP] ?? '2500',
       type: (summaryInfo.type || summaryInfo.model) ?? '',
       trademark: summaryInfo.trademark ?? '/',
