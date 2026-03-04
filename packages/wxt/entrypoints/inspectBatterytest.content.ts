@@ -86,7 +86,6 @@ async function entrypoint() {
 
     // 移除只读限制，允许直接键入日期
     textboxText.removeAttribute('readonly')
-    textboxText.placeholder = 'YYYY-MM-DD'
 
     function handleDateInput() {
       if (!textboxText || !textboxValue) return
@@ -101,13 +100,6 @@ async function entrypoint() {
         }
         // 更新隐藏值字段
         textboxValue.value = val
-        // 若页面加载了 EasyUI jQuery 插件，同步通知组件更新内部状态
-        const $win = (window as any).$
-        if ($win && $win.fn && $win.fn.datebox !== undefined) {
-          $win('#testDate').datebox('setValue', val)
-          // setValue 可能重新写入 readonly，再次移除以保持可编辑
-          textboxText.removeAttribute('readonly')
-        }
         Qmsg.success('日期已更新', { timeout: 800 })
       } else {
         // 格式非法，恢复上一次有效值
