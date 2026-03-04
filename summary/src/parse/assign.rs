@@ -118,6 +118,7 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
     summary.consignor_info = html_entity_decode(&summary.consignor_info);
     summary.manufacturer_info = html_entity_decode(&summary.manufacturer_info);
     summary.testlab_info = html_entity_decode(&summary.testlab_info);
+    summary.trim_all();
     summary
 }
 

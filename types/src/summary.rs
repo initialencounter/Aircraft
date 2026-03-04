@@ -138,4 +138,49 @@ impl SummaryInfo {
             issue_date: "".to_string(),
         }
     }
+
+    pub fn trim_all(&mut self) {
+        for field in [
+            &mut self.id,
+            &mut self.project_id,
+            &mut self.consignor,
+            &mut self.consignor_info,
+            &mut self.manufacturer,
+            &mut self.manufacturer_info,
+            &mut self.testlab,
+            &mut self.testlab_info,
+            &mut self.cn_name,
+            &mut self.en_name,
+            &mut self.classification,
+            &mut self.model,
+            &mut self.trademark,
+            &mut self.voltage,
+            &mut self.capacity,
+            &mut self.watt,
+            &mut self.color,
+            &mut self.shape,
+            &mut self.mass,
+            &mut self.licontent,
+            &mut self.test_report_no,
+            &mut self.test_date,
+            &mut self.test_manual,
+            &mut self.test1,
+            &mut self.test2,
+            &mut self.test3,
+            &mut self.test4,
+            &mut self.test5,
+            &mut self.test6,
+            &mut self.test7,
+            &mut self.test8,
+            &mut self.un38_f,
+            &mut self.un38_g,
+            &mut self.note,
+            &mut self.title,
+            &mut self.project_no,
+            &mut self.issue_date,
+        ] {
+            let trimmed = field.trim().to_string();
+            *field = trimmed;
+        }
+    }
 }
