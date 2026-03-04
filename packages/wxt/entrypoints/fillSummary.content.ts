@@ -21,8 +21,7 @@ export default defineContentScript({
         'summaryDataFillEnabled',
       ],
       async function (result) {
-        console.log('Loaded config from storage:', result)
-        if (result.summaryDataFillEnabled === true) {
+        if (!(result.summaryDataFillEnabled === false)) {
           entrypoint()
         }
       }
