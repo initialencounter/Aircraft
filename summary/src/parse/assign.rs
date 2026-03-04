@@ -113,7 +113,62 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
     } else {
         summary.issue_date = String::new(); // Default to an empty string if content is empty
     }
+
+    summary.test_manual = html_entity_decode(&summary.test_manual);
+    summary.consignor_info = html_entity_decode(&summary.consignor_info);
+    summary.manufacturer_info = html_entity_decode(&summary.manufacturer_info);
+    summary.testlab_info = html_entity_decode(&summary.testlab_info);
     summary
+}
+
+fn html_entity_decode(text: &str) -> String {
+    // 定义实体映射表
+    let entities: HashMap<&str, &str> = [
+        ("&quot;", "\""),
+        ("&amp;", "&"),
+        ("&lt;", "<"),
+        ("&gt;", ">"),
+        ("&nbsp;", " "),
+        ("&copy;", "©"),
+        ("&reg;", "®"),
+        ("&apos;", "'"),
+        ("&cent;", "¢"),
+        ("&pound;", "£"),
+        ("&yen;", "¥"),
+        ("&euro;", "€"),
+        ("&sect;", "§"),
+        ("&deg;", "°"),
+        ("&plusmn;", "±"),
+        ("&middot;", "·"),
+    ]
+    .iter()
+    .cloned()
+    .collect();
+
+    let mut result = String::with_capacity(text.len());
+    let mut chars = text.char_indices().peekable();
+
+    while let Some((i, c)) = chars.next() {
+        if c == '&' {
+            // 查找实体结束位置
+            if let Some(end_pos) = text[i..].find(';') {
+                let entity_end = i + end_pos + 1;
+                let entity = &text[i..entity_end];
+
+                if let Some(replacement) = entities.get(entity) {
+                    result.push_str(replacement);
+                    // 跳过已处理的实体
+                    for _ in 0..(entity.chars().count() - 1) {
+                        chars.next();
+                    }
+                    continue;
+                }
+            }
+        }
+        result.push(c);
+    }
+
+    result
 }
 
 #[cfg(test)]
