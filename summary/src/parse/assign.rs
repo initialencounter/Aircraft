@@ -49,6 +49,42 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         if item.contains("项目编号") {
             summary.project_no = match_project_no(&item);
         }
+
+        // 委托单位信息
+        if item.contains("委托单位") && index + 2 < content.len() {
+            let consignor_info = content[index + 2].clone();
+            if !consignor_info.contains("生产单位") && !consignor_info.contains("Manufacturer")
+            {
+                summary.consignor_info = consignor_info;
+            }
+        }
+
+        // 生产单位信息
+        if item.contains("生产单位") && index + 2 < content.len() {
+            let manufacturer_info = content[index + 2].clone();
+            if !manufacturer_info.contains("测试单位") && !manufacturer_info.contains("Test Lab")
+            {
+                summary.manufacturer_info = manufacturer_info;
+            }
+        }
+
+        // 测试单位信息
+        if item.contains("测试单位") && index + 2 < content.len() {
+            let testlab_info = content[index + 2].clone();
+            if !testlab_info.contains("电池信息") && !testlab_info.contains("Battery Information")
+            {
+                summary.testlab_info = testlab_info.replace("<###>", "\r\n");
+            }
+        }
+
+        // 英文名称
+        if item.contains("电池/电芯类别") && index + 2 < content.len() {
+            let cn_name = content[index + 2].clone();
+            if !cn_name.contains("型号") && !cn_name.contains("Type") {
+                summary.en_name = cn_name;
+            }
+        }
+
         // 测试报告签发日期
         if item.contains("测试标准") && index > 0 {
             summary.test_date = content[index - 1].clone();
