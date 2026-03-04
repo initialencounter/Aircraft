@@ -30,6 +30,11 @@ export function checkName(
   let formENameText = ''
   switch (packageType) {
     case '0':
+      const indexModel0 = formCName.indexOf(model)
+      const indexEModel0 = formEName.indexOf(model)
+      formCNameText = formCName.substring(0, indexModel0)
+      formENameText = formEName.substring(0, indexEModel0)
+      break
     case '1':
       const packCPosition = formCName.search(/与(.+)包装在一起/)
       const packEPosition = formEName.search(/[Pp]acked\s[Ww]ith/)
@@ -55,7 +60,7 @@ export function checkName(
         formENameText = formEName.substring(indexKeyEWord + 10, indexEModel)
       } else {
         formCNameText = formCName.substring(0, indexModel)
-        formENameText = formEName.substring(0, indexModel)
+        formENameText = formEName.substring(0, indexEModel)
       }
       break
   }
