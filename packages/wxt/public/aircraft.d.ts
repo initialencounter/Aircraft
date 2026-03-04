@@ -9,6 +9,92 @@ export interface GoodsInfoWasm {
     image: number[] | null;
 }
 
+export interface AttachmentInfo {
+    summary: SummaryInfo;
+    goods: GoodsInfo;
+    other: OtherInfo;
+}
+
+export interface OtherInfo {
+    stackEvaluation: boolean;
+    projectDir: string;
+}
+
+export interface GoodsInfo {
+    projectNo: string;
+    itemCName: string;
+    labels: string[];
+    packageImage: number[] | null;
+    segmentResults: SegmentResult[];
+}
+
+export interface PdfReadResult {
+    text: string;
+    image: number[] | null;
+}
+
+export interface PdfReadResult {
+    content: string;
+    fileType: string;
+    filename: string;
+    title: string;
+    type: string;
+}
+
+export interface Message {
+    content: string;
+    role: string;
+}
+
+export interface ResponseFormat {
+    type: string;
+}
+
+export interface PdfDeleteResult {
+    deleted: boolean;
+    id: string;
+    object: string;
+}
+
+export interface FileUploadResult {
+    bytes: number;
+    createdAt: number;
+    filename: string;
+    id: string;
+    object: string;
+    purpose: string;
+    status: string;
+    statusDetails: string;
+}
+
+export interface ChatRequest {
+    messages: Message[];
+    model: string;
+    temperature: number;
+    response_format: ResponseFormat;
+}
+
+export interface Choice {
+    finish_reason: string | null;
+    index: number | null;
+    message: Message | null;
+}
+
+export interface Usage {
+    completion_tokens: number;
+    prompt_tokens: number;
+    total_tokens: number;
+}
+
+export interface ChatResponse {
+    choices: Choice[];
+    created: number;
+    id: string;
+    model: string;
+    object: string;
+    usage: Usage;
+}
+
 export interface SegmentResult {
     x1: number;
     y1: number;
@@ -17,6 +103,138 @@ export interface SegmentResult {
     label: string;
     confidence: number;
     mask: number[][];
+}
+
+export interface Config {
+    base: BaseConfig;
+    server: ServerConfig;
+    hotkey: HotkeyConfig;
+    llm: LLMConfig;
+    other: OtherConfig;
+}
+
+export interface LLMConfig {
+    baseUrl: string;
+    apiKey: string;
+    model: string;
+}
+
+export interface OtherConfig {
+    queryServerHost: string;
+}
+
+export interface BaseConfig {
+    nothing: string;
+    autoStart: boolean;
+    silentStart: boolean;
+}
+
+export interface HotkeyConfig {
+    uploadEnable: boolean;
+    uploadKey: string;
+    copyEnable: boolean;
+    copyKey: string;
+    customHotkey: CustomHotkey[];
+}
+
+export interface ServerConfig {
+    baseUrl: string;
+    username: string;
+    password: string;
+    port: number;
+    debug: boolean;
+    logEnabled: boolean;
+}
+
+export interface CustomHotkey {
+    hotkey: string;
+    cmd: string;
+}
+
+export interface LogMessage {
+    timeStamp: string;
+    level: string;
+    message: string;
+}
+
+export interface SearchParams {
+    search: string;
+    json: number;
+    path_column: number;
+}
+
+export interface SearchResponse {
+    results: SearchResult[];
+}
+
+export interface ClipboardHotkey {
+    hotkeys: string[];
+    clipboardContentName: string;
+}
+
+export interface QueryResult {
+    rows: ProjectRow[];
+}
+
+export interface DirectoryInfo {
+    dir: string;
+}
+
+export interface LoginRequest {
+    code: string;
+    username: string;
+    password: string;
+}
+
+export interface ProjectRow {
+    itemCName: string;
+    itemEName: string;
+    editStatus: number;
+    projectId: string;
+    projectNo: string;
+    category: string;
+}
+
+export interface SearchResult {
+    path: string;
+    name: string;
+}
+
+export interface CaptchaResponse {
+    img: string;
+}
+
+export interface SearchProperty {
+    url: string;
+    searchText: string;
+}
+
+export interface DataModel {
+    id: number;
+    appraiserName: string;
+    assigneeName: string;
+    auditorName: string | null;
+    conclusions: number | null;
+    displayStatus: string;
+    nextYear: number | null;
+    principalName: string | null;
+    projectId: string;
+    projectNo: string | null;
+    repeat: number;
+    reportType: number;
+    submitDate: string;
+    surveyorNames: string | null;
+    systemId: string;
+    selfId: string;
+    itemCName: string | null;
+    itemEName: string | null;
+    mnotes: string | null;
+    reportNo: string | null;
+    tnotes: string | null;
+}
+
+export interface SearchPropertyParams {
+    searchText: string;
 }
 
 export interface SummaryInfo {
@@ -59,215 +277,13 @@ export interface SummaryInfo {
     issueDate: string;
 }
 
-export interface SearchPropertyParams {
-    searchText: string;
-}
-
-export interface DataModel {
-    id: number;
-    appraiserName: string;
-    assigneeName: string;
-    auditorName: string | null;
-    conclusions: number | null;
-    displayStatus: string;
-    nextYear: number | null;
-    principalName: string | null;
-    projectId: string;
-    projectNo: string | null;
-    repeat: number;
-    reportType: number;
-    submitDate: string;
-    surveyorNames: string | null;
-    systemId: string;
-    selfId: string;
-    itemCName: string | null;
-    itemEName: string | null;
-    mnotes: string | null;
-    reportNo: string | null;
-    tnotes: string | null;
-}
-
-export interface PdfReadResult {
-    text: string;
-    image: number[] | null;
-}
-
-export interface GoodsInfo {
-    projectNo: string;
-    itemCName: string;
-    labels: string[];
-    packageImage: number[] | null;
-    segmentResults: SegmentResult[];
-}
-
-export interface ClipboardHotkey {
-    hotkeys: string[];
-    clipboardContentName: string;
-}
-
-export interface SearchResponse {
-    results: SearchResult[];
-}
-
-export interface SearchResult {
-    path: string;
-    name: string;
-}
-
-export interface SearchParams {
-    search: string;
-    json: number;
-    path_column: number;
-}
-
-export interface DirectoryInfo {
-    dir: string;
-}
-
-export interface ProjectRow {
-    itemCName: string;
-    itemEName: string;
-    editStatus: number;
-    projectId: string;
-    projectNo: string;
-}
-
-export interface QueryResult {
-    rows: ProjectRow[];
-}
-
-export interface LogMessage {
-    timeStamp: string;
-    level: string;
-    message: string;
-}
-
-export interface ResponseFormat {
-    type: string;
-}
-
-export interface Usage {
-    completion_tokens: number;
-    prompt_tokens: number;
-    total_tokens: number;
-}
-
-export interface Message {
-    content: string;
-    role: string;
-}
-
-export interface Choice {
-    finish_reason: string | null;
-    index: number | null;
-    message: Message | null;
-}
-
-export interface ChatResponse {
-    choices: Choice[];
-    created: number;
-    id: string;
-    model: string;
-    object: string;
-    usage: Usage;
-}
-
-export interface ChatRequest {
-    messages: Message[];
-    model: string;
-    temperature: number;
-    response_format: ResponseFormat;
-}
-
-export interface PdfDeleteResult {
-    deleted: boolean;
-    id: string;
-    object: string;
-}
-
-export interface PdfReadResult {
-    content: string;
-    fileType: string;
-    filename: string;
-    title: string;
-    type: string;
-}
-
-export interface FileUploadResult {
-    bytes: number;
-    createdAt: number;
-    filename: string;
-    id: string;
-    object: string;
-    purpose: string;
-    status: string;
-    statusDetails: string;
-}
-
-export interface OtherConfig {
-    queryServerHost: string;
-}
-
-export interface Config {
-    base: BaseConfig;
-    server: ServerConfig;
-    hotkey: HotkeyConfig;
-    llm: LLMConfig;
-    other: OtherConfig;
-}
-
-export interface LLMConfig {
-    baseUrl: string;
-    apiKey: string;
-    model: string;
-}
-
-export interface HotkeyConfig {
-    uploadEnable: boolean;
-    uploadKey: string;
-    copyEnable: boolean;
-    copyKey: string;
-    customHotkey: CustomHotkey[];
-}
-
-export interface CustomHotkey {
-    hotkey: string;
-    cmd: string;
-}
-
-export interface ServerConfig {
-    baseUrl: string;
-    username: string;
-    password: string;
-    port: number;
-    debug: boolean;
-    logEnabled: boolean;
-}
-
-export interface BaseConfig {
-    nothing: string;
-    autoStart: boolean;
-    silentStart: boolean;
-}
-
-export interface AttachmentInfo {
-    summary: SummaryInfo;
-    goods: GoodsInfo;
-    other: OtherInfo;
-}
-
-export interface OtherInfo {
-    stackEvaluation: boolean;
-    projectDir: string;
-}
-
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly get_summary_info: (a: number, b: number) => [number, number, number];
   readonly get_goods_info: (a: number, b: number, c: number) => [number, number, number];
+  readonly get_summary_info: (a: number, b: number) => [number, number, number];
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_externrefs: WebAssembly.Table;
