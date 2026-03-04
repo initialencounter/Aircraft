@@ -179,6 +179,8 @@ async function entrypoint() {
     const color = matchColor(summaryInfo.shape)
     const shape = matchShape(summaryInfo.shape)
     const testManual = matchTestManual(summaryInfo.testManual)
+    const wattHour = String(matchWattHour(' ' + summaryInfo.watt) ?? '')
+    const licontent = String(matchBatteryWeight('为' + summaryInfo.licontent) ?? '')
     console.log({ classification, color, shape, testManual })
     return {
       projectNo: summaryInfo.projectNo ?? '',
@@ -197,11 +199,11 @@ async function entrypoint() {
       trademark: summaryInfo.trademark ?? '/',
       voltage: String(matchVoltage(summaryInfo.voltage) ?? ''),
       capacity: String(matchCapacity(summaryInfo.capacity) ?? ''),
-      watt: String(matchWattHour(' ' + summaryInfo.watt) ?? ''),
+      watt: wattHour === '0' ? '' : wattHour,
       color: COLOR_ID_MAP[color as keyof typeof COLOR_ID_MAP] ?? '1856d2dd3623444c93101e39dc84ac59',
       shape: SHAPE_ID_MAP[shape as keyof typeof SHAPE_ID_MAP] ?? '8aad92b65c76a14d015c771747250caa',
       mass: String(matchBatteryWeight('为' + summaryInfo.mass)),
-      licontent: String(matchBatteryWeight('为' + summaryInfo.licontent) ?? ''),
+      licontent: licontent === '0' ? '' : licontent,
       testReportNo: summaryInfo.testReportNo,
       testDate: summaryInfo.testDate,
       testManual: matchTestManualMap[testManual as keyof typeof matchTestManualMap] ?? '2906',
