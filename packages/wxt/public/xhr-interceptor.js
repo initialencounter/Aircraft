@@ -39,7 +39,7 @@
       // URL 匹配则始终 hook 返回值
       this._should_intercept_response = true;
 
-      const testReportNo = $('#testReportNo').val();
+      const testReportNo = $('#qTestReportNo').val();
       if (!testReportNo) {
         return originalXHROpen.apply(this, arguments);
       }
