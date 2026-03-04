@@ -1,5 +1,27 @@
 # 更新日志
 
+## [v3.5.0] - 2026-03-05
+
+### 新增
+
+- 解析单位信息([ec9e117f](https://github.com/initialencounter/Aircraft/commit/ec9e117fd7ac9d89b2d62bb063e439606540163d))
+
+- 单位信息换行([25ab46ad](https://github.com/initialencounter/Aircraft/commit/25ab46ad6643c689b33a01e61a9dab6460c4e40a))
+
+- 搜索测试报告编号导入概要([7f7473fe](https://github.com/initialencounter/Aircraft/commit/7f7473febe5366607930b4cb0ab1f24dec6b99d3))
+
+- 导入概要委托方信息([a4987f8](https://github.com/initialencounter/Aircraft/commit/a4987f8bec3fd7b2089490d2dac1867a7045f9bc))
+
+
+### 修复
+
+- 概要搜索框输入失效([2970baa](https://github.com/initialencounter/Aircraft/commit/2970baa4fbba2dfd6ae98d82e917a93ae3678ece))
+
+- 概要颜色填充错误([4d1479d](https://github.com/initialencounter/Aircraft/commit/4d1479d16c466eb383ef23bc712bd941e2919eae))
+
+- 去除单位信息中的字符实体([387419a](https://github.com/initialencounter/Aircraft/commit/387419ace3396f55ea54dc1aa6a53678b26f845d))
+
+
 ## [v3.4.2] - 2026-03-04
 
 ### 修复
