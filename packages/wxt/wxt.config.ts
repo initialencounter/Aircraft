@@ -32,6 +32,7 @@ export default defineConfig({
         resources: [
           'loading.gif',
           'easyui-interceptor.js',
+          'xhr-interceptor.js',
 
           // ONNX 模型相关文件
           'segment.onnx',

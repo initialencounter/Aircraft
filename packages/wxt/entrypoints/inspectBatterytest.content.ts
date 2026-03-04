@@ -111,7 +111,72 @@ async function entrypoint() {
     textboxText.addEventListener('change', handleDateInput)
   }
 
+  function inserttestReportNoInput() {
+    const searchButton = document.getElementById("searchBtn") as HTMLAnchorElement
+    if (!searchButton?.parentElement?.parentElement) return
+
+    const wrapperTd = document.createElement('td')
+    wrapperTd.style.padding = '0'
+    wrapperTd.style.whiteSpace = 'nowrap'
+
+    const wrapperDiv = document.createElement('div')
+    wrapperDiv.style.display = 'inline-flex'
+    wrapperDiv.style.alignItems = 'center'
+    wrapperDiv.style.gap = '0'
+
+    const titleElement = document.createElement('span')
+    titleElement.textContent = '测试报告编号:'
+
+    const inputElementSpan = document.createElement('span')
+    inputElementSpan.className = 'textbox'
+    inputElementSpan.style.width = '138px'
+    inputElementSpan.style.height = '20px'
+
+    const inputElement = document.createElement('input')
+    inputElement.type = 'text'
+    inputElement.id = 'testReportNo'
+    inputElement.className = 'textbox-text  textbox-value'
+    inputElement.style.width = '130px'
+
+    inputElementSpan.appendChild(inputElement)
+    wrapperDiv.appendChild(titleElement)
+    wrapperDiv.appendChild(inputElementSpan)
+    wrapperTd.appendChild(wrapperDiv)
+
+    searchButton.parentElement.parentElement.insertBefore(wrapperTd, searchButton.parentElement)
+  }
+
+  function injectXHRInterceptor() {
+    // 检查是否已经注入过
+    if ((window as any).__xhr_intercepted) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('xhr-interceptor.js');
+    script.onload = () => {
+      (window as any).__xhr_intercepted = true;
+      script.remove();
+    };
+    script.onerror = (e) => {
+      console.error('[XHR Hook] Failed to load interceptor script:', e);
+    };
+
+    try {
+      const target = document.head || document.documentElement || document;
+      target.appendChild(script);
+    } catch (e) {
+      console.error('[XHR Hook] Failed to inject script:', e);
+    }
+  }
+
   // 启用日期直接编辑
   modifyTestDateInput()
+
+  // 插入测试报告编号输入框
+  inserttestReportNoInput()
+
+  // 注入拦截器脚本
+  injectXHRInterceptor()
 }
 
