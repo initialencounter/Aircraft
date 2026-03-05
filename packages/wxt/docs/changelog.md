@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v3.5.3] - 2026-03-05
+
+### 修复
+
+- 电压容量为斜杠时,填充为0([db604295](https://github.com/initialencounter/Aircraft/commit/db604295fabaef4ede8c0a48bceff4adb56bbff1))
+
+- 保存后概要填充再保存时会新建概要([13048b7](https://github.com/initialencounter/Aircraft/commit/13048b78717de6e59ba5c8370f8082085f59ba11))
+
+- 开启设置查询项目编号后, 搜索搜不到([968df7c](https://github.com/initialencounter/Aircraft/commit/968df7c2815ed174d2757ef5625ebcad9be90c89))
+
 ## [v3.5.2] - 2026-03-05
 
 ### 修复
