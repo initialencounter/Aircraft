@@ -25,7 +25,7 @@ export default defineConfig({
   entrypointsDir: './entrypoints',
   manifest: {
     name: 'lims',
-    version: '3.5.1',
+    version: '3.5.2',
     description: 'Automates form validation and data entry for battery inspection forms.',
     web_accessible_resources: [
       {
@@ -33,6 +33,7 @@ export default defineConfig({
           'loading.gif',
           'easyui-interceptor.js',
           'xhr-interceptor.js',
+          'jquery-interceptor.js',
 
           // ONNX 模型相关文件
           'segment.onnx',

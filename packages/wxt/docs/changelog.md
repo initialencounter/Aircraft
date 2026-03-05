@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v3.5.2] - 2026-03-05
+
+### 修复
+
+- 钠离子电池T8验证([6ea5ca0](https://github.com/initialencounter/Aircraft/commit/6ea5ca0879bdcdbb734f1ec8de209bc947e42d46))
+
+### 新增
+
+- 导入概要委托单位([58b4a82](https://github.com/initialencounter/Aircraft/commit/58b4a828d8183c48f944d2351933329df6907e9f))
+
 ## [v3.5.1] - 2026-03-05
 
 ### 新增
