@@ -48,7 +48,8 @@ import { checkT1_6 } from './checkT1_6'
 export function checkSekAttachment(
   currentData: SekData | SekSodiumData,
   attachmentInfo: AttachmentInfo | null,
-  entrustData: EntrustData | null
+  entrustData: EntrustData | null,
+  isSodium: boolean,
 ) {
   const summaryData: SummaryInfo | null = attachmentInfo?.summary ?? null
   const goodsInfo: GoodsInfo | null = attachmentInfo?.goods ?? null
@@ -122,7 +123,8 @@ export function checkSekAttachment(
       currentData,
       summaryData,
       entrustData,
-      summaryCheckParams
+      summaryCheckParams,
+      isSodium,
     )
   )
   return results
@@ -131,7 +133,7 @@ export function checkPekAttachment(
   currentData: PekData | PekSodiumData,
   attachmentInfo: AttachmentInfo | null,
   entrustData: EntrustData | null,
-  isSodium: boolean = false,
+  isSodium: boolean,
 ) {
   const summaryData: SummaryInfo | null = attachmentInfo?.summary ?? null
   const goodsInfo: GoodsInfo | null = attachmentInfo?.goods ?? null
@@ -210,7 +212,8 @@ export function checkPekAttachment(
       currentData,
       summaryData,
       entrustData,
-      summaryCheckParams
+      summaryCheckParams,
+      isSodium,
     )
   )
   return results
@@ -293,20 +296,4 @@ function checkSummaryFromLLM(
   // @ts-ignore
   results.push(...checkUN38fg(summaryData.un38F ?? summaryData.un38f, summaryData.un38G ?? summaryData.un38g))
   return results
-}
-
-export function checkSekSodiumAttachment(
-  currentData: SekSodiumData,
-  attachmentInfo: AttachmentInfo | null,
-  entrustData: EntrustData | null
-) {
-  return checkSekAttachment(currentData, attachmentInfo, entrustData)
-}
-
-export function checkPekSodiumAttachment(
-  currentData: PekSodiumData,
-  attachmentInfo: AttachmentInfo | null,
-  entrustData: EntrustData | null
-) {
-  return checkPekAttachment(currentData, attachmentInfo, entrustData, true)
 }

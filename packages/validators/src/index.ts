@@ -12,7 +12,6 @@ export { getPkgInfoSubType } from './lithium/shared/utils'
 
 export { checkPekSodiumBtyType } from './sodium/pek'
 export { checkSekSodiumBtyType } from './sodium/sek'
-export { checkSekSodiumAttachment, checkPekSodiumAttachment } from './summary'
 
 export { checkModel, checkModelWithFactory } from './lithium/shared/dangerousModel'
 export { checkStackEvaluation } from './lithium/pek/stackEvaluation'

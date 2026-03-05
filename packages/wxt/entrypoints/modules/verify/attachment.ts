@@ -14,8 +14,6 @@ import {
 import {
   checkPekAttachment,
   checkSekAttachment,
-  checkPekSodiumAttachment,
-  checkSekSodiumAttachment,
 } from '@aircraft/validators'
 
 function hasDuplicateStrings(arr: string[]): boolean {
@@ -75,34 +73,20 @@ export async function checkLocalAttachment(
       attachmentInfo.goods.labels = ['pass']
     }
 
-    if (isSodium) {
-      if (systemId === 'pek') {
-        results.push(...checkPekSodiumAttachment(
-          dataFromForm as PekSodiumData,
-          attachmentInfo,
-          entrustData
-        ))
-      } else {
-        results.push(...checkSekSodiumAttachment(
-          dataFromForm as SekSodiumData,
-          attachmentInfo,
-          entrustData
-        ))
-      }
+    if (systemId === 'pek') {
+      results.push(...checkPekAttachment(
+        dataFromForm as PekData,
+        attachmentInfo,
+        entrustData,
+        isSodium,
+      ))
     } else {
-      if (systemId === 'pek') {
-        results.push(...checkPekAttachment(
-          dataFromForm as PekData,
-          attachmentInfo,
-          entrustData
-        ))
-      } else {
-        results.push(...checkSekAttachment(
-          dataFromForm as SekData,
-          attachmentInfo,
-          entrustData
-        ))
-      }
+      results.push(...checkSekAttachment(
+        dataFromForm as SekData,
+        attachmentInfo,
+        entrustData,
+        isSodium,
+      ))
     }
     return results
   } catch (e) {
