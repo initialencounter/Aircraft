@@ -33,11 +33,11 @@ export default defineConfig({
           'loading.gif',
           'easyui-interceptor.js',
           'xhr-interceptor.js',
+          'model.js',
           'jquery-interceptor.js',
 
           // ONNX 模型相关文件
           'segment.onnx',
-          'best.onnx',
 
           // WASM 相关文件
           'aircraft.js',

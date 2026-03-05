@@ -2811,6 +2811,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jquery@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@types/jquery@npm:4.0.0"
+  checksum: 10c0/3e453accf2786e6ea5a5fb4b7f8c2298f42d3bc22253cc5a14f4d4a1a5ccc461db7af5a5df92a0b0c03c75a1968d2deda06597b63f8118613f88f27452911275
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -4325,6 +4332,7 @@ __metadata:
     "@aircraft/validators": "workspace:*"
     "@maikolib/vite-plugin-yaml": "npm:^1.1.1"
     "@types/chrome": "npm:^0.1.32"
+    "@types/jquery": "npm:^4.0.0"
     "@types/node": "npm:^24.10.4"
     "@vitejs/plugin-vue": "npm:^6.0.3"
     "@vueuse/core": "npm:^13.9.0"

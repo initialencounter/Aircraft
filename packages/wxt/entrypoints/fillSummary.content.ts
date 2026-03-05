@@ -9,6 +9,7 @@ import { matchTestManual } from '../../validators/src/lithium/shared/utils/match
 import { matchColor, removeNonChineseCharacters } from '../../validators/src/summary/checkColor'
 import { COLOR_ID_MAP } from '../share/colorMap'
 import { matchShape } from '../../validators/src/summary/checkShape'
+import { FormFillJSONData } from '../share/types'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -112,48 +113,11 @@ async function entrypoint() {
     }
   }
 
-  function setFormData(data: FormJSONData) {
+  function setFormData(data: FormFillJSONData) {
     window.postMessage({
       type: 'FROM_FILL_SUMMARY', // 使用一个独特的类型来标识
       payload: data
     }, '*'); // 如果你知道目标源，最好指定具体的源，而不是 '*'
-  }
-  /**
-   * FormData
-   */
-  interface FormJSONData {
-    consignor: string
-    consignorInfo: string
-    manufacturer: string
-    manufacturerInfo: string
-    testlab: string
-    testlabInfo: string
-    cnName: string
-    enName: string
-    classification: string
-    type: string
-    trademark: string
-    voltage: string
-    capacity: string
-    watt: string
-    color: string
-    shape: string
-    mass: string
-    licontent: string
-    testReportNo: string
-    testDate: string
-    testManual: string
-    test1: boolean
-    test2: boolean
-    test3: boolean
-    test4: boolean
-    test5: boolean
-    test6: boolean
-    test7: boolean
-    test8: boolean
-    un38f: boolean
-    un38g: boolean
-    note: string
   }
 
   const matchTestManualMap = {
@@ -170,7 +134,7 @@ async function entrypoint() {
     '第4版': '2907',
   }
 
-  function summaryInfoToForm(summaryInfo: SummaryInfo): FormJSONData {
+  function summaryInfoToForm(summaryInfo: SummaryInfo): FormFillJSONData {
     const classification = removeNonChineseCharacters(summaryInfo.classification).trim()
     const color = matchColor(summaryInfo.shape)
     const shape = matchShape(summaryInfo.shape)

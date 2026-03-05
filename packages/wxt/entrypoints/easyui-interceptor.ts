@@ -1,4 +1,16 @@
-(function () {
+
+declare global {
+  interface Window {
+    __easyui_intercepted?: boolean;
+    $: JQuery
+  }
+  interface JQuery {
+    fn: any;
+  }
+}
+
+
+export default defineUnlistedScript(() => {
   // 防止重复注入
   if (window.__easyui_intercepted) {
     return;
@@ -8,7 +20,7 @@
   console.log('[EasyUI Hook] Initializing...');
 
   // 等待jQuery和EasyUI加载
-  function waitForEasyUI(callback, maxAttempts = 20000) {
+  function waitForEasyUI(callback: any, maxAttempts = 20000) {
     let attempts = 0;
     const check = setInterval(() => {
       attempts++;
@@ -27,7 +39,7 @@
 
     // 拦截所有datagrid初始化
     const originalDatagrid = window.$.fn.datagrid;
-    window.$.fn.datagrid = function (options) {
+    window.$.fn.datagrid = function (options: any) {
       if (typeof options === 'object') {
         // 强制设置 pageSize 为 100
         options.pageSize = 100;
@@ -43,4 +55,4 @@
     Object.assign(window.$.fn.datagrid, originalDatagrid);
   });
 
-})();
+})

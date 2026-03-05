@@ -1,11 +1,25 @@
-(function () {
-  // 防止重复注入
+import { FormFillJSONData } from "../../share/types";
+
+declare global {
+  interface Window {
+    __jquery_intercepted?: boolean;
+  }
+  interface XMLHttpRequest {
+    __intercepted?: boolean;
+    _should_intercept_response?: boolean;
+    _intercepted_method?: string;
+    _intercepted_url?: string;
+    _response_intercepted?: boolean;
+  }
+}
+
+export default defineUnlistedScript(() => {
   if (window.__jquery_intercepted) {
     return;
   }
   window.__jquery_intercepted = true;
 
-  function validateForm(data) {
+  function validateForm(data: FormFillJSONData) {
     var errors = [];
 
     if (!data.consignor) {
@@ -61,6 +75,7 @@
       $("#testManual").focus();
     }
     if (errors.length > 0) {
+      // @ts-ignore
       showInfoBox("<div style='float:left;'>"
         + errors.join("<br/>") + "</div>");
       return false;
@@ -74,6 +89,7 @@
 
     if (event.data.type && event.data.type === 'FROM_FILL_SUMMARY') {
       const data = event.data.payload;
+      // @ts-ignore
       const originalData = getFormJSON("#batteryInspectForm")
       data.id = originalData.id
       data.projectId = originalData.projectId
@@ -83,7 +99,9 @@
       if (!validateForm(data)) {
         return;
       }
+      // @ts-ignore
       $("#batteryInspectForm").form("load", data)
     }
   });
-})();
+})
+
