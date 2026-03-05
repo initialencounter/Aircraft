@@ -1,15 +1,16 @@
 import { sleep } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { CLASSIFICATION_ID_MAP } from '../share/classificationMap'
-import { SHAPE_ID_MAP } from '../share/shapeMap'
+import { CLASSIFICATION_ID_MAP, ID_CLASSIFICATION_MAP } from '../share/classificationMap'
+import { ID_SHAPE_MAP, SHAPE_ID_MAP } from '../share/shapeMap'
 import { SummaryInfo } from 'aircraft-rs'
 import { matchBatteryWeight, matchCapacity, matchVoltage, matchWattHour } from '../../validators/src/lithium/shared/utils'
 import { matchTestManual } from '../../validators/src/lithium/shared/utils/matchDevice'
 import { matchColor, removeNonChineseCharacters } from '../../validators/src/summary/checkColor'
-import { COLOR_ID_MAP } from '../share/colorMap'
+import { COLOR_ID_MAP, ID_COLOR_MAP } from '../share/colorMap'
 import { matchShape } from '../../validators/src/summary/checkShape'
 import { FormFillJSONData } from '../share/types'
+import { ID_MANUAL_MAP } from '../share/manualMap'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -81,13 +82,150 @@ async function entrypoint() {
               summaryInfo,
               formData,
             })
-            setFormData(formData)
+            setCommonData(formData)
+            jQuerySetDateBox('#testDate', formData.testDate)
+            setCheckboxValue(formData)
+            setClassification(formData.classification)
+            setColor(formData.color)
+            setShape(formData.shape)
+            setTestManual(formData.testManual)
             Qmsg.success(`已从文件 "${file.name}" 提取并填充概要信息`)
           }
         })
       }
     }
   })
+
+  function setCommonData(data: FormFillJSONData) {
+    const fields = [
+      'consignor',
+      'consignorInfo',
+      'manufacturer',
+      'manufacturerInfo',
+      'testlab',
+      'testlabInfo',
+      'cnName',
+      'enName',
+      'type',
+      'trademark',
+      'voltage',
+      'capacity',
+      'watt',
+      'mass',
+      'licontent',
+      'testReportNo',
+      'note',
+    ]
+    for (const field of fields) {
+      const el = document.getElementById(field) as HTMLInputElement | HTMLTextAreaElement | null
+      if (el && data[field as keyof FormFillJSONData]) {
+        el.value = String(data[field as keyof FormFillJSONData])
+      }
+    }
+  }
+
+  function setClassification(classificationId: string) {
+    if (!classificationId) return
+    const chineseName = ID_CLASSIFICATION_MAP[classificationId as keyof typeof ID_CLASSIFICATION_MAP]
+    if (chineseName) {
+      // 更新显示文本
+      const textEl = document.getElementById('classificationText')
+      if (textEl) textEl.textContent = chineseName
+
+      // 更新隐藏 input 的值
+      const valueEl = document.getElementById('classificationValue') as HTMLInputElement | null
+      if (valueEl) valueEl.value = classificationId
+
+      // 清空 combogrid 文本输入框，避免遮挡 span
+      const comboTextInput = document.querySelector(
+        '#classificationGrid ~ span.textbox input.textbox-text'
+      ) as HTMLInputElement | null
+      if (comboTextInput) comboTextInput.value = ''
+    } else {
+      Qmsg.warning(`未找到 classification id=${classificationId} 对应的类别`)
+    }
+  }
+
+  function setColor(colorId: string) {
+    if (!colorId) return
+    const chineseName = ID_COLOR_MAP[colorId as keyof typeof ID_COLOR_MAP]
+    if (chineseName) {
+      const textEl = document.getElementById('colorText')
+      if (textEl) textEl.textContent = chineseName
+
+      const valueEl = document.getElementById('colorValue') as HTMLInputElement | null
+      if (valueEl) valueEl.value = colorId
+
+      const comboTextInput = document.querySelector(
+        '#colorGrid ~ span.textbox input.textbox-text'
+      ) as HTMLInputElement | null
+      if (comboTextInput) comboTextInput.value = ''
+    } else {
+      Qmsg.warning(`未找到 color id=${colorId} 对应的颜色`)
+    }
+  }
+
+  function setShape(shapeId: string) {
+    if (!shapeId) return
+    const chineseName = ID_SHAPE_MAP[shapeId as keyof typeof ID_SHAPE_MAP]
+    if (chineseName) {
+      const textEl = document.getElementById('shapeText')
+      if (textEl) textEl.textContent = chineseName
+
+      const valueEl = document.getElementById('shapeValue') as HTMLInputElement | null
+      if (valueEl) valueEl.value = shapeId
+
+      const comboTextInput = document.querySelector(
+        '#shapeGrid ~ span.textbox input.textbox-text'
+      ) as HTMLInputElement | null
+      if (comboTextInput) comboTextInput.value = ''
+    } else {
+      Qmsg.warning(`未找到 shape id=${shapeId} 对应的形状`)
+    }
+  }
+
+  function setTestManual(testManualId: string) {
+    if (!testManualId) return
+    const chineseName = ID_MANUAL_MAP[testManualId as keyof typeof ID_MANUAL_MAP]
+    if (chineseName) {
+      const textEl = document.getElementById('testManualText')
+      if (textEl) textEl.innerHTML = chineseName
+
+      const valueEl = document.getElementById('testManualValue') as HTMLInputElement | null
+      if (valueEl) valueEl.value = testManualId
+
+      const comboTextInput = document.querySelector(
+        '#commentGrid ~ span.textbox input.textbox-text'
+      ) as HTMLInputElement | null
+      if (comboTextInput) comboTextInput.value = ''
+    } else {
+      Qmsg.warning(`未找到 testManual id=${testManualId} 对应的手册`)
+    }
+  }
+
+  function setCheckboxValue(data: FormFillJSONData) {
+    const checkboxs = [
+      'test1',
+      'test2',
+      'test3',
+      'test4',
+      'test5',
+      'test6',
+      'test7',
+      'test8',
+      'un38f',
+      'un38g',
+    ]
+    for (const key of checkboxs) {
+      const checkboxYes = document.getElementById(`radio_yes_${key}`) as HTMLInputElement
+      const checkboxNo = document.getElementById(`radio_no_${key}`) as HTMLInputElement
+      const value = data[key as keyof FormFillJSONData]
+      if (checkboxYes && checkboxNo) {
+        checkboxYes.checked = value === true
+        checkboxNo.checked = value === false
+      }
+    }
+  }
 
   function injectJQueryInterceptor() {
     // 检查是否已经注入过
@@ -111,13 +249,6 @@ async function entrypoint() {
     } catch (e) {
       console.error('[JQuery Hook] Failed to inject script:', e);
     }
-  }
-
-  function setFormData(data: FormFillJSONData) {
-    window.postMessage({
-      type: 'FROM_FILL_SUMMARY', // 使用一个独特的类型来标识
-      payload: data
-    }, '*'); // 如果你知道目标源，最好指定具体的源，而不是 '*'
   }
 
   const matchTestManualMap = {
@@ -148,7 +279,6 @@ async function entrypoint() {
       !info && base.includes('\n')
         ? base.split('\n').slice(1).join('\n').trim()
         : (info ?? base ?? '')
-
     const consignorInfo = resolveInfo(summaryInfo.consignorInfo, summaryInfo.consignor)
     const manufacturerInfo = resolveInfo(summaryInfo.manufacturerInfo, summaryInfo.manufacturer)
     const testlabInfo = resolveInfo(summaryInfo.testlabInfo, summaryInfo.testlab)
@@ -188,5 +318,13 @@ async function entrypoint() {
       un38g: summaryInfo.un38G.includes('通过'),
       note: !summaryInfo.note ? '/' : summaryInfo.note,
     }
+  }
+
+  function jQuerySetDateBox(selector: string, date: string) {
+    window.postMessage({
+      type: 'JQUERY_SET_DATEBOX',
+      selector,
+      payload: date,
+    }, '*');
   }
 }
