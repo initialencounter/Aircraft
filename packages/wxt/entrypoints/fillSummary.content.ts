@@ -177,6 +177,8 @@ async function entrypoint() {
     const testManual = matchTestManual(summaryInfo.testManual)
     const wattHour = String(matchWattHour(' ' + summaryInfo.watt) ?? '')
     const licontent = String(matchBatteryWeight('为' + summaryInfo.licontent) ?? '')
+    const voltage = String(matchVoltage(summaryInfo.voltage) ?? '')
+    const capacity = String(matchCapacity(summaryInfo.capacity) ?? '')
 
     const resolveInfo = (info: string | undefined, base: string): string =>
       !info && base.includes('\n')
@@ -200,8 +202,8 @@ async function entrypoint() {
       classification: CLASSIFICATION_ID_MAP[classification as keyof typeof CLASSIFICATION_ID_MAP] ?? '2500',
       type: (summaryInfo.type || summaryInfo.model) ?? '',
       trademark: summaryInfo.trademark ?? '/',
-      voltage: String(matchVoltage(summaryInfo.voltage) ?? ''),
-      capacity: String(matchCapacity(summaryInfo.capacity) ?? ''),
+      voltage: voltage === '0' ? '/' : voltage,
+      capacity: capacity === '0' ? '/' : capacity,
       watt: wattHour === '0' ? '' : wattHour,
       color: COLOR_ID_MAP[color as keyof typeof COLOR_ID_MAP] ?? '1856d2dd3623444c93101e39dc84ac59',
       shape: SHAPE_ID_MAP[shape as keyof typeof SHAPE_ID_MAP] ?? '8aad92b65c76a14d015c771747250caa',
