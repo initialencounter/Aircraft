@@ -13,6 +13,8 @@ declare global {
   interface JQuery {
     form: (action: string, data: any) => void;
     datebox: (action: string, data: any) => void;
+    combobox: (action: string, data: any) => void;
+    textbox: (action: string, data: any) => void;
   }
 }
 
@@ -42,6 +44,19 @@ export default defineUnlistedScript(() => {
       const selector = event.data.selector;
       const date = event.data.payload;
       $(selector).datebox('setValue', date);
+    }
+
+    if (event.data.type === 'JQUERY_SET_COMBOBOX') {
+      const selector = event.data.selector;
+      const data = event.data.payload;
+      console.log(`[JQuery Hook] Setting combobox ${selector} value to:`, data);
+      $(selector).combobox('setValue', data);
+    }
+
+    if (event.data.type === 'JQUERY_SET_TEXTBOX') {
+      const selector = event.data.selector;
+      const data = event.data.payload;
+      $(selector).textbox('setValue', data);
     }
   });
 })
