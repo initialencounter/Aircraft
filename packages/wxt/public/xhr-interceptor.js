@@ -105,20 +105,20 @@
     if (!confirmImportButton) return
     confirmImportButton.addEventListener('click', async () => {
       await sleep(300)
+      const datagrid = $("#inspectDatagrid")
+      const selectedId = datagrid.datagrid('getSelected').id
       const data = __last_intercepted_batterytest_query_response
       if (!data || !data.rows || data.rows.length === 0) {
         return
       }
-      const consignorInfo = data.rows[0].consignorInfo || ''
-      const consignor = data.rows[0].consignor || ''
-      const consignorInfoInput = document.getElementById("consignorInfo")
-      if (consignorInfoInput) {
-        consignorInfoInput.value = consignorInfo
+      const selectedData = data.rows.find(row => row.id === selectedId)
+      if (!selectedData) {
+        return
       }
-      const consignorInput = document.getElementById("consignor")
-      if (consignorInput) {
-        consignorInput.value = consignor
-      }
+      const consignorInfo = selectedData.consignorInfo || ''
+      const consignor = selectedData.consignor || ''
+      $('#consignorInfo').val(consignorInfo)
+      $('#consignor').val(consignor)
     })
     clearInterval(listenerAddedInterval)
   }
