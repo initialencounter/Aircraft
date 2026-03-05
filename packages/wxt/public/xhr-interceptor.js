@@ -104,7 +104,7 @@
     const confirmImportButton = document.getElementById("assignSaveBtn")
     if (!confirmImportButton) return
     confirmImportButton.addEventListener('click', async () => {
-      await sleep(100)
+      await sleep(300)
       const data = __last_intercepted_batterytest_query_response
       if (!data || !data.rows || data.rows.length === 0) {
         return
