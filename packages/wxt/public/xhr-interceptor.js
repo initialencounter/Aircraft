@@ -110,9 +110,14 @@
         return
       }
       const consignorInfo = data.rows[0].consignorInfo || ''
-      const consignorInput = document.getElementById("consignorInfo")
+      const consignor = data.rows[0].consignor || ''
+      const consignorInfoInput = document.getElementById("consignorInfo")
+      if (consignorInfoInput) {
+        consignorInfoInput.value = consignorInfo
+      }
+      const consignorInput = document.getElementById("consignor")
       if (consignorInput) {
-        consignorInput.value = consignorInfo
+        consignorInput.value = consignor
       }
     })
     clearInterval(listenerAddedInterval)
