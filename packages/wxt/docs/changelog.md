@@ -1,5 +1,11 @@
 # 更新日志
 
+## [v3.5.4] - 2026-03-09
+
+### 修复
+
+- 单位信息换行问题([852743a](https://github.com/initialencounter/Aircraft/commit/852743a6c5c9124c735ec9e9b21ed1b5f22135f9))
+
 ## [v3.5.3] - 2026-03-05
 
 ### 修复
