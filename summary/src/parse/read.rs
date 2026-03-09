@@ -10,6 +10,7 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
     let mut last_path_str: String = "w:document[1]/w:body[1]/w:p[1]//".to_string();
     let mut last_path_str_wp: String = "w:document[1]/w:body[1]/w:p[1]//".to_string();
     let mut last_text: String = "".to_string();
+    let mut pending_line_break: bool = false;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
@@ -74,15 +75,32 @@ pub fn parse_docx_text(content: &str) -> Vec<String> {
                         if path_str.clone() != last_path_str.clone() {
                             output.push(last_text.clone());
                             last_text = text.clone();
-                        }else {
+                        } else if pending_line_break {
+                            last_text = format!("{}\n{}", last_text, text);
+                        } else {
                             if last_path_str_wp.clone() == path_str_wp.clone() {
                                 last_text = format!("{}{}", last_text, text);
                             } else {
                                 last_text = format!("{}\n{}", last_text, text);
                             }
                         }
+                        pending_line_break = false;
                         last_path_str = path_str;
                         last_path_str_wp = path_str_wp;
+                    }
+                }
+            }
+            Ok(Event::Empty(ref e)) => {
+                if e.name().as_ref() == b"w:br" {
+                    let is_text_wrapping = e.attributes().any(|a| {
+                        if let Ok(a) = a {
+                            a.key.as_ref() == b"w:type" && a.value.as_ref() == b"textWrapping"
+                        } else {
+                            false
+                        }
+                    });
+                    if is_text_wrapping {
+                        pending_line_break = true;
                     }
                 }
             }
