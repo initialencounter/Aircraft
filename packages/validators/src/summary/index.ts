@@ -14,8 +14,6 @@ import {
   getPkgInfoSubType,
   matchBatteryWeight,
   matchCapacity,
-  matchDeviceModel,
-  matchDeviceName,
   matchNumber,
   matchTotalNetweight,
   matchVoltage,

@@ -1,5 +1,12 @@
 # 更新日志
 
+## [v3.5.5] - 2026-03-10
+
+- 删除概要填充默认值([9d9678e](https://github.com/initialencounter/Aircraft/commit/9d9678e3705409714db11df252368b9411cceab6))
+
+- 增加形状别名([f4eb897](https://github.com/initialencounter/Aircraft/commit/f4eb897719e0f4a65aa531bb4262d2aa4022c9c2))
+
+
 ## [v3.5.4] - 2026-03-09
 
 ### 修复
