@@ -28,25 +28,29 @@
   },
   "devDependencies": {
     "@maikolib/vite-plugin-yaml": "^1.1.1",
-    "@tauri-apps/cli": "^2.9.6",
-    "@typescript-eslint/eslint-plugin": "^8.50.2-alpha.6",
-    "@typescript-eslint/parser": "^8.50.2-alpha.7",
-    "@vitejs/plugin-vue": "^6.0.3",
-    "eslint": "^9.39.2",
+    "@tauri-apps/cli": "^2.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.57.1-alpha.2",
+    "@typescript-eslint/parser": "^8.57.1-alpha.2",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "eslint": "^9.39.4",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-refresh": "^0.4.26",
     "husky": "^9.1.7",
-    "prettier": "^3.7.4",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vue": "^3.6.0-beta.1",
-    "vue-tsc": "^3.2.1",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.0-dev.20260313",
+    "vite": "^8.0.0",
+    "vue": "^3.6.0-beta.7",
+    "vue-tsc": "^3.2.5",
     "yakumo": "^1.0.0",
     "yakumo-upgrade": "^0.3.6"
   },
   "dependencies": {
     "@aircraft/renderer": "workspace:*"
+  },
+  "resolutions": {
+    "vite": "^8.0.0",
+    "typescript": "^6.0.0-dev.20260313"
   },
   "packageManager": "yarn@4.12.0"
 }
