@@ -294,6 +294,7 @@ async function entrypoint() {
       cnName: summaryInfo.cnName.split('\n')[0] ?? '',
       enName,
       classification: CLASSIFICATION_ID_MAP[classification as keyof typeof CLASSIFICATION_ID_MAP] ?? '',
+      // @ts-ignore
       type: (summaryInfo.type || summaryInfo.model) ?? '',
       trademark: summaryInfo.trademark ?? '/',
       voltage: voltage === '0' ? '/' : voltage,

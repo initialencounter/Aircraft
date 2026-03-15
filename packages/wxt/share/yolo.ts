@@ -1,9 +1,8 @@
 import { SegmentResult } from 'aircraft-rs';
-import * as ort from "onnxruntime-web";
 
 const yolo_classes = ['9', '9A', 'bty', 'CAO'];
 
-export async function predict_yolo26(session: any, imageInput: Uint8Array) {
+export async function predict_yolo26(session: any, imageInput: Uint8Array, Tensor: any) {
   try {
 
     let rowImageWidth: number;
@@ -47,7 +46,7 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array) {
       }
     }
 
-    const inputTensor = new ort.Tensor("float32", inputData, [1, 3, 640, 640]);
+    const inputTensor = new Tensor("float32", inputData, [1, 3, 640, 640]);
     // const inputName = session.inputNames[0]; // images
     const feeds = { "images": inputTensor };
 
