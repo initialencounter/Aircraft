@@ -62,7 +62,7 @@ impl Logger {
         let temp_logs_clone = Arc::clone(&temp_logs);
         let enabled_clone = enabled;
 
-        tokio::spawn(async move {
+        std::thread::spawn(move || {
             while let Ok(log) = receiver.recv() {
                 let now = Local::now();
                 let time_stamp = now.format("%Y-%m-%d %H:%M:%S").to_string();

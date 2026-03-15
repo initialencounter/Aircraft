@@ -1,7 +1,6 @@
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use tokio::sync::watch;
-use tokio::task::JoinHandle;
 
 use crate::config::ConfigManager;
 use crate::task_proxy::run as task_proxy_run;
@@ -9,7 +8,7 @@ use aircraft_types::config::{LLMConfig, ServerConfig};
 use aircraft_types::logger::LogMessage;
 
 pub struct ServerManager {
-    handle: Mutex<Option<JoinHandle<()>>>,
+    handle: Mutex<Option<std::thread::JoinHandle<()>>>,
     pub config: Mutex<ServerConfig>,
     pub llm_config: Mutex<LLMConfig>,
     shutdown_tx: Mutex<watch::Sender<bool>>,
@@ -33,8 +32,12 @@ impl ServerManager {
         let (shutdown_tx, shutdown_rx) = watch::channel(false);
         let log_tx = self.log_tx.clone();
         *self.shutdown_tx.lock().unwrap() = shutdown_tx;
-        *self.handle.lock().unwrap() = Some(tokio::spawn(async move {
-            let _ = task_proxy_run(shutdown_rx, log_tx).await;
+        *self.handle.lock().unwrap() = Some(std::thread::spawn(move || {
+            if let Ok(rt) = tokio::runtime::Runtime::new() {
+                rt.block_on(async {
+                    let _ = task_proxy_run(shutdown_rx, log_tx).await;
+                });
+            }
         }));
     }
 

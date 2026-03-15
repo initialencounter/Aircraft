@@ -10,19 +10,16 @@
     "readme.md"
   ],
   "napi": {
-    "name": "aircraft-rs",
+    "binaryName": "aircraft-rs",
     "esModule": true,
-    "triples": {
-      "defaults": false,
-      "additional": [
-        "x86_64-pc-windows-msvc"
-      ]
-    }
+    "targets": [
+      "x86_64-pc-windows-msvc"
+    ]
   },
   "license": "MIT",
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.4",
-    "ava": "^6.4.1"
+    "@napi-rs/cli": "^3.5.1",
+    "ava": "^7.0.0"
   },
   "ava": {
     "timeout": "3m"
