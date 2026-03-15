@@ -1,7 +1,6 @@
 import os from 'node:os'
 import path from 'path'
 import { createRequire } from 'node:module'
-import { fileURLToPath } from 'node:url'
 
 import Electron from 'electron'
 import type { Context } from 'cordis'
@@ -28,8 +27,8 @@ class App extends Service {
   indexHtml: string
   constructor(ctx: Context) {
     super(ctx, 'app')
-    this.require = createRequire(import.meta.url)
-    this.__dirname = path.dirname(fileURLToPath(import.meta.url))
+    this.require = createRequire(__filename)
+    this.__dirname = __dirname
     this.APP_ROOT = path.join(this.__dirname, '../..')
 
     this.MAIN_DIST = path.join(this.APP_ROOT, 'dist-electron')
@@ -40,7 +39,7 @@ class App extends Service {
       ? path.join(this.APP_ROOT, 'public')
       : this.RENDERER_DIST
 
-    this.preload = path.join(this.__dirname, '../preload/index.mjs')
+    this.preload = path.join(this.__dirname, '../preload/index.js')
     this.indexHtml = path.join(this.RENDERER_DIST, 'index.html')
 
     this.app = Electron.app

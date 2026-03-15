@@ -6,9 +6,8 @@ import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron/simple'
 import yaml from '@maikolib/vite-plugin-yaml'
 
-import pkg from '../package.json'
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command }: { command: string }) => {
   fs.rmSync('dist-electron', { recursive: true, force: true })
 
   const isServe = command === 'serve'
@@ -20,7 +19,7 @@ export default defineConfig(({ command }) => {
   return {
     root,
     plugins: [
-      vue(),
+      vue({}),
       yaml(),
       electron({
         main: {
@@ -40,15 +39,11 @@ export default defineConfig(({ command }) => {
               sourcemap,
               minify: isBuild,
               outDir: 'dist-electron/main',
-              rollupOptions: {
-                // Some third-party Node.js libraries may not be built correctly by Vite, especially `C/C++` addons,
-                // we can use `external` to exclude them to ensure they work correctly.
-                // Others need to put them in `dependencies` to ensure they are collected into `app.asar` after the app is built.
-                // Of course, this is not absolute, just this way is relatively simple. :)
-                external: Object.keys(
-                  'dependencies' in pkg ? pkg.dependencies : {}
-                ),
-                onwarn(warning, warn) {
+              rolldownOptions: {
+                output: {
+                  format: 'cjs',
+                },
+                onwarn(warning: any, warn: any) {
                   if (
                     warning.code === 'EVAL' &&
                     (warning.id?.includes('file-type/core.js') ||
@@ -71,13 +66,11 @@ export default defineConfig(({ command }) => {
               sourcemap: sourcemap ? 'inline' : undefined, // #332
               minify: isBuild,
               outDir: 'dist-electron/preload',
-              rollupOptions: {
-                external: [
-                  ...Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
-                  'bufferutil',
-                  'utf-8-validate'
-                ],
-                onwarn(warning, warn) {
+              rolldownOptions: {
+                output: {
+                  format: 'cjs',
+                },
+                onwarn(warning: any, warn: any) {
                   if (
                     warning.code === 'EVAL' &&
                     (warning.id?.includes('file-type/core.js') ||

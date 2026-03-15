@@ -3,7 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -30,7 +30,6 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Path Mapping */
-    "baseUrl": ".",
     "paths": {
       "@aircraft/renderer": ["../packages/renderer/src"],
       "@aircraft/validators": ["../packages/validators/src"],

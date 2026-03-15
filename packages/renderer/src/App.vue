@@ -2,7 +2,7 @@
 import TitleBar from './components/TitleBar.vue'
 import type { Event } from '@tauri-apps/api/event'
 import SideBar from './components/SideBar.vue'
-import { ipcManager } from './utils/ipcManager'
+import { ipcManager } from './utils/ipcManager.ts'
 
 interface Link {
   link: string

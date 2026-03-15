@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
+// @ts-ignore
 import 'element-plus/dist/index.css'
 // @ts-ignore
 import form from 'schemastery-vue'
@@ -9,6 +10,7 @@ import Markdown from 'markdown-vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
+// @ts-ignore
 import './assets/css/main.scss'
 import router from './router'
 

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { ipcManager } from '../utils/ipcManager'
+import { ipcManager } from '../utils/ipcManager.ts'
 defineProps<{
   link: string
   avatar: string
