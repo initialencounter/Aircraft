@@ -9,10 +9,9 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./src",
     "paths": {
-      "@aircraft/validators/*": ["*"],
-      "@aircraft/validators": ["index"]
+      "@aircraft/validators/*": ["./src*"],
+      "@aircraft/validators": ["./src/index"]
     }
   },
   "include": ["src/**/*"],
