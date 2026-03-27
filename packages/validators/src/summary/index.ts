@@ -42,6 +42,7 @@ import { checkT8 } from './checkT8'
 import { PekSodiumData, SekSodiumData } from '../sodium/shared/types'
 import { checkTests } from './checkTests'
 import { checkT1_6 } from './checkT1_6'
+import { checkContactInfo } from './checkContactInfo'
 
 export function checkSekAttachment(
   currentData: SekData | SekSodiumData,
@@ -290,6 +291,12 @@ function checkSummaryFromLLM(
   results.push(
     ...checkManufacturer(entrustData?.manufacturer, summaryData.manufacturer)
   )
+  results.push(...checkContactInfo(
+    entrustData?.consignor,
+    entrustData?.manufacturer,
+    summaryData.consignorInfo === '' ? summaryData.consignor : summaryData.consignorInfo,
+    summaryData.manufacturerInfo === '' ? summaryData.manufacturer : summaryData.manufacturerInfo,
+  ))
   results.push(...checkMarket(market, summaryData.testReportNo))
   // @ts-ignore
   results.push(...checkUN38fg(summaryData.un38F ?? summaryData.un38f, summaryData.un38G ?? summaryData.un38g))
