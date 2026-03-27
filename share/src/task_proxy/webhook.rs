@@ -242,7 +242,10 @@ async fn login_handler(
         .login_with_captcha(&login_req.code, &login_req.username, &login_req.password)
         .await
     {
-        Ok(_) => Json(serde_json::json!({"success": true, "message": "登录成功"})).into_response(),
+        Ok(res) => {
+            println!("Login success: {:?}", res);
+            Json(serde_json::json!(res)).into_response()
+        },
         Err(e) => Json(CustomError {
             message: format!("登录失败: {}", e),
         })

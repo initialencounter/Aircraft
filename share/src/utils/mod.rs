@@ -9,6 +9,13 @@ use clipboard_rs::{Clipboard, ClipboardContext};
 pub use dialog::*;
 pub use fs::*;
 
+use lazy_static::lazy_static;
+use regex::Regex;
+lazy_static! {
+    static ref RE_PASSWORD_INCORRECT_COUNT: Regex = Regex::new(r"密码错误(\d+)次").unwrap();
+    static ref RE_LOGIN_USERNAME: Regex = Regex::new(r"欢迎\s(.+)！").unwrap();
+}
+
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 pub fn get_today_date() -> String {
@@ -119,4 +126,43 @@ pub async fn bind_available_port(
         std::io::ErrorKind::AddrInUse,
         format!("No available port found starting from {}", start_port),
     ))
+}
+
+pub fn match_password_incorrect_count(error_message: String) -> u32 {
+    RE_PASSWORD_INCORRECT_COUNT
+        .captures(&error_message)
+        .and_then(|cap| cap[1].parse::<u32>().ok())
+        .unwrap_or(0)
+}
+
+pub fn match_login_username(welcome_message: String) -> String {
+    RE_LOGIN_USERNAME
+        .captures(&welcome_message)
+        .and_then(|cap| cap[1].parse::<String>().ok())
+        .unwrap_or("unknow".to_string())
+}
+
+#[cfg(test)]
+mod regex_tests {
+    use super::*;
+
+    #[test]
+    fn test_match_password_incorrect_count() {
+        let error_message = r#"<div class="info-box">
+	<div id="warning_area" class="warning-area"></div>
+	<div id="err_area" class="err_area">
+	
+		<div class="alert alert-danger" role="alert" style="text-align: center; width: 100%;">密码错误2次</div>
+	</div>
+</div>"#.to_string();
+        let count = match_password_incorrect_count(error_message);
+        assert_eq!(count, 2);
+    }
+
+    #[test]
+    fn test_match_login_username() {
+        let welcome_message = "欢迎 Alice！".to_string();
+        let username = match_login_username(welcome_message);
+        assert_eq!(username, "Alice".to_string());
+    }
 }

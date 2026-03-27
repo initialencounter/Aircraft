@@ -5,6 +5,7 @@ use aircraft_types::{
 use base64::engine::general_purpose;
 use base64::Engine;
 use chrono::Local;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::RwLock;
@@ -13,12 +14,12 @@ use std::{env, sync::Arc};
 use tokio::task;
 use tokio::time::{sleep, Duration};
 
-use reqwest::header;
+use reqwest::{header, StatusCode};
 use reqwest::{multipart, Client};
 
 use crate::utils::{
-    build_confirmation_message, get_today_date, match_file, match_file_list, parse_date,
-    prepare_file_info, RawFileInfo,
+    build_confirmation_message, get_today_date, match_file, match_file_list, match_login_username,
+    match_password_incorrect_count, parse_date, prepare_file_info, RawFileInfo,
 };
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -33,6 +34,14 @@ const DEBUG_HOST: &str = "http://127.0.0.1:3000";
 const FAKE_IMAGE: &str = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LoginResponse {
+    pub success: bool,
+    pub message: String,
+    pub password_incorrect_count: u32,
+    pub login_username: String,
+}
 
 pub struct HttpClient {
     pub client: Client,
@@ -136,7 +145,7 @@ impl HttpClient {
         code: &str,
         username: &str,
         password: &str,
-    ) -> Result<()> {
+    ) -> Result<LoginResponse> {
         self.log("INFO", &format!("username: {}", username)).await;
         self.log("INFO", &format!("password: {}", password)).await;
 
@@ -145,7 +154,12 @@ impl HttpClient {
         if DEBUG_MODE.load(Ordering::Relaxed) {
             self.log("INFO", "调试模式，跳过登录").await;
             LOGIN_STATUS.store(true, Ordering::Relaxed);
-            return Ok(());
+            return Ok(LoginResponse {
+                success: true,
+                message: "调试模式，跳过登录".to_string(),
+                password_incorrect_count: 0,
+                login_username: "debug_user".to_string(),
+            });
         }
 
         let response = self
@@ -164,9 +178,50 @@ impl HttpClient {
             .send()
             .await?;
 
-        if response.status().is_success() {
-            LOGIN_STATUS.store(true, Ordering::Relaxed);
-            self.log("INFO", "登录成功").await;
+        let response_status = response.status();
+        let response_text = response.text().await?;
+        Ok(self.login_helper(response_status, response_text).await)
+    }
+
+    pub async fn login_helper(
+        &self,
+        response_status: StatusCode,
+        response_text: String,
+    ) -> LoginResponse {
+        if !response_status.is_success() {
+            LOGIN_STATUS.store(false, Ordering::Relaxed);
+            return LoginResponse {
+                success: false,
+                message: format!("登录失败, 状态码:{}", response_status.as_u16()),
+                password_incorrect_count: 0,
+                login_username: "unknow".to_string(),
+            };
+        }
+        let password_incorrect_count = match_password_incorrect_count(response_text.clone());
+        let login_username = match_login_username(response_text.clone());
+        if response_text.contains("密码错误") {
+            self.log(
+                "ERROR",
+                &format!("登录失败: 密码错误{}次", password_incorrect_count),
+            )
+            .await;
+            return LoginResponse {
+                success: false,
+                message: format!("密码错误{}次", password_incorrect_count),
+                password_incorrect_count,
+                login_username,
+            };
+        } else if response_text.contains("校验码错误") {
+            self.log("ERROR", &format!("登录失败: 校验码错误")).await;
+            return LoginResponse {
+                success: false,
+                message: "校验码错误".to_string(),
+                password_incorrect_count,
+                login_username,
+            };
+        } else if response_text.contains("欢迎") {
+            self.log("INFO", &format!("登录成功, 用户名: {}", login_username.clone()))
+                .await;
             let log_tx = self.log_tx.clone();
             task::spawn(async move {
                 sleep(Duration::from_millis(3600 * 1000 * 24)).await;
@@ -178,15 +233,22 @@ impl HttpClient {
                     message: "登录状态已过期，请重新登录".to_string(),
                 });
             });
-            Ok(())
+            LOGIN_STATUS.store(true, Ordering::Relaxed);
+            return LoginResponse {
+                success: true,
+                message: format!("登录成功, 用户名: {}", login_username.clone()),
+                password_incorrect_count,
+                login_username,
+            };
         } else {
-            LOGIN_STATUS.store(false, Ordering::Relaxed);
-            self.log("ERROR", &format!("登录失败: {:?}", response.text().await?))
-                .await;
-            Err("登录失败".into())
+            return LoginResponse {
+                success: false,
+                message: format!("登录失败, 状态码:{}", response_status.as_u16()),
+                password_incorrect_count: 0,
+                login_username: "unknow".to_string(),
+            };
         }
     }
-
     pub async fn query_project(&self, query_string: &str) -> Result<QueryResult> {
         let host = self.host.read().unwrap().clone();
         let url = format!("https://{}/rest/inspect/query?{}", &host, query_string);

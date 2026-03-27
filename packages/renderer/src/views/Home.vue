@@ -146,12 +146,11 @@ const handleLogin = async () => {
     })
 
     const data = await response.json()
-
-    if (data.success) {
-      ElMessage.success('登录成功')
-    } else if (data.message) {
-      ElMessage.error(data.message)
-      // 登录失败后重新获取验证码
+    ElMessage({
+      message: data.message,
+      type: data.success ? 'success' : 'error',
+    })
+    if (!data.success) {
       getCaptcha()
     }
   } catch (error) {
