@@ -81,7 +81,10 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
 
         // 英文名称
         if item.contains("电池/电芯类别") && index + 2 < content.len() {
-            let cn_name = content[index + 2].clone();
+            let mut cn_name = content[index + 2].clone();
+            if cn_name.contains("额定电压") && cn_name.contains("Voltage") {
+                cn_name = "".to_string();
+            }
             if !cn_name.contains("型号") && !cn_name.contains("Type") {
                 summary.en_name = cn_name;
             }
