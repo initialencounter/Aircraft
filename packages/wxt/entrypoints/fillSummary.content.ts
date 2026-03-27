@@ -305,7 +305,7 @@ async function entrypoint() {
       mass: String(matchBatteryWeight('为' + summaryInfo.mass)),
       licontent: licontent === '0' ? '' : licontent,
       testReportNo: summaryInfo.testReportNo,
-      testDate: summaryInfo.testDate,
+      testDate: summaryInfo.testDate.replace(/\./g, '-'),
       testManual: matchTestManualMap[testManual as keyof typeof matchTestManualMap] ?? '',
       test1: summaryInfo.test1.includes('通过'),
       test2: summaryInfo.test2.includes('通过'),
