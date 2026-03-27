@@ -51,7 +51,8 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         }
 
         // 委托单位信息
-        if (item.contains("委托单位") || item.contains("申请商")) && index + 2 < content.len() {
+        if (item.contains("委托单位") || item.contains("申请商")) && index + 2 < content.len()
+        {
             let consignor_info = content[index + 2].clone();
             if !consignor_info.contains("生产单位") && !consignor_info.contains("Manufacturer")
             {
@@ -60,7 +61,8 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         }
 
         // 生产单位信息
-        if (item.contains("生产单位") || item.contains("制造商")) && index + 2 < content.len() {
+        if (item.contains("生产单位") || item.contains("制造商")) && index + 2 < content.len()
+        {
             let manufacturer_info = content[index + 2].clone();
             if !manufacturer_info.contains("测试单位") && !manufacturer_info.contains("Test Lab")
             {
@@ -105,6 +107,11 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         if summary.trademark.contains("额定电压") {
             summary.trademark = "/".to_string();
         }
+    }
+
+    // 备注
+    if summary.note.contains("签名") && summary.note.contains("Signatory") {
+        summary.note = "/".to_string();
     }
 
     // 签发日期
