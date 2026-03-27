@@ -66,7 +66,6 @@ const loading = ref(false)
 const config = ref<Config>(defaultConfig)
 const initial = ref<Config>(defaultConfig)
 
-
 // 防抖函数
 const debounce = (func: Function, delay: number) => {
   let timeoutId: any
@@ -84,7 +83,7 @@ const debouncedSave = debounce(() => {
 async function getConfig() {
   try {
     const appConfigResponse = await apiManager.get('/get-config')
-    config.value =  appConfigResponse
+    config.value = appConfigResponse
   } catch (error) {
     console.error('获取配置失败:', error)
   }
@@ -104,8 +103,8 @@ async function saveConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    await apiManager.post('/save-config',tmpConfig)
-    ipcManager.invoke('reload_config', tmpConfig)
+    await apiManager.post('/save-config', tmpConfig)
+    ipcManager.invoke('reload_config', { config: tmpConfig })
     ElMessage.success('保存成功')
   } catch (error) {
     ElMessage.error(JSON.stringify(error))
@@ -118,7 +117,7 @@ async function reloadConfig() {
   const tmpConfig: Config = new ConfigSchema(config.value)
   loading.value = true
   try {
-    await apiManager.post('/reload-config',tmpConfig)
+    await apiManager.post('/reload-config', tmpConfig)
     ElMessage.success('重载成功')
   } catch {
     ElMessage.error('重载失败')

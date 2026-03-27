@@ -83,7 +83,7 @@ class Ipc extends Service {
       return this.ctx.bindings.native.getServerPort()
     })
 
-    ipcMain.handle('reload_config', (_, config: Config) => {
+    ipcMain.handle('reload_config', (_, { config }: { config: Config }) => {
       this.ctx.emit('auto-launch-switch', config.base.autoStart, config.base.silentStart)
     })
   }
