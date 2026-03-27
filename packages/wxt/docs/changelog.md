@@ -1,11 +1,26 @@
 # 更新日志
 
+## [v3.6.1] - 2026-03-27
+
+### 新增
+
+- 概要测试日期晚于今天验证 ([2697e42](https://github.com/initialencounter/Aircraft/commit/2697e42))
+
+- 委托方和制造商联系方式相同校验 ([afb2d8d](https://github.com/initialencounter/Aircraft/commit/afb2d8d))
+
+### 修复
+
+- 概要测试日期中以`.`分割时无法填充日期 ([a99fe12](https://github.com/initialencounter/Aircraft/commit/a99fe12))
+
+- 概要品名合并为一大行时英文品名填充为额定电压([a430a2be](https://github.com/initialencounter/Aircraft/commit/a430a2be))
+
+- 概要备注为空时填充为签名([54cf1f4](https://github.com/initialencounter/Aircraft/commit/54cf1f4))
+
 ## [v3.5.5] - 2026-03-10
 
 - 删除概要填充默认值([9d9678e](https://github.com/initialencounter/Aircraft/commit/9d9678e3705409714db11df252368b9411cceab6))
 
 - 增加形状别名([f4eb897](https://github.com/initialencounter/Aircraft/commit/f4eb897719e0f4a65aa531bb4262d2aa4022c9c2))
-
 
 ## [v3.5.4] - 2026-03-09
 
@@ -45,7 +60,6 @@
 
 - 导入概要委托方信息([a4987f8](https://github.com/initialencounter/Aircraft/commit/a4987f8bec3fd7b2089490d2dac1867a7045f9bc))
 
-
 ### 修复
 
 - 概要搜索框输入失效([2970baa](https://github.com/initialencounter/Aircraft/commit/2970baa4fbba2dfd6ae98d82e917a93ae3678ece))
@@ -54,7 +68,6 @@
 
 - 去除单位信息中的字符实体([387419a](https://github.com/initialencounter/Aircraft/commit/387419ace3396f55ea54dc1aa6a53678b26f845d))
 
-
 ## [v3.4.2] - 2026-03-04
 
 ### 修复
@@ -62,7 +75,6 @@
 - 965电池中英文验证([4478367](https://github.com/initialencounter/Aircraft/commit/4478367787d231338233e0602e0b00cad2b15fa4))
 
 - 概要填充瓦时和锂含量为0([fc8c51c](https://github.com/initialencounter/Aircraft/commit/fc8c51c9517345a23fb5ee5d43fc3cfe6f0db83d))
-
 
 ## [v3.4.1] - 2026-03-04
 
@@ -84,10 +96,9 @@
 
 - 锂电池T8验证([8cae1c3](https://github.com/initialencounter/Aircraft/commit/8cae1c3a401689c57572a091b2479384aa78d399))
 
-- 概要数据对比([577f348](https://github.com/initialencounter/Aircraft/commit/577f348ceb1f9c74846e30184f6b75e2c784e1e9)) 
+- 概要数据对比([577f348](https://github.com/initialencounter/Aircraft/commit/577f348ceb1f9c74846e30184f6b75e2c784e1e9))
 
 - 将验证结果显示在验证按钮上，鼠标悬停即可查看([e104f38](https://github.com/initialencounter/Aircraft/commit/e104f38011fdbc890cb936c7586b15ed76be946c))
-
 
 ## [v3.3.0] - 2026-03-03
 
@@ -132,7 +143,6 @@
 - 更新初验物品种类选项([ab9111a](https://github.com/initialencounter/Aircraft/commit/ab9111ac194add241b07cfebccb8f30a519cc293))
 
 - 海运瓦时数范围错误([78f30e7](https://github.com/initialencounter/Aircraft/commit/78f30e76aae5a94d62c95c0122c5295296449819))
-
 
 ## [v3.2.4] - 2026-02-10
 
@@ -206,7 +216,6 @@
 ### 修复
 
 - UN3556 荷电状态勾选([aa269b9](https://github.com/initialencounter/Aircraft/commit/aa269b945dbd8033bce591a748825b84fa9d559a))
-
 
 ## [v3.0.10] - 2025-12-01
 
