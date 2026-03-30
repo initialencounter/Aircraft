@@ -35,9 +35,9 @@ let creating: Promise<void> | null = null;
 let ortIsInitialized = false;
 let aircraftServerAvailable = true;
 let enableLabelCheck = false;
-// 检测浏览器类型
-const isFirefox = typeof browser !== "undefined";
-let useWebGPU = !isFirefox;
+
+// @ts-ignore
+let useWebGPU = chrome.runtime.getManifest()?.web_accessible_resources[0].resources.includes('model.js');
 
 // 创建 Offscreen Document（仅 Chrome）
 async function setupOffscreenDocument(path: string) {
