@@ -59,7 +59,7 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array, Tenso
 }
 
 // YOLO26 专用处理函数
-export function process_yolo26_output(output: any, img_width: number, img_height: number, confidence_threshold: number = 0.35): SegmentResult[] {
+export function process_yolo26_output(output: any, img_width: number, img_height: number, confidence_threshold: number = 0.25): SegmentResult[] {
   const result: SegmentResult[] = [];
   const inputSize = 640; // YOLO26 模型输入尺寸
 
