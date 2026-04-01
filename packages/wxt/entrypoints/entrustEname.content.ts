@@ -28,7 +28,10 @@ interface CustomerResponse {
 
 export default defineContentScript({
   runAt: 'document_end',
-  matches: ['https://*/sales/entrust/main'],
+  matches: [
+    'https://*/sales/entrust/main',
+    'https://*/sales/entrust/edit*',
+  ],
   allFrames: true,
   async main() {
     await entrypoint()
