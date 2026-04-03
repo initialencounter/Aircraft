@@ -5,3 +5,7 @@ edition = "2024"
 
 [dependencies]
 yolo = { path = "../yolo" }
+pdf_parser = {path = "../pdf_parser" }
+serde_json = "1.0.149"
+share = { path = "../share" }
+tokio = "1.50.0"
