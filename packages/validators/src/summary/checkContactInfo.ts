@@ -3,9 +3,9 @@ import type { CheckResult } from '../lithium/shared/types'
 function matchContactInfo(info: string) {
   // 电话/Tel：000-1646464
   // 邮箱/Mail：abc@gmail.com
-  const telRegex = /电话\s?\/\s?Tel\s?[:：]?\s*([^\s]+)/
-  const mailRegex = /邮箱\s?\/\s?Mail\s?[:：]?\s*([^\s]+)/
-  const websiteRegex = /网址\s?\/\s?Website\s?[:：]?\s*([^\s]+)/
+  const telRegex = /电话\s?\/\s?Tel\s?[:：]?\s*([^\u4e00-\u9fa5]+)/
+  const mailRegex = /邮箱\s?\/\s?Mail\s?[:：]?\s*([^\u4e00-\u9fa5]+)/
+  const websiteRegex = /网址\s?\/\s?Website\s?[:：]?\s*([^\u4e00-\u9fa5]+)/
 
   const telMatch = info.match(telRegex)
   const mailMatch = info.match(mailRegex)
