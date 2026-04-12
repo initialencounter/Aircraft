@@ -14,10 +14,11 @@ import { SodiumPkgInfoSubType } from "../shared/types"
 export function sodiumBtyLabelCheck(
   pkgInfoSubType: SodiumPkgInfoSubType,
   btyShape: string,
-  btyLabel: boolean
+  btyLabel: boolean,
+  isCell: boolean,
 ): CheckResult[] {
   const result: CheckResult[] = []
-  if (isBatteryLabel(pkgInfoSubType, btyShape)) {
+  if (isBatteryLabel(pkgInfoSubType, btyShape, isCell)) {
     if (!btyLabel)
       if (pkgInfoSubType === '978, II')
         result.push({

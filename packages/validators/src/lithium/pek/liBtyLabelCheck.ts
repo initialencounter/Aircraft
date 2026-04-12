@@ -13,10 +13,11 @@ import type { CheckResult, PkgInfoSubType } from '../shared/types'
 export function liBtyLabelCheck(
   pkgInfoSubType: PkgInfoSubType,
   btyShape: string,
-  liBtyLabel: boolean
+  liBtyLabel: boolean,
+  isCell: boolean,
 ): CheckResult[] {
   const result: CheckResult[] = []
-  if (isBatteryLabel(pkgInfoSubType, btyShape)) {
+  if (isBatteryLabel(pkgInfoSubType, btyShape, isCell)) {
     if (!liBtyLabel)
       if (pkgInfoSubType === '970, II')
         result.push({

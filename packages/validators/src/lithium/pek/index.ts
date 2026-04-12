@@ -206,7 +206,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
     ...checkStackTest(pkgInfoSubType, stackTest, stackTestEvaluation)
   )
   // 检查项目5 是否加贴锂电池标记
-  result.push(...liBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel))
+  result.push(...liBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel, isCell))
 
   // 包装说明
   if (isDangerous) {

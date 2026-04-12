@@ -171,7 +171,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   // 堆码检测
   result.push(...checkStackTest(pkgInfoSubType, stackTest, false))
   // 检查项目5 是否加贴锂电池标记
-  result.push(...sodiumBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel))
+  result.push(...sodiumBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel, isCell))
 
   // 包装说明
   if (isDangerous) {

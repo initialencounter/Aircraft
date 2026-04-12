@@ -229,7 +229,8 @@ function getPkgInfo(
 
 function isBatteryLabel(
   pkgInfoSubType: PkgInfoSubType | SodiumPkgInfoSubType,
-  shape: string
+  shape: string,
+  isCell: boolean,
 ): boolean {
   switch (pkgInfoSubType) {
     case '952':
@@ -245,6 +246,7 @@ function isBatteryLabel(
       return false
     case '970, II':
     case '978, II':
+      if (!isCell) return false
       return shape !== '8aad92b65aae82c3015ab094788a0026'
     case '965, IB':
     case '966, II':
