@@ -272,7 +272,7 @@ export function showSegmentMask(image: {
     margin: '5px',
     border: '5px solid transparent', // 初始时设置透明边框
   })
-  img.title = '点击放大/缩小'
+  img.title = '点击放大/缩小, 右键切换大小'
 
   // 双击缩小,恢复初始大小
   container.addEventListener('click', () => {
@@ -286,6 +286,14 @@ export function showSegmentMask(image: {
       img.style.height = image.height + 'px'
     }
   })
+  // 右键设置大小，再次右键恢复
+  let originalWidth = img.style.width
+  let originalHeight = img.style.height
+  container.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
+    img.style.width = img.style.width === originalWidth ? '100px' : originalWidth
+    img.style.height = img.style.height === originalHeight ? '100px' : originalHeight
+  })
   container.addEventListener('mouseenter', () => {
     img.style.border = '5px solid rgba(0, 123, 255, 0.8)' // 鼠标悬停时设置蓝色边框
   })
@@ -295,31 +303,13 @@ export function showSegmentMask(image: {
 
   img.src = image.imageData
   container.appendChild(img)
-  document.body.appendChild(container)
 
-  // 等待下一帧，确保DOM已经渲染完成，再计算位置
-  requestAnimationFrame(() => {
-    const y = imagePosition.getBoundingClientRect().y
-    container.style.top = y + 'px'
-
-    const width = imagePosition.getBoundingClientRect().width
-    const x =
-      imagePosition.getBoundingClientRect().x +
-      width -
-      container.getBoundingClientRect().width
-    container.style.left = x + 'px'
-
-    // 显示容器
-    container.style.visibility = 'visible'
-  })
-
-  // 动态调整位置
-  setInterval(() => {
-    const width = imagePosition.getBoundingClientRect().width
-    const x =
-      imagePosition.getBoundingClientRect().x +
-      width -
-      container.getBoundingClientRect().width
-    container.style.left = x + 'px'
-  }, 200)
+  // 改为挂载到 imagePosition 父元素，随容器滚动
+  const parent = imagePosition.parentElement
+  if (!parent) return
+  parent.style.position = 'relative'
+  parent.appendChild(container)
+  container.style.right = '0px'
+  container.style.top = '0px'
+  container.style.visibility = 'visible'
 }
