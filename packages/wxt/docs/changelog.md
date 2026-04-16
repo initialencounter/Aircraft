@@ -1,5 +1,13 @@
 # 更新日志
 
+## [v3.6.3] - 2026-04-16
+
+## 新增
+
+- 固定标签检测结果图片，并添加右键放大缩小功能([18fc5f3](https://github.com/initialencounter/Aircraft/commit/18fc5f3))
+
+- 更新YOLO权重
+
 ## [v3.6.2] - 2026-04-08
 
 ### 新增
