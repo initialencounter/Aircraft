@@ -400,6 +400,44 @@ async function entrypoint() {
     }
   }
 
+  async function getSegmentResults(image: Array<number> | null, label: boolean) {
+    try {
+      const labels: string[] = []
+      const segmentResults: SegmentResultWithOcr[] = []
+      if (!image || !label) return { labels, segmentResults }
+      const responseYolo = await getYOLOSegmentResults(image, true)
+
+      let labelBtyIndex = 0
+      for (const item of responseYolo.segmentResults) {
+        if (item.label === 'bty') {
+          let fixedLabel = 'bty'
+          const OCRResults = await recognizeBtyText(image, item.polygon)
+          if (OCRResults?.includes('3090')) {
+            fixedLabel = 'UN3090'
+          } else if (OCRResults?.includes('3091')) {
+            fixedLabel = 'UN3091'
+          } else if (OCRResults?.includes('3480')) {
+            fixedLabel = 'UN3480'
+          } else if (OCRResults?.includes('3481')) {
+            fixedLabel = 'UN3481'
+          } else if (OCRResults?.includes('3551')) {
+            fixedLabel = 'UN3551'
+          } else if (OCRResults?.includes('3552')) {
+            fixedLabel = 'UN3552'
+          }
+          labels[labelBtyIndex] = fixedLabel
+          segmentResults[labelBtyIndex] = { ...item, label: fixedLabel, ocrText: OCRResults }
+        }
+        labelBtyIndex++
+      }
+
+      return { labels, segmentResults }
+    } catch (error) {
+      console.error('getSegmentResults error:', error);
+      return { labels: [], segmentResults: [] };
+    }
+  }
+
   async function getYOLOSegmentResults(image: Array<number> | null, label: boolean) {
     try {
       const labels: string[] = []
@@ -418,7 +456,7 @@ async function entrypoint() {
       }
 
       for (const item of result) {
-        if (item.confidence > 0.5) {
+        if (item.confidence > 0.25) {
           if (!labels.includes(item.label)) {
             labels.push(item.label)
           }
@@ -472,16 +510,6 @@ async function entrypoint() {
       return ''
     }
   }
-
-  async function attachBtyOcrResults(image: Array<number>, segmentResults: SegmentResultWithOcr[]) {
-    const btyResults = segmentResults.filter((result) => result.label === 'bty' && result.mask.length >= 4)
-    await Promise.all(
-      btyResults.map(async (result) => {
-        result.ocrText = await recognizeBtyText(image, result.mask)
-      })
-    )
-  }
-
 
   async function getSummaryPath(searchRes: SearchResponse): Promise<string | null> {
     try {
@@ -660,8 +688,7 @@ async function entrypoint() {
             sendResponse(attachmentInfo);
             return;
           }
-          const yoloResults = await getYOLOSegmentResults(attachmentInfo.goods.packageImage, request.label)
-          await attachBtyOcrResults(attachmentInfo.goods.packageImage, yoloResults.segmentResults)
+          const yoloResults = await getSegmentResults(attachmentInfo.goods.packageImage, request.label)
           attachmentInfo.goods.labels = yoloResults.labels
           attachmentInfo.goods.segmentResults = yoloResults.segmentResults
           sendResponse(attachmentInfo)

@@ -16,7 +16,7 @@ function getPekExpectedLabel(
       break
     case '965, IB':
     case '968, IB':
-      label.push('9A', 'CAO', 'bty')
+      label.push('9A', 'CAO', 'UN3480')
       break
     case '966, I':
     case '969, I':
@@ -30,12 +30,16 @@ function getPekExpectedLabel(
       }
       break
     case '966, II':
-    case '969, II':
     case '967, II':
+      label.push('UN3481')
+      break
+    case '969, II':
     case '970, II':
+      label.push('UN3091')
+      break
     case '977, II':
     case '978, II':
-      label.push('bty')
+      label.push('UN3552')
       break
   }
   return label
