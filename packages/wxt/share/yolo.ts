@@ -104,7 +104,6 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array, Tenso
     const feeds = { "images": inputTensor };
 
     const res = await session.run(feeds);
-    console.log('raw yolo output:', res['output0']['data']); // 打印前5个检测的前6个值
     return process_yolo26_output(res['output0']['data'], res['output1']['data'], originalWidth, originalHeight);
   } catch (error) {
     console.error('predict error:', error);

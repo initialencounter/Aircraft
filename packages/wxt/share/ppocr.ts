@@ -583,7 +583,6 @@ export async function recognizeTextFromImageBytes(
   polygon?: number[][] | null,
 ): Promise<string> {
   const imageData = prepareOcrImage(await decodeImageData(imageInput), polygon);
-  console.log('imageData', imageDataToBase64(imageData));
   const detInput = buildDetectInput(imageData);
   const detTensor = new runtime.Tensor('float32', detInput.tensor, [1, 3, detInput.height, detInput.width]);
   const detFeeds = { [runtime.detSession.inputNames[0]]: detTensor };

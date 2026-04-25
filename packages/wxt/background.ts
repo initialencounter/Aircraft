@@ -417,7 +417,6 @@ async function entrypoint() {
         result = await predict_yolo26(session, Uint8Array.from(image), ort.Tensor);
       }
 
-      console.log('YOLO inference response:', result)
       for (const item of result) {
         if (item.confidence > 0.5) {
           if (!labels.includes(item.label)) {
