@@ -1,7 +1,9 @@
 import * as ort from "onnxruntime-web/webgpu";
+import { createPPOcrRuntime, recognizeTextFromImageBytes, type PPOcrRuntime } from "./share/ppocr";
 import { predict_yolo26 } from "./share/yolo";
 
 let session: ort.InferenceSession;
+let ppocrRuntime: PPOcrRuntime | null = null;
 
 (async () => {
   try {
@@ -19,7 +21,23 @@ let session: ort.InferenceSession;
       });
       console.log("Model loaded successfully with wasm");
     }
-    chrome.runtime.sendMessage({ action: 'madeModel', input: session.inputNames });
+
+    ppocrRuntime = await createPPOcrRuntime(ort, {
+      detModelUrl: chrome.runtime.getURL('en_PP-OCRv3_det.onnx'),
+      recModelUrl: chrome.runtime.getURL('en_PP-OCRv4_rec.onnx'),
+      dictUrl: chrome.runtime.getURL('dict.txt'),
+      executionProviders: ['wasm'],
+      wasmConfig: {
+        simd: true,
+        numThreads: Math.max(1, Math.min(4, navigator.hardwareConcurrency ?? 1)),
+        wasmPaths: {
+          wasm: chrome.runtime.getURL('ort-wasm-simd-threaded.asyncify.wasm'),
+        },
+      },
+    });
+    console.log("PPOCR loaded successfully with wasm simd");
+
+    chrome.runtime.sendMessage({ action: 'madeModel', input: { yolo: session.inputNames, ppocr: true } });
   }
   catch (e) {
     console.error("Error loading model:", e);
@@ -35,6 +53,26 @@ let session: ort.InferenceSession;
         } catch (error) {
           console.error("Error during YOLO inference:", error);
           sendResponse({ success: false });
+        }
+      })();
+    }
+
+    if (request.action == "ppocr-inference") {
+      (async () => {
+        try {
+          if (!ppocrRuntime) {
+            sendResponse('');
+            return;
+          }
+          const result = await recognizeTextFromImageBytes(
+            new Uint8Array(request.input),
+            ppocrRuntime,
+            request.polygon,
+          );
+          sendResponse(result);
+        } catch (error) {
+          console.error("Error during PPOCR inference:", error);
+          sendResponse('');
         }
       })();
     }

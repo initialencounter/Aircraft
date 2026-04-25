@@ -1,6 +1,7 @@
 import type { AttachmentInfo, GoodsInfo, OtherInfo, SegmentResult } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from './public/aircraft';
 import * as ort from "onnxruntime-web/wasm";
+import { createPPOcrRuntime, recognizeTextFromImageBytes, type PPOcrRuntime } from './share/ppocr';
 import { predict_yolo26 } from './share/yolo';
 import type * as Aircraft from './public/aircraft';
 import init, * as AircraftWasm from './public/aircraft.js';
@@ -31,10 +32,15 @@ const EVERYTHING_HTTP_ADDRESS = "http://127.0.0.1:25456";
 let session: ort.InferenceSession | null = null;
 let wasmModule: typeof Aircraft;
 let creating: Promise<void> | null = null;
+let ppocrRuntime: PPOcrRuntime | null = null;
 
 let ortIsInitialized = false;
 let aircraftServerAvailable = true;
 let enableLabelCheck = false;
+
+type SegmentResultWithOcr = SegmentResult & {
+  ocrText?: string
+}
 
 // @ts-ignore
 let useWebGPU = chrome.runtime.getManifest()?.web_accessible_resources[0].resources.includes('model.js');
@@ -88,6 +94,28 @@ async function initializeModel() {
   }
 }
 
+async function initializePPOcrModel() {
+  try {
+    ppocrRuntime = await createPPOcrRuntime(ort, {
+      detModelUrl: chrome.runtime.getURL('en_PP-OCRv3_det.onnx'),
+      recModelUrl: chrome.runtime.getURL('en_PP-OCRv4_rec.onnx'),
+      dictUrl: chrome.runtime.getURL('dict.txt'),
+      executionProviders: ['wasm'],
+      wasmConfig: {
+        simd: true,
+        numThreads: 1,
+        wasmPaths: {
+          wasm: chrome.runtime.getURL('ort-wasm-simd-threaded.wasm'),
+        },
+      },
+    })
+    console.log('PPOCR loaded successfully in background with single-thread WASM backend (Firefox)')
+  } catch (e) {
+    console.error('PPOCR loading error:', e)
+    ppocrRuntime = null
+  }
+}
+
 
 async function initAircraftWasm() {
   try {
@@ -127,6 +155,7 @@ async function entrypoint() {
           setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));
         } else {
           initializeModel().catch(err => console.error('initializeModel failed:', err));
+          initializePPOcrModel().catch(err => console.error('initializePPOcrModel failed:', err));
         }
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
@@ -374,7 +403,7 @@ async function entrypoint() {
   async function getYOLOSegmentResults(image: Array<number> | null, label: boolean) {
     try {
       const labels: string[] = []
-      const segmentResults: any[] = []
+      const segmentResults: SegmentResultWithOcr[] = []
 
       if (!image || !label) return { labels, segmentResults }
 
@@ -412,6 +441,46 @@ async function entrypoint() {
       input: image,
     });
     return result.result;
+  }
+
+  async function predictPPOcrWithOffscreen(image: Array<number>, polygon: number[][]): Promise<string> {
+    const result = await chrome.runtime.sendMessage({
+      action: 'ppocr-inference',
+      input: image,
+      polygon,
+    })
+    return typeof result === 'string' ? result : ''
+  }
+
+  async function recognizeBtyText(image: Array<number>, polygon: number[][]): Promise<string> {
+    try {
+      if (!polygon.length) {
+        return ''
+      }
+
+      if (useWebGPU) {
+        return await predictPPOcrWithOffscreen(image, polygon)
+      }
+
+      if (!ppocrRuntime) {
+        console.error('PPOCR Runtime is not initialized, cannot perform OCR inference')
+        return ''
+      }
+
+      return await recognizeTextFromImageBytes(Uint8Array.from(image), ppocrRuntime, polygon)
+    } catch (error) {
+      console.error('recognizeBtyText error:', error)
+      return ''
+    }
+  }
+
+  async function attachBtyOcrResults(image: Array<number>, segmentResults: SegmentResultWithOcr[]) {
+    const btyResults = segmentResults.filter((result) => result.label === 'bty' && result.mask.length >= 4)
+    await Promise.all(
+      btyResults.map(async (result) => {
+        result.ocrText = await recognizeBtyText(image, result.mask)
+      })
+    )
   }
 
 
@@ -593,6 +662,7 @@ async function entrypoint() {
             return;
           }
           const yoloResults = await getYOLOSegmentResults(attachmentInfo.goods.packageImage, request.label)
+          await attachBtyOcrResults(attachmentInfo.goods.packageImage, yoloResults.segmentResults)
           attachmentInfo.goods.labels = yoloResults.labels
           attachmentInfo.goods.segmentResults = yoloResults.segmentResults
           sendResponse(attachmentInfo)

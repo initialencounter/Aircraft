@@ -64,3 +64,5 @@ config.json
 .yarn/install-state.gz
 /background_images
 image_classifier/background_images
+
+packages/ocr

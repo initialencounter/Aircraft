@@ -30,6 +30,9 @@ export default defineConfig({
 
           // ONNX 模型相关文件
           'segment.onnx',
+          'en_PP-OCRv3_det.onnx', // https://huggingface.co/deepghs/paddleocr/blob/main/det/en_PP-OCRv3_det/model.onnx
+          'en_PP-OCRv4_rec.onnx', // https://huggingface.co/deepghs/paddleocr/blob/main/rec/en_PP-OCRv4_rec/model.onnx
+          'dict.txt',
 
           // WASM 相关文件
           'aircraft.js',
