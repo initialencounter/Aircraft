@@ -66,7 +66,7 @@ async function entrypoint() {
     async function (data) {
       if (!(data.freshHotkey === false)) {
         listenFreshHotkeyEntrustList()
-        listenVisibilityChangeEntrustList(data?.autoRefreshDuration ?? 10000)
+        listenVisibilityChangeEntrustList((data?.autoRefreshDuration ?? 10000) as number)
       }
       const assignUser = data.assignUser as string
       globalAssignUser = assignUser
@@ -75,7 +75,7 @@ async function entrypoint() {
       if (!(data.onekeyAssign === false)) await insertElement(assignUser)
       if (!(data.showInspectFormLink === false)) observeItemNumberList1()
       // 设置下一年报告颜色
-      removeOrange(data.nextYearColor ?? '', data.nextYearBgColor ?? '#76EEC6')
+      removeOrange((data?.nextYearColor ?? '') as string, (data?.nextYearBgColor ?? '#76EEC6') as string)
     }
   )
 

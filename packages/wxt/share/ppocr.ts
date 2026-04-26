@@ -604,14 +604,14 @@ export async function recognizeTextFromImageBytes(
 }
 
 // 下面的函数是为了调试方便，将 ImageData 转换为 Base64 字符串，以便在控制台查看图像内容
-function imageDataToBase64(imageData: ImageData): string {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+// function imageDataToBase64(imageData: ImageData): string {
+//   const canvas = document.createElement('canvas');
+//   const ctx = canvas.getContext('2d');
   
-  canvas.width = imageData.width;
-  canvas.height = imageData.height;
+//   canvas.width = imageData.width;
+//   canvas.height = imageData.height;
   
-  ctx?.putImageData(imageData, 0, 0);
+//   ctx?.putImageData(imageData, 0, 0);
   
-  return canvas.toDataURL();
-}
+//   return canvas.toDataURL();
+// }

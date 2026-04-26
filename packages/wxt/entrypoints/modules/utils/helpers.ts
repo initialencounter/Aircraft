@@ -128,6 +128,7 @@ export function batteryTestSummaryToSummaryInfo(
     cnName: data.cnName,
     enName: data.enName,
     classification: classificationMap[data.classification],
+    // @ts-ignore 兼容性处理，后续可以删除
     type: data.type,
     model: data.type,
     trademark: data.trademark,
