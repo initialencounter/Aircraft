@@ -11,6 +11,7 @@ import type {
 } from '../lithium/shared/types'
 import {
   getBtyTypeCode,
+  getIsIon,
   getPkgInfoSubType,
   matchBatteryWeight,
   matchCapacity,
@@ -54,6 +55,8 @@ export function checkSekAttachment(
   const summaryData: SummaryInfo | null = attachmentInfo?.summary ?? null
   const goodsInfo: GoodsInfo | null = attachmentInfo?.goods ?? null
   const btyType = currentData['btyType'] as SekBtyType
+  // 是否锂离子电池
+  const isIon = getIsIon(btyType)
   const {
     // 中文品名
     itemCName,
@@ -97,6 +100,9 @@ export function checkSekAttachment(
     ...checkSekGoods(
       conclusions,
       unno,
+      isSodium,
+      otherDescribe,
+      isIon,
       itemCName,
       currentData.projectNo,
       goodsInfo

@@ -2,7 +2,7 @@ import type { CheckResult, PkgInfoSubType } from '../../lithium/shared/types'
 
 function getPekExpectedLabel(
   pkgInfoSubType: PkgInfoSubType,
-  netWeight: number, 
+  netWeight: number,
 ): string[] {
   const label = []
   switch (pkgInfoSubType) {
@@ -45,7 +45,13 @@ function getPekExpectedLabel(
   return label
 }
 // 结论 1 危险品 0 非限制性物品
-function getSekExpectedLabel(conclusions: number, UNNO: string): string[] {
+function getSekExpectedLabel(
+  conclusions: number,
+  UNNO: string,
+  isSodium: boolean,
+  otherDescribe: string,
+  isIon: boolean,
+): string[] {
   if (['UN3556', 'UN3557', 'UN3558'].includes(UNNO)) {
     return ['9A']
   }
@@ -55,7 +61,27 @@ function getSekExpectedLabel(conclusions: number, UNNO: string): string[] {
   if (conclusions === 1) {
     return ['9A']
   } else {
-    return ['bty']
+    if (isSodium) {
+      if (otherDescribe === '540') {
+        return ['UN3551']
+      } else {
+        return ['UN3552']
+      }
+    } else {
+      if (isIon) {
+        if (otherDescribe === '540') {
+          return ['UN3480']
+        } else {
+          return ['UN3481']
+        }
+      } else {
+        if (otherDescribe === '540') {
+          return ['UN3090']
+        } else {
+          return ['UN3091']
+        }
+      }
+    }
   }
 }
 

@@ -169,7 +169,7 @@ function getBtyTypeCode(currentData: PekData | PekSodiumData, isSodium: boolean 
 }
 
 function getIsIon(btyType: SekBtyType) {
-  return btyType === '500' || btyType === '501' || btyType === '504'
+  return btyType === '500' || btyType === '501' || btyType === '504' || btyType === '600' || btyType === '601' || btyType === '602'
 }
 
 function getIsCell(btyType: SekBtyType | SekSodiumBtyType) {
@@ -181,7 +181,7 @@ function getIsSingleCell(
   // '500'     | '501'   | '502'   | '503'   | '504'       | '505'
   btyType: SekBtyType
 ) {
-  return !['500', '502'].includes(btyType)
+  return !['500', '502', '602'].includes(btyType)
 }
 
 function pekIsDangerous(

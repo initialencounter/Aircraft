@@ -13,6 +13,9 @@ export { getPekExpectedLabel, getSekExpectedLabel, checkLabel }
 export function checkSekGoods(
   conclusions: number,
   UNNO: string,
+  isSodium: boolean,
+  otherDescribe: string,
+  isIon: boolean,
   itemCName: string,
   projectNo: string,
   goodsInfo: GoodsInfo | null
@@ -21,7 +24,7 @@ export function checkSekGoods(
     return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称' }]
   }
   const results: CheckResult[] = []
-  const expectedLabel = getSekExpectedLabel(conclusions, UNNO)
+  const expectedLabel = getSekExpectedLabel(conclusions, UNNO, isSodium, otherDescribe, isIon)
   results.push(...checkLabel(expectedLabel, goodsInfo.labels))
   results.push(...checkItemCName(itemCName, goodsInfo.itemCName))
   results.push(...checkProjectNo(projectNo, goodsInfo.projectNo))
