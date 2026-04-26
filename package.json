@@ -49,8 +49,8 @@
     "@aircraft/renderer": "workspace:*"
   },
   "resolutions": {
-    "vite": "^8.0.0",
-    "typescript": "^6.0.0-dev.20260313"
+    "vite": "^8.0.10",
+    "typescript": "^6.0.3"
   },
   "packageManager": "yarn@4.12.0"
 }
