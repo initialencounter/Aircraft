@@ -23,7 +23,7 @@ import { PekSodiumData, PekSodiumPkgInfo, SekSodiumBtyType, SodiumPkgInfoSubType
  * @returns 修正后的值
  * @example fixFloatPrecision(16.08 * 1000) // 返回 16080 而不是 16079.999999999998
  */
-function fixFloatPrecision(value: number, precision: number = 2): number {
+function fixFloatPrecision(value: number, precision: number = 10): number {
   const multiplier = Math.pow(10, precision)
   return Math.round(value * multiplier) / multiplier
 }
