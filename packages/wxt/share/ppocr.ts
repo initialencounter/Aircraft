@@ -17,6 +17,37 @@ export interface PPOcrRuntime {
   Tensor: any;
 }
 
+export interface PPOcrRecognizeOptions {
+  detThreshold?: number;
+  limitSideLen?: number;
+  includePreparedImage?: boolean;
+}
+
+export interface PPOcrDebugImage {
+  width: number;
+  height: number;
+  data: number[];
+}
+
+export interface PPOcrDebugLine {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text: string;
+  confidence: number;
+}
+
+export interface PPOcrDebugResult {
+  text: string;
+  imageWidth: number;
+  imageHeight: number;
+  detectWidth: number;
+  detectHeight: number;
+  lines: PPOcrDebugLine[];
+  preparedImage?: PPOcrDebugImage | null;
+}
+
 interface PPOcrCreateOptions {
   detModelUrl: string;
   recModelUrl: string;
@@ -42,6 +73,13 @@ interface RecognitionBox {
   width: number;
   height: number;
   img: ImageData;
+}
+
+interface PPOcrPipelineResult {
+  imageData: ImageData;
+  detInput: DetectInput;
+  detBoxes: RecognitionBox[];
+  decodedLines: Array<{ text: string; mean: number }>;
 }
 
 function resolveRecognitionInputHeight(recSession: any): number {
@@ -79,6 +117,14 @@ function imageDataToCanvas(imageData: ImageData): OffscreenCanvas {
   return canvas;
 }
 
+function serializeImageData(imageData: ImageData): PPOcrDebugImage {
+  return {
+    width: imageData.width,
+    height: imageData.height,
+    data: Array.from(imageData.data),
+  };
+}
+
 function resizeImageData(imageData: ImageData, width: number, height: number): ImageData {
   const source = imageDataToCanvas(imageData);
   const canvas = createCanvas(width, height);
@@ -87,10 +133,10 @@ function resizeImageData(imageData: ImageData, width: number, height: number): I
   return context.getImageData(0, 0, width, height);
 }
 
-function normalizeDetSize(width: number, height: number) {
+function normalizeDetSize(width: number, height: number, limitSideLen: number = LIMIT_SIDE_LEN) {
   let ratio = 1;
-  if (Math.max(width, height) > LIMIT_SIDE_LEN) {
-    ratio = LIMIT_SIDE_LEN / Math.max(width, height);
+  if (Math.max(width, height) > limitSideLen) {
+    ratio = limitSideLen / Math.max(width, height);
   }
 
   const resizedHeight = Math.max(Math.round((height * ratio) / 32) * 32, 32);
@@ -138,6 +184,7 @@ function extractBoxesFromMap(
   width: number,
   height: number,
   sourceCanvas: OffscreenCanvas,
+  threshold: number = DET_THRESHOLD,
 ): RecognitionBox[] {
   const visited = new Uint8Array(width * height);
   const boxes: RecognitionBox[] = [];
@@ -148,7 +195,7 @@ function extractBoxesFromMap(
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const index = y * width + x;
-      if (visited[index] || probabilityMap[index] < DET_THRESHOLD) {
+      if (visited[index] || probabilityMap[index] < threshold) {
         continue;
       }
 
@@ -178,7 +225,7 @@ function extractBoxesFromMap(
         const leftX = currentX - 1;
         if (leftX >= 0) {
           const leftIndex = currentY * width + leftX;
-          if (!visited[leftIndex] && probabilityMap[leftIndex] >= DET_THRESHOLD) {
+          if (!visited[leftIndex] && probabilityMap[leftIndex] >= threshold) {
             visited[leftIndex] = 1;
             visitQueueX[tail] = leftX;
             visitQueueY[tail] = currentY;
@@ -189,7 +236,7 @@ function extractBoxesFromMap(
         const rightX = currentX + 1;
         if (rightX < width) {
           const rightIndex = currentY * width + rightX;
-          if (!visited[rightIndex] && probabilityMap[rightIndex] >= DET_THRESHOLD) {
+          if (!visited[rightIndex] && probabilityMap[rightIndex] >= threshold) {
             visited[rightIndex] = 1;
             visitQueueX[tail] = rightX;
             visitQueueY[tail] = currentY;
@@ -200,7 +247,7 @@ function extractBoxesFromMap(
         const topY = currentY - 1;
         if (topY >= 0) {
           const topIndex = topY * width + currentX;
-          if (!visited[topIndex] && probabilityMap[topIndex] >= DET_THRESHOLD) {
+          if (!visited[topIndex] && probabilityMap[topIndex] >= threshold) {
             visited[topIndex] = 1;
             visitQueueX[tail] = currentX;
             visitQueueY[tail] = topY;
@@ -211,7 +258,7 @@ function extractBoxesFromMap(
         const bottomY = currentY + 1;
         if (bottomY < height) {
           const bottomIndex = bottomY * width + currentX;
-          if (!visited[bottomIndex] && probabilityMap[bottomIndex] >= DET_THRESHOLD) {
+          if (!visited[bottomIndex] && probabilityMap[bottomIndex] >= threshold) {
             visited[bottomIndex] = 1;
             visitQueueX[tail] = currentX;
             visitQueueY[tail] = bottomY;
@@ -266,8 +313,8 @@ function extractBoxesFromMap(
   return sortBoxes(boxes);
 }
 
-function buildDetectInput(imageData: ImageData): DetectInput {
-  const { resizedWidth, resizedHeight } = normalizeDetSize(imageData.width, imageData.height);
+function buildDetectInput(imageData: ImageData, limitSideLen: number = LIMIT_SIDE_LEN): DetectInput {
+  const { resizedWidth, resizedHeight } = normalizeDetSize(imageData.width, imageData.height, limitSideLen);
   const resized = resizeImageData(imageData, resizedWidth, resizedHeight);
   const canvas = imageDataToCanvas(resized);
   const tensor = imageDataToCHW(resized, DET_MEAN, DET_STD);
@@ -610,26 +657,82 @@ export async function recognizeTextFromImageBytes(
   imageInput: Uint8Array,
   runtime: PPOcrRuntime,
   polygon?: number[][] | null,
+  options: PPOcrRecognizeOptions = {},
 ): Promise<string> {
+  const { decodedLines } = await runPPOcrPipeline(imageInput, runtime, polygon, options);
+  const lines = decodedLines
+    .map((item) => item.text.trim())
+    .filter(Boolean);
+
+  return lines.join(' ').trim();
+}
+
+export async function recognizeTextDebugFromImageBytes(
+  imageInput: Uint8Array,
+  runtime: PPOcrRuntime,
+  polygon?: number[][] | null,
+  options: PPOcrRecognizeOptions = {},
+): Promise<PPOcrDebugResult> {
+  const { imageData, detInput, detBoxes, decodedLines } = await runPPOcrPipeline(
+    imageInput,
+    runtime,
+    polygon,
+    options,
+  );
+  const lines = detBoxes.map((box, index) => ({
+    x: box.x,
+    y: box.y,
+    width: box.width,
+    height: box.height,
+    text: decodedLines[index]?.text.trim() ?? '',
+    confidence: decodedLines[index]?.mean ?? 0,
+  }));
+
+  return {
+    text: lines.map((line) => line.text).filter(Boolean).join(' ').trim(),
+    imageWidth: imageData.width,
+    imageHeight: imageData.height,
+    detectWidth: detInput.width,
+    detectHeight: detInput.height,
+    lines,
+    preparedImage: options.includePreparedImage ? serializeImageData(imageData) : null,
+  };
+}
+
+async function runPPOcrPipeline(
+  imageInput: Uint8Array,
+  runtime: PPOcrRuntime,
+  polygon?: number[][] | null,
+  options: PPOcrRecognizeOptions = {},
+): Promise<PPOcrPipelineResult> {
   const imageData = prepareOcrImage(await decodeImageData(imageInput), polygon);
-  const detInput = buildDetectInput(imageData);
+  const detInput = buildDetectInput(imageData, options.limitSideLen ?? LIMIT_SIDE_LEN);
   const detTensor = new runtime.Tensor('float32', detInput.tensor, [1, 3, detInput.height, detInput.width]);
   const detFeeds = { [runtime.detSession.inputNames[0]]: detTensor };
   const detResults = await runtime.detSession.run(detFeeds);
   const detOutputName = runtime.detSession.outputNames[0];
   const detOutput = detResults[detOutputName];
-  const detBoxes = extractBoxesFromMap(detOutput.data, detOutput.dims[3], detOutput.dims[2], detInput.canvas);
+  const detBoxes = extractBoxesFromMap(
+    detOutput.data,
+    detOutput.dims[3],
+    detOutput.dims[2],
+    detInput.canvas,
+    options.detThreshold ?? DET_THRESHOLD,
+  );
   const recInput = prepareRecognitionBatch(detBoxes, runtime.recImageHeight);
   const recTensor = new runtime.Tensor('float32', recInput.data, [detBoxes.length, 3, recInput.imgH, recInput.imgW]);
   const recFeeds = { [runtime.recSession.inputNames[0]]: recTensor };
   const recResults = await runtime.recSession.run(recFeeds);
   const recOutputName = runtime.recSession.outputNames[0];
   const recOutput = recResults[recOutputName];
-  const lines = decodeRecognition(recOutput, runtime.dictionary)
-    .map((item) => item.text.trim())
-    .filter(Boolean);
+  const decodedLines = decodeRecognition(recOutput, runtime.dictionary);
 
-  return lines.join(' ').trim();
+  return {
+    imageData,
+    detInput,
+    detBoxes,
+    decodedLines,
+  };
 }
 
 // 下面的函数是为了调试方便，将 ImageData 转换为 Base64 字符串，以便在控制台查看图像内容

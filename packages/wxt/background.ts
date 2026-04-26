@@ -1,8 +1,15 @@
 import type { AttachmentInfo, GoodsInfo, OtherInfo, SegmentResult } from 'aircraft-rs';
 import type { GoodsInfoWasm, SummaryInfo } from './public/aircraft';
 import * as ort from "onnxruntime-web/wasm";
-import { createPPOcrRuntime, recognizeTextFromImageBytes, type PPOcrRuntime } from './share/ppocr';
-import { predict_yolo26 } from './share/yolo';
+import {
+  createPPOcrRuntime,
+  recognizeTextDebugFromImageBytes,
+  recognizeTextFromImageBytes,
+  type PPOcrDebugResult,
+  type PPOcrRecognizeOptions,
+  type PPOcrRuntime,
+} from './share/ppocr';
+import { predict_yolo26, type YoloPredictOptions } from './share/yolo';
 import type * as Aircraft from './public/aircraft';
 import init, * as AircraftWasm from './public/aircraft.js';
 
@@ -40,6 +47,20 @@ let enableLabelCheck = false;
 
 type SegmentResultWithOcr = SegmentResult & {
   ocrText?: string
+}
+
+interface DebugYoloResult {
+  elapsedMs: number
+  iterations: number
+  averageMs: number
+  labels: string[]
+  segmentResults: SegmentResult[]
+}
+
+interface DebugPPOcrResult extends PPOcrDebugResult {
+  elapsedMs: number
+  iterations: number
+  averageMs: number
 }
 
 // @ts-ignore
@@ -159,122 +180,9 @@ async function entrypoint() {
         }
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
-    // chrome.contextMenus.onClicked.addListener(genericOnClick)
   } catch (error) {
     console.error('entrypoint initialization error:', error);
   }
-
-  // type CreateProperties = chrome.contextMenus.CreateProperties
-  // type ExtendedCreateProperties = CreateProperties & {
-  //   child?: ExtendedCreateProperties[]
-  // }
-
-  // async function genericOnClick(info: chrome.contextMenus.OnClickData) {
-  //   try {
-  //     switch (info.menuItemId) {
-  //       case 'lims_onekey_assign':
-  //         await sendMessageToActiveTab('lims_onekey_assign')
-  //         break
-  //       case 'pdf测试':
-  //         const pdfBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/SEKGZ202508140000.pdf")
-  //         const response4: GoodsInfo = await getGoodsInfo(pdfBuffer!, false)
-  //         console.log('WASM get-goods response:', response4)
-  //         break
-
-  //       case '概要测试':
-  //         const summaryBuffer = await downloadEverythingFile("E:\\2025\\11\\2026\\11.10安磁 新出 2026（9份）\\A25090200-6 嘉成 112028 空海运\\PEKGZ202511115345 概要.docx")
-  //         let responseSummary: SummaryInfo | null = await getSummaryInfo(summaryBuffer!)
-  //         console.log('WASM get-summary response:', responseSummary)
-  //         break
-
-  //       case 'yolo测试':
-  //         const imgBuffer = await downloadEverythingFile("C:/Users/29115/Downloads/upload/000.png")
-  //         console.time("yolo测试")
-  //         for (let i = 0; i < 100; i++) {
-  //           const responseYolo = await getYOLOSegmentResults(Array.from(new Uint8Array(imgBuffer!)), true)
-  //           console.log('WASM yolo response:', i, responseYolo.labels)
-  //         }
-  //         console.timeEnd("yolo测试")
-  //         break
-  //       default:
-  //         console.log('Standard context menu item clicked.')
-  //     }
-  //   } catch (error) {
-  //     console.error('genericOnClick error:', error);
-  //   }
-  // }
-
-  // chrome.runtime.onInstalled.addListener(async function () {
-  //   try {
-  //     const version = chrome.runtime.getManifest().version
-  //     await backgroundSleep(500)
-  //     const menus: ExtendedCreateProperties = {
-  //       title: '当前插件版本：' + version,
-  //       id: 'lims',
-  //       child: [
-  //         { title: 'pdf测试', id: 'pdf测试' },
-  //         { title: '概要测试', id: '概要测试' },
-  //         { title: 'yolo测试', id: 'yolo测试' },
-  //         {
-  //           title: '其他',
-  //           id: 'other_menu',
-  //           child: [
-  //             { title: 'pek1', id: 'pek1' },
-  //             { title: 'pek2', id: 'pek2' },
-  //             {
-  //               title: 'pek3',
-  //               id: 'pek3',
-  //               child: [
-  //                 { title: 'pek31', id: 'pek31' },
-  //                 { title: 'pek32', id: 'pek32' },
-  //                 { title: 'pek33', id: 'pek33' },
-  //               ],
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //     }
-  //     createContextMenu(menus)
-  //   } catch (error) {
-  //     console.error('onInstalled error:', error);
-  //   }
-  // })
-
-  // function createContextMenu(
-  //   createProperties: ExtendedCreateProperties,
-  //   id?: number | string
-  // ) {
-  //   try {
-  //     createProperties['parentId'] = id
-  //     const { child, ...properties } = createProperties
-  //     const parentId = chrome.contextMenus.create(properties)
-  //     if (!createProperties.child) {
-  //       return
-  //     }
-  //     for (let i = 0; i < createProperties.child.length; i++) {
-  //       createContextMenu(createProperties.child[i], parentId)
-  //     }
-  //   } catch (error) {
-  //     console.error('createContextMenu error:', error);
-  //   }
-  // }
-
-  // async function sendMessageToActiveTab(message: string) {
-  //   try {
-  //     const [tab] = await chrome.tabs.query({
-  //       active: true,
-  //       lastFocusedWindow: true,
-  //     })
-  //     if (!tab.id) return
-  //     await chrome.tabs.sendMessage(tab.id, message)
-  //   } catch (error) {
-  //     console.error('sendMessageToActiveTab error:', error);
-  //   }
-  // }
-
-  // async function backgroundSleep(ms: number) {
-  //   return new Promise((resolve) => setTimeout(resolve, ms))
-  // }
 
   async function getAttachmentInfo(
     aircraftServer: string,
@@ -438,7 +346,11 @@ async function entrypoint() {
     }
   }
 
-  async function getYOLOSegmentResults(image: Array<number> | null, label: boolean) {
+  async function getYOLOSegmentResults(
+    image: Array<number> | null,
+    label: boolean,
+    options?: YoloPredictOptions,
+  ) {
     try {
       const labels: string[] = []
       const segmentResults: SegmentResultWithOcr[] = []
@@ -452,7 +364,7 @@ async function entrypoint() {
         if (!ortIsInitialized) {
           console.error('ONNX Runtime is not initialized, cannot perform YOLO inference');
         }
-        result = await predict_yolo26(session, Uint8Array.from(image), ort.Tensor);
+        result = await predict_yolo26(session, Uint8Array.from(image), ort.Tensor, options);
       }
 
       for (const item of result) {
@@ -476,8 +388,21 @@ async function entrypoint() {
     const result = await chrome.runtime.sendMessage({
       action: 'yolo-inference',
       input: image,
+      options: undefined,
     });
     return result.result;
+  }
+
+  async function predictWithOffscreenDebug(
+    image: Array<number>,
+    options?: YoloPredictOptions,
+  ): Promise<SegmentResult[]> {
+    const result = await chrome.runtime.sendMessage({
+      action: 'yolo-inference',
+      input: image,
+      options,
+    })
+    return result.result
   }
 
   async function predictPPOcrWithOffscreen(image: Array<number>, polygon: number[][]): Promise<string> {
@@ -485,8 +410,23 @@ async function entrypoint() {
       action: 'ppocr-inference',
       input: image,
       polygon,
+      options: undefined,
     })
     return typeof result === 'string' ? result : ''
+  }
+
+  async function predictPPOcrDebugWithOffscreen(
+    image: Array<number>,
+    polygon?: number[][],
+    options?: PPOcrRecognizeOptions,
+  ): Promise<PPOcrDebugResult> {
+    const result = await chrome.runtime.sendMessage({
+      action: 'ppocr-debug-inference',
+      input: image,
+      polygon,
+      options,
+    })
+    return result as PPOcrDebugResult
   }
 
   async function recognizeBtyText(image: Array<number>, polygon: number[][]): Promise<string> {
@@ -508,6 +448,69 @@ async function entrypoint() {
     } catch (error) {
       console.error('recognizeBtyText error:', error)
       return ''
+    }
+  }
+
+  async function runDebugYolo(
+    image: Array<number>,
+    iterations: number,
+    options?: YoloPredictOptions,
+  ): Promise<DebugYoloResult> {
+    const safeIterations = Math.max(1, Math.floor(iterations))
+    let segmentResults: SegmentResult[] = []
+    const start = performance.now()
+
+    for (let index = 0; index < safeIterations; index += 1) {
+      const currentResults = useWebGPU
+        ? await predictWithOffscreenDebug(image, options)
+        : await predict_yolo26(session, Uint8Array.from(image), ort.Tensor, options)
+      if (index === safeIterations - 1) {
+        segmentResults = currentResults
+      }
+    }
+
+    const elapsedMs = performance.now() - start
+    return {
+      elapsedMs,
+      iterations: safeIterations,
+      averageMs: elapsedMs / safeIterations,
+      labels: [...new Set(segmentResults.map((item) => item.label))],
+      segmentResults,
+    }
+  }
+
+  async function runDebugPPOcr(
+    image: Array<number>,
+    polygon: number[][] | undefined,
+    iterations: number,
+    options?: PPOcrRecognizeOptions,
+  ): Promise<DebugPPOcrResult> {
+    const safeIterations = Math.max(1, Math.floor(iterations))
+    let result: PPOcrDebugResult = {
+      text: '',
+      imageWidth: 0,
+      imageHeight: 0,
+      detectWidth: 0,
+      detectHeight: 0,
+      lines: [],
+    }
+    const start = performance.now()
+
+    for (let index = 0; index < safeIterations; index += 1) {
+      const currentResult = useWebGPU
+        ? await predictPPOcrDebugWithOffscreen(image, polygon, options)
+        : await recognizeTextDebugFromImageBytes(Uint8Array.from(image), ppocrRuntime!, polygon, options)
+      if (index === safeIterations - 1) {
+        result = currentResult
+      }
+    }
+
+    const elapsedMs = performance.now() - start
+    return {
+      ...result,
+      elapsedMs,
+      iterations: safeIterations,
+      averageMs: elapsedMs / safeIterations,
     }
   }
 
@@ -715,9 +718,57 @@ async function entrypoint() {
 
       if (request.action === 'get-summary-info') {
         (async () => {
-          const summaryInfo = await getSummaryInfo(request.summaryBuffer)
+          const summaryInfo = await getSummaryInfo(Uint8Array.from(request.summaryBytes ?? []).buffer)
           sendResponse(summaryInfo)
         })();
+        return true
+      }
+
+      if (request.action === 'get-goods-info') {
+        (async () => {
+          const goodsInfo = await getGoodsInfo(Uint8Array.from(request.pdfBytes ?? []).buffer, request.is_965 ?? false)
+          sendResponse(goodsInfo)
+        })()
+        return true
+      }
+
+      if (request.action === 'debug-yolo') {
+        (async () => {
+          const result = await runDebugYolo(
+            request.image,
+            request.iterations ?? 1,
+            request.options,
+          )
+          sendResponse(result)
+        })()
+        return true
+      }
+
+      if (request.action === 'debug-ppocr') {
+        (async () => {
+          if (!useWebGPU && !ppocrRuntime) {
+            sendResponse({
+              text: '',
+              imageWidth: 0,
+              imageHeight: 0,
+              detectWidth: 0,
+              detectHeight: 0,
+              lines: [],
+              preparedImage: null,
+              elapsedMs: 0,
+              iterations: 0,
+              averageMs: 0,
+            })
+            return
+          }
+          const result = await runDebugPPOcr(
+            request.image,
+            request.polygon,
+            request.iterations ?? 1,
+            request.options,
+          )
+          sendResponse(result)
+        })()
         return true
       }
     } catch (error) {

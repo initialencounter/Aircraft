@@ -8,6 +8,10 @@ const YOLO_PROTO_HEIGHT = 160;
 const YOLO_MASK_CHANNELS = 32;
 const INV_255 = 1 / 255;
 
+export interface YoloPredictOptions {
+  confidenceThreshold?: number;
+}
+
 function extractContourPointsFromMask(
   mask: Float32Array,
   maskWidth: number,
@@ -61,8 +65,16 @@ function normalizeBox(x1: number, y1: number, x2: number, y2: number) {
   };
 }
 
-export async function predict_yolo26(session: any, imageInput: Uint8Array, Tensor: any) {
+export async function predict_yolo26(
+  session: any,
+  imageInput: Uint8Array,
+  Tensor: any,
+  options: YoloPredictOptions = {},
+) {
   try {
+    const confidenceThreshold = Number.isFinite(options.confidenceThreshold)
+      ? Math.max(0, Math.min(1, options.confidenceThreshold as number))
+      : 0.25;
 
     let originalWidth: number;
     let originalHeight: number;
@@ -105,7 +117,13 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array, Tenso
     const feeds = { images: inputTensor };
 
     const res = await session.run(feeds);
-    return process_yolo26_output(res['output0']['data'], res['output1']['data'], originalWidth, originalHeight);
+    return process_yolo26_output(
+      res['output0']['data'],
+      res['output1']['data'],
+      originalWidth,
+      originalHeight,
+      confidenceThreshold,
+    );
   } catch (error) {
     console.error('predict error:', error);
     return [];

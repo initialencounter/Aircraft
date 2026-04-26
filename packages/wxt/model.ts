@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web/webgpu";
-import { createPPOcrRuntime, recognizeTextFromImageBytes, type PPOcrRuntime } from "./share/ppocr";
+import { createPPOcrRuntime, recognizeTextDebugFromImageBytes, recognizeTextFromImageBytes, type PPOcrRuntime } from "./share/ppocr";
 import { predict_yolo26 } from "./share/yolo";
 
 let session: ort.InferenceSession;
@@ -48,7 +48,7 @@ let ppocrRuntime: PPOcrRuntime | null = null;
     if (request.action == "yolo-inference") {
       (async () => {
         try {
-          const result = await predict_yolo26(session, new Uint8Array(request.input), ort.Tensor);
+          const result = await predict_yolo26(session, new Uint8Array(request.input), ort.Tensor, request.options);
           sendResponse({ success: true, result });
         } catch (error) {
           console.error("Error during YOLO inference:", error);
@@ -68,11 +68,33 @@ let ppocrRuntime: PPOcrRuntime | null = null;
             new Uint8Array(request.input),
             ppocrRuntime,
             request.polygon,
+            request.options,
           );
           sendResponse(result);
         } catch (error) {
           console.error("Error during PPOCR inference:", error);
           sendResponse('');
+        }
+      })();
+    }
+
+    if (request.action == "ppocr-debug-inference") {
+      (async () => {
+        try {
+          if (!ppocrRuntime) {
+            sendResponse({ text: '', imageWidth: 0, imageHeight: 0, detectWidth: 0, detectHeight: 0, lines: [], preparedImage: null });
+            return;
+          }
+          const result = await recognizeTextDebugFromImageBytes(
+            new Uint8Array(request.input),
+            ppocrRuntime,
+            request.polygon,
+            request.options,
+          );
+          sendResponse(result);
+        } catch (error) {
+          console.error("Error during PPOCR debug inference:", error);
+          sendResponse({ text: '', imageWidth: 0, imageHeight: 0, detectWidth: 0, detectHeight: 0, lines: [], preparedImage: null });
         }
       })();
     }

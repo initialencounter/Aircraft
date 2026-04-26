@@ -1,0 +1,1 @@
+declare const __ENABLE_TEST_PAGE__: boolean
