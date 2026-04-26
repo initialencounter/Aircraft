@@ -58,7 +58,6 @@ export interface Config {
   aircraftServer: string
   enableCheckAttachment: boolean
   enableLabelCheck: boolean
-  enableLabelCheckManual: boolean
 }
 
 const ModelsWithFactoryList: Schema<ModelsWithFactory> = Schema.object({
@@ -173,9 +172,6 @@ export const Config: Schema<Config> = Schema.intersect([
     enableLabelCheck: Schema.boolean()
       .description('启用标签检查（自动识别包装标签）')
       .default(true),
-    enableLabelCheckManual: Schema.boolean()
-      .description('启用手动标签检查')
-      .default(false),
     manualCheckStackEvaluation: Schema.boolean()
       .description('手动检查堆码评估单')
       .default(false),
@@ -240,7 +236,7 @@ export const Config: Schema<Config> = Schema.intersect([
   ]),
 
   Schema.object({
-      summaryDataFillEnabled: Schema.boolean().default(true).description('启用概要数据填充（在电池试验概要页面，将概要 word 拖入）'),
+    summaryDataFillEnabled: Schema.boolean().default(true).description('启用概要数据填充（在电池试验概要页面，将概要 word 拖入）'),
   }).description('电池试验概要'),
 
   // 样品检验-导入 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

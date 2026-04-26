@@ -3,7 +3,6 @@ import { getFormData } from '../utils/form'
 import { getBatteryTestSummary, getLocalAttachmentInfo } from '../utils/api'
 import { type LocalConfig } from '../../../share/utils'
 import { checkLocalAttachment, checkSystemAttachmentFile, drawSegmentMask, showSegmentMask } from './attachment'
-import { checkLabelManual } from './label'
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types'
 import { batteryTestSummaryToSummaryInfo } from '../utils/helpers'
@@ -91,11 +90,6 @@ export async function verifyFormData(
     if (img) {
       showSegmentMask(img)
     }
-  }
-
-  // 手动检查标签
-  if (localConfig.enableLabelCheckManual && !localConfig.enableLabelCheck) {
-    result.push(...checkLabelManual(systemId, dataFromForm))
   }
 
   // 检查检验单信息

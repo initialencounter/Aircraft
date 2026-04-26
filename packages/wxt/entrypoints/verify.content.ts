@@ -16,7 +16,6 @@ import {
   updateVerifyButtonStatus,
 } from './modules/ui/buttons'
 import { createMask } from './modules/ui/mask'
-import { createLabelSelectionUI } from './modules/ui/labels'
 
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
@@ -55,9 +54,8 @@ export default defineContentScript({
     // 创建验证按钮
     createVerifyButtons(verifyHandler, localConfig)
 
-    // 创建遮罩和标签检查UI
+    // 创建遮罩
     createMask()
-    createLabelSelectionUI(localConfig)
 
     const span = document.createElement('span')
     span.className = 'l-btn-text'

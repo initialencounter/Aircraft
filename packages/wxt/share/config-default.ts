@@ -41,7 +41,6 @@ export const defaultConfig: Config = {
   "aircraftServer": "http://127.0.0.1:25455",
   "enableCheckAttachment": true,
   "enableLabelCheck": true,
-  "enableLabelCheckManual": false,
   "manualCheckStackEvaluation": false,
   "autoCheckStackEvaluation": false,
   "verifyButtonOnMiddle": false,
