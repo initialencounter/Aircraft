@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v3.7.0] - 2026-04-26
+
+## 新增
+
+- 电池标记UN编号识别([f8a11844](https://github.com/initialencounter/Aircraft/commit/f8a11844))
+
+## 修复
+
+- 单位转换浮点精度丢失([9869584](https://github.com/initialencounter/Aircraft/commit/9869584))
+
 ## [v3.6.3] - 2026-04-16
 
 ## 新增

@@ -145,6 +145,7 @@
               @click="runYoloTest"
               >运行 YOLO</el-button
             >
+            <el-button @click="usePackageImage">使用 packageImage</el-button>
             <el-button @click="clearYoloResults">清空结果</el-button>
             <div class="metric-row">
               <el-statistic
@@ -414,7 +415,7 @@ const yoloLoading = ref(false)
 const yoloResult = ref<YoloDebugResult | null>(null)
 const yoloForm = reactive({
   confidenceThreshold: 0.25,
-  iterations: 30,
+  iterations: 1,
 })
 
 const ppocrLoading = ref(false)
@@ -423,7 +424,7 @@ const ppocrPolygonText = ref('')
 const ppocrForm = reactive({
   detThreshold: 0.28,
   limitSideLen: 960,
-  iterations: 30,
+  iterations: 1,
 })
 
 const goodsResultText = computed(
@@ -539,6 +540,10 @@ async function runGoodsTest() {
       is_965: goodsIs965.value,
     })
     console.log('Goods Info Result:', goodsResult.value)
+    usePackageImage()
+    await runYoloTest()
+    fillPolygonFromYolo()
+    runPPOcrTest()
   } catch (error) {
     console.error(error)
     ElMessage.error('图片 PDF 解析失败')
@@ -626,6 +631,18 @@ async function runPPOcrTest() {
   } finally {
     ppocrLoading.value = false
   }
+}
+
+function usePackageImage() {
+  if (!goodsResult.value?.packageImage?.length) {
+    ElMessage.warning('当前 Goods Info 结果里没有 packageImage')
+    return
+  }
+  const bytes = new Uint8Array(goodsResult.value.packageImage)
+  imageBytes.value = Array.from(bytes)
+  const blob = new Blob([bytes], { type: 'image/png' })
+  const url = URL.createObjectURL(blob)
+  imagePreviewUrl.value = url
 }
 
 function clearYoloResults() {

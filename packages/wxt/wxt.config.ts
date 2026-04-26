@@ -3,6 +3,8 @@ import { build } from 'vite'
 import yaml from '@maikolib/vite-plugin-yaml'
 import { fileURLToPath } from 'url'
 
+const enableTestPage = true
+
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   manifestVersion: 3,
@@ -12,13 +14,16 @@ export default defineConfig({
       minify: true,
       chunkSizeWarningLimit: 5 * 10 ** 7,
     },
+    define: {
+      __ENABLE_TEST_PAGE__: JSON.stringify(enableTestPage),
+    },
     plugins: [yaml()],
   }),
   modules: ['@wxt-dev/module-vue'],
   entrypointsDir: './entrypoints',
   manifest: {
     name: 'lims',
-    version: '3.6.3',
+    version: '3.7.0',
     description: 'Automates form validation and data entry for battery inspection forms.',
     web_accessible_resources: [
       {
@@ -60,6 +65,9 @@ export default defineConfig({
     ],
     host_permissions: ['<all_urls>'],
     options_page: 'options.html',
+    action: {
+      default_popup: 'popup.html',
+    },
     background: {
       scripts: ['background.js'], // Add background.js as a background script
     },
@@ -94,6 +102,16 @@ export default defineConfig({
       }
     },
     'entrypoints:resolved': (wxt, entrypoints) => {
+      if (!enableTestPage) {
+        const testPageIndex = entrypoints.findIndex((entry: any) =>
+          entry.inputPath && entry.inputPath.includes('model-debug')
+        )
+        if (testPageIndex !== -1) {
+          entrypoints.splice(testPageIndex, 1)
+          console.log('Excluded model-debug entrypoint for production build')
+        }
+      }
+
       // Firefox 构建时移除 model.ts 入口点
       if (wxt.config.browser === 'firefox') {
         const modelIndex = entrypoints.findIndex((entry: any) =>
