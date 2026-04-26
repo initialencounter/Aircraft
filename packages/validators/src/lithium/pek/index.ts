@@ -154,7 +154,6 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   if (currentData['otherDescribeChecked'] !== '1')
     result.push({ ok: false, result: '应勾选附加操作信息' })
   const activeState = otherDescribe.includes('2c91808467b775430167bb4c65a35bc9')
-  const isLithium = isIon
   // 基础检查
   result.push(
     ...baseCheck(
@@ -176,7 +175,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       wattHourFromName,
       inspectionItem1,
       activeState,
-      isLithium,
+      isIon,
     )
   )
   const totalNetWeight = (!netWeight || isNaN(netWeight)) ? matchTotalNetweight(otherDescribeCAddition) : netWeight
