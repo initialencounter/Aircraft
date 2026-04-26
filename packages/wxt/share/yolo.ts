@@ -2,6 +2,11 @@ import { SegmentResult } from 'aircraft-rs';
 import { maskXYTo4ptPolygon, Point } from './maskXYTo4ptPolygon';
 
 const yolo_classes = ['9', '9A', 'bty', 'CAO'];
+const YOLO_INPUT_SIZE = 640;
+const YOLO_PROTO_WIDTH = 160;
+const YOLO_PROTO_HEIGHT = 160;
+const YOLO_MASK_CHANNELS = 32;
+const INV_255 = 1 / 255;
 
 function extractContourPointsFromMask(
   mask: Float32Array,
@@ -17,23 +22,24 @@ function extractContourPointsFromMask(
     return contourPoints;
   }
 
-  const isForeground = (x: number, y: number): boolean => {
-    if (x < 0 || y < 0 || x >= maskWidth || y >= maskHeight) {
-      return false;
-    }
-    return mask[y * maskWidth + x] >= threshold;
-  };
-
   for (let y = 0; y < maskHeight; y += 1) {
+    const rowOffset = y * maskWidth;
+    const topOffset = rowOffset - maskWidth;
+    const bottomOffset = rowOffset + maskWidth;
     for (let x = 0; x < maskWidth; x += 1) {
-      if (!isForeground(x, y)) {
+      const pixelIndex = rowOffset + x;
+      if (mask[pixelIndex] < threshold) {
         continue;
       }
 
-      const isBoundary = !isForeground(x - 1, y)
-        || !isForeground(x + 1, y)
-        || !isForeground(x, y - 1)
-        || !isForeground(x, y + 1);
+      const isBoundary = x === 0
+        || x === maskWidth - 1
+        || y === 0
+        || y === maskHeight - 1
+        || mask[pixelIndex - 1] < threshold
+        || mask[pixelIndex + 1] < threshold
+        || mask[topOffset + x] < threshold
+        || mask[bottomOffset + x] < threshold;
 
       if (!isBoundary) {
         continue;
@@ -60,8 +66,8 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array, Tenso
 
     let originalWidth: number;
     let originalHeight: number;
-    const width = 640;
-    const height = 640;
+    const width = YOLO_INPUT_SIZE;
+    const height = YOLO_INPUT_SIZE;
 
     // 创建 OffscreenCanvas 来处理图片
     const canvas = new OffscreenCanvas(width, height);
@@ -84,24 +90,19 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array, Tenso
     const pixels = imageData.data;
 
     // 将图片数据转换为 Float32Array
-    const inputData = new Float32Array(1 * 3 * width * height);
+    const planeSize = width * height;
+    const inputData = new Float32Array(3 * planeSize);
 
-    for (let i = 0; i < height; i++) {
-      for (let j = 0; j < width; j++) {
-        const pixelIndex = (i * width + j) * 4;
-        const r = pixels[pixelIndex] / 255.0;
-        const g = pixels[pixelIndex + 1] / 255.0;
-        const b = pixels[pixelIndex + 2] / 255.0;
-
-        inputData[i * width + j] = r;
-        inputData[width * height + i * width + j] = g;
-        inputData[2 * width * height + i * width + j] = b;
-      }
+    for (let index = 0; index < planeSize; index += 1) {
+      const pixelIndex = index * 4;
+      inputData[index] = pixels[pixelIndex] * INV_255;
+      inputData[planeSize + index] = pixels[pixelIndex + 1] * INV_255;
+      inputData[planeSize * 2 + index] = pixels[pixelIndex + 2] * INV_255;
     }
 
-    const inputTensor = new Tensor("float32", inputData, [1, 3, 640, 640]);
+    const inputTensor = new Tensor('float32', inputData, [1, 3, YOLO_INPUT_SIZE, YOLO_INPUT_SIZE]);
     // const inputName = session.inputNames[0]; // images
-    const feeds = { "images": inputTensor };
+    const feeds = { images: inputTensor };
 
     const res = await session.run(feeds);
     return process_yolo26_output(res['output0']['data'], res['output1']['data'], originalWidth, originalHeight);
@@ -114,7 +115,7 @@ export async function predict_yolo26(session: any, imageInput: Uint8Array, Tenso
 // YOLO26 专用处理函数
 export function process_yolo26_output(output: any, proto: any, originalWidth: number, originalHeight: number, confidence_threshold: number = 0.25): SegmentResult[] {
   const result: SegmentResult[] = [];
-  const inputSize = 640; // YOLO26 模型输入尺寸
+  const inputSize = YOLO_INPUT_SIZE; // YOLO26 模型输入尺寸
 
   // output0
   // JavaScript 输出已经展开为一维数组: 1x300x38 -> [1*300*38], 300个检测框, 每个框38个值
@@ -157,51 +158,32 @@ export function process_yolo26_output(output: any, proto: any, originalWidth: nu
     const label = yolo_classes[classId];
 
     if (label === 'bty') {
-      const protoHeight = 160
-      const protoWidth = 160
-      const maskCoeffs = flatOutput.slice(baseIndex + 6, baseIndex + 6 + 32) as number[];
-      const fullMask = new Float32Array(160 * 160)
+      const coeffBaseIndex = baseIndex + 6
+      const maskX1 = Math.max(0, Math.floor((x1 / originalWidth) * YOLO_PROTO_WIDTH))
+      const maskY1 = Math.max(0, Math.floor((y1 / originalHeight) * YOLO_PROTO_HEIGHT))
+      const maskX2 = Math.min(YOLO_PROTO_WIDTH, Math.ceil((x2 / originalWidth) * YOLO_PROTO_WIDTH))
+      const maskY2 = Math.min(YOLO_PROTO_HEIGHT, Math.ceil((y2 / originalHeight) * YOLO_PROTO_HEIGHT))
+      const croppedMaskWidth = Math.max(1, maskX2 - maskX1)
+      const croppedMaskHeight = Math.max(1, maskY2 - maskY1)
+      const boxMask = new Float32Array(croppedMaskWidth * croppedMaskHeight)
 
-      for (let h = 0; h < protoHeight; h++) {
-        for (let w = 0; w < protoWidth; w++) {
+      for (let maskY = 0; maskY < croppedMaskHeight; maskY += 1) {
+        const protoY = maskY1 + maskY
+        for (let maskX = 0; maskX < croppedMaskWidth; maskX += 1) {
+          const protoX = maskX1 + maskX
           let sum = 0
-          // 对每个通道进行计算
-          for (let c = 0; c < 32; c++) {
-            const protoIndex = c * protoHeight * protoWidth + h * protoWidth + w
-            sum += maskCoeffs[c] * proto[protoIndex]
+          for (let channel = 0; channel < YOLO_MASK_CHANNELS; channel += 1) {
+            const protoIndex = channel * YOLO_PROTO_HEIGHT * YOLO_PROTO_WIDTH + protoY * YOLO_PROTO_WIDTH + protoX
+            sum += flatOutput[coeffBaseIndex + channel] * proto[protoIndex]
           }
-          // 应用sigmoid激活函数
-          fullMask[h * protoWidth + w] = 1 / (1 + Math.exp(-sum))
-        }
-      }
-
-      // 1. 计算检测框在160x160 mask中的位置
-      const maskWidth = 160
-      const maskHeight = 160
-
-      // 将边界框坐标映射到160x160的mask空间
-      const maskX1 = Math.floor((x1 / originalWidth) * maskWidth)
-      const maskY1 = Math.floor((y1 / originalHeight) * maskHeight)
-      const maskX2 = Math.ceil((x2 / originalWidth) * maskWidth)
-      const maskY2 = Math.ceil((y2 / originalHeight) * maskHeight)
-
-      // 2. 提取对应区域的mask
-      const boxMask = new Float32Array((maskX2 - maskX1) * (maskY2 - maskY1))
-      let idx = 0
-
-      for (let y = maskY1; y < maskY2; y++) {
-        for (let x = maskX1; x < maskX2; x++) {
-          if (x >= 0 && x < maskWidth && y >= 0 && y < maskHeight) {
-            boxMask[idx] = fullMask[y * maskWidth + x]
-          }
-          idx++
+          boxMask[maskY * croppedMaskWidth + maskX] = 1 / (1 + Math.exp(-sum))
         }
       }
 
       // 3. 将mask缩放到实际检测框大小（可选）
       const actualWidth = Math.max(1, Math.round(x2 - x1))
       const actualHeight = Math.max(1, Math.round(y2 - y1))
-      const scaledMask = resizeMask(boxMask, maskX2 - maskX1, maskY2 - maskY1, actualWidth, actualHeight)
+      const scaledMask = resizeMask(boxMask, croppedMaskWidth, croppedMaskHeight, actualWidth, actualHeight)
 
       const contourPoints = extractContourPointsFromMask(scaledMask, actualWidth, actualHeight, x1, y1)
       polygon = maskXYTo4ptPolygon(contourPoints);
@@ -230,21 +212,42 @@ function resizeMask(
   toWidth: number,
   toHeight: number,
 ): Float32Array {
+  if (fromWidth <= 0 || fromHeight <= 0) {
+    return new Float32Array(toWidth * toHeight)
+  }
+
   const output = new Float32Array(toWidth * toHeight)
+  const x1Cache = new Int32Array(toWidth)
+  const x2Cache = new Int32Array(toWidth)
+  const xWeightCache = new Float32Array(toWidth)
+  const y1Cache = new Int32Array(toHeight)
+  const y2Cache = new Int32Array(toHeight)
+  const yWeightCache = new Float32Array(toHeight)
+
+  for (let x = 0; x < toWidth; x += 1) {
+    const srcX = (x / toWidth) * fromWidth
+    const leftX = Math.floor(srcX)
+    x1Cache[x] = leftX
+    x2Cache[x] = Math.min(leftX + 1, fromWidth - 1)
+    xWeightCache[x] = srcX - leftX
+  }
+
+  for (let y = 0; y < toHeight; y += 1) {
+    const srcY = (y / toHeight) * fromHeight
+    const topY = Math.floor(srcY)
+    y1Cache[y] = topY
+    y2Cache[y] = Math.min(topY + 1, fromHeight - 1)
+    yWeightCache[y] = srcY - topY
+  }
 
   for (let y = 0; y < toHeight; y++) {
+    const y1 = y1Cache[y]
+    const y2 = y2Cache[y]
+    const yWeight = yWeightCache[y]
     for (let x = 0; x < toWidth; x++) {
-      // 双线性插值
-      const srcX = (x / toWidth) * fromWidth
-      const srcY = (y / toHeight) * fromHeight
-
-      const x1 = Math.floor(srcX)
-      const y1 = Math.floor(srcY)
-      const x2 = Math.min(x1 + 1, fromWidth - 1)
-      const y2 = Math.min(y1 + 1, fromHeight - 1)
-
-      const xWeight = srcX - x1
-      const yWeight = srcY - y1
+      const x1 = x1Cache[x]
+      const x2 = x2Cache[x]
+      const xWeight = xWeightCache[x]
 
       const val = mask[y1 * fromWidth + x1] * (1 - xWeight) * (1 - yWeight)
         + mask[y1 * fromWidth + x2] * xWeight * (1 - yWeight)

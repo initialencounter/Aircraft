@@ -5,6 +5,7 @@ const DET_STD = [0.229, 0.224, 0.225];
 const REC_MEAN = [0.5, 0.5, 0.5];
 const REC_STD = [0.5, 0.5, 0.5];
 const DET_THRESHOLD = 0.28;
+const INV_255 = 1 / 255;
 
 export type PolygonPoint = [number, number];
 
@@ -104,9 +105,9 @@ function imageDataToCHW(imageData: ImageData, mean: number[], std: number[]): Fl
 
   for (let index = 0; index < planeSize; index += 1) {
     const pixelOffset = index * 4;
-    const red = data[pixelOffset] / 255;
-    const green = data[pixelOffset + 1] / 255;
-    const blue = data[pixelOffset + 2] / 255;
+    const red = data[pixelOffset] * INV_255;
+    const green = data[pixelOffset + 1] * INV_255;
+    const blue = data[pixelOffset + 2] * INV_255;
     tensor[index] = (blue - mean[2]) / std[2];
     tensor[planeSize + index] = (green - mean[1]) / std[1];
     tensor[planeSize * 2 + index] = (red - mean[0]) / std[0];
@@ -115,8 +116,10 @@ function imageDataToCHW(imageData: ImageData, mean: number[], std: number[]): Fl
   return tensor;
 }
 
-function cropFromCanvas(canvas: OffscreenCanvas, box: Omit<RecognitionBox, 'img'>): ImageData {
-  const context = get2dContext(canvas);
+function cropFromCanvas(
+  context: OffscreenCanvasRenderingContext2D,
+  box: Omit<RecognitionBox, 'img'>,
+): ImageData {
   return context.getImageData(box.x, box.y, box.width, box.height);
 }
 
@@ -138,8 +141,9 @@ function extractBoxesFromMap(
 ): RecognitionBox[] {
   const visited = new Uint8Array(width * height);
   const boxes: RecognitionBox[] = [];
-  const visitQueueX: number[] = [];
-  const visitQueueY: number[] = [];
+  const visitQueueX = new Int32Array(width * height);
+  const visitQueueY = new Int32Array(width * height);
+  const sourceContext = get2dContext(sourceCanvas);
 
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
@@ -149,6 +153,7 @@ function extractBoxesFromMap(
       }
 
       let head = 0;
+      let tail = 1;
       let pixelCount = 0;
       let minX = x;
       let minY = y;
@@ -156,10 +161,10 @@ function extractBoxesFromMap(
       let maxY = y;
 
       visited[index] = 1;
-      visitQueueX.push(x);
-      visitQueueY.push(y);
+      visitQueueX[0] = x;
+      visitQueueY[0] = y;
 
-      while (head < visitQueueX.length) {
+      while (head < tail) {
         const currentX = visitQueueX[head];
         const currentY = visitQueueY[head];
         head += 1;
@@ -170,29 +175,50 @@ function extractBoxesFromMap(
         maxX = Math.max(maxX, currentX);
         maxY = Math.max(maxY, currentY);
 
-        const neighbors: PolygonPoint[] = [
-          [currentX - 1, currentY],
-          [currentX + 1, currentY],
-          [currentX, currentY - 1],
-          [currentX, currentY + 1],
-        ];
+        const leftX = currentX - 1;
+        if (leftX >= 0) {
+          const leftIndex = currentY * width + leftX;
+          if (!visited[leftIndex] && probabilityMap[leftIndex] >= DET_THRESHOLD) {
+            visited[leftIndex] = 1;
+            visitQueueX[tail] = leftX;
+            visitQueueY[tail] = currentY;
+            tail += 1;
+          }
+        }
 
-        for (const [nextX, nextY] of neighbors) {
-          if (nextX < 0 || nextY < 0 || nextX >= width || nextY >= height) {
-            continue;
+        const rightX = currentX + 1;
+        if (rightX < width) {
+          const rightIndex = currentY * width + rightX;
+          if (!visited[rightIndex] && probabilityMap[rightIndex] >= DET_THRESHOLD) {
+            visited[rightIndex] = 1;
+            visitQueueX[tail] = rightX;
+            visitQueueY[tail] = currentY;
+            tail += 1;
           }
-          const nextIndex = nextY * width + nextX;
-          if (visited[nextIndex] || probabilityMap[nextIndex] < DET_THRESHOLD) {
-            continue;
+        }
+
+        const topY = currentY - 1;
+        if (topY >= 0) {
+          const topIndex = topY * width + currentX;
+          if (!visited[topIndex] && probabilityMap[topIndex] >= DET_THRESHOLD) {
+            visited[topIndex] = 1;
+            visitQueueX[tail] = currentX;
+            visitQueueY[tail] = topY;
+            tail += 1;
           }
-          visited[nextIndex] = 1;
-          visitQueueX.push(nextX);
-          visitQueueY.push(nextY);
+        }
+
+        const bottomY = currentY + 1;
+        if (bottomY < height) {
+          const bottomIndex = bottomY * width + currentX;
+          if (!visited[bottomIndex] && probabilityMap[bottomIndex] >= DET_THRESHOLD) {
+            visited[bottomIndex] = 1;
+            visitQueueX[tail] = currentX;
+            visitQueueY[tail] = bottomY;
+            tail += 1;
+          }
         }
       }
-
-      visitQueueX.length = 0;
-      visitQueueY.length = 0;
 
       const componentWidth = maxX - minX + 1;
       const componentHeight = maxY - minY + 1;
@@ -219,7 +245,7 @@ function extractBoxesFromMap(
 
       boxes.push({
         ...box,
-        img: cropFromCanvas(sourceCanvas, box),
+        img: cropFromCanvas(sourceContext, box),
       });
     }
   }
@@ -233,7 +259,7 @@ function extractBoxesFromMap(
     };
     return [{
       ...fallback,
-      img: cropFromCanvas(sourceCanvas, fallback),
+      img: cropFromCanvas(sourceContext, fallback),
     }];
   }
 
@@ -254,7 +280,10 @@ function buildDetectInput(imageData: ImageData): DetectInput {
 }
 
 function prepareRecognitionBatch(boxes: RecognitionBox[], recImageHeight: number) {
-  const maxWhRatio = Math.max(...boxes.map((box) => box.img.width / box.img.height), 1);
+  let maxWhRatio = 1;
+  for (const box of boxes) {
+    maxWhRatio = Math.max(maxWhRatio, box.img.width / box.img.height);
+  }
   const targetWidth = Math.max(32, Math.floor(recImageHeight * maxWhRatio));
   const batch = new Float32Array(boxes.length * 3 * recImageHeight * targetWidth);
   const singleImageSize = 3 * recImageHeight * targetWidth;
