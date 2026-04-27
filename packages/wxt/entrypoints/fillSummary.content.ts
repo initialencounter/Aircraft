@@ -71,7 +71,7 @@ async function entrypoint() {
         const arrayNumber = Array.from(new Uint8Array(arrayBuffer))
         chrome.runtime.sendMessage({
           action: 'get-summary-info',
-          summaryBuffer: arrayNumber,
+          summaryBytes: arrayNumber,
         }, (response) => {
           if (response.error) {
             Qmsg.error(`解析文件失败: ${response.error}`)
