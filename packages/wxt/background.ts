@@ -336,6 +336,10 @@ async function entrypoint() {
           labels[labelBtyIndex] = fixedLabel
           segmentResults[labelBtyIndex] = { ...item, label: fixedLabel, ocrText: OCRResults }
         }
+        else {
+          labels[labelBtyIndex] = item.label
+          segmentResults[labelBtyIndex] = item
+        }
         labelBtyIndex++
       }
 
@@ -369,9 +373,7 @@ async function entrypoint() {
 
       for (const item of result) {
         if (item.confidence > 0.25) {
-          if (!labels.includes(item.label)) {
-            labels.push(item.label)
-          }
+          labels.push(item.label)
           segmentResults.push(item)
         }
       }
