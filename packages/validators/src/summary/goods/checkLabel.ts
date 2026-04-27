@@ -102,7 +102,7 @@ function checkLabel(
     return [
       {
         ok: false,
-        result: `标签不一致，期望标签：${expectedLabel.join(',')}, 实际标签：${goodsLabels.join(',')}`,
+        result: `标签不一致，预期标签：${expectedLabel.join(',')}, 实际标签：${goodsLabels.join(',')}`,
       },
     ]
   }
@@ -111,7 +111,7 @@ function checkLabel(
       return [
         {
           ok: false,
-          result: `标签不一致，期望标签：${expectedLabel.join(',')}, 实际标签：${goodsLabels.join(',')}`,
+          result: `标签不一致，预期标签：${expectedLabel.join(',')}, 实际标签：${goodsLabels.join(',')}`,
         },
       ]
     }
