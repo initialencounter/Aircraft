@@ -7,11 +7,15 @@ import type { SummaryFromLLM } from '@aircraft/validators'
 import { ElMessage } from 'element-plus'
 import FileDropzone from '../components/FileDropzone.vue'
 import { checkSummaryFromLLM } from '@aircraft/validators'
-import { convertSummaryInfo2SummaryFromLLM } from '@aircraft/validators/src/lithium/shared/utils'
 import { useSummaryStore } from '../stores/summary'
 import { SummaryInfo } from 'aircraft-rs'
 import { Loading } from '@element-plus/icons-vue'
 import { getServerPort } from '../utils/utils'
+import {
+  SummaryFormJSONData2SummaryFromLLM,
+  summaryInfoToSummaryFromLLM,
+} from '../../../wxt/share/convert'
+import { SummaryFormJSONData } from '../../../wxt/share/types'
 
 interface ParseReportFiles {
   pdf: File
@@ -20,7 +24,7 @@ interface ParseReportFiles {
 const summaryStore = useSummaryStore()
 
 const loading = ref(false)
-const labelPosition = ref('summary')
+const labelPosition = ref('result')
 const verifyResult = ref<string[]>(summaryStore.result)
 const parseResult = ref<SummaryFromLLM>(summaryStore.pdf)
 const llmResult = ref<SummaryFromLLM>(summaryStore.docx)
@@ -30,34 +34,68 @@ document.oncontextmenu = function () {
   return false
 }
 
+const docxInfo = ref<SummaryFromLLM | null>(null)
+
 const handleFilesChange = (_files: File[]) => {}
 
-const handleFileSelect = (_file: File) => {}
+const handleFileSelect = async (file: File) => {
+  if (file.name.endsWith('.docx') || file.type.includes('word')) {
+    loading.value = true
+    try {
+      const docxFileData = await fileTransfer(file)
+      if (docxFileData) {
+        const docxRes = await getSummaryInfo(docxFileData)
+        if (docxRes) {
+          const summaryInfo = summaryInfoToSummaryFromLLM(docxRes)
+          docxInfo.value = summaryInfo
+          parseResult.value = summaryInfo
+          summaryStore.setDocx(parseResult.value)
+          ElMessage.success('已自动解析概要')
+        }
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      loading.value = false
+    }
+  }
+}
 
 const handleFileRemove = (_file: File) => {}
+
+const handleClipboardSummary = (data: SummaryFormJSONData) => {
+  const summaryInfo: SummaryFromLLM = SummaryFormJSONData2SummaryFromLLM(data)
+  docxInfo.value = summaryInfo
+  parseResult.value = summaryInfo
+  summaryStore.setDocx(summaryInfo)
+}
 
 const handleParseReport = async (files: ParseReportFiles) => {
   loading.value = true // 开始处理文件时显示loading
   try {
+    if (!files.pdf) {
+      ElMessage.error('缺少PDF文件')
+      loading.value = false
+      return
+    }
     const pdfDataUrl = await fileToBase64(files.pdf)
-    const docxDataUrl = await fileToBase64(files.docx)
-    if (!pdfDataUrl || !docxDataUrl) {
+    if (!pdfDataUrl) {
       ElMessage.error('文件解析失败')
       loading.value = false
       return
     }
 
     const pdfFileData = await fileTransfer(files.pdf)
-    const docxFileData = await fileTransfer(files.docx)
-    if (!pdfFileData || !docxFileData) {
+    if (!pdfFileData) {
       ElMessage.error('文件解析失败')
       loading.value = false
       return
     }
-    const pdfRes: SummaryFromLLM | null = JSON.parse(await getReportInfo(pdfFileData) ?? "{}") as SummaryFromLLM
-    const docxRes: SummaryInfo | null = await getSummaryInfo(docxFileData)
+    const pdfRes: SummaryFromLLM | null = JSON.parse(
+      (await getReportInfo(pdfFileData)) ?? '{}'
+    ) as SummaryFromLLM
 
-    if (!pdfRes || !docxRes) {
+    if (!pdfRes) {
       ElMessage.error('文件解析失败')
       loading.value = false
       return
@@ -65,10 +103,14 @@ const handleParseReport = async (files: ParseReportFiles) => {
 
     llmResult.value = pdfRes as SummaryFromLLM
     summaryStore.setPdf(llmResult.value)
-    parseResult.value = convertSummaryInfo2SummaryFromLLM(docxRes)
-    summaryStore.setDocx(parseResult.value)
 
-    let result = checkSummaryFromLLM(pdfRes, docxRes)
+    if (!docxInfo.value || !parseResult.value) {
+      ElMessage.error('没有概要信息，请先拖入docx或读取剪贴板')
+      loading.value = false
+      return
+    }
+
+    let result = checkSummaryFromLLM(pdfRes, docxInfo.value)
     verifyResult.value = result.map((item) => item.result)
     summaryStore.setResult(verifyResult.value)
   } catch (e) {
@@ -127,7 +169,7 @@ async function getSummaryInfo(file: FileData) {
     const uint8Array = new Uint8Array(file.data)
     const blob = new Blob([uint8Array], { type: file.type })
     formData.append('file', blob, file.name)
-    
+
     const response = await fetch(
       `http://127.0.0.1:${serverPort.value}/get-summary-info`,
       {
@@ -135,11 +177,13 @@ async function getSummaryInfo(file: FileData) {
         body: formData,
       }
     )
-    
+
     if (!response.ok) {
       const errorText = await response.text()
       console.error('getSummaryInfo HTTP 错误:', errorText)
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+      throw new Error(
+        `HTTP error! status: ${response.status}, body: ${errorText}`
+      )
     }
     const data = await response.json()
     return data as SummaryInfo
@@ -156,7 +200,7 @@ async function getReportInfo(file: FileData) {
     const uint8Array = new Uint8Array(file.data)
     const blob = new Blob([uint8Array], { type: file.type })
     formData.append('file', blob, file.name)
-    
+
     const response = await fetch(
       `http://127.0.0.1:${serverPort.value}/upload-llm-files`,
       {
@@ -164,11 +208,13 @@ async function getReportInfo(file: FileData) {
         body: formData,
       }
     )
-    
+
     if (!response.ok) {
       const errorText = await response.text()
       console.error('getReportInfo HTTP 错误:', errorText)
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+      throw new Error(
+        `HTTP error! status: ${response.status}, body: ${errorText}`
+      )
     }
     const data = await response.json()
     return data as string
@@ -199,6 +245,7 @@ onMounted(async () => {
       @file-select="handleFileSelect"
       @file-remove="handleFileRemove"
       @parse-report="handleParseReport"
+      @clipboard-summary="handleClipboardSummary"
     />
     <el-radio-group v-model="labelPosition">
       <el-radio value="result">验证结果</el-radio>

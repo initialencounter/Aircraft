@@ -31,7 +31,10 @@ const handleRemoveFile = (index: number) => {
 
 function rowStyle({ row }: { row: any; rowIndex: number }) {
   if (!row.bgColor) {
-    return {}
+    return {
+      backgroundColor: '#252529',
+      color: '#e5eaf3',
+    }
   }
   return {
     color: calculateColorBrightness(row.bgColor),

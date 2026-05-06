@@ -1,23 +1,24 @@
-import type { SummaryFromLLM, SummaryInfo } from '../shared/types'
 import type { CheckResult } from '../shared/types'
 
 export function checkCompany(
-  summaryFromLLM: SummaryFromLLM,
-  summaryInfo: SummaryInfo
+  reportTestLab: string,
+  reportManufacturer: string,
+  summaryTestLab: string,
+  summaryManufacturer: string,
 ): CheckResult[] {
   const results: CheckResult[] = []
-  if (!summaryInfo.testlab.includes(String(summaryFromLLM.testLab))) {
+  if (!summaryTestLab.includes(reportTestLab)) {
     results.push({
       ok: false,
-      result: `UN报告上的测试单位为:${summaryFromLLM.testLab}，概要上的为:${summaryInfo.testlab.slice(0, 20)}`,
+      result: `UN报告上的测试单位为:${reportTestLab}，概要上的为:${summaryTestLab.slice(0, 20)}`,
     })
   }
   if (
-    !summaryInfo.manufacturer.includes(String(summaryFromLLM.manufacturerCName))
+    !summaryManufacturer.includes(reportManufacturer)
   ) {
     results.push({
       ok: false,
-      result: `UN报告上的生产单位为:${summaryFromLLM.manufacturerCName}，概要上的为:${summaryInfo.manufacturer.slice(0, 20)}`,
+      result: `UN报告上的生产单位为:${reportManufacturer}，概要上的为:${summaryManufacturer.slice(0, 20)}`,
     })
   }
   return results

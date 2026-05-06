@@ -1,6 +1,7 @@
 import { sleep } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
+import { SummaryFormJSONData } from '../share/types'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -63,19 +64,15 @@ async function entrypoint() {
       '#batteryInspectForm'
     ) as HTMLFormElement
     // 获取表单数据
-    const data = {} as FormJSONData
+    const data: Partial<SummaryFormJSONData> = {}
     const formData = new FormData(form)
     formData.forEach((value, name) => {
-      if (data[name as keyof FormJSONData]) {
-        data[name as keyof FormJSONData] = (data[name as keyof FormJSONData] +
-          `,${value}`) as FormJSONData[keyof FormJSONData]
-      } else {
-        data[name as keyof FormJSONData] =
-          value as FormJSONData[keyof FormJSONData]
-      }
+      const key = name as keyof SummaryFormJSONData
+      ;(data as Record<keyof SummaryFormJSONData, string | boolean>)[key] =
+        value as string
     })
     data.projectNo = projectNo || ''
-    return data
+    return data as SummaryFormJSONData
   }
 
   function setFormDataToClipBoard() {
@@ -88,7 +85,7 @@ async function entrypoint() {
   async function handleDiffClick() {
     try {
       const jsonText = await navigator.clipboard.readText()
-      const anotherData: FormJSONData = JSON.parse(jsonText)
+      const anotherData: SummaryFormJSONData = JSON.parse(jsonText)
       const localData = getFormDataJSON()
       const diffDataKeys = compareFormData(localData, anotherData)
       if (diffDataKeys.length > 0) {
@@ -112,7 +109,7 @@ async function entrypoint() {
     'projectNo'
   ]
 
-  const keyMap: Record<keyof FormJSONData, string> = {
+  const keyMap: Record<keyof SummaryFormJSONData, string> = {
     projectNo: "项目编号",
     id: "id",
     projectId: "projectId",
@@ -150,60 +147,18 @@ async function entrypoint() {
     note: "备注",
   }
 
-  function compareFormData(localData: FormJSONData, anotherData: FormJSONData) {
+  function compareFormData(localData: SummaryFormJSONData, anotherData: SummaryFormJSONData) {
     const diffDataKeys: string[] = []
-    for (const localKey of Object.keys(localData) as Partial<keyof FormJSONData>[]) {
+    for (const localKey of Object.keys(localData) as Partial<keyof SummaryFormJSONData>[]) {
       if (ignoreList.includes(localKey)) {
         continue
       }
       const localValue = localData[localKey]
       const anotherValue = anotherData[localKey]
-      if (localValue.trim() !== anotherValue.trim()) {
+      if (localValue.toString().trim() !== anotherValue.toString().trim()) {
         diffDataKeys.push(keyMap[localKey] || localKey)
       }
     }
     return diffDataKeys
   }
-
-  /**
-   * FormData
-   */
-  interface FormJSONData {
-    projectNo: string
-    id: string
-    projectId: string
-    consignor: string
-    consignorInfo: string
-    manufacturer: string
-    manufacturerInfo: string
-    testlab: string
-    testlabInfo: string
-    cnName: string
-    enName: string
-    classification: string
-    type: string
-    trademark: string
-    voltage: string
-    capacity: string
-    watt: string
-    color: string
-    shape: string
-    mass: string
-    licontent: string
-    testReportNo: string
-    testDate: string
-    testManual: string
-    test1: string
-    test2: string
-    test3: string
-    test4: string
-    test5: string
-    test6: string
-    test7: string
-    test8: string
-    un38f: string
-    un38g: string
-    note: string
-  }
-
 }

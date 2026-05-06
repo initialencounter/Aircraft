@@ -1,4 +1,4 @@
-import type { SummaryFromLLM, SummaryInfo } from '../shared/types'
+import type { SummaryFromLLM } from '../shared/types'
 import type { CheckResult } from '../shared/types'
 
 const baseCheckItem: Array<keyof SummaryFromLLM> = [
@@ -8,12 +8,12 @@ const baseCheckItem: Array<keyof SummaryFromLLM> = [
 ]
 export function baseCheck(
   summaryFromLLM: SummaryFromLLM,
-  summaryInfo: SummaryInfo
+  summaryInfo: SummaryFromLLM
 ): CheckResult[] {
   const results: CheckResult[] = []
   for (const item of baseCheckItem) {
     const valueFromLLM = String(summaryFromLLM[item] as string).trim()
-    const valueFromInfo = summaryInfo[item as keyof SummaryInfo] as string
+    const valueFromInfo = summaryInfo[item as keyof SummaryFromLLM] as string
     if (valueFromInfo !== valueFromLLM) {
       results.push({
         ok: false,

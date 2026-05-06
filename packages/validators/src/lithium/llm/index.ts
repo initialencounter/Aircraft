@@ -1,4 +1,4 @@
-import type { SummaryFromLLM, SummaryInfo } from '../shared/types'
+import type { SummaryFromLLM } from '../shared/types'
 import type { CheckResult } from '../shared/types'
 import { baseCheck } from './baseCheck'
 import { checkClassification } from './checkClassification'
@@ -10,25 +10,30 @@ import { checkTestManual } from './checkTestManual'
 
 export function checkSummaryFromLLM(
   summaryFromLLM: SummaryFromLLM,
-  summaryInfo: SummaryInfo
+  summaryInfo: SummaryFromLLM
 ): CheckResult[] {
   const results: CheckResult[] = []
   // 生产单位和测试单位验证
-  results.push(...checkCompany(summaryFromLLM, summaryInfo))
+  results.push(...checkCompany(
+    summaryFromLLM.testLab || '', 
+    summaryFromLLM.manufacturerCName || '',
+    summaryInfo.testLab || '',
+    summaryInfo.manufacturerCName || ''
+  ))
   // 电池名称验证
   results.push(
     ...checkName(
-      String(summaryFromLLM.cnName),
-      String(summaryFromLLM.enName),
-      summaryInfo.cnName,
-      summaryInfo.enName,
+      summaryFromLLM.cnName || '',
+      summaryFromLLM.enName || '',
+      summaryInfo.cnName || '',
+      summaryInfo.enName || '',
     )
   )
   // 电池类型验证
   results.push(
     ...checkClassification(
-      String(summaryFromLLM.classification),
-      summaryInfo.classification
+      summaryFromLLM.classification || '',
+      summaryInfo.classification || ''
     )
   )
   // 基本信息验证，"model", "testReportNo", "testDate"
@@ -38,13 +43,12 @@ export function checkSummaryFromLLM(
   // 测试标准验证
   results.push(
     ...checkTestManual(
-      String(summaryFromLLM.testManual),
-      summaryInfo.testManual
+      summaryFromLLM.testManual || '',
+      summaryInfo.testManual || ''
     )
   )
   // T1-8验证
   results.push(...checkT1_8(summaryFromLLM, summaryInfo))
-  console.log(results)
   for (const result of results) {
     result.result = 'LLM验证：' + result.result
   }

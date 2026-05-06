@@ -1,16 +1,13 @@
 import { sleep } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { CLASSIFICATION_ID_MAP, ID_CLASSIFICATION_MAP } from '../share/classificationMap'
-import { ID_SHAPE_MAP, SHAPE_ID_MAP } from '../share/shapeMap'
+import { ID_CLASSIFICATION_MAP } from '../share/classificationMap'
+import { ID_SHAPE_MAP } from '../share/shapeMap'
 import { SummaryInfo } from 'aircraft-rs'
-import { matchBatteryWeight, matchCapacity, matchVoltage, matchWattHour } from '../../validators/src/lithium/shared/utils'
-import { matchTestManual } from '../../validators/src/lithium/shared/utils/matchDevice'
-import { matchColor, removeNonChineseCharacters } from '../../validators/src/summary/checkColor'
-import { COLOR_ID_MAP, ID_COLOR_MAP } from '../share/colorMap'
-import { matchShape } from '../../validators/src/summary/checkShape'
-import { FormFillJSONData } from '../share/types'
+import { ID_COLOR_MAP } from '../share/colorMap'
+import { SummaryFormJSONData } from '../share/types'
 import { ID_MANUAL_MAP } from '../share/manualMap'
+import { summaryInfoToForm } from '../share/convert'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -96,7 +93,7 @@ async function entrypoint() {
     }
   })
 
-  function setCommonData(data: FormFillJSONData) {
+  function setCommonData(data: SummaryFormJSONData) {
     const fields = [
       'consignor',
       'consignorInfo',
@@ -118,8 +115,8 @@ async function entrypoint() {
     ]
     for (const field of fields) {
       const el = document.getElementById(field) as HTMLInputElement | HTMLTextAreaElement | null
-      if (el && data[field as keyof FormFillJSONData]) {
-        el.value = String(data[field as keyof FormFillJSONData])
+      if (el && data[field as keyof SummaryFormJSONData]) {
+        el.value = String(data[field as keyof SummaryFormJSONData])
       }
     }
   }
@@ -203,7 +200,7 @@ async function entrypoint() {
     }
   }
 
-  function setCheckboxValue(data: FormFillJSONData) {
+  function setCheckboxValue(data: SummaryFormJSONData) {
     const checkboxs = [
       'test1',
       'test2',
@@ -219,7 +216,7 @@ async function entrypoint() {
     for (const key of checkboxs) {
       const checkboxYes = document.getElementById(`radio_yes_${key}`) as HTMLInputElement
       const checkboxNo = document.getElementById(`radio_no_${key}`) as HTMLInputElement
-      const value = data[key as keyof FormFillJSONData]
+      const value = data[key as keyof SummaryFormJSONData]
       if (checkboxYes && checkboxNo) {
         checkboxYes.checked = value === true
         checkboxNo.checked = value === false
@@ -248,76 +245,6 @@ async function entrypoint() {
       target.appendChild(script);
     } catch (e) {
       console.error('[JQuery Hook] Failed to inject script:', e);
-    }
-  }
-
-  const matchTestManualMap = {
-    '第8版修订1': '2911',
-    '第8版': '2906',
-    '第7版修订1': '2905',
-    '第7版': '2904',
-    '第6版修订1': '2903',
-    '第6版': '2902',
-    '第5版修订1和修订2': '2901',
-    '第5版': '2910',
-    '第4版修订2': '2909',
-    '第4版修订1': '2808',
-    '第4版': '2907',
-  }
-
-  function summaryInfoToForm(summaryInfo: SummaryInfo): FormFillJSONData {
-    const classification = removeNonChineseCharacters(summaryInfo.classification).trim()
-    const color = matchColor(summaryInfo.shape)
-    const shape = matchShape(summaryInfo.shape)
-    const testManual = matchTestManual(summaryInfo.testManual)
-    const wattHour = String(matchWattHour(' ' + summaryInfo.watt) ?? '')
-    const licontent = String(matchBatteryWeight('为' + summaryInfo.licontent) ?? '')
-    const voltage = String(matchVoltage(summaryInfo.voltage) ?? '')
-    const capacity = String(matchCapacity(summaryInfo.capacity) ?? '')
-
-    const resolveInfo = (info: string | undefined, base: string): string =>
-      !info && base.includes('\n')
-        ? base.split('\n').slice(1).join('\n').trim()
-        : (info ?? base ?? '')
-    const consignorInfo = resolveInfo(summaryInfo.consignorInfo, summaryInfo.consignor)
-    const manufacturerInfo = resolveInfo(summaryInfo.manufacturerInfo, summaryInfo.manufacturer)
-    const testlabInfo = resolveInfo(summaryInfo.testlabInfo, summaryInfo.testlab)
-    const enName = resolveInfo(summaryInfo.enName, summaryInfo.cnName)
-
-    return {
-      consignor: summaryInfo.consignor.split('\n')[0] ?? '',
-      consignorInfo,
-      manufacturer: summaryInfo.manufacturer.split('\n')[0] ?? '',
-      manufacturerInfo,
-      testlab: summaryInfo.testlab.split('\n')[0] ?? '',
-      testlabInfo,
-      cnName: summaryInfo.cnName.split('\n')[0] ?? '',
-      enName,
-      classification: CLASSIFICATION_ID_MAP[classification as keyof typeof CLASSIFICATION_ID_MAP] ?? '',
-      // @ts-ignore
-      type: (summaryInfo.type || summaryInfo.model) ?? '',
-      trademark: summaryInfo.trademark ?? '/',
-      voltage: voltage === '0' ? '/' : voltage,
-      capacity: capacity === '0' ? '/' : capacity,
-      watt: wattHour === '0' ? '' : wattHour,
-      color: COLOR_ID_MAP[color as keyof typeof COLOR_ID_MAP] ?? '',
-      shape: SHAPE_ID_MAP[shape as keyof typeof SHAPE_ID_MAP] ?? '',
-      mass: String(matchBatteryWeight('为' + summaryInfo.mass)),
-      licontent: licontent === '0' ? '' : licontent,
-      testReportNo: summaryInfo.testReportNo,
-      testDate: summaryInfo.testDate.replace(/\./g, '-'),
-      testManual: matchTestManualMap[testManual as keyof typeof matchTestManualMap] ?? '',
-      test1: summaryInfo.test1.includes('通过'),
-      test2: summaryInfo.test2.includes('通过'),
-      test3: summaryInfo.test3.includes('通过'),
-      test4: summaryInfo.test4.includes('通过'),
-      test5: summaryInfo.test5.includes('通过'),
-      test6: summaryInfo.test6.includes('通过'),
-      test7: summaryInfo.test7.includes('通过'),
-      test8: summaryInfo.test8.includes('通过'),
-      un38f: summaryInfo.un38F.includes('通过'),
-      un38g: summaryInfo.un38G.includes('通过'),
-      note: !summaryInfo.note ? '/' : summaryInfo.note,
     }
   }
 

@@ -1,5 +1,4 @@
 import type { CheckResult } from '../shared/types'
-import { matchTestManual } from '../shared/utils/matchDevice'
 
 // type TestManual ="联合国《试验和标准手册》第八修订版第38.3节" |
 // "联合国《试验和标准手册》（第7版修订1）38.3节" |
@@ -15,9 +14,7 @@ export function checkTestManual(
   rawTestManualLLM: string,
   rawTestManual: string
 ): CheckResult[] {
-  let testManual = rawTestManual.trim()
-  testManual = matchTestManual(testManual)
-  if (!rawTestManualLLM && !testManual) {
+  if (!rawTestManualLLM && !rawTestManual) {
     return [
       {
         ok: false,
@@ -25,7 +22,7 @@ export function checkTestManual(
       },
     ]
   }
-  if (rawTestManualLLM !== testManual) {
+  if (rawTestManualLLM !== rawTestManual) {
     return [
       {
         ok: false,

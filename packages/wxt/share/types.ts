@@ -74,7 +74,10 @@ export interface BatteryTestSummary {
   projectNo: string
 }
 
-export interface FormFillJSONData {
+export interface SummaryFormJSONData {
+  projectNo: string
+  id: string
+  projectId: string
   consignor: string
   consignorInfo: string
   manufacturer: string

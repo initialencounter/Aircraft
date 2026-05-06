@@ -114,14 +114,14 @@ interface TestItem {
 }
 
 const tests = ref<TestItem[]>([
-  { name: 'T.1: 高度模拟', result: props.data.test1 },
-  { name: 'T.2: 温度试验', result: props.data.test2 },
-  { name: 'T.3: 振动', result: props.data.test3 },
-  { name: 'T.4: 冲击', result: props.data.test4 },
-  { name: 'T.5: 外部短路', result: props.data.test5 },
-  { name: 'T.6: 撞击/挤压', result: props.data.test6 },
-  { name: 'T.7: 过度充电', result: props.data.test7 },
-  { name: 'T.8: 强制放电', result: props.data.test8 },
+  { name: 'T.1: 高度模拟', result: props.data.test1 ?? false },
+  { name: 'T.2: 温度试验', result: props.data.test2 ?? false },
+  { name: 'T.3: 振动', result: props.data.test3 ?? false },
+  { name: 'T.4: 冲击', result: props.data.test4 ?? false },
+  { name: 'T.5: 外部短路', result: props.data.test5 ?? false },
+  { name: 'T.6: 撞击/挤压', result: props.data.test6 ?? false },
+  { name: 'T.7: 过度充电', result: props.data.test7 ?? false },
+  { name: 'T.8: 强制放电', result: props.data.test8 ?? false },
 ])
 
 const testRows = computed(() => {

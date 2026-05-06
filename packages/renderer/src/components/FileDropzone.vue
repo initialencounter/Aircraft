@@ -30,6 +30,7 @@ const emit = defineEmits([
   'file-select',
   'file-remove',
   'parse-report',
+  'clipboard-summary',
 ])
 
 interface ParseReportFiles {
@@ -97,6 +98,22 @@ const handleSelectFiles = () => {
   fileInputRef.value?.click()
 }
 
+// 处理读取剪贴板概要
+const handleReadClipboard = async () => {
+  try {
+    const text = await navigator.clipboard.readText()
+    const data = JSON.parse(text)
+    if (data && data.projectNo) {
+      emit('clipboard-summary', data)
+      ElMessage.success('成功读取剪贴板概要数据')
+    } else {
+      ElMessage.warning('剪贴板中没有找到期望的概要数据')
+    }
+  } catch (e) {
+    ElMessage.error('剪贴板中没有合法的JSON格式概要数据')
+  }
+}
+
 // 处理清空所有文件
 const handleClearFiles = () => {
   files.value = []
@@ -112,18 +129,6 @@ const handleParseReport = () => {
   }
   if (files.value.length > 2) {
     ElMessage.warning('只能选择两个文件进行比较')
-    return
-  }
-  if (files.value.length < 2) {
-    if (files.value[0].file.type === 'application/pdf') {
-      ElMessage.warning('缺少概要(docx)文件')
-    } else {
-      ElMessage.warning('缺少UN报告(pdf)文件')
-    }
-    return
-  }
-  if (files.value[0].file.type === files.value[1].file.type) {
-    ElMessage.warning('请分别选择UN报告(pdf)和概要(docx)文件')
     return
   }
   const parseReportFiles: ParseReportFiles = {
@@ -256,6 +261,9 @@ onBeforeUnmount(() => {
       <div v-if="files.length > -1" class="file-list">
         <div class="file-list-header">
           <span>已添加 {{ files.length }} 个文件</span>
+          <el-button size="small" type="primary" @click="handleReadClipboard"
+            >从剪贴板读取概要
+          </el-button>
           <el-button size="small" type="danger" @click="handleSelectFiles"
             >手动选择文件
           </el-button>
