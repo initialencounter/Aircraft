@@ -2,7 +2,7 @@ import path from 'path'
 import { globalShortcut } from 'electron'
 
 import type { Context } from 'cordis'
-import { Logger, Service } from 'cordis'
+import { Service } from 'cordis'
 import type { } from '../service/app'
 import { BrowserWindow, shell } from 'electron'
 
@@ -13,8 +13,6 @@ declare module 'cordis' {
     win: Window
   }
 }
-
-export const logger = new Logger('win')
 
 class Window extends Service {
   static inject = ['app']

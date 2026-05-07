@@ -1,9 +1,9 @@
-import { Logger, type Context } from 'cordis'
+import { type Context } from 'cordis'
 import { BrowserWindow, Menu } from 'electron'
 
-import type {} from '../service/tray'
-import type {} from '../service/win'
-import type {} from '../service/app'
+import type { } from '../service/tray'
+import type { } from '../service/win'
+import type { } from '../service/app'
 
 declare module 'cordis' {
   interface Events {
@@ -12,7 +12,6 @@ declare module 'cordis' {
   }
 }
 
-export const logger = new Logger('win')
 
 class WindowManager {
   static inject = ['app', 'win', 'tray', 'bindings']

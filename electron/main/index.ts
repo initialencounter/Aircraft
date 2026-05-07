@@ -1,2 +1,1 @@
-import { context } from './context'
-context.start()
+export { context } from './context'
