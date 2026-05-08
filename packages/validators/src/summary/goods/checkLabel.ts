@@ -15,8 +15,10 @@ function getPekExpectedLabel(
       label.push('9A', 'CAO')
       break
     case '965, IB':
-    case '968, IB':
       label.push('9A', 'CAO', 'UN3480')
+      break
+    case '968, IB':
+      label.push('9A', 'CAO', 'UN3090')
       break
     case '966, I':
     case '969, I':
