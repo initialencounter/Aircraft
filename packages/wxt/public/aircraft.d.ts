@@ -9,15 +9,15 @@ export interface GoodsInfoWasm {
     image: number[] | null;
 }
 
+export interface OtherInfo {
+    stackEvaluation: boolean;
+    projectDir: string;
+}
+
 export interface AttachmentInfo {
     summary: SummaryInfo;
     goods: GoodsInfo;
     other: OtherInfo;
-}
-
-export interface OtherInfo {
-    stackEvaluation: boolean;
-    projectDir: string;
 }
 
 export interface GoodsInfo {
@@ -33,29 +33,6 @@ export interface PdfReadResult {
     image: number[] | null;
 }
 
-export interface PdfReadResult {
-    content: string;
-    fileType: string;
-    filename: string;
-    title: string;
-    type: string;
-}
-
-export interface Message {
-    content: string;
-    role: string;
-}
-
-export interface ResponseFormat {
-    type: string;
-}
-
-export interface PdfDeleteResult {
-    deleted: boolean;
-    id: string;
-    object: string;
-}
-
 export interface FileUploadResult {
     bytes: number;
     createdAt: number;
@@ -67,23 +44,25 @@ export interface FileUploadResult {
     statusDetails: string;
 }
 
+export interface PdfReadResult {
+    content: string;
+    fileType: string;
+    filename: string;
+    title: string;
+    type: string;
+}
+
+export interface PdfDeleteResult {
+    deleted: boolean;
+    id: string;
+    object: string;
+}
+
 export interface ChatRequest {
     messages: Message[];
     model: string;
     temperature: number;
     response_format: ResponseFormat;
-}
-
-export interface Choice {
-    finish_reason: string | null;
-    index: number | null;
-    message: Message | null;
-}
-
-export interface Usage {
-    completion_tokens: number;
-    prompt_tokens: number;
-    total_tokens: number;
 }
 
 export interface ChatResponse {
@@ -93,6 +72,27 @@ export interface ChatResponse {
     model: string;
     object: string;
     usage: Usage;
+}
+
+export interface Choice {
+    finish_reason: string | null;
+    index: number | null;
+    message: Message | null;
+}
+
+export interface Message {
+    content: string;
+    role: string;
+}
+
+export interface Usage {
+    completion_tokens: number;
+    prompt_tokens: number;
+    total_tokens: number;
+}
+
+export interface ResponseFormat {
+    type: string;
 }
 
 export interface SegmentResult {
@@ -105,36 +105,10 @@ export interface SegmentResult {
     mask: number[][];
 }
 
-export interface Config {
-    base: BaseConfig;
-    server: ServerConfig;
-    hotkey: HotkeyConfig;
-    llm: LLMConfig;
-    other: OtherConfig;
-}
-
-export interface LLMConfig {
-    baseUrl: string;
-    apiKey: string;
-    model: string;
-}
-
-export interface OtherConfig {
-    queryServerHost: string;
-}
-
 export interface BaseConfig {
     nothing: string;
     autoStart: boolean;
     silentStart: boolean;
-}
-
-export interface HotkeyConfig {
-    uploadEnable: boolean;
-    uploadKey: string;
-    copyEnable: boolean;
-    copyKey: string;
-    customHotkey: CustomHotkey[];
 }
 
 export interface ServerConfig {
@@ -151,39 +125,40 @@ export interface CustomHotkey {
     cmd: string;
 }
 
+export interface HotkeyConfig {
+    uploadEnable: boolean;
+    uploadKey: string;
+    copyEnable: boolean;
+    copyKey: string;
+    customHotkey: CustomHotkey[];
+}
+
+export interface LLMConfig {
+    baseUrl: string;
+    apiKey: string;
+    model: string;
+}
+
+export interface Config {
+    base: BaseConfig;
+    server: ServerConfig;
+    hotkey: HotkeyConfig;
+    llm: LLMConfig;
+    other: OtherConfig;
+}
+
+export interface OtherConfig {
+    queryServerHost: string;
+}
+
 export interface LogMessage {
     timeStamp: string;
     level: string;
     message: string;
 }
 
-export interface SearchParams {
-    search: string;
-    json: number;
-    path_column: number;
-}
-
-export interface SearchResponse {
-    results: SearchResult[];
-}
-
-export interface ClipboardHotkey {
-    hotkeys: string[];
-    clipboardContentName: string;
-}
-
 export interface QueryResult {
     rows: ProjectRow[];
-}
-
-export interface DirectoryInfo {
-    dir: string;
-}
-
-export interface LoginRequest {
-    code: string;
-    username: string;
-    password: string;
 }
 
 export interface ProjectRow {
@@ -195,18 +170,38 @@ export interface ProjectRow {
     category: string;
 }
 
+export interface DirectoryInfo {
+    dir: string;
+}
+
+export interface SearchParams {
+    search: string;
+    json: number;
+    path_column: number;
+}
+
 export interface SearchResult {
     path: string;
     name: string;
+}
+
+export interface SearchResponse {
+    results: SearchResult[];
+}
+
+export interface ClipboardHotkey {
+    hotkeys: string[];
+    clipboardContentName: string;
 }
 
 export interface CaptchaResponse {
     img: string;
 }
 
-export interface SearchProperty {
-    url: string;
-    searchText: string;
+export interface LoginRequest {
+    code: string;
+    username: string;
+    password: string;
 }
 
 export interface DataModel {
@@ -234,6 +229,11 @@ export interface DataModel {
 }
 
 export interface SearchPropertyParams {
+    searchText: string;
+}
+
+export interface SearchProperty {
+    url: string;
     searchText: string;
 }
 

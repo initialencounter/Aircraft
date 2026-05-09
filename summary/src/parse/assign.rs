@@ -5,38 +5,68 @@ use crate::parse::regex::process_newlines;
 
 use super::match_project_no;
 
+#[derive(Clone, Copy)]
+enum SummaryField {
+    Consignor,
+    Manufacturer,
+    Testlab,
+    CnName,
+    Classification,
+    Model,
+    Trademark,
+    Voltage,
+    Capacity,
+    Watt,
+    Shape,
+    Mass,
+    Licontent,
+    TestReportNo,
+    TestManual,
+    Test1,
+    Test2,
+    Test3,
+    Test4,
+    Test5,
+    Test6,
+    Test7,
+    Test8,
+    Un38F,
+    Un38G,
+    Note,
+}
+
+const FIELD_MAPPINGS: [(&str, SummaryField); 27] = [
+    ("委托单位", SummaryField::Consignor),
+    ("生产单位", SummaryField::Manufacturer),
+    ("制造商", SummaryField::Manufacturer),
+    ("测试单位", SummaryField::Testlab),
+    ("名称", SummaryField::CnName),
+    ("电芯类别", SummaryField::Classification),
+    ("型号", SummaryField::Model),
+    ("商标", SummaryField::Trademark),
+    ("额定电压", SummaryField::Voltage),
+    ("额定容量", SummaryField::Capacity),
+    ("额定能量", SummaryField::Watt),
+    ("外观", SummaryField::Shape),
+    ("质量", SummaryField::Mass),
+    ("锂含量", SummaryField::Licontent),
+    ("测试报告编号", SummaryField::TestReportNo),
+    ("测试标准", SummaryField::TestManual),
+    ("高度模拟", SummaryField::Test1),
+    ("温度试验", SummaryField::Test2),
+    ("振动", SummaryField::Test3),
+    ("冲击", SummaryField::Test4),
+    ("外部短路", SummaryField::Test5),
+    ("撞击/挤压", SummaryField::Test6),
+    ("过度充电", SummaryField::Test7),
+    ("强制放电", SummaryField::Test8),
+    ("UN38.3.3.1(f)", SummaryField::Un38F),
+    ("UN38.3.3.1(g)", SummaryField::Un38G),
+    ("备注", SummaryField::Note),
+];
+
 pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
     let mut summary = SummaryInfo::default();
-
-    // 预先构建字段映射表，避免在循环中重复创建
-    let mut field_mappings: HashMap<&str, &mut String> = HashMap::from([
-        ("委托单位", &mut summary.consignor),
-        ("生产单位", &mut summary.manufacturer),
-        ("测试单位", &mut summary.testlab),
-        ("名称", &mut summary.cn_name),
-        ("电芯类别", &mut summary.classification),
-        ("型号", &mut summary.model),
-        ("商标", &mut summary.trademark),
-        ("额定电压", &mut summary.voltage),
-        ("额定容量", &mut summary.capacity),
-        ("额定能量", &mut summary.watt),
-        ("外观", &mut summary.shape),
-        ("质量", &mut summary.mass),
-        ("锂含量", &mut summary.licontent),
-        ("测试报告编号", &mut summary.test_report_no),
-        ("测试标准", &mut summary.test_manual),
-        ("高度模拟", &mut summary.test1),
-        ("温度试验", &mut summary.test2),
-        ("振动", &mut summary.test3),
-        ("冲击", &mut summary.test4),
-        ("外部短路", &mut summary.test5),
-        ("撞击/挤压", &mut summary.test6),
-        ("过度充电", &mut summary.test7),
-        ("强制放电", &mut summary.test8),
-        ("UN38.3.3.1(f)", &mut summary.un38_f),
-        ("UN38.3.3.1(g)", &mut summary.un38_g),
-        ("备注", &mut summary.note),
-    ]);
 
     for (index, item) in content.iter().enumerate() {
         // 标题
@@ -96,9 +126,9 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         }
 
         // 使用更高效的方式处理字段映射
-        for (key, field) in field_mappings.iter_mut() {
-            if item.contains(*key) && index + 1 < content.len() {
-                **field = content[index + 1].clone();
+        for (key, field) in FIELD_MAPPINGS {
+            if item.contains(key) && index + 1 < content.len() {
+                *summary_field_mut(&mut summary, field) = content[index + 1].clone();
             }
         }
     }
@@ -130,6 +160,37 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
     summary.testlab_info = html_entity_decode(&summary.testlab_info);
     summary.trim_all();
     summary
+}
+
+fn summary_field_mut(summary: &mut SummaryInfo, field: SummaryField) -> &mut String {
+    match field {
+        SummaryField::Consignor => &mut summary.consignor,
+        SummaryField::Manufacturer => &mut summary.manufacturer,
+        SummaryField::Testlab => &mut summary.testlab,
+        SummaryField::CnName => &mut summary.cn_name,
+        SummaryField::Classification => &mut summary.classification,
+        SummaryField::Model => &mut summary.model,
+        SummaryField::Trademark => &mut summary.trademark,
+        SummaryField::Voltage => &mut summary.voltage,
+        SummaryField::Capacity => &mut summary.capacity,
+        SummaryField::Watt => &mut summary.watt,
+        SummaryField::Shape => &mut summary.shape,
+        SummaryField::Mass => &mut summary.mass,
+        SummaryField::Licontent => &mut summary.licontent,
+        SummaryField::TestReportNo => &mut summary.test_report_no,
+        SummaryField::TestManual => &mut summary.test_manual,
+        SummaryField::Test1 => &mut summary.test1,
+        SummaryField::Test2 => &mut summary.test2,
+        SummaryField::Test3 => &mut summary.test3,
+        SummaryField::Test4 => &mut summary.test4,
+        SummaryField::Test5 => &mut summary.test5,
+        SummaryField::Test6 => &mut summary.test6,
+        SummaryField::Test7 => &mut summary.test7,
+        SummaryField::Test8 => &mut summary.test8,
+        SummaryField::Un38F => &mut summary.un38_f,
+        SummaryField::Un38G => &mut summary.un38_g,
+        SummaryField::Note => &mut summary.note,
+    }
 }
 
 fn html_entity_decode(text: &str) -> String {
