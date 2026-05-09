@@ -99,15 +99,15 @@ export interface SummaryFormJSONData {
   testReportNo: string
   testDate: string
   testManual: string
-  test1: boolean
-  test2: boolean
-  test3: boolean
-  test4: boolean
-  test5: boolean
-  test6: boolean
-  test7: boolean
-  test8: boolean
-  un38f: boolean
-  un38g: boolean
+  test1: string
+  test2: string
+  test3: string
+  test4: string
+  test5: string
+  test6: string
+  test7: string
+  test8: string
+  un38f: string
+  un38g: string
   note: string
 }

@@ -218,8 +218,8 @@ async function entrypoint() {
       const checkboxNo = document.getElementById(`radio_no_${key}`) as HTMLInputElement
       const value = data[key as keyof SummaryFormJSONData]
       if (checkboxYes && checkboxNo) {
-        checkboxYes.checked = value === true
-        checkboxNo.checked = value === false
+        checkboxYes.checked = value === "true"
+        checkboxNo.checked = value === "false"
       }
     }
   }
