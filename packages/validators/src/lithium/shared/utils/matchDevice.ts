@@ -53,7 +53,10 @@ function fetchLastRegexMatch(rawText: string, reg: RegExp) {
 }
 
 export function match967BatteryNumber(sourceText: string): number {
-  const batteryNumRegex = /内置\s*(\d+)\s*块电[池芯]/
+  let batteryNumRegex = /内置\s*(\d+)\s*块电[池芯]/
+  if (sourceText.includes('内置电')) {
+    batteryNumRegex = /内置电[池芯]\s*(\d+)\s*块/
+  }
   const batteryMatch = sourceText.match(batteryNumRegex)
   return batteryMatch ? parseInt(batteryMatch[1], 10) : 0
 }
@@ -65,7 +68,10 @@ export function match966BatteryNumber(sourceText: string): number {
 }
 
 export function matchDeviceNumber(sourceText: string): number {
-  const deviceNumRegex = /内含\s*(\d+)\s*台设备/
+  let deviceNumRegex = /内含\s*(\d+)\s*台设备/
+  if (sourceText.includes('内含设备')) {
+    deviceNumRegex = /内含设备\s*(\d+)\s*台/
+  }
   const deviceMatch = sourceText.match(deviceNumRegex)
   return deviceMatch ? parseInt(deviceMatch[1], 10) : 0
 }
