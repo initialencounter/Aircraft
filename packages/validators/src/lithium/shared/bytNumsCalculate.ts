@@ -35,7 +35,10 @@ export function bytNumsCalculate(
     )
     return check(matchedBytCountPeerDevice, otherDescribeCAddition, btyCount)
   }
-  return []
+  return [{
+    ok: false,
+    result: `未知包装方式 inspectionItem1=${inspectionItem1}`,
+  }]
 }
 
 function check(
@@ -46,10 +49,16 @@ function check(
   const matchDeviceCount = matchDeviceNumber(otherDescribeCAddition)
   const matchedBytCount = matchedBytCountPeerDevice * matchDeviceCount
   if (matchedBytCountPeerDevice === 0) {
-    return []
+    return [{
+      ok: false,
+      result: '未匹配到设备数量',
+    }]
   }
   if (matchedBytCount === 0) {
-    return []
+    return [{
+      ok: false,
+      result: '未匹配到电池数量',
+    }]
   }
   if (btyCount !== matchedBytCount) {
     return [
