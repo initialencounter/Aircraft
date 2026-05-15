@@ -6,8 +6,8 @@ import { checkLocalAttachment, checkSystemAttachmentFile, drawSegmentMask, showS
 import { getEntrustData, parseEntrust } from '../utils/api'
 import { PekSodiumData, SekSodiumData } from '../../../../validators/src/sodium/shared/types'
 import { batteryTestSummaryToSummaryInfo } from '../utils/helpers'
-import { ID_SHAPE_MAP } from '../../../share/shapeMap'
-import { ID_COLOR_MAP } from '../../../share/colorMap'
+import { ID_EN_SHAPE_MAP } from '../../../share/shapeMap'
+import { ID_EN_COLOR_MAP } from '../../../share/colorMap'
 
 /**
  * 验证表单数据
@@ -56,15 +56,17 @@ export async function verifyFormData(
     batteryfileCheckResults = []
     if (attachmentInfo) {
       attachmentInfo.summary = batteryTestSummaryToSummaryInfo(batteryTestSummary[0])
-      if (attachmentInfo.summary.shape && ID_SHAPE_MAP[attachmentInfo.summary.shape as keyof typeof ID_SHAPE_MAP].length >= 4) {
-        if (attachmentInfo.summary.color && ID_COLOR_MAP[attachmentInfo.summary.color as keyof typeof ID_COLOR_MAP].length >= 4) {
-          result.push(
-            {
-              ok: false,
-              result: "系统概要外观打印预览可能显示不全"
-            }
-          )
-        }
+      const shapeId = (batteryTestSummary[0].shape) as keyof typeof ID_EN_SHAPE_MAP
+      const colorId = (batteryTestSummary[0].color) as keyof typeof ID_EN_COLOR_MAP
+      const enAppearance = ID_EN_SHAPE_MAP[shapeId] + ID_EN_COLOR_MAP[colorId]
+      if (enAppearance.length > 30) {
+        console.log("英文长度超过限制:", { shapeId, colorId, enAppearance, length: enAppearance.length })
+        result.push(
+          {
+            ok: false,
+            result: "系统概要外观打印预览可能显示不全"
+          }
+        )
       }
     }
   }

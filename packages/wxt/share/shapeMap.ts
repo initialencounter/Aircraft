@@ -31,3 +31,17 @@ export const SHAPE_ID_MAP = {
   "近圆柱体": "8aad92b65d7a7078015d7e1bb1a2245d",
   "块状": "8aad92b65de116af015e02862e0c25de"
 }
+
+export const ID_EN_SHAPE_MAP = {
+  "520": "cuboid",
+  "521": "cylinder",
+  "2c9180838b90642e018bf132f37f5a60": "spherical",
+  "2c918084700d8fb20170cd63120008f7": "prismatic",
+  "8aad92b65aae82c3015ab094788a0026": "button",
+  "8aad92b65c76a14d015c771747250caa": "almost cuboid",
+  "8aad92b65d7a7078015d7e17b9fc23cd": "cube",
+  "8aad92b65d7a7078015d7e186bf923d6": "irregular",
+  "8aad92b65d7a7078015d7e19a3b12448": "cuboid with wire",
+  "8aad92b65d7a7078015d7e1bb1a2245d": "approximate cylinder",
+  "8aad92b65de116af015e02862e0c25de": "bulk"
+}
