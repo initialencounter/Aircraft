@@ -1,5 +1,15 @@
 # 更新日志
 
+## [v3.7.2] - 2026-05-21
+
+## 修复
+
+- 最新版概要制造商无法填充([f4eed24](https://github.com/initialencounter/Aircraft/commit/f4eed24))
+
+- 概要外观打印显示不全([fb6ee0f](https://github.com/initialencounter/Aircraft/commit/fb6ee0f))
+
+- 描述电池数量匹配([d5e91ba](https://github.com/initialencounter/Aircraft/commit/d5e91ba))
+
 ## [v3.7.1] - 2026-04-26
 
 ## 新增
