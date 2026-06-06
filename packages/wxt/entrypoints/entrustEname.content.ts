@@ -49,11 +49,18 @@ async function entrypoint() {
       addEnameColumn()
       debounceInput()
       setPage()
-      expandTable(700)
+      expandTable(800)
+      document.querySelector("#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > span > a")?.addEventListener('click', async () => {
+        console.log('点击查询按钮')
+        await sleep(200)
+        expandTable(800)
+      })
     } catch (error) {
       console.error('初始化失败:', error)
     }
   })
+
+
 
   async function getEntrustEName(entrustName: string): Promise<Customer[]> {
     try {
@@ -178,7 +185,7 @@ async function entrypoint() {
     }
   }
 
-  function debounceInput(delay: number = 500) {
+  function debounceInput() {
     const input = document.querySelector<HTMLInputElement>(
       '#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > input.textbox-text.validatebox-text'
     )
@@ -187,26 +194,81 @@ async function entrypoint() {
       return
     }
 
-    let timer: NodeJS.Timeout
+    // 跟踪搜索文本（仅记录，不直接触发英文名插入）
+    input.addEventListener('input', (e) => {
+      searchText = (e.target as HTMLInputElement).value
+    })
 
-    const handleInput = async (value: string) => {
+    // 使用 MutationObserver 监听 combogrid 下拉面板中 datagrid 行数据的渲染完成
+    // 这样可以确保在中文名称加载完成后再插入英文名称
+    let datagridLoadTimer: NodeJS.Timeout
+    let isProcessing = false
+
+    let pendingRetry = false
+
+    const handleDatagridDataLoaded = async () => {
+      const currentSearch = searchText
+      if (!currentSearch) return
+
+      // 如果正在处理中，标记需要重试，避免遗漏数据加载事件
+      if (isProcessing) {
+        pendingRetry = true
+        return
+      }
+
+      isProcessing = true
+      pendingRetry = false
       try {
         expandTable(800)
-        searchText = value
-        const customers = await getEntrustEName(searchText)
+        const customers = await getEntrustEName(currentSearch)
         await insertEntrustEname(customers)
         expandTable(800)
       } catch (error) {
-        console.error('处理输入时发生错误:', error)
+        console.error('处理数据加载时发生错误:', error)
+      } finally {
+        isProcessing = false
+        // 如果在处理期间有新数据加载，立即重试
+        if (pendingRetry) {
+          pendingRetry = false
+          clearTimeout(datagridLoadTimer)
+          datagridLoadTimer = setTimeout(handleDatagridDataLoaded, 100)
+        }
       }
     }
 
-    input.addEventListener('input', (e) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => {
-        handleInput((e.target as HTMLInputElement).value)
-      }, delay)
+    const bodyObserver = new MutationObserver((mutations) => {
+      let hasRowChanges = false
+
+      for (const mutation of mutations) {
+        if (mutation.type !== 'childList') continue
+
+        for (const node of mutation.addedNodes) {
+          if (!(node instanceof HTMLElement)) continue
+          // 检测 combogrid 面板中新增的 datagrid 行
+          if (
+            (node.matches?.('tr.datagrid-row') && node.closest?.('.combo-p')) ||
+            node.querySelector?.('.combo-p tr.datagrid-row')
+          ) {
+            hasRowChanges = true
+            break
+          }
+        }
+
+        if (hasRowChanges) break
+      }
+
+      if (!hasRowChanges) return
+
+      clearTimeout(datagridLoadTimer)
+      datagridLoadTimer = setTimeout(handleDatagridDataLoaded, 200)
     })
+
+    // 监听 document.body 的子节点变化，捕获 combogrid 面板中行的增删
+    bodyObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+    console.log('已设置 combogrid 数据加载监听器')
   }
 
   function setPage() {
@@ -215,9 +277,11 @@ async function entrypoint() {
     ) as HTMLAnchorElement
     if (nextPage) {
       nextPage.addEventListener('click', async () => {
+        // 翻页时只需展开表格，MutationObserver 会在 combogrid 数据渲染完成后
+        // 自动触发 getEntrustEName + insertEntrustEname
         expandTable(700)
-        const name: Customer[] = await getEntrustEName(searchText)
-        await insertEntrustEname(name)
+        // 等待 combogrid 加载新页数据后再次展开表格
+        await sleep(500)
         expandTable(700)
       })
     }
