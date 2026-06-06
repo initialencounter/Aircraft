@@ -19,7 +19,7 @@ export function btyWeightCalculate(
       (expectedNetWeight - netWeightDisplay) / netWeightDisplay
     )
     if (abs > 0.05) {
-      return [{ ok: false, result: '电池净重误差大于5%' }]
+      return [{ ok: false, result: '电池净重相对误差大于5%' }]
     }
   }
   return []

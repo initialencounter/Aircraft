@@ -20,6 +20,7 @@ export const defaultConfig: Config = {
   "onekeyRollback": true,
   "freshHotkey": true,
   "autoRefreshDuration": 10000,
+  "showCalculationProcess": true,
   "verify": true,
   "warmUp": true,
   "dangerousModels": [

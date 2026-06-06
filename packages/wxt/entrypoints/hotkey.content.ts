@@ -12,6 +12,7 @@ import '../assets/message.min.css'
 import { warmUp } from './modules/utils/api'
 import { getCurrentProjectNo } from './modules/utils/helpers'
 import { switchFaviconBySystemId } from './modules/ui/favicon'
+import { insertCalculationText, updateCalculationText } from './modules/ui/calculation'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -45,7 +46,11 @@ async function entrypoint() {
   let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
   await sleep(500)
   const projectNo = getCurrentProjectNo()
-  
+
+  // 创建计算过程文本元素
+  if (localConfig.showCalculationProcess) {
+    insertCalculationText(systemId)
+  }
   // 将项目编号设置为标题
   if (localConfig.setTitleWithProjectNo) {
     document.title = projectNo ? projectNo : document.title
@@ -221,15 +226,20 @@ async function entrypoint() {
       if (!form || !form.contains(target)) return
 
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-        if (target.parentElement && localConfig.markColorChangedInput) {
-          if (target instanceof HTMLTextAreaElement) {
-            target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
-          } else {
-            if (target.className.includes('textbox-text')) {
+        if (target.parentElement) {
+          if (localConfig.markColorChangedInput) {
+            if (target instanceof HTMLTextAreaElement) {
               target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
             } else {
-              target.parentElement.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
+              if (target.className.includes('textbox-text')) {
+                target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
+              } else {
+                target.parentElement.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
+              }
             }
+          }
+          if (localConfig.showCalculationProcess && ['btyCount', 'otherDescribeCAddition'].includes(target.id)) {
+            updateCalculationText()
           }
         }
         changedTarget.push(target)
