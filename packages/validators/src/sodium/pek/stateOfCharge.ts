@@ -10,7 +10,8 @@ import { PekSodiumPkgInfo } from '../shared/types'
  */
 export function pekSodiumStateOfCharge(
   pkgInfo: PekSodiumPkgInfo,
-  otherDescribe: string
+  otherDescribe: string,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 荷电状态≤30%
@@ -18,7 +19,7 @@ export function pekSodiumStateOfCharge(
     pkgInfo === '976' &&
     !otherDescribe.includes('2797')
   ) {
-    result.push({ ok: false, result: '976 应勾选: 荷电状态≤30%' })
+    result.push({ ok: false, result: '976 应勾选: 荷电状态≤30%', selector })
   }
   return result
 }

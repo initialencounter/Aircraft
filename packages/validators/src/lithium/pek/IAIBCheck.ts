@@ -8,16 +8,17 @@ import type { PkgInfoSubType, CheckResult } from '../shared/types'
  */
 export function IAIBCheck(
   isIA: boolean,
-  pkgInfoSubType: PkgInfoSubType
+  pkgInfoSubType: PkgInfoSubType,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (isIA) {
     if (pkgInfoSubType === '965, IB' || pkgInfoSubType === '968, IB') {
-      result.push({ ok: false, result: '应为IA' })
+      result.push({ ok: false, result: '应为IA', selector })
     }
   } else {
     if (pkgInfoSubType === '965, IA' || pkgInfoSubType === '968, IA') {
-      result.push({ ok: false, result: '应为IB' })
+      result.push({ ok: false, result: '应为IB', selector })
     }
   }
   return result

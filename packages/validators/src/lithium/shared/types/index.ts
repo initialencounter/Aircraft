@@ -262,6 +262,7 @@ export interface SekData {
 export interface CheckResult {
   ok: boolean
   result: string
+  selector: string
 }
 
 export { EntrustData, AttachmentInfo, SummaryInfo, GoodsInfo, SummaryFromLLM }

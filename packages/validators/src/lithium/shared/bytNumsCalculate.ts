@@ -17,6 +17,7 @@ export function bytNumsCalculate(
   otherDescribeCAddition: string,
   inspectionItem1: '0' | '1' | '2',
   isChargeBoxOrRelated: boolean,
+  selector: string,
 ): CheckResult[] {
   if (isChargeBoxOrRelated) {
     return []
@@ -28,23 +29,25 @@ export function bytNumsCalculate(
     const matchedBytCountPeerDevice = match966BatteryNumber(
       otherDescribeCAddition
     )
-    return check(matchedBytCountPeerDevice, otherDescribeCAddition, btyCount)
+    return check(matchedBytCountPeerDevice, otherDescribeCAddition, btyCount, selector)
   } else if (inspectionItem1 === '2') {
     const matchedBytCountPeerDevice = match967BatteryNumber(
       otherDescribeCAddition
     )
-    return check(matchedBytCountPeerDevice, otherDescribeCAddition, btyCount)
+    return check(matchedBytCountPeerDevice, otherDescribeCAddition, btyCount, selector)
   }
   return [{
     ok: false,
     result: `未知包装方式 inspectionItem1=${inspectionItem1}`,
+    selector,
   }]
 }
 
 function check(
   matchedBytCountPeerDevice: number,
   otherDescribeCAddition: string,
-  btyCount: number
+  btyCount: number,
+  selector: string,
 ) {
   const matchDeviceCount = matchDeviceNumber(otherDescribeCAddition)
   const matchedBytCount = matchedBytCountPeerDevice * matchDeviceCount
@@ -52,12 +55,14 @@ function check(
     return [{
       ok: false,
       result: '未匹配到设备数量',
+      selector,
     }]
   }
   if (matchedBytCount === 0) {
     return [{
       ok: false,
       result: '未匹配到电池数量',
+      selector,
     }]
   }
   if (btyCount !== matchedBytCount) {
@@ -65,6 +70,7 @@ function check(
       {
         ok: false,
         result: `电池数量不匹配, 电池数量为${btyCount}, 描述中匹配到电池数量为${matchedBytCount}`,
+        selector,
       },
     ]
   }

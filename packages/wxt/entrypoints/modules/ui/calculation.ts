@@ -1,5 +1,4 @@
 import { matchBatteryWeight } from "../../../../validators/src/lithium/shared/utils"
-import { markErrorElement } from "./markError"
 
 export function insertCalculationText(systemId: string) {
   // 如果已存在则跳过，保证幂等性
@@ -38,9 +37,4 @@ export function updateCalculationText() {
   const display = document.getElementById('calculatorDisplay')
   if (!display) return
   display.innerHTML = calculationText
-  const btyNetWeight = Number((document.querySelector("#btyNetWeight") as HTMLInputElement)?.value || '0')
-  const abs = Math.abs(
-    (expectedNetWeight - btyNetWeight) / btyNetWeight
-  )
-  markErrorElement('btyNetWeight', abs > 0.05 ? ["电池净重相对误差大于5%"] : [])
 }

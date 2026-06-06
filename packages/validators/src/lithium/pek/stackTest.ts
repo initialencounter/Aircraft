@@ -11,12 +11,14 @@ import type { CheckResult, PkgInfoSubType } from '../shared/types'
 export function checkStackTest(
   pkgInfoSubType: PkgInfoSubType,
   stackTest: boolean,
-  stackTestEvaluation: boolean
+  stackTestEvaluation: boolean,
+  stackElementSelector: string,
+  stackEvaluationElementSelector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
 
   if (stackTest && stackTestEvaluation) {
-    result.push({ ok: false, result: '重复勾选堆码和堆码评估单' })
+    result.push({ ok: false, result: '重复勾选堆码和堆码评估单', selector: stackElementSelector })
   }
 
   switch (pkgInfoSubType) {
@@ -31,6 +33,7 @@ export function checkStackTest(
         result.push({
           ok: false,
           result: `${pkgInfoSubType} 未勾选堆码或堆码评估单`,
+          selector: stackElementSelector,
         })
       }
       break
@@ -38,15 +41,15 @@ export function checkStackTest(
     case '965, IB':
     case '968, IB':
       if (!stackTest) {
-        result.push({ ok: false, result: `${pkgInfoSubType}未勾选堆码` })
+        result.push({ ok: false, result: `${pkgInfoSubType}未勾选堆码`, selector: stackElementSelector })
       }
       break
     default:
       if (stackTest) {
-        result.push({ ok: false, result: `${pkgInfoSubType}不应勾选堆码` })
+        result.push({ ok: false, result: `${pkgInfoSubType}不应勾选堆码`, selector: stackElementSelector })
       }
       if (stackTestEvaluation) {
-        result.push({ ok: false, result: `${pkgInfoSubType}不应勾选堆码评估单` })
+        result.push({ ok: false, result: `${pkgInfoSubType}不应勾选堆码评估单`, selector: stackEvaluationElementSelector })
       }
   }
   return result

@@ -1,4 +1,4 @@
-import { baseCheck } from '../shared'
+import { baseCheck, BaseCheckSelectors } from '../shared'
 import type { CheckResult, PekUNNO, SekBtyType, SekData } from '../shared/types'
 import {
   getIsCell,
@@ -19,7 +19,7 @@ import { checkDropTest } from './checkDropTest'
 import { checkBtyLabel } from './checkBtyLabel'
 
 function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResult[] {
-  const result = []
+  const result: CheckResult[] = []
   const checkMap = {
     '500': ['≤100Wh', '>100Wh'],
     '501': ['≤20Wh', '>20Wh'],
@@ -96,23 +96,37 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
   const packageGrade = currentData['pg']
   // 结论
   const conclusions = Number(currentData['conclusions'])
-  // 运输专有名称
+  // 运输专用名称
   const properShippingName = currentData['psn']
   const otherDescribeChecked = currentData['otherDescribeChecked'] === '1'
   // 是否为充电盒或关联报告
   const isChargeBoxOrRelated = otherDescribeCAddition.includes('总净重')
-  if (!itemCName) result.push({ ok: false, result: '中文品名为空' })
-  if (!itemEName) result.push({ ok: false, result: '英文品名为空' })
-  if (!btyKind) result.push({ ok: false, result: '电池型号为空' })
-  if (!otherDescribe) result.push({ ok: false, result: '其他描述包装方式为空' })
+  if (!itemCName) result.push({ ok: false, result: '中文品名为空', selector: '[name="itemCName"]' })
+  if (!itemEName) result.push({ ok: false, result: '英文品名为空', selector: '[name="itemEName"]' })
+  if (!btyKind) result.push({ ok: false, result: '电池型号为空', selector: '[name="btyKind"]' })
+  if (!otherDescribe) result.push({ ok: false, result: '其他描述包装方式为空', selector: '[name="otherDescribe"]' })
   if (!otherDescribeChecked)
-    result.push({ ok: false, result: '未勾选其他描述' })
-  if (!unTest) result.push({ ok: false, result: '未勾选通过 UN38.3 测试' })
-  if (!market) result.push({ ok: false, result: '技术备注为空' })
+    result.push({ ok: false, result: '未勾选其他描述', selector: '[name="otherDescribeCAddition"]' })
+  if (!unTest) result.push({ ok: false, result: '未勾选通过 UN38.3 测试', selector: '[name="inspectionResult2"]' })
+  if (!market) result.push({ ok: false, result: '技术备注为空', selector: '[name="market"]' })
   if (otherDescribe.length > 3)
-    result.push({ ok: false, result: '其他描述包装方式不唯一' })
+    result.push({ ok: false, result: '其他描述包装方式不唯一', selector: '[name="otherDescribe"]' })
   const activeState = false
   const isLithium = true
+  // SEK 表单元素ID映射
+  const selectors: BaseCheckSelectors = {
+    btySize: '[name="btySize"]',
+    btyShape: '[name="btyShapeValue"]',
+    btyCount: '[name="btyCount"]',
+    netWeight: '[name="btyNetWeight"]',
+    btyType: '',
+    itemCName: '[name="itemCName"]',
+    itemEName: '[name="itemEName"]',
+    btyKind: '[name="btyKind"]',
+    voltage: '',
+    wattHour: '[name="inspectionItem1Text1"]',
+    otherDescribe: '[name="otherDescribeCAddition"]',
+  }
   // 基础检查
   result.push(
     ...baseCheck(
@@ -135,6 +149,7 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
       otherDescribe2Pek,
       activeState,
       isLithium,
+      selectors,
     )
   )
   // 包装与其他描述验证
@@ -142,7 +157,8 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
     ...packetOrContain(
       otherDescribe,
       otherDescribeCAddition,
-      isChargeBoxOrRelated
+      isChargeBoxOrRelated,
+      '[name="otherDescribeCAddition"]',
     )
   )
   // 检验结果不符合检查
@@ -150,7 +166,7 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
     const resultName = 'inspectionResult' + String(resultIndex)
     // @ts-ignore
     if (String(currentData[resultName]) === '1') {
-      result.push({ ok: false, result: `${resultName}不符合` })
+      result.push({ ok: false, result: `${resultName}不符合`, selector: resultName })
     }
   }
   // 检验结果3
@@ -159,6 +175,7 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
     result.push({
       ok: false,
       result: '检验结果3错误，未勾选电池按照规定的质量管理体系进行制造。',
+      selector: '[name="inspectionResult3"]',
     })
 
   // 检验结果4
@@ -168,32 +185,33 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
       ok: false,
       result:
         '检验结果4错误，未勾选该锂电池不属于召回电池，不属于废弃和回收电池。',
+      selector: '[name="inspectionResult4"]',
     })
 
   // 检验结果5 1.2米跌落
-  result.push(...checkDropTest(otherDescribe, dropTest, conclusions))
+  result.push(...checkDropTest(otherDescribe, dropTest, conclusions, '[name="inspectionResult5"]'))
 
   // 电池标记
-  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions, btyType, otherDescribe2Pek))
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions, btyType, otherDescribe2Pek, '[name="inspectionResult6"]'))
 
   // 随附文件
   if (currentData['inspectionResult7'] !== '2')
-    result.push({ ok: false, result: '随附文件错误，未勾选不适用' })
+    result.push({ ok: false, result: '随附文件错误，未勾选不适用', selector: '[name="inspectionResult7"]' })
   // 鉴别项目8，9
   if (
     currentData['inspectionResult8'] !== '2' ||
     currentData['inspectionResult9'] !== '2'
   )
-    result.push({ ok: false, result: '鉴别项目8，9 错误，未勾选不适用' })
+    result.push({ ok: false, result: '鉴别项目8，9 错误，未勾选不适用', selector: '[name="inspectionResult8"]' })
   if (
     currentData['inspectionItem8Cn'] !== '' ||
     currentData['inspectionItem8En'] !== '' ||
     currentData['inspectionItem9Cn'] !== '' ||
     currentData['inspectionItem9En'] !== ''
   )
-    result.push({ ok: false, result: '鉴别项目8，9 不为空' })
+    result.push({ ok: false, result: '鉴别项目8，9 不为空', selector: '[name="inspectionItem8Cn"]' })
   // 注意事项
-  result.push(...checkReMark(remarks, projectNo, otherDescribe))
+  result.push(...checkReMark(remarks, projectNo, otherDescribe, '[name="remarksValue"]'))
   // 备注
   result.push(
     ...checkComment(
@@ -201,7 +219,9 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
       commentExtra,
       projectNo,
       conclusions,
-      otherDescribe
+      otherDescribe,
+      '[name="commentValue"]',
+      '[name="commentExtra"]',
     )
   )
   // 结论
@@ -217,6 +237,12 @@ function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResul
       isIon,
       properShippingName,
       projectYear,
+      '[name="psn"]',
+      '[name="unno"]',
+      '[name="classOrDiv"]',
+      '[name="pg"]',
+      '[name="btyGrossWeight"]',
+      '[name="conclusions"]',
     )
   )
   if (isIon) {
@@ -232,14 +258,14 @@ function checkSekIonBtyType(
   checkMap: Record<string, string[]>,
   btyType: string
 ) {
-  const result = []
+  const result: CheckResult[] = []
   // 鉴别项目1
   if (currentData['inspectionItem1'] !== '1111')
-    result.push({ ok: false, result: '鉴别项目1错误，未勾选瓦时数' })
+    result.push({ ok: false, result: '鉴别项目1错误，未勾选瓦时数', selector: '[name="inspectionItem1"]' })
   if (currentData['inspectionItem1Text1'] === '')
-    result.push({ ok: false, result: '鉴别项目1错误，瓦时数为空' })
+    result.push({ ok: false, result: '鉴别项目1错误，瓦时数为空', selector: '[name="inspectionItem1Text1"]' })
   if (currentData['inspectionItem1Text2'] !== '')
-    result.push({ ok: false, result: '鉴别项目1错误，锂含量不为空' })
+    result.push({ ok: false, result: '鉴别项目1错误，锂含量不为空', selector: '[name="inspectionItem1Text2"]' })
 
   // 验证瓦数数
   const wattHourFromName = matchWattHour(currentData['itemCName'])
@@ -247,18 +273,19 @@ function checkSekIonBtyType(
   const inspectionResult1 = currentData['inspectionResult1']
   const checkList = checkMap[btyType]
   if (checkList && !checkList.includes(inspectionResult1))
-    result.push({ ok: false, result: '检验结果1错误，瓦时数取值范围错误' })
+    result.push({ ok: false, result: '检验结果1错误，瓦时数取值范围错误', selector: '[name="inspectionResult1"]' })
   if (wattHourFromName > 0 && !isNaN(wattHour)) {
     if (wattHour !== wattHourFromName)
       result.push({
         ok: false,
         result: `瓦时数与项目名称不匹配${wattHour} !== ${wattHourFromName}`,
+        selector: '[name="inspectionItem1Text1"]',
       })
   }
-  result.push(...wattHourScope(btyType, inspectionResult1, wattHour))
+  result.push(...wattHourScope(btyType, inspectionResult1, wattHour, '[name="inspectionResult1"]'))
   // 随附文件 Ion 1125 metal 1126
   if (currentData['inspectionItem7'] !== '1125')
-    result.push({ ok: false, result: '随附文件错误，未勾选锂离子电池' })
+    result.push({ ok: false, result: '随附文件错误，未勾选锂离子电池', selector: '[name="inspectionItem7"]' })
   return result
 }
 
@@ -267,25 +294,25 @@ function checkSekMetalBtyType(
   checkMap: Record<string, string[]>,
   btyType: string
 ) {
-  const result = []
+  const result: CheckResult[] = []
   // 鉴别项目1
   if (currentData['inspectionItem1'] !== '1112')
-    result.push({ ok: false, result: '鉴别项目1错误，未勾选锂含量' })
+    result.push({ ok: false, result: '鉴别项目1错误，未勾选锂含量', selector: '[name="inspectionItem1"]' })
   if (currentData['inspectionItem1Text2'] === '')
-    result.push({ ok: false, result: '鉴别项目1错误，锂含量为空' })
+    result.push({ ok: false, result: '鉴别项目1错误，锂含量为空', selector: '[name="inspectionItem1Text2"]' })
   if (currentData['inspectionItem1Text1'] !== '')
-    result.push({ ok: false, result: '鉴别项目1错误，瓦时数不为空' })
+    result.push({ ok: false, result: '鉴别项目1错误，瓦时数不为空', selector: '[name="inspectionItem1Text1"]' })
 
   // 验证锂含量
   const inspectionResult1 = currentData['inspectionResult1']
   const liContent = Number(currentData['inspectionItem1Text2'])
   const checkList2 = checkMap[btyType]
   if (checkList2 && !checkList2.includes(inspectionResult1))
-    result.push({ ok: false, result: '检验结果1错误，锂含量取值范围错误' })
-  result.push(...liContentScope(btyType, inspectionResult1, liContent))
+    result.push({ ok: false, result: '检验结果1错误，锂含量取值范围错误', selector: '[name="inspectionResult1"]' })
+  result.push(...liContentScope(btyType, inspectionResult1, liContent, '[name="inspectionResult1"]'))
   // 随附文件 Ion 1125 metal 1126
   if (currentData['inspectionItem7'] !== '1126')
-    result.push({ ok: false, result: '随附文件错误，未勾选锂金属电池' })
+    result.push({ ok: false, result: '随附文件错误，未勾选锂金属电池', selector: '[name="inspectionItem7"]' })
   return result
 }
 

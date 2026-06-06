@@ -17,7 +17,9 @@ export function checkComment(
   commentExtra: string | null,
   projectNo: string,
   conclusions: number,
-  otherDescribe: string
+  otherDescribe: string,
+  commentElementSelector: string,
+  commentExtraElementSelector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (!projectNo) return result
@@ -29,6 +31,7 @@ export function checkComment(
           ok: false,
           result:
             '单独运输或外配危险品，备注应为：包装必须达到 II 级包装的性能标准。。',
+          selector: commentElementSelector,
         })
       }
     } else {
@@ -36,6 +39,7 @@ export function checkComment(
         result.push({
           ok: false,
           result: '内置危险品，备注应为空',
+          selector: commentElementSelector,
         })
       }
     }
@@ -44,12 +48,14 @@ export function checkComment(
       result.push({
         ok: false,
         result: '非限制性物品，备注应为：根据IMDG CODE特殊规定188不受限制。',
+        selector: commentElementSelector,
       })
     }
     if (commentExtra !== '188') {
       result.push({
         ok: false,
         result: '非限制性物品，特殊规定应为：188',
+        selector: commentExtraElementSelector,
       })
     }
   }

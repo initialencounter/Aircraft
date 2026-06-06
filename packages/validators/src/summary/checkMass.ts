@@ -11,6 +11,7 @@ export function checkMass(
       {
         ok: false,
         result: `净重不一致, 系统上为${formMass}g, 概要上为${summaryMassNumber}g`,
+        selector: '',
       },
     ]
   }

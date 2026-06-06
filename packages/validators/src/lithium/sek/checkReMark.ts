@@ -15,7 +15,8 @@ const remarkPreventingShortCircuitMap = {
 export function checkReMark(
   remarks: string,
   projectNo: string,
-  otherDescribe: string
+  otherDescribe: string,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (!projectNo) return result
@@ -28,6 +29,7 @@ export function checkReMark(
       result.push({
         ok: false,
         result: '注意事项错误，应为：必须防止设备意外启动。',
+        selector,
       })
     }
   } else if (otherDescribe === '540') {
@@ -36,6 +38,7 @@ export function checkReMark(
         ok: false,
         result:
           '注意事项错误，应为：每一单电池必须做好防短路措施，并装入坚固外包装内。',
+        selector,
       })
     }
   }

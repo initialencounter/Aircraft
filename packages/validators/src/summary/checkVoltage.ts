@@ -11,6 +11,7 @@ export function checkVoltage(
       {
         ok: false,
         result: `电压不一致, 系统上为${formVoltage}, 概要上为${summaryVoltageNumber}`,
+        selector: '',
       },
     ]
   }

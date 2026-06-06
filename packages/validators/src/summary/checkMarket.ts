@@ -15,6 +15,7 @@ export function checkMarket(
       {
         ok: false,
         result: `技术备注: ${market} 与测试报告编号: ${summaryReportNo} 不一致`,
+        selector: '',
       },
     ]
   }

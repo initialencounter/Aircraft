@@ -10,6 +10,7 @@ import type { CheckResult, PkgInfoSubType } from '../shared/types'
 export function checkDropTest(
   pkgInfoSubType: PkgInfoSubType,
   dropTest: boolean,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
 
@@ -21,12 +22,12 @@ export function checkDropTest(
     case '969, II':
     case '977, II':
       if (!dropTest) {
-        result.push({ ok: false, result: `${pkgInfoSubType}未勾选跌落` })
+        result.push({ ok: false, result: `${pkgInfoSubType}未勾选跌落`, selector })
       }
       break
     default:
       if (dropTest) {
-        result.push({ ok: false, result: `${pkgInfoSubType}不应勾选跌落` })
+        result.push({ ok: false, result: `${pkgInfoSubType}不应勾选跌落`, selector })
       }
   }
   return result

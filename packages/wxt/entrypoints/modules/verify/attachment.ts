@@ -1,5 +1,6 @@
 import type {
   AttachmentInfo,
+  CheckResult,
   EntrustData,
   PekData,
   SekData,
@@ -29,26 +30,27 @@ export async function checkSystemAttachmentFile(
   type: 'goodsfile' | 'batteryfile',
   projectNo: string,
   projectId: string
-): Promise<Array<{ ok: boolean; result: string }>> {
+): Promise<CheckResult[]> {
   const AttachmentFilesName = type === 'goodsfile' ? '图片' : '概要'
   const AttachmentFilesText = await getAttachmentFiles(type, projectId)
   if (!AttachmentFilesText)
-    return [{ ok: false, result: AttachmentFilesName + '未上传' }]
+    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '' }]
   const rawFileName = AttachmentFilesText.match(/"filename":"(.*?)\.pdf"/g)
   if (!rawFileName?.length) {
-    return [{ ok: false, result: AttachmentFilesName + '未上传' }]
+    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '' }]
   } else if (rawFileName?.length > 1 && hasDuplicateStrings(rawFileName)) {
     return [
       {
         ok: false,
         result: AttachmentFilesName + '文件名称一样，检查是否重复上传',
+        selector: '',
       },
     ]
   }
 
   const fileName = rawFileName[0].slice(12, 29)
   if (fileName !== projectNo)
-    return [{ ok: false, result: AttachmentFilesName + '上传错误' }]
+    return [{ ok: false, result: AttachmentFilesName + '上传错误', selector: '' }]
   return []
 }
 
@@ -62,10 +64,10 @@ export async function checkLocalAttachment(
   entrustData: EntrustData | null,
   attachmentInfo: AttachmentInfo | null,
   isSodium: boolean
-): Promise<Array<{ ok: boolean; result: string }>> {
+): Promise<CheckResult[]> {
   if (localConfig.enableCheckAttachment === false) return []
   try {
-    const results: Array<{ ok: boolean; result: string }> = []
+    const results: CheckResult[] = []
     const projectNo = getCurrentProjectNo()
     if (!projectNo) return []
 
@@ -91,7 +93,7 @@ export async function checkLocalAttachment(
     return results
   } catch (e) {
     console.log(e)
-    return [{ ok: false, result: '附件解析失败' }]
+    return [{ ok: false, result: '附件解析失败', selector: '' }]
   }
 }
 

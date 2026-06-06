@@ -12,13 +12,15 @@ export function packetOrContain(
   pkgInfo: string,
   pkgInfoByPackCargo: string,
   otherDescribeCAddition: string,
-  isChargeBoxOrRelated: boolean
+  isChargeBoxOrRelated: boolean,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (pkgInfo !== pkgInfoByPackCargo) {
     result.push({
       ok: false,
       result: `${pkgInfo}包装，但结论是${pkgInfoByPackCargo}`,
+      selector,
     })
   }
   if (
@@ -29,6 +31,7 @@ export function packetOrContain(
     result.push({
       ok: false,
       result: '与设备包装在一起，其他描述中没有包装在一起5个字',
+      selector,
     })
   if (
     (pkgInfo === '967' || pkgInfo === '970' || pkgInfo === '978') &&
@@ -38,6 +41,7 @@ export function packetOrContain(
     result.push({
       ok: false,
       result: '安装在设备上，其他描述中没有设备内置4个字',
+      selector,
     })
   return result
 }

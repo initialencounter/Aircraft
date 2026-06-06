@@ -8,7 +8,8 @@ import type { CheckResult, PkgInfoSubType } from '../shared/types'
  */
 export function netWeighLimit(
   netWeight: number,
-  pkgInfoSubType: PkgInfoSubType
+  pkgInfoSubType: PkgInfoSubType,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 电池净重
@@ -26,12 +27,12 @@ export function netWeighLimit(
     case '978, I':
     case '977, I':
       if (netWeight > 35) {
-        result.push({ ok: false, result: `${pkgInfoSubType} 电池净重超过35kg` })
+        result.push({ ok: false, result: `${pkgInfoSubType} 电池净重超过35kg`, selector })
       }
       break
     case '965, IB':
       if (netWeight > 10) {
-        result.push({ ok: false, result: `${pkgInfoSubType} 电池净重超过10kg` })
+        result.push({ ok: false, result: `${pkgInfoSubType} 电池净重超过10kg`, selector })
       }
       break
     case '966, II':
@@ -41,12 +42,12 @@ export function netWeighLimit(
     case '977, II':
     case '978, II':
       if (netWeight > 5) {
-        result.push({ ok: false, result: `${pkgInfoSubType} 电池净重超过5kg` })
+        result.push({ ok: false, result: `${pkgInfoSubType} 电池净重超过5kg`, selector })
       }
       break
     case '968, IB':
       if (netWeight > 2.5) {
-        result.push({ ok: false, result: '968，IB 电池净重超过2.5kg' })
+        result.push({ ok: false, result: '968，IB 电池净重超过2.5kg', selector })
       }
       break
   }

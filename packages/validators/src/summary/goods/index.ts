@@ -21,7 +21,7 @@ export function checkSekGoods(
   goodsInfo: GoodsInfo | null
 ): CheckResult[] {
   if (!goodsInfo) {
-    return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称' }]
+    return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称', selector: '' }]
   }
   const results: CheckResult[] = []
   const expectedLabel = getSekExpectedLabel(conclusions, UNNO, isSodium, otherDescribe, isIon)
@@ -39,7 +39,7 @@ export function checkPekGoods(
   goodsInfo: GoodsInfo | null
 ): CheckResult[] {
   if (!goodsInfo) {
-    return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称和标签' }]
+    return [{ ok: false, result: 'everything搜不到图片, 无法验证图片编号和物品名称和标签', selector: '' }]
   }
   const results: CheckResult[] = []
   const expectedLabel = getPekExpectedLabel(pkgInfoSubType, netWeight)

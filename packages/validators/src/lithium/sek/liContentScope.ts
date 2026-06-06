@@ -10,25 +10,26 @@ import type { CheckResult } from '../shared/types'
 export function liContentScope(
   btyType: string,
   inspectionResult1: string,
-  liContent: number
+  liContent: number,
+  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (isNaN(liContent)) {
     if (['503', '505'].includes(btyType)) {
       if (liContent > 1) {
         if (inspectionResult1 !== '>1g')
-          result.push({ ok: false, result: '锂含量取值范围错误，应>1g' })
+          result.push({ ok: false, result: '锂含量取值范围错误，应>1g', selector })
       } else {
         if (inspectionResult1 !== '≤1g')
-          result.push({ ok: false, result: '锂含量取值范围错误，应≤1g' })
+          result.push({ ok: false, result: '锂含量取值范围错误，应≤1g', selector })
       }
     } else {
       if (liContent > 2) {
         if (inspectionResult1 !== '>2g')
-          result.push({ ok: false, result: '锂含量取值范围错误，应>2g' })
+          result.push({ ok: false, result: '锂含量取值范围错误，应>2g', selector })
       } else {
         if (inspectionResult1 !== '≤2g')
-          result.push({ ok: false, result: '锂含量取值范围错误，应≤2g' })
+          result.push({ ok: false, result: '锂含量取值范围错误，应≤2g', selector })
       }
     }
   }

@@ -8,7 +8,9 @@ import type { CheckResult } from './types'
  */
 export function btySizeBtyShape(
   btySize: string,
-  btyShape: string
+  btyShape: string,
+  sizeElementSelector: string,
+  shapeElementSelector: string,
 ): CheckResult[] {
   if (
     btySize.includes('Ф') ||
@@ -30,6 +32,7 @@ export function btySizeBtyShape(
         {
           ok: false,
           result: '电池形状或尺寸错误，应为扣式 近圆柱体 圆柱体 球形',
+          selector: shapeElementSelector,
         },
       ]
     }
@@ -51,6 +54,7 @@ export function btySizeBtyShape(
         {
           ok: false,
           result: '圆形电池缺少符号，应包含 Ф Φ φ Ø ø',
+          selector: sizeElementSelector,
         },
       ]
     }

@@ -35,18 +35,21 @@ export function checkContactInfo(
     results.push({
       ok: false,
       result: '委托方和制造商联系电话一致, 可能存在信息错误',
+      selector: '',
     })
   }
   if (consignorMail && manufacturerMail && consignorMail === manufacturerMail) {
     results.push({
       ok: false,
       result: '委托方和制造商邮箱一致, 可能存在信息错误',
+      selector: '',
     })
   }
   if (consignorWebsite && manufacturerWebsite && consignorWebsite === manufacturerWebsite) {
     results.push({
       ok: false,
       result: '委托方和制造商网址一致, 可能存在信息错误',
+      selector: '',
     })
   }
   return results

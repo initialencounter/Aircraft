@@ -6,7 +6,7 @@ import type {
   SodiumPkgInfoSubType,
 } from '../shared/types'
 import { getIsSodiumSingleCell, getSodiumBtyTypeCode, getSodiumInfoSubType, getSodiumPkgInfo, getSodiumPkgInfoByPackCargo, pekSodiumIsDangerous } from '../shared/utils'
-import { baseCheck } from '../../lithium/shared'
+import { baseCheck, BaseCheckSelectors } from '../../lithium/shared'
 import { netWeighLimit } from '../../lithium/pek/netWeighLimit'
 import { pekSodiumActiveStateWarn } from './activeStateWarn'
 import { pekSodiumStateOfCharge } from './stateOfCharge'
@@ -20,7 +20,7 @@ import { sodiumRemarksCheck } from './sodiumRemarksCheck'
 import { sodiumConclusionsCheck } from './sodiumConclusionsCheck'
 
 function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
-  const result = []
+  const result: CheckResult[] = []
   const btyType = getSodiumBtyTypeCode(currentData)
   // 品名
   const {
@@ -70,7 +70,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   const unno = currentData['unno'] as PekUNNO
   // 电芯
   const isCell: boolean = String(currentData['type2']) === '1'
-  // 运输专有名称
+  // 运输专用名称
   const properShippingName = currentData['psn']
   // 包装类型
   const packageGrade = currentData['pg']
@@ -111,20 +111,34 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
     netWeight,
     isSingleCell
   )
-  if (!itemCName) result.push({ ok: false, result: '中文品名为空' })
-  if (!itemEName) result.push({ ok: false, result: '英文品名为空' })
-  if (!btyKind) result.push({ ok: false, result: '电池型号为空' })
-  if (netWeight === 0) result.push({ ok: false, result: '电池净重为空' })
-  if (!unTest) result.push({ ok: false, result: '未勾选通过 UN38.3 测试' })
-  if (pkgInfoSubType === '') result.push({ ok: false, result: '包装说明为空' })
-  if (!market) result.push({ ok: false, result: '技术备注为空' })
+  if (!itemCName) result.push({ ok: false, result: '中文品名为空', selector: '[name="itemCName"]' })
+  if (!itemEName) result.push({ ok: false, result: '英文品名为空', selector: '[name="itemEName"]' })
+  if (!btyKind) result.push({ ok: false, result: '电池型号为空', selector: '[name="model"]' })
+  if (netWeight === 0) result.push({ ok: false, result: '电池净重为空', selector: '[name="netWeight"]' })
+  if (!unTest) result.push({ ok: false, result: '未勾选通过 UN38.3 测试', selector: '[name="inspectionItem3"]' })
+  if (pkgInfoSubType === '') result.push({ ok: false, result: '包装说明为空', selector: '[name="inspectionItem5Text1"]' })
+  if (!market) result.push({ ok: false, result: '技术备注为空', selector: '[name="market"]' })
   if (randomFile)
-    result.push({ ok: false, result: '检查项目6错误，附有随机文件应为：否' })
+    result.push({ ok: false, result: '检查项目6错误，附有随机文件应为：否', selector: '[name="inspectionItem5"]' })
 
   if (currentData['otherDescribeChecked'] !== '1')
-    result.push({ ok: false, result: '应勾选附加操作信息' })
+    result.push({ ok: false, result: '应勾选附加操作信息', selector: '[name="otherDescribeCAddition"]' })
   const activeState = otherDescribe.includes('2796')
   const isLithium = false
+  // PEK 表单元素ID映射
+  const selectors: BaseCheckSelectors = {
+    btySize: '[name="size"]',
+    btyShape: '[name="shapeValue"]',
+    btyCount: '[name="btyCount"]',
+    netWeight: '[name="netWeight"]',
+    btyType: '[name="inspectionItem1"]',
+    itemCName: '[name="itemCName"]',
+    itemEName: '[name="itemEName"]',
+    btyKind: '[name="model"]',
+    voltage: '[name="inspectionItem2Text1"]',
+    wattHour: '[name="inspectionItem3Text1"]',
+    otherDescribe: '[name="otherDescribeCAddition"]',
+  }
   // 基础检查
   result.push(
     ...baseCheck(
@@ -147,44 +161,46 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
       inspectionItem1,
       activeState,
       isLithium,
+      selectors,
     )
   )
   // 电池净重限重
-  result.push(...netWeighLimit(netWeight, pkgInfoSubType))
+  result.push(...netWeighLimit(netWeight, pkgInfoSubType, '[name="netWeight"]'))
   // 开启状态运输 2796
-  result.push(...pekSodiumActiveStateWarn(otherDescribe))
+  result.push(...pekSodiumActiveStateWarn(otherDescribe, '[name="otherDescribeCAddition"]'))
   // 荷电状态≤30% 2797
-  result.push(...pekSodiumStateOfCharge(pkgInfo, otherDescribe))
+  result.push(...pekSodiumStateOfCharge(pkgInfo, otherDescribe, '[name="otherDescribeCAddition"]'))
   // 其他描述是否为电芯或电池
-  result.push(...otherDescribeIsCell(isCell, otherDescribe))
+  result.push(...otherDescribeIsCell(isCell, otherDescribe, '[name="otherDescribeCAddition"]'))
   // 包装与其他描述验证
   result.push(
     ...packetOrContain(
       pkgInfo,
       pkgInfoByPackCargo,
       otherDescribeCAddition,
-      isChargeBoxOrRelated
+      isChargeBoxOrRelated,
+      '[name="otherDescribeCAddition"]',
     )
   )
   // 跌落检测
-  result.push(...checkDropTest(pkgInfoSubType, dropTest))
+  result.push(...checkDropTest(pkgInfoSubType, dropTest, '[name="inspectionItem2"]'))
   // 堆码检测
-  result.push(...checkStackTest(pkgInfoSubType, stackTest, false))
+  result.push(...checkStackTest(pkgInfoSubType, stackTest, false, '[name="inspectionItem6"]', 'inspectionItem6'))
   // 检查项目5 是否加贴锂电池标记
-  result.push(...sodiumBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel, isCell))
+  result.push(...sodiumBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel, isCell, '[name="inspectionItem4"]'))
 
   // 包装说明
   if (isDangerous) {
     if (pkgInfoReference !== '') {
-      result.push({ ok: false, result: '危险品，参见包装说明应为空' })
+      result.push({ ok: false, result: '危险品，参见包装说明应为空', selector: '[name="inspectionItem5Text1"]' })
     }
   } else {
     if (isNaN(Number(pkgInfoReference))) {
-      result.push({ ok: false, result: '非限制性，包装说明应为数字' })
+      result.push({ ok: false, result: '非限制性，包装说明应为数字', selector: '[name="inspectionItem5Text1"]' })
     }
   }
   // 鉴别项目1
-  result.push(...sodiumIonOrMetal(inspectionItem3Text1, inspectionItem4Text1))
+  result.push(...sodiumIonOrMetal(inspectionItem3Text1, inspectionItem4Text1, '[name="inspectionItem3Text1"]', '[name="inspectionItem4Text1"]'))
 
   // 验证瓦数数
   if (wattHourFromName > 0 && !isNaN(wattHour) && isIon) {
@@ -192,18 +208,19 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
       result.push({
         ok: false,
         result: `瓦时数与项目名称不匹配: ${wattHour} !== ${wattHourFromName}`,
+        selector: '[name="inspectionItem3Text1"]',
       })
   }
 
   // 注意事项
-  result.push(...sodiumRemarksCheck(remarks, pkgInfoSubType))
+  result.push(...sodiumRemarksCheck(remarks, pkgInfoSubType, '[name="remarksValue"]'))
 
   // 结论 非限制性 0 危险品 1
   const conclusions = Number(currentData['conclusions'])
   // DGR规定,资料核实
   const result1 = currentData['result1']
   if (result1 !== 'DGR规定,资料核实')
-    result.push({ ok: false, result: '【DGR规定，资料核实】栏错误，勾选错误' })
+    result.push({ ok: false, result: '【DGR规定，资料核实】栏错误，勾选错误', selector: '[name="result1"]' })
   // 是否属于危险品
   // 危险品
   result.push(
@@ -221,7 +238,15 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
       packCargo,
       inspectionItem1,
       properShippingName,
-      packageGrade
+      packageGrade,
+      '[name="psn"]',
+      '[name="conclusions"]',
+      '[name="packPassengerCargo"]',
+      '[name="unno"]',
+      '[name="classOrDiv"]',
+      '[name="inspectionItem5Text1"]',
+      '[name="pg"]',
+      '[name="packCargo"]',
     )
   )
   return result

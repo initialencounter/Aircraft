@@ -64,7 +64,8 @@ export async function verifyFormData(
         result.push(
           {
             ok: false,
-            result: "系统概要外观打印预览可能显示不全"
+            result: "系统概要外观打印预览可能显示不全",
+            selector: '',
           }
         )
       }
@@ -78,12 +79,13 @@ export async function verifyFormData(
   result.push(...batteryfileCheckResults)
 
   // 检查黑名单电池
-  result.push(...checkModel(localConfig.dangerousModels, model))
+  result.push(...checkModel(localConfig.dangerousModels, model, systemId === 'pek'? '[name="model"]' : '[name="btyKind"]'))
   result.push(
     ...checkModelWithFactory(
       entrustData,
       localConfig.dangerousModelsWithFactory,
-      model
+      model,
+      systemId === 'pek'? '[name="model"]' : '[name="btyKind"]'
     )
   )
 

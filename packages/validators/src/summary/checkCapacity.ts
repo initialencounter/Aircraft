@@ -11,6 +11,7 @@ export function checkCapacity(
       {
         ok: false,
         result: `容量不一致, 系统上为${formCapacity}, 概要上为${summaryCapacityNumber}`,
+        selector: '',
       },
     ]
   }

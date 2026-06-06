@@ -195,7 +195,7 @@ async function entrypoint() {
     otherDescribeEAddition: '其它描述英文',
     pg: '包装等级',
     projectId: '项目ID',
-    psn: '运输专有名称',
+    psn: '运输专用名称',
     remarks: '注意事项',
     taskId: 'taskId',
     unno: 'UN编号',

@@ -10,20 +10,22 @@ import type { CheckResult } from '../shared/types'
 export function ionOrMetal(
   isIon: boolean,
   inspectionItem3Text1: string,
-  inspectionItem4Text1: string
+  inspectionItem4Text1: string,
+  wattHourSelector: string,
+  liContentSelector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 鉴别项目1
   if (isIon) {
     if (inspectionItem3Text1 === '')
-      result.push({ ok: false, result: '鉴别项目1错误，瓦时数为空' })
+      result.push({ ok: false, result: '鉴别项目1错误，瓦时数为空', selector: wattHourSelector })
     if (inspectionItem4Text1 !== '')
-      result.push({ ok: false, result: '鉴别项目1错误，锂含量不为空' })
+      result.push({ ok: false, result: '鉴别项目1错误，锂含量不为空', selector: liContentSelector })
   } else {
     if (inspectionItem3Text1 !== '')
-      result.push({ ok: false, result: '鉴别项目1错误，瓦时数不为空' })
+      result.push({ ok: false, result: '鉴别项目1错误，瓦时数不为空', selector: wattHourSelector })
     if (inspectionItem4Text1 === '')
-      result.push({ ok: false, result: '鉴别项目1错误，锂含量为空' })
+      result.push({ ok: false, result: '鉴别项目1错误，锂含量为空', selector: liContentSelector })
   }
   return result
 }

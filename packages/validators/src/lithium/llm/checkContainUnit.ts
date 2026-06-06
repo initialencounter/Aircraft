@@ -17,6 +17,7 @@ export function checkContainUnit(
       results.push({
         ok: false,
         result: `UN报告上的${item}为 ${valueFromLLM}，概要中为 ${valueFromSummary}`,
+        selector: '',
       })
     }
   }

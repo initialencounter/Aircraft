@@ -14,6 +14,7 @@ export function checkT1_8(
         results.push({
           ok: false,
           result: `概要上的T${i}为${summaryState}，但是UN报告上的T${i}为${llmState}`,
+          selector: '',
         })
       }
     } else {
@@ -21,6 +22,7 @@ export function checkT1_8(
         results.push({
           ok: false,
           result: `概要上的T${i}为${summaryState}，但是UN报告上的T${i}为${llmState}`,
+          selector: '',
         })
       }
     }

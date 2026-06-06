@@ -10,7 +10,8 @@ import type { CheckResult } from './types'
 export function btyWeightCalculate(
   batteryWeight: number,
   btyCount: number,
-  netWeightDisplay: number
+  netWeightDisplay: number,
+  selector: string,
 ): CheckResult[] {
   // 电池净重
   if (batteryWeight && btyCount && netWeightDisplay) {
@@ -19,7 +20,7 @@ export function btyWeightCalculate(
       (expectedNetWeight - netWeightDisplay) / netWeightDisplay
     )
     if (abs > 0.05) {
-      return [{ ok: false, result: '电池净重相对误差大于5%' }]
+      return [{ ok: false, result: '电池净重相对误差大于5%', selector }]
     }
   }
   return []

@@ -9,6 +9,7 @@ export function checkTests(
       results.push({
         ok: false,
         result: `概要测试项T${testNum}缺失`,
+        selector: '',
       })
     }
   }

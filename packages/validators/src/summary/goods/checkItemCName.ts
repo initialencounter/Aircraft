@@ -18,6 +18,7 @@ export function checkItemCName(
       {
         ok: false,
         result: `图片品名不一致: ${currentDataItemCName} !== ${goodsInfoItemCName}`,
+        selector: '',
       },
     ]
   }
