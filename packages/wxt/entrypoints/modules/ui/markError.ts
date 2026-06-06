@@ -5,6 +5,9 @@ export function markErrorElement(selector: string, message: string[]) {
   let targetElement: HTMLElement = element
   if (element.type === 'radio' || element.type === 'hidden' || element.type === 'checkbox') {
     targetElement = element.parentElement as HTMLElement
+    if (element.name === 'remarks') {
+      targetElement = element.parentElement?.parentElement as HTMLElement
+    }
   }
   targetElement.style.backgroundColor = message.length ? '#FF6347' : ''
   targetElement.setAttribute('title', message.length ? message.join('\n') : "")
@@ -17,6 +20,9 @@ export function clearError() {
     let targetElement: HTMLElement = element
     if (element.type === 'radio' || element.type === 'hidden' || element.type === 'checkbox') {
       targetElement = element.parentElement as HTMLElement
+      if (element.name === 'remarks') {
+        targetElement = element.parentElement?.parentElement as HTMLElement
+      }
     }
     targetElement.removeAttribute('title')
     if (targetElement.style.backgroundColor === 'rgb(255, 99, 71)') {

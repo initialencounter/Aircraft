@@ -247,7 +247,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   }
 
   // 注意事项
-  result.push(...remarksCheck(remarks, pkgInfoSubType, '[name="remarksValue"]'))
+  result.push(...remarksCheck(remarks, pkgInfoSubType, '[name="remarks"]'))
 
   // 结论 非限制性 0 危险品 1
   const conclusions = Number(currentData['conclusions'])

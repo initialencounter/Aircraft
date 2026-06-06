@@ -118,39 +118,43 @@ export default defineUnlistedScript(() => {
   }
 
   /**
-   * 拦截 combo / combobox / combogrid 的 setValue / setText 方法，
+   * 拦截 combo / combobox / combogrid 的 setValue / setText / clear 方法，
    * 主动派发原生 input 事件。
    *
-   * 原理: EasyUI 通过 jQuery.trigger('change') 不一定会派发原生事件，
-   * 这里在每次 setValue/setText 调用后，直接在 textbox 上派发原生 input 事件。
-   * content script 通过 document.addEventListener('input', ...) 即可捕获。
+   * 为什么三者都需要拦截：
+   * 1. setValue: 应用代码最常用的设值方法。EasyUI 内部 setValue → setText 的调用链
+   *    走的是 methods 对象直接调用，不会再次经过 $.fn.combo，因此不会产生重复事件
+   * 2. setText: 直接设置显示文本的方法（某些场景单独调用）
+   * 3. clear: 清除按钮可能调用 $(el).combo('clear')，该方法可能绕过 setValue/setText
+   *    直接操作内部状态或调用 textbox('clear')
+   * 4. textbox 命名空间: clear 按钮可能直接操作 $(textbox).textbox('clear') 或
+   *    $(textbox).textbox('setValue')，绕过 combo 层。仅当 textbox 属于 combo 组件生效
+   *
+   * 防重入: _dispatching WeakSet 确保同一元素在同步调用栈内只派发一次事件
    */
   function hookEasyUIComboEvents() {
-    const namespaces = ['combo', 'combobox', 'combogrid'];
-    // 只拦截 setText：EasyUI 的 setValue 内部会调用 setText，
-    // 同时拦截两者会导致一次操作派发 2-3 次重复的 input 事件
-    const methodNames = ['setText'];
+    const comboNS = ['combo', 'combobox', 'combogrid'];
+    const comboMethodNames = ['setValue', 'setText', 'clear'];
 
-    namespaces.forEach((ns) => {
+    comboNS.forEach((ns) => {
       const origFn = (window.$.fn as any)[ns] as Function;
       if (!origFn) return;
 
       const wrappedFn = function (this: any, options: any) {
-        // 方法调用（如 $(el).combo('setValue', value)）
         if (typeof options === 'string') {
           const result = origFn.apply(this, arguments as any);
-          if (methodNames.includes(options)) {
+          if (comboMethodNames.includes(options)) {
             (this as any).each(function (this: HTMLElement) {
               dispatchNativeInputEvent(this);
             });
           }
           return result;
         }
-        // 初始化调用（如 $(el).combo({...options})）——直接透传
+        // 初始化调用——直接透传
         return origFn.apply(this, arguments as any);
       };
 
-      // 复制原始函数的静态属性（methods、defaults 等），保证 EasyUI 内部正常工作
+      // 复制静态属性（methods、defaults 等）
       Object.keys(origFn).forEach((key) => {
         (wrappedFn as any)[key] = (origFn as any)[key];
       });
@@ -158,7 +162,38 @@ export default defineUnlistedScript(() => {
       (window.$.fn as any)[ns] = wrappedFn;
     });
 
-    console.log('[JQuery Hook] EasyUI combo events intercepted (combo/combobox/combogrid)');
+    // 同时拦截 textbox 的 clear / setValue（清除按钮可能绕过 combo 直接操作 textbox）
+    const textboxOrig = (window.$.fn as any)['textbox'] as Function;
+    if (textboxOrig) {
+      const textboxMethodNames = ['clear', 'setValue'];
+
+      const wrappedTextbox = function (this: any, options: any) {
+        if (typeof options === 'string') {
+          const result = textboxOrig.apply(this, arguments as any);
+          if (textboxMethodNames.includes(options)) {
+            (this as any).each(function (this: HTMLElement) {
+              // 仅当该 textbox 属于 combo 组件时才派发事件
+              if ($(this).closest('.combo, .combo-f, .combobox-f, .combogrid-f').length) {
+                // 直接在此 textbox 上派发 input 事件
+                try {
+                  this.dispatchEvent(new Event('input', { bubbles: true, cancelable: false }));
+                } catch (_e) { /* ignore */ }
+              }
+            });
+          }
+          return result;
+        }
+        return textboxOrig.apply(this, arguments as any);
+      };
+
+      Object.keys(textboxOrig).forEach((key) => {
+        (wrappedTextbox as any)[key] = (textboxOrig as any)[key];
+      });
+
+      (window.$.fn as any)['textbox'] = wrappedTextbox;
+    }
+
+    console.log('[JQuery Hook] EasyUI combo events intercepted (combo/combobox/combogrid/textbox)');
   }
 
   // 等 EasyUI 加载后安装钩子

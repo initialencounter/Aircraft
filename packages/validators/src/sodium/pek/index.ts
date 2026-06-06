@@ -213,7 +213,7 @@ function checkPekSodiumBtyType(currentData: PekSodiumData): CheckResult[] {
   }
 
   // 注意事项
-  result.push(...sodiumRemarksCheck(remarks, pkgInfoSubType, '[name="remarksValue"]'))
+  result.push(...sodiumRemarksCheck(remarks, pkgInfoSubType, '[name="remarks"]'))
 
   // 结论 非限制性 0 危险品 1
   const conclusions = Number(currentData['conclusions'])

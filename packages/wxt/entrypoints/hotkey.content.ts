@@ -227,6 +227,7 @@ async function entrypoint() {
         const dataFromForm = getFormData<PekData | SekData>(systemId as 'pek' | 'sek')
         clearError()
         const results = checkInspectData(dataFromForm as PekData | SekData, category, undefined)
+        console.log('验证结果：', results)
         // 清除所有之前标记的错误
         document.querySelectorAll('[id]').forEach(el => {
           const htmlEl = el as HTMLElement
@@ -299,15 +300,58 @@ async function entrypoint() {
       }
     }
 
-    // 监听原生 input 事件（用户键盘输入）
+    /**
+     * 从 .selectedText span 找到关联的表单控件。
+     * HTML 结构中三者通常在同一父容器下为兄弟节点：
+     *   <input type="hidden"> ← value holder
+     *   <span class="selectedText"> ← display text
+     *   <select class="easyui-combogrid"> ← EasyUI 组件
+     */
+    function findAssociatedControl(selectedText: HTMLElement): HTMLElement | null {
+      let parent = selectedText.parentElement
+      for (let i = 0; i < 3 && parent; i++) {
+        const select = parent.querySelector('select[id$="Grid"]')
+        if (select) return select as HTMLElement
+        const hiddenInput = parent.querySelector('input[type="hidden"][id$="Value"]')
+        if (hiddenInput) return hiddenInput as HTMLElement
+        parent = parent.parentElement
+      }
+      return null
+    }
+
+    // 1. 监听原生 input 事件（用户键盘输入；EasyUI 拦截器派发的事件也走这里）
     document.addEventListener('input', (event: Event) => {
       handleFieldChange(event.target as HTMLElement)
     }, true)
 
-    // 监听原生 change 事件（处理原生 <select> 元素的变更；jQuery.trigger 不派发原生事件，EasyUI combo 由上方 input 事件覆盖）
+    // 2. 监听原生 change 事件（原生 <select> 变更）
     document.addEventListener('change', (event: Event) => {
       handleFieldChange(event.target as HTMLElement)
     }, true)
+
+    // 3. MutationObserver 安全网：捕获直接 DOM 操作（如清除按钮直接修改 .selectedText）
+    if (form) {
+      let moDebounceTimer: ReturnType<typeof setTimeout> | null = null
+      const observer = new MutationObserver((mutations) => {
+        if (moDebounceTimer) clearTimeout(moDebounceTimer)
+        moDebounceTimer = setTimeout(() => {
+          const processed = new Set<HTMLElement>()
+          for (const m of mutations) {
+            if (m.type !== 'childList') continue
+            const target = m.target as HTMLElement
+            // .selectedText 文本被直接修改（如 $('#colorText').text('')）
+            if (target.classList?.contains('selectedText') && !processed.has(target)) {
+              processed.add(target)
+              const control = findAssociatedControl(target)
+              if (control) {
+                handleFieldChange(control)
+              }
+            }
+          }
+        }, 50)
+      })
+      observer.observe(form, { childList: true, subtree: true })
+    }
   }
 
   function doSaveAction() {

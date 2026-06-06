@@ -199,7 +199,7 @@ export function checkSekSodiumBtyType(currentData: SekSodiumData): CheckResult[]
   )
     result.push({ ok: false, result: '鉴别项目8，9 不为空', selector: '[name="inspectionItem8Cn"]' })
   // 注意事项
-  result.push(...checkReMark(remarks, projectNo, otherDescribe, '[name="remarksValue"]'))
+  result.push(...checkReMark(remarks, projectNo, otherDescribe, '[name="remarks"]'))
   // 备注
   result.push(
     ...checkComment(
