@@ -10,7 +10,7 @@ export function markErrorElement(selector: string, message: string[]) {
     }
   }
   targetElement.style.backgroundColor = message.length ? '#FF6347' : ''
-  targetElement.setAttribute('title', message.length ? message.join('\n') : "")
+  targetElement.setAttribute('title', message.length ? message.join(';\n\n') : "")
 }
 
 export function clearError() {

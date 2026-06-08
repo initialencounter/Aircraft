@@ -130,7 +130,7 @@ export default defineContentScript({
           }
         })
         errorsByElement.forEach((messages, id) => markErrorElement(id, messages))
-        const failedResults = JSON.stringify(result.map((result) => result), null, 2)
+        const failedResults = result.map((result) => result.result).join(';\n\n')
         updateVerifyButtonStatus('#fa5e55', failedResults)
         Qmsg.warning('初步验证未通过' + failedResults, {
           showClose: true,
