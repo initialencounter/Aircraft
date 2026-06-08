@@ -34,23 +34,23 @@ export async function checkSystemAttachmentFile(
   const AttachmentFilesName = type === 'goodsfile' ? '图片' : '概要'
   const AttachmentFilesText = await getAttachmentFiles(type, projectId)
   if (!AttachmentFilesText)
-    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '' }]
+    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '#openDocumentsBtn0 > span > span.l-btn-text' }]
   const rawFileName = AttachmentFilesText.match(/"filename":"(.*?)\.pdf"/g)
   if (!rawFileName?.length) {
-    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '' }]
+    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '#openDocumentsBtn0 > span > span.l-btn-text' }]
   } else if (rawFileName?.length > 1 && hasDuplicateStrings(rawFileName)) {
     return [
       {
         ok: false,
         result: AttachmentFilesName + '文件名称一样，检查是否重复上传',
-        selector: '',
+        selector: '#openDocumentsBtn0 > span > span.l-btn-text',
       },
     ]
   }
 
   const fileName = rawFileName[0].slice(12, 29)
   if (fileName !== projectNo)
-    return [{ ok: false, result: AttachmentFilesName + '上传错误', selector: '' }]
+    return [{ ok: false, result: AttachmentFilesName + '上传错误', selector: '#openDocumentsBtn0 > span > span.l-btn-text' }]
   return []
 }
 
