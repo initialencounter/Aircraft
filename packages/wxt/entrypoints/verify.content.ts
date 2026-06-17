@@ -19,7 +19,7 @@ import {
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
 import { warmUp } from './modules/utils/api'
-import { markErrorElement } from './modules/ui/markError'
+import { clearError, markErrorElement } from './modules/ui/markError'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -67,6 +67,7 @@ export default defineContentScript({
      * 验证处理函数
      */
     async function verifyHandler() {
+      clearError()
       const currentProjectId = getCurrentProjectId()
       if (currentProjectId === null) {
         Qmsg.warning('获取项目ID失败')
