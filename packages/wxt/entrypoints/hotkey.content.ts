@@ -13,9 +13,6 @@ import { warmUp } from './modules/utils/api'
 import { getCurrentProjectNo } from './modules/utils/helpers'
 import { switchFaviconBySystemId } from './modules/ui/favicon'
 import { insertCalculationText, updateCalculationText } from './modules/ui/calculation'
-import { clearError, markErrorElement } from './modules/ui/markError'
-import { getFormData } from './modules/utils/form'
-import { checkInspectData, type PekData, type SekData } from '@aircraft/validators'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -217,40 +214,6 @@ async function entrypoint() {
     Qmsg.success('已复制项目名称', { timeout: 500 })
   }
 
-  // 实时验证防抖
-  let validateDebounceTimer: NodeJS.Timeout | null = null
-  const debouncedValidate = () => {
-    if (validateDebounceTimer) clearTimeout(validateDebounceTimer)
-    validateDebounceTimer = setTimeout(() => {
-      if (!category) return
-      try {
-        const dataFromForm = getFormData<PekData | SekData>(systemId as 'pek' | 'sek')
-        clearError()
-        const results = checkInspectData(dataFromForm as PekData | SekData, category, undefined)
-        console.log('验证结果：', results)
-        // 清除所有之前标记的错误
-        document.querySelectorAll('[id]').forEach(el => {
-          const htmlEl = el as HTMLElement
-          if (htmlEl.style.backgroundColor === 'rgb(255, 99, 71)' || htmlEl.style.backgroundColor === '#FF6347') {
-            htmlEl.style.backgroundColor = ''
-            htmlEl.setAttribute('title', '')
-          }
-        })
-        // 按 selector 分组并标记错误
-        const errorsByElement = new Map<string, string[]>()
-        results.forEach((r) => {
-          if (r.selector) {
-            if (!errorsByElement.has(r.selector)) errorsByElement.set(r.selector, [])
-            errorsByElement.get(r.selector)!.push(r.result)
-          }
-        })
-        errorsByElement.forEach((messages, id) => markErrorElement(id, messages))
-      } catch (e) {
-        // 实时验证出错时静默处理，不影响用户操作
-      }
-    }, 10)
-  }
-
   function watchInput() {
     const formId = category === 'chemical' ? 'chemicalInspectForm' : 'batteryInspectForm'
     const form = document.getElementById(formId)
@@ -258,10 +221,6 @@ async function entrypoint() {
     // 共享处理函数：统一的字段变更处理逻辑
     const handleFieldChange = (target: HTMLElement) => {
       debouncedWarmUp(projectNo ?? '')
-      // 实时验证（仅验证模式启用时）
-      if (localConfig.verify && !fromQuery) {
-        debouncedValidate()
-      }
       if (!localConfig.enablePreventCloseBeforeSave || fromQuery) return
       if (!document.hasFocus()) return
       if (!form || !form.contains(target)) return
@@ -579,7 +538,7 @@ async function entrypoint() {
     }
   }
 
-  // 防抖保存函数
+  // 防抖执行预热函数
   function debouncedWarmUp(projectNo: string) {
     if (!localConfig.warmUp) return
     debounce(() => {
