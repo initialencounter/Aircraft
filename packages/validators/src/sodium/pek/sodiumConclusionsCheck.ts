@@ -36,15 +36,7 @@ export function sodiumConclusionsCheck(
   packCargo: string,
   inspectionItem1: '0' | '1' | '2', // 0 965 1 966 2 967
   properShippingName: string,
-  packageGrade: string,
-  psnElementSelector: string,
-  conclusionsElementSelector: string,
-  packPassengerCargoElementSelector: string,
-  unnoElementSelector: string,
-  classOrDivElementSelector: string,
-  pkgInfoReferenceElementSelector: string,
-  packageGradeElementSelector: string,
-  packCargoElementSelector: string,
+  packageGrade: string
 ): CheckResult[] {
   properShippingName = properShippingName.trim()
   packageGrade = packageGrade.trim()
@@ -65,8 +57,7 @@ export function sodiumConclusionsCheck(
     if (properShippingNameMap[unKey] !== properShippingName) {
       result.push({
         ok: false,
-        result: `运输专用名称错误，应为${properShippingNameMap[unKey]}`,
-        selector: psnElementSelector,
+        result: `运输专有名称错误，应为${properShippingNameMap[unKey]}`,
       })
     }
     if (!isDangerous) {
@@ -74,29 +65,28 @@ export function sodiumConclusionsCheck(
         ok: false,
         result:
           '结论错误，经包装、电池瓦时、净重、电芯类型判断，物品为非限制性货物',
-        selector: conclusionsElementSelector,
       })
     }
     const UNNO = getUNNO(pkgInfoByPackCargo, isIon)
     const isCargoOnly = getIsCargoOnly(pkgInfo, netWeight)
     if (isCargoOnly) {
       if (packPassengerCargo !== 'Forbidden')
-        result.push({ ok: false, result: '结论错误，客货机禁止运输', selector: packPassengerCargoElementSelector })
+        result.push({ ok: false, result: '结论错误，客货机禁止运输' })
     } else {
       if (packPassengerCargo === 'Forbidden')
-        result.push({ ok: false, result: '结论错误，客货机不应为 Forbidden', selector: packPassengerCargoElementSelector })
+        result.push({ ok: false, result: '结论错误，客货机不应为 Forbidden' })
     }
     if (unno !== UNNO) {
-      result.push({ ok: false, result: '结论错误，UN编号应为' + UNNO, selector: unnoElementSelector })
+      result.push({ ok: false, result: '结论错误，UN编号应为' + UNNO })
     }
     if (String(classOrDiv) !== '9') {
-      result.push({ ok: false, result: '结论错误，危险性类别应为9', selector: classOrDivElementSelector })
+      result.push({ ok: false, result: '结论错误，危险性类别应为9' })
     }
     if (pkgInfoReference !== '') {
-      result.push({ ok: false, result: '结论错误，危险品，参见包装说明应为空', selector: pkgInfoReferenceElementSelector })
+      result.push({ ok: false, result: '结论错误，危险品，参见包装说明应为空' })
     }
     if (packageGrade !== '/') {
-      result.push({ ok: false, result: '结论错误，危险品，包装等级应为斜杠', selector: packageGradeElementSelector })
+      result.push({ ok: false, result: '结论错误，危险品，包装等级应为斜杠' })
     }
   } else if (conclusions === 0) {
     if (isDangerous) {
@@ -104,24 +94,23 @@ export function sodiumConclusionsCheck(
         ok: false,
         result:
           '结论错误，经包装、电池瓦时、净重、电芯类型判断，物品为危险品',
-        selector: conclusionsElementSelector,
       })
     }
     // 非限制性
     if (packCargo !== '') {
-      result.push({ ok: false, result: '结论错误，仅限货机应为空', selector: packCargoElementSelector })
+      result.push({ ok: false, result: '结论错误，仅限货机应为空' })
     }
     if (packPassengerCargo !== '') {
-      result.push({ ok: false, result: '结论错误，客货机应为空', selector: packPassengerCargoElementSelector })
+      result.push({ ok: false, result: '结论错误，客货机应为空' })
     }
     if (classOrDiv !== '') {
-      result.push({ ok: false, result: '结论错误，危险性类别应为空', selector: classOrDivElementSelector })
+      result.push({ ok: false, result: '结论错误，危险性类别应为空' })
     }
     if (unno !== '') {
-      result.push({ ok: false, result: '结论错误，非限制性，UN编号应为空', selector: unnoElementSelector })
+      result.push({ ok: false, result: '结论错误，非限制性，UN编号应为空' })
     }
     if (packageGrade !== '') {
-      result.push({ ok: false, result: '结论错误，非限制性，包装等级应为空', selector: packageGradeElementSelector })
+      result.push({ ok: false, result: '结论错误，非限制性，包装等级应为空' })
     }
   }
   return result

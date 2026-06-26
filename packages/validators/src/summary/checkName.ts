@@ -72,14 +72,12 @@ export function checkName(
       result.push({
         ok: false,
         result: `中文电池名称不一致, 系统上为${formCNameText}, 概要上为${summaryCName}`,
-        selector: '',
       })
     }
     if (!summaryCName.includes(formENameText)) {
       result.push({
         ok: false,
         result: `英文电池名称不一致, 系统上为${formENameText}, 概要上为${summaryEName}`,
-        selector: '',
       })
     }
   } else {
@@ -87,14 +85,12 @@ export function checkName(
       result.push({
         ok: false,
         result: `中文电池名称不一致, 系统上为${formCNameText}, 概要上为${summaryCName}`,
-        selector: '',
       })
     }
     if (summaryEName !== formENameText) {
       result.push({
         ok: false,
         result: `英文电池名称不一致, 系统上为${formENameText}, 概要上为${summaryEName}`,
-        selector: '',
       })
     }
   }

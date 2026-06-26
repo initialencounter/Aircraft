@@ -24,13 +24,7 @@ export function checkSodiumConclusions(
   btyGrossWeight: number,
   packageGrade: string,
   classOrDiv: string,
-  properShippingName: string,
-  psnElementSelector: string,
-  unnoElementSelector: string,
-  classOrDivElementSelector: string,
-  packageGradeElementSelector: string,
-  btyGrossWeightElementSelector: string,
-  conclusionsElementSelector: string,
+  properShippingName: string
 ): CheckResult[] {
   const result: CheckResult[] = []
   unno = unno.trim()
@@ -53,22 +47,19 @@ export function checkSodiumConclusions(
       if (properShippingNameMap[unKey] !== properShippingName) {
         result.push({
           ok: false,
-          result: `结论错误，运输专用名称错误，应为${properShippingNameMap[unKey]}`,
-          selector: psnElementSelector,
+          result: `结论错误，运输专有名称错误，应为${properShippingNameMap[unKey]}`,
         })
       }
     } else {
       result.push({
         ok: false,
         result: '结论错误，钠离子电池危险品，UN编号应为UN3558或UN3551或UN3552',
-        selector: unnoElementSelector,
       })
     }
     if (['≤100Wh', '≤20Wh'].includes(inspectionResult1)) {
       result.push({
         ok: false,
         result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
-        selector: conclusionsElementSelector,
       })
     }
     // 单独运输
@@ -76,7 +67,6 @@ export function checkSodiumConclusions(
       result.push({
         ok: false,
         result: '结论错误，单独运输，UN编号应为UN3551',
-        selector: unnoElementSelector,
       })
     }
 
@@ -86,21 +76,18 @@ export function checkSodiumConclusions(
         ok: false,
         result:
           '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3552或UN3558',
-        selector: unnoElementSelector,
       })
 
     if (classOrDiv !== '9') {
       result.push({
         ok: false,
         result: '危险品物品，危险性应为9',
-        selector: classOrDivElementSelector,
       })
     }
     if (packageGrade !== '/') {
       result.push({
         ok: false,
         result: '危险品物品，包装等级应为斜杠',
-        selector: packageGradeElementSelector,
       })
     }
   } else {
@@ -109,35 +96,30 @@ export function checkSodiumConclusions(
       result.push({
         ok: false,
         result: '结论错误，瓦时数大于100Wh或者20Wh，应为危险物品',
-        selector: conclusionsElementSelector,
       })
     }
     if (unno !== '') {
       result.push({
         ok: false,
         result: '非限制性物品，UN编号应为空',
-        selector: unnoElementSelector,
       })
     }
     if (properShippingName !== '') {
       result.push({
         ok: false,
-        result: '非限制性物品，运输专用名称应为空',
-        selector: psnElementSelector,
+        result: '非限制性物品，运输专有名称应为空',
       })
     }
     if (classOrDiv !== '') {
       result.push({
         ok: false,
         result: '非限制性物品，危险性应为空',
-        selector: classOrDivElementSelector,
       })
     }
     if (packageGrade !== '') {
       result.push({
         ok: false,
         result: '非限制性物品，包装等级应为空',
-        selector: packageGradeElementSelector,
       })
     }
     // 非限制性 单独运输 毛重大于30kg
@@ -145,7 +127,6 @@ export function checkSodiumConclusions(
       result.push({
         ok: false,
         result: '结论错误，单独运输，毛重大于30kg，应为危险品',
-        selector: btyGrossWeightElementSelector,
       })
   }
   return result

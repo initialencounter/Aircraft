@@ -14,20 +14,6 @@ import { checkNicotineContent } from './nicotineContent'
 import { containBatteryDesc } from './containBatteryDesc'
 import { descriptionFormat } from './descriptionFormat'
 
-export interface BaseCheckSelectors {
-  btySize: string
-  btyShape: string
-  btyCount: string
-  netWeight: string
-  btyType: string
-  itemCName: string
-  itemEName: string
-  btyKind: string
-  voltage: string
-  wattHour: string
-  otherDescribe: string
-}
-
 /**
  * 基础检测
  * @param btySize 电池尺寸
@@ -46,7 +32,6 @@ export interface BaseCheckSelectors {
  * @param capacity 容量
  * @param wattHour 瓦时数
  * @param wattHourFromName 瓦时数从名称中获取
- * @param selectors 表单元素ID映射
  * @returns
  */
 export function baseCheck(
@@ -69,41 +54,40 @@ export function baseCheck(
   inspectionItem1: '0' | '1' | '2',
   activeState: boolean,
   isLithium: boolean,
-  selectors: BaseCheckSelectors,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 尺寸或形状
-  result.push(...btySizeUnit(btySize, selectors.btySize))
-  result.push(...btySizeBtyShape(btySize, btyShape, selectors.btySize, selectors.btyShape))
+  result.push(...btySizeUnit(btySize))
+  result.push(...btySizeBtyShape(btySize, btyShape))
   // 电池净重计算
-  result.push(...btyWeightCalculate(batteryWeight, btyCount, netWeightDisplay, selectors.netWeight))
+  result.push(...btyWeightCalculate(batteryWeight, btyCount, netWeightDisplay))
   // 电芯or电池
   result.push(
-    ...cellOrBattery(isCell, otherDescribeCAddition, isChargeBoxOrRelated, selectors.otherDescribe)
+    ...cellOrBattery(isCell, otherDescribeCAddition, isChargeBoxOrRelated)
   )
   // 电芯
-  result.push(...itemCNameBtyType(itemCName, btyType, selectors.itemCName))
+  result.push(...itemCNameBtyType(itemCName, btyType))
   // 电池型号不在项目中文名称中
-  result.push(...itemNameModel(itemCName, itemEName, btyKind, selectors.itemCName, selectors.itemEName, selectors.btyKind))
+  result.push(...itemNameModel(itemCName, itemEName, btyKind))
   // 电压大于7V，可能为电池组
-  result.push(...voltageBtyType(voltage, btyType, selectors.voltage))
+  result.push(...voltageBtyType(voltage, btyType))
   // 容量*电压 与 瓦时数 误差大于5%
   result.push(
-    ...wattHourCalculate(capacity, voltage, wattHour, wattHourFromName, selectors.wattHour)
+    ...wattHourCalculate(capacity, voltage, wattHour, wattHourFromName)
   )
   // 设备名称、型号、商标验证
-  result.push(...checkDevice(itemCName, itemEName, otherDescribeCAddition, selectors.itemCName, selectors.itemEName, selectors.otherDescribe))
+  result.push(...checkDevice(itemCName, itemEName, otherDescribeCAddition))
   // 尼古丁体积分数验证
-  if (isLithium) result.push(...checkNicotineContent(otherDescribeCAddition, selectors.otherDescribe))
+  if (isLithium) result.push(...checkNicotineContent(otherDescribeCAddition))
   // 967 防意外启动描述
-  if (isLithium) result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1, activeState, selectors.otherDescribe))
+  if (isLithium) result.push(...containBatteryDesc(otherDescribeCAddition, inspectionItem1, activeState))
   // 描述格式验证
-  result.push(...descriptionFormat(otherDescribeCAddition, selectors.otherDescribe))
+  result.push(...descriptionFormat(otherDescribeCAddition))
   // 电池数量验证
   result.push(
-    ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1, isChargeBoxOrRelated, selectors.btyCount)
+    ...bytNumsCalculate(btyCount, otherDescribeCAddition, inspectionItem1, isChargeBoxOrRelated)
   )
   // 电池能量密度验证
-  if (isLithium) result.push(...checkEnergyDensity(wattHour, batteryWeight, selectors.otherDescribe))
+  if (isLithium) result.push(...checkEnergyDensity(wattHour, batteryWeight))
   return result
 }

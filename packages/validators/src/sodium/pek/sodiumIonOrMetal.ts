@@ -10,15 +10,13 @@ import { CheckResult } from "../../lithium/shared/types"
  */
 export function sodiumIonOrMetal(
   inspectionItem3Text1: string,
-  inspectionItem4Text1: string,
-  wattHourElementSelector: string,
-  liContentElementSelector: string,
+  inspectionItem4Text1: string
 ): CheckResult[] {
   const result: CheckResult[] = []
   // 鉴别项目1
   if (inspectionItem3Text1 === '')
-    result.push({ ok: false, result: '鉴别项目1错误，瓦时数为空', selector: wattHourElementSelector })
+    result.push({ ok: false, result: '鉴别项目1错误，瓦时数为空' })
   if (inspectionItem4Text1 !== '')
-    result.push({ ok: false, result: '鉴别项目1错误，钠含量不为空', selector: liContentElementSelector })
+    result.push({ ok: false, result: '鉴别项目1错误，钠含量不为空' })
   return result
 }

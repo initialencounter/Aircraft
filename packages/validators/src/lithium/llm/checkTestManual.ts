@@ -19,7 +19,6 @@ export function checkTestManual(
       {
         ok: false,
         result: '未匹配到UN38.3测试标准，请反馈问题给开发人员',
-        selector: '',
       },
     ]
   }
@@ -28,7 +27,6 @@ export function checkTestManual(
       {
         ok: false,
         result: `UN报告上的测试标准为:${rawTestManualLLM}，概要上的为:${rawTestManual}`,
-        selector: '',
       },
     ]
   }

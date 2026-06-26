@@ -13,7 +13,6 @@ export function checkClassification(
       {
         ok: false,
         result: `UN报告上的电池类型为:${classificationLLM}，概要上的为:${classification}`,
-        selector: '',
       },
     ]
   }

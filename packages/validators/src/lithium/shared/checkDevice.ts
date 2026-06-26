@@ -4,10 +4,7 @@ import { matchDeviceModel, matchDeviceName } from './utils'
 export function checkDevice(
   cName: string,
   eName: string,
-  otherDescribeCAddition: string,
-  _itemCNameElementSelector: string,
-  _itemENameElementSelector: string,
-  otherDescribeElementSelector: string,
+  otherDescribeCAddition: string
 ): CheckResult[] {
   const results: CheckResult[] = []
   const name = matchDeviceName(otherDescribeCAddition)?.trim() ?? ''
@@ -17,7 +14,6 @@ export function checkDevice(
     results.push({
       ok: false,
       result: `中文品名中不存在设备名称: ${name}`,
-      selector: otherDescribeElementSelector,
     })
   }
 
@@ -26,14 +22,12 @@ export function checkDevice(
       results.push({
         ok: false,
         result: `中文品名中不存在设备型号：${model}`,
-        selector: otherDescribeElementSelector,
       })
     }
     if (!eName.includes(model)) {
       results.push({
         ok: false,
         result: `英文品名中不存在设备型号: ${model}`,
-        selector: otherDescribeElementSelector,
       })
     }
   }

@@ -14,7 +14,6 @@ export function checkLiContent(
       {
         ok: false,
         result: `锂含量不一致, 系统上为${formLiContent}g, 概要上为${summaryLiContentNumber}g`,
-        selector: '',
       },
     ]
   }

@@ -1,4 +1,4 @@
-import { baseCheck, BaseCheckSelectors } from '../shared'
+import { baseCheck } from '../shared'
 import type {
   CheckResult,
   PekData,
@@ -34,7 +34,7 @@ import { remarksCheck } from './remarksCheck'
 import { stateOfCharge } from './stateOfCharge'
 
 function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResult[] {
-  const result: CheckResult[] = []
+  const result = []
   const btyType = getBtyTypeCode(currentData)
   // 品名
   const {
@@ -86,7 +86,7 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   const unno = currentData['unno'] as PekUNNO
   // 电芯
   const isCell: boolean = String(currentData['type2']) === '1'
-  // 运输专用名称
+  // 运输专有名称
   const properShippingName = currentData['psn']
   // 包装类型
   const packageGrade = currentData['pg']
@@ -140,34 +140,20 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
   )
   const isChargingCase = pkgInfoSubType === '966, II' &&
     otherDescribeCAddition.includes('耳机') && otherDescribeCAddition.includes('总净重') && (otherDescribeCAddition.includes('充电盒') || otherDescribeCAddition.includes('充电仓'))
-  result.push(...chargingCase967II(isChargingCase, otherDescribeCAddition, '[name="otherDescribeCAddition"]'))
-  if (!itemCName) result.push({ ok: false, result: '中文品名为空', selector: '[name="itemCName"]' })
-  if (!itemEName) result.push({ ok: false, result: '英文品名为空', selector: '[name="itemEName"]' })
-  if (!btyKind) result.push({ ok: false, result: '电池型号为空', selector: '[name="model"]' })
-  if (netWeight === 0) result.push({ ok: false, result: '电池净重为空', selector: '[name="netWeight"]' })
-  if (!unTest) result.push({ ok: false, result: '未勾选通过 UN38.3 测试', selector: '[name="inspectionItem3"]' })
-  if (pkgInfoSubType === '') result.push({ ok: false, result: '包装说明为空', selector: '[name="inspectionItem5Text1"]' })
-  if (!market) result.push({ ok: false, result: '技术备注为空', selector: '[name="market"]' })
+  result.push(...chargingCase967II(isChargingCase, otherDescribeCAddition))
+  if (!itemCName) result.push({ ok: false, result: '中文品名为空' })
+  if (!itemEName) result.push({ ok: false, result: '英文品名为空' })
+  if (!btyKind) result.push({ ok: false, result: '电池型号为空' })
+  if (netWeight === 0) result.push({ ok: false, result: '电池净重为空' })
+  if (!unTest) result.push({ ok: false, result: '未勾选通过 UN38.3 测试' })
+  if (pkgInfoSubType === '') result.push({ ok: false, result: '包装说明为空' })
+  if (!market) result.push({ ok: false, result: '技术备注为空' })
   if (randomFile)
-    result.push({ ok: false, result: '检查项目6错误，附有随机文件应为：否', selector: '[name="inspectionItem5"]' })
+    result.push({ ok: false, result: '检查项目6错误，附有随机文件应为：否' })
 
   if (currentData['otherDescribeChecked'] !== '1')
-    result.push({ ok: false, result: '应勾选附加操作信息', selector: '[name="otherDescribeCAddition"]' })
+    result.push({ ok: false, result: '应勾选附加操作信息' })
   const activeState = otherDescribe.includes('2c91808467b775430167bb4c65a35bc9')
-  // PEK 表单元素ID映射
-  const selectors: BaseCheckSelectors = {
-    btySize: '[name="size"]',
-    btyShape: '[name="shapeValue"]',
-    btyCount: '[name="btyCount"]',
-    netWeight: '[name="netWeight"]',
-    btyType: '[name="inspectionItem1"]',
-    itemCName: '[name="itemCName"]',
-    itemEName: '[name="itemEName"]',
-    btyKind: '[name="model"]',
-    voltage: '[name="inspectionItem2Text1"]',
-    wattHour: '[name="inspectionItem3Text1"]',
-    otherDescribe: '[name="otherDescribeCAddition"]',
-  }
   // 基础检查
   result.push(
     ...baseCheck(
@@ -190,51 +176,49 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       inspectionItem1,
       activeState,
       isIon,
-      selectors,
     )
   )
   const totalNetWeight = (!netWeight || isNaN(netWeight)) ? matchTotalNetweight(otherDescribeCAddition) : netWeight
   // 电池净重限重
-  result.push(...netWeighLimit(totalNetWeight, pkgInfoSubType, '[name="netWeight"]'))
+  result.push(...netWeighLimit(totalNetWeight, pkgInfoSubType))
   // 开启状态运输
-  result.push(...activeStateWarn(otherDescribe, '[name="otherDescribeCAddition"]'))
+  result.push(...activeStateWarn(otherDescribe))
   // 荷电状态≤30%
-  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, '[name="otherDescribeCAddition"]', projectYear))
+  result.push(...stateOfCharge(pkgInfoSubType, otherDescribe, wattHour, unno, projectYear))
   // 其他描述是否为电芯或电池
-  result.push(...otherDescribeIsCell(isCell, otherDescribe, '[name="otherDescribeCAddition"]'))
+  result.push(...otherDescribeIsCell(isCell, otherDescribe))
   // 包装与其他描述验证
   result.push(
     ...packetOrContain(
       pkgInfo,
       pkgInfoByPackCargo,
       otherDescribeCAddition,
-      isChargeBoxOrRelated,
-      '[name="otherDescribeCAddition"]',
+      isChargeBoxOrRelated
     )
   )
   // 跌落检测
   result.push(
-    ...checkDropTest(pkgInfoSubType, dropTest, '[name="inspectionItem2"]')
+    ...checkDropTest(pkgInfoSubType, dropTest)
   )
   // 堆码检测
   result.push(
-    ...checkStackTest(pkgInfoSubType, stackTest, stackTestEvaluation, '[name="inspectionItem6"]', '[name="inspectionItem6"]')
+    ...checkStackTest(pkgInfoSubType, stackTest, stackTestEvaluation)
   )
   // 检查项目5 是否加贴锂电池标记
-  result.push(...liBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel, isCell, '[name="inspectionItem4"]'))
+  result.push(...liBtyLabelCheck(pkgInfoSubType, btyShape, liBtyLabel, isCell))
 
   // 包装说明
   if (isDangerous) {
     if (pkgInfoReference !== '') {
-      result.push({ ok: false, result: '危险品，参见包装说明应为空', selector: '[name="inspectionItem5Text1"]' })
+      result.push({ ok: false, result: '危险品，参见包装说明应为空' })
     }
   } else {
     if (isNaN(Number(pkgInfoReference))) {
-      result.push({ ok: false, result: '非限制性，包装说明应为数字', selector: '[name="inspectionItem5Text1"]' })
+      result.push({ ok: false, result: '非限制性，包装说明应为数字' })
     }
   }
   // 鉴别项目1
-  result.push(...ionOrMetal(isIon, inspectionItem3Text1, inspectionItem4Text1, '[name="inspectionItem3Text1"]', '[name="inspectionItem4Text1"]'))
+  result.push(...ionOrMetal(isIon, inspectionItem3Text1, inspectionItem4Text1))
 
   // 验证瓦数数
   if (wattHourFromName > 0 && !isNaN(wattHour) && isIon) {
@@ -242,19 +226,18 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       result.push({
         ok: false,
         result: `瓦时数与项目名称不匹配: ${wattHour} !== ${wattHourFromName}`,
-        selector: '[name="inspectionItem3Text1"]',
       })
   }
 
   // 注意事项
-  result.push(...remarksCheck(remarks, pkgInfoSubType, '[name="remarks"]'))
+  result.push(...remarksCheck(remarks, pkgInfoSubType))
 
   // 结论 非限制性 0 危险品 1
   const conclusions = Number(currentData['conclusions'])
   // DGR规定,资料核实
   const result1 = currentData['result1']
   if (result1 !== 'DGR规定,资料核实')
-    result.push({ ok: false, result: '【DGR规定，资料核实】栏错误，勾选错误', selector: '[name="result1"]' })
+    result.push({ ok: false, result: '【DGR规定，资料核实】栏错误，勾选错误' })
   // 是否属于危险品
   // 危险品
   result.push(
@@ -272,19 +255,11 @@ function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResul
       packCargo,
       inspectionItem1,
       properShippingName,
-      packageGrade,
-      '[name="psn"]',
-      '[name="conclusions"]',
-      '[name="packPassengerCargo"]',
-      '[name="unno"]',
-      '[name="classOrDiv"]',
-      '[name="inspectionItem5Text1"]',
-      '[name="pg"]',
-      '[name="packCargo"]',
+      packageGrade
     )
   )
   // 965 IA IB
-  result.push(...IAIBCheck(isIA, pkgInfoSubType, '[name="inspectionItem5Text1"]'))
+  result.push(...IAIBCheck(isIA, pkgInfoSubType))
   return result
 }
 

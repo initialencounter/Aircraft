@@ -30,8 +30,6 @@ export default defineContentScript({
 
 async function entrypoint() {
   console.log('快捷键脚本运行中...')
-  // 注入 jquery-interceptor，使 EasyUI combo 组件的变化能派发原生 input 事件
-  injectJQueryInterceptor()
   const fromQuery =
     new URLSearchParams(window.location.search).get('from') === 'query'
   let changed = false
@@ -45,7 +43,7 @@ async function entrypoint() {
   const localConfig = await getLocalConfig()
   const systemId = getSystemId()
   const Qmsg = getQmsg()
-  let changedTarget: (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)[] = []
+  let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
   await sleep(500)
   const projectNo = getCurrentProjectNo()
 
@@ -215,35 +213,26 @@ async function entrypoint() {
   }
 
   function watchInput() {
-    const formId = category === 'chemical' ? 'chemicalInspectForm' : 'batteryInspectForm'
-    const form = document.getElementById(formId)
-
-    // 共享处理函数：统一的字段变更处理逻辑
-    const handleFieldChange = (target: HTMLElement) => {
+    // 使用事件捕获在文档级别监听,绕过 EasyUI 的事件处理
+    document.addEventListener('input', function (event: Event) {
       debouncedWarmUp(projectNo ?? '')
       if (!localConfig.enablePreventCloseBeforeSave || fromQuery) return
       if (!document.hasFocus()) return
+      const target = event.target as HTMLElement
+
+      // 检查目标元素是否在表单内
+      const formId = category === 'chemical' ? 'chemicalInspectForm' : 'batteryInspectForm'
+      const form = document.getElementById(formId)
       if (!form || !form.contains(target)) return
 
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
         if (target.parentElement) {
           if (localConfig.markColorChangedInput) {
             if (target instanceof HTMLTextAreaElement) {
               target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
-            } else if (target instanceof HTMLSelectElement) {
-              // EasyUI 组件: select 元素本身被隐藏,标记其父容器
-              const easyuiWrapper = target.closest('.combo') as HTMLElement
-              if (easyuiWrapper) {
-                easyuiWrapper.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
-              } else {
-                target.parentElement.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
-              }
             } else {
               if (target.className.includes('textbox-text')) {
                 target.style.background = localConfig.changedInputBackgroundColor ?? '#76EEC6'
-                // EasyUI combo: 同时标记 combo 包装器（拦截器派发的 input 事件 target 为 textbox，非 select）
-                const easyuiWrapper = target.closest('.combo') as HTMLElement
-                if (easyuiWrapper) easyuiWrapper.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
               } else {
                 target.parentElement.style.background = localConfig.changedInputBackgroundColor ?? '#8A2BE2'
               }
@@ -257,60 +246,7 @@ async function entrypoint() {
         changed = true
         document.title = `* ${originalTitle}`
       }
-    }
-
-    /**
-     * 从 .selectedText span 找到关联的表单控件。
-     * HTML 结构中三者通常在同一父容器下为兄弟节点：
-     *   <input type="hidden"> ← value holder
-     *   <span class="selectedText"> ← display text
-     *   <select class="easyui-combogrid"> ← EasyUI 组件
-     */
-    function findAssociatedControl(selectedText: HTMLElement): HTMLElement | null {
-      let parent = selectedText.parentElement
-      for (let i = 0; i < 3 && parent; i++) {
-        const select = parent.querySelector('select[id$="Grid"]')
-        if (select) return select as HTMLElement
-        const hiddenInput = parent.querySelector('input[type="hidden"][id$="Value"]')
-        if (hiddenInput) return hiddenInput as HTMLElement
-        parent = parent.parentElement
-      }
-      return null
-    }
-
-    // 1. 监听原生 input 事件（用户键盘输入；EasyUI 拦截器派发的事件也走这里）
-    document.addEventListener('input', (event: Event) => {
-      handleFieldChange(event.target as HTMLElement)
-    }, true)
-
-    // 2. 监听原生 change 事件（原生 <select> 变更）
-    document.addEventListener('change', (event: Event) => {
-      handleFieldChange(event.target as HTMLElement)
-    }, true)
-
-    // 3. MutationObserver 安全网：捕获直接 DOM 操作（如清除按钮直接修改 .selectedText）
-    if (form) {
-      let moDebounceTimer: ReturnType<typeof setTimeout> | null = null
-      const observer = new MutationObserver((mutations) => {
-        if (moDebounceTimer) clearTimeout(moDebounceTimer)
-        moDebounceTimer = setTimeout(() => {
-          const processed = new Set<HTMLElement>()
-          for (const m of mutations) {
-            if (m.type !== 'childList') continue
-            const target = m.target as HTMLElement
-            // .selectedText 文本被直接修改（如 $('#colorText').text('')）
-            if (target.classList?.contains('selectedText') && !processed.has(target)) {
-              processed.add(target)
-              const control = findAssociatedControl(target)
-              if (control) {
-                handleFieldChange(control)
-              }
-            }
-          }
-        }, 50)
-      })
-      observer.observe(form, { childList: true, subtree: true })
-    }
+    }, true) // 使用捕获阶段
   }
 
   function doSaveAction() {
@@ -320,9 +256,6 @@ async function entrypoint() {
         element.style.background = ''
         if (element.parentElement)
           element.parentElement.style.background = ''
-        // 重置 EasyUI combo 包装器的背景色（同时覆盖 HTMLSelectElement 和 HTMLInputElement textbox 两种路径）
-        const easyuiWrapper = element.closest('.combo') as HTMLElement
-        if (easyuiWrapper) easyuiWrapper.style.background = ''
       })
     }
     changedTarget = []
@@ -538,42 +471,11 @@ async function entrypoint() {
     }
   }
 
-  // 防抖执行预热函数
+  // 防抖保存函数
   function debouncedWarmUp(projectNo: string) {
     if (!localConfig.warmUp) return
     debounce(() => {
       warmUp(projectNo)
     }, 8000)()
-  }
-
-  /**
-   * 注入 jquery-interceptor.js 到 page context。
-   * 参考 fillSummary.content.ts 的 injectJQueryInterceptor 模式。
-   *
-   * jquery-interceptor 在 page context 中拦截 EasyUI combo/combobox/combogrid
-   * 的 setValue/setText 方法，主动派发原生 input 事件，
-   * 使 watchInput 能够监听到 EasyUI 组件的变化。
-   */
-  function injectJQueryInterceptor() {
-    if ((window as any).__jquery_intercepted) {
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = chrome.runtime.getURL('jquery-interceptor.js')
-    script.onload = () => {
-      (window as any).__jquery_intercepted = true
-      script.remove()
-    }
-    script.onerror = (e) => {
-      console.error('[JQuery Hook] Failed to load interceptor script:', e)
-    }
-
-    try {
-      const target = document.head || document.documentElement || document
-      target.appendChild(script)
-    } catch (e) {
-      console.error('[JQuery Hook] Failed to inject script:', e)
-    }
   }
 }

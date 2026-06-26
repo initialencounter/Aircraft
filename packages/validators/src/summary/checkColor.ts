@@ -50,7 +50,6 @@ export function checkColor(
       {
         ok: false,
         result: `颜色不一致, 系统上为${formColorChineseName ?? '空'}, 概要上为${colorText}`,
-        selector: '',
       },
     ]
   }

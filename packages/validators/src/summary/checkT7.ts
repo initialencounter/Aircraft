@@ -17,7 +17,6 @@ export function checkT7(
           {
             ok: false,
             result: `电池类型为${batteryTypeMap[batteryType]}, 概要T7测试结果为${summaryTest7}`,
-            selector: '',
           },
         ]
       }
@@ -29,7 +28,6 @@ export function checkT7(
           {
             ok: false,
             result: `电池类型为${batteryTypeMap[batteryType]}，不含保护电路，概要T7测试结果为${summaryTest7}`,
-            selector: '',
           },
         ]
       }
@@ -41,7 +39,6 @@ export function checkT7(
           {
             ok: false,
             result: `电池类型为${batteryTypeMap[batteryType]}，概要T7测试结果为${summaryTest7}`,
-            selector: '',
           },
         ]
       }

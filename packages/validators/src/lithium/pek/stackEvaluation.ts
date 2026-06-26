@@ -21,26 +21,25 @@ export function checkStackEvaluation(
       results.push({
         ok: true,
         result: `你已勾选${stackTest ? '堆码报告' : '评估单'}, 请确认`,
-        selector: '',
       })
     }
   }
 
   if (autoCheckStackEvaluation === true) {
     if (!otherInfo) {
-      results.push({ ok: false, result: 'everything 搜不到编号, 无法验证堆码评估单', selector: '' })
+      results.push({ ok: false, result: 'everything 搜不到编号, 无法验证堆码评估单' })
       return results
     }
     if (!otherInfo?.projectDir) {
-      results.push({ ok: false, result: '找不到项目文件夹', selector: '' })
+      results.push({ ok: false, result: '找不到项目文件夹' })
     }
     if (stackTestEvaluation) {
       if (otherInfo.stackEvaluation === false) {
-        results.push({ ok: false, result: `项目文件夹内不存在堆码评估单`, selector: '' })
+        results.push({ ok: false, result: `项目文件夹内不存在堆码评估单` })
       }
     } else {
       if (otherInfo.stackEvaluation === true) {
-        results.push({ ok: false, result: '项目文件夹内存在堆码评估单', selector: '' })
+        results.push({ ok: false, result: '项目文件夹内存在堆码评估单' })
       }
     }
   }

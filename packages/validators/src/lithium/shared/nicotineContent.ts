@@ -1,8 +1,7 @@
 import type { CheckResult } from './types'
 
 export function checkNicotineContent(
-  otherDescribeCAddition: string,
-  selector: string,
+  otherDescribeCAddition: string
 ): CheckResult[] {
   const hasNicotine =
     otherDescribeCAddition.includes('尼古丁含量') ||
@@ -16,7 +15,6 @@ export function checkNicotineContent(
       {
         ok: false,
         result: '尼古丁含量5%缺少质量体积分数',
-        selector,
       },
     ]
   }

@@ -10,23 +10,18 @@ import type { CheckResult } from './types'
 export function itemNameModel(
   itemCName: string,
   itemEName: string,
-  btyKind: string,
-  _itemCNameElementSelector: string,
-  _itemENameElementSelector: string,
-  btyKindElementSelector: string,
+  btyKind: string
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (!itemCName.includes(btyKind))
     result.push({
       ok: false,
       result: '型号或中文品名错误，电池型号不在项目中文名称中',
-      selector: btyKindElementSelector,
     })
   if (!itemEName.includes(btyKind))
     result.push({
       ok: false,
       result: '型号或英文品名错误，电池型号不在项目英文名称中',
-      selector: btyKindElementSelector,
     })
   return result
 }

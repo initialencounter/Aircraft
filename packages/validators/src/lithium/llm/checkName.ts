@@ -14,14 +14,12 @@ export function checkName(
     result.push({
       ok: false,
       result: `UN报告上的电池中文名称为 ${llmCName}, 概要上为${summaryCName}`,
-      selector: '',
     })
   }
   if (!summaryEName.includes(String(llmEName))) {
     result.push({
       ok: false,
       result: `UN报告上的电池英文名称为 ${llmEName}, 概要上为${summaryEName}`,
-      selector: '',
     })
   }
   return result

@@ -8,10 +8,9 @@ import type { CheckResult } from './types'
  */
 export function itemCNameBtyType(
   itemCName: string,
-  btyType: string,
-  selector: string,
+  btyType: string
 ): CheckResult[] {
   if (itemCName.includes('芯') && !['501', '503', '601'].includes(btyType))
-    return [{ ok: false, result: '电池类型应为电芯', selector }]
+    return [{ ok: false, result: '电池类型应为电芯' }]
   return []
 }

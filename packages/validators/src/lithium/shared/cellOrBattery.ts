@@ -10,8 +10,7 @@ import type { CheckResult } from './types'
 export function cellOrBattery(
   isCell: boolean,
   otherDescribeCAddition: string,
-  isChargeBoxOrRelated: boolean,
-  selector: string,
+  isChargeBoxOrRelated: boolean
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (isChargeBoxOrRelated) return result
@@ -20,14 +19,14 @@ export function cellOrBattery(
       || otherDescribeCAddition.includes('块电池')
       || otherDescribeCAddition.includes('内置电池')
       || otherDescribeCAddition.includes('外配电池')) {
-      result.push({ ok: false, result: '类型为电芯时，描述中不应该出现电池', selector })
+      result.push({ ok: false, result: '类型为电芯时，描述中不应该出现电池' })
     }
   } else {
     if (otherDescribeCAddition.includes('单块电芯')
       || otherDescribeCAddition.includes('块电芯')
       || otherDescribeCAddition.includes('内置电芯')
       || otherDescribeCAddition.includes('外配电芯')) {
-      result.push({ ok: false, result: '类型为电池时，描述中不应该出现电芯', selector })
+      result.push({ ok: false, result: '类型为电池时，描述中不应该出现电芯' })
     }
   }
   return result

@@ -10,25 +10,24 @@ import type { CheckResult } from '../shared/types'
 export function wattHourScope(
   btyType: string,
   inspectionResult1: string,
-  wattHourFromName: number,
-  selector: string,
+  wattHourFromName: number
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (['501', '504', '601', '602'].includes(btyType)) {
     if (wattHourFromName > 20) {
       if (inspectionResult1 !== '>20Wh')
-        result.push({ ok: false, result: '瓦时数结果错误，应为>20Wh', selector })
+        result.push({ ok: false, result: '瓦时数结果错误，应为>20Wh' })
     } else {
       if (inspectionResult1 !== '≤20Wh')
-        result.push({ ok: false, result: '瓦时数结果错误，应为≤20Wh', selector })
+        result.push({ ok: false, result: '瓦时数结果错误，应为≤20Wh' })
     }
   } else {
     if (wattHourFromName > 100) {
       if (inspectionResult1 !== '>100Wh')
-        result.push({ ok: false, result: '瓦时数结果错误，应为>100Wh', selector })
+        result.push({ ok: false, result: '瓦时数结果错误，应为>100Wh' })
     } else {
       if (inspectionResult1 !== '≤100Wh')
-        result.push({ ok: false, result: '瓦时数结果错误，应为≤100Wh', selector })
+        result.push({ ok: false, result: '瓦时数结果错误，应为≤100Wh' })
     }
   }
   return result

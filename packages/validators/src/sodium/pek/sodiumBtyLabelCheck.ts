@@ -16,7 +16,6 @@ export function sodiumBtyLabelCheck(
   btyShape: string,
   btyLabel: boolean,
   isCell: boolean,
-  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (isBatteryLabel(pkgInfoSubType, btyShape, isCell)) {
@@ -25,13 +24,11 @@ export function sodiumBtyLabelCheck(
         result.push({
           ok: false,
           result: `检验项目5错误，978, II，非纽扣电池，应勾选加贴电池标记`,
-          selector,
         })
       else
         result.push({
           ok: false,
           result: `检验项目5错误，${pkgInfoSubType}应勾选加贴电池标记`,
-          selector,
         })
   } else {
     if (btyLabel)
@@ -42,13 +39,11 @@ export function sodiumBtyLabelCheck(
         result.push({
           ok: false,
           result: `检验项目5错误，设备内置纽扣电池不应勾选加贴电池标记`,
-          selector,
         })
       else
         result.push({
           ok: false,
           result: `检验项目5错误，${pkgInfoSubType}不应勾选加贴电池标记`,
-          selector,
         })
   }
   return result

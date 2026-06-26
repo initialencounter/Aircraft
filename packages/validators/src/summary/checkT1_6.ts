@@ -10,7 +10,6 @@ export function checkT1_6(
       results.push({
         ok: false,
         result: `概要T${i}测试结果为不适用, 请确认是否正确`,
-        selector: '',
       })
     }
   }

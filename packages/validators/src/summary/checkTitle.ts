@@ -6,7 +6,6 @@ export function checkTitle(summaryTitle: string): CheckResult[] {
       {
         ok: false,
         result: `概要标题${summaryTitle}不正确`,
-        selector: '',
       },
     ]
   }

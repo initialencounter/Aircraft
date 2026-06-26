@@ -36,7 +36,6 @@ export function checkBatteryType(
       {
         ok: false,
         result: `电池类型不一致, 系统上为${batteryTypeMap[formBatteryType]}, 概要上为${summaryBatteryType}`,
-        selector: '',
       },
     ]
   }

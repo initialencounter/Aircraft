@@ -15,7 +15,6 @@ export function liBtyLabelCheck(
   btyShape: string,
   liBtyLabel: boolean,
   isCell: boolean,
-  selector: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (isBatteryLabel(pkgInfoSubType, btyShape, isCell)) {
@@ -24,13 +23,11 @@ export function liBtyLabelCheck(
         result.push({
           ok: false,
           result: `检验项目5错误，970, II，非纽扣电池，应勾选加贴锂电池标记`,
-          selector,
         })
       else
         result.push({
           ok: false,
           result: `检验项目5错误，${pkgInfoSubType}应勾选加贴锂电池标记`,
-          selector,
         })
   } else {
     if (liBtyLabel)
@@ -41,13 +38,11 @@ export function liBtyLabelCheck(
         result.push({
           ok: false,
           result: `检验项目5错误，设备内置纽扣电池不应勾选加贴锂电池标记`,
-          selector,
         })
       else
         result.push({
           ok: false,
           result: `检验项目5错误，${pkgInfoSubType}不应勾选加贴锂电池标记`,
-          selector,
         })
   }
   return result

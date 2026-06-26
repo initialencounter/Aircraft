@@ -9,7 +9,6 @@ export function checkProjectNo(
       {
         ok: false,
         result: '图片项目号不一致',
-        selector: '',
       },
     ]
   }

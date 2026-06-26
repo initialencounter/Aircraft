@@ -9,7 +9,6 @@ export function checkModel(
       {
         ok: false,
         result: `型号不一致, 系统上为${formModel}, 概要上为${summaryModel}`,
-        selector: '',
       },
     ]
   }

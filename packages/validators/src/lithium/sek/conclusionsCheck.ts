@@ -26,13 +26,7 @@ export function conclusionsCheck(
   classOrDiv: string,
   isIon: boolean,
   properShippingName: string,
-  projectYear: string | undefined,
-  psnElementSelector: string,
-  unnoElementSelector: string,
-  classOrDivElementSelector: string,
-  packageGradeElementSelector: string,
-  btyGrossWeightElementSelector: string,
-  conclusionsElementSelector: string,
+  projectYear?: string
 ): CheckResult[] {
   const result: CheckResult[] = []
   unno = unno.trim()
@@ -40,10 +34,10 @@ export function conclusionsCheck(
   packageGrade = packageGrade.trim()
   classOrDiv = classOrDiv.trim()
   if (projectYear === '2026' && unno === 'UN3171') {
-    result.push({ ok: false, result: `2026年报告，UN3171已不适用`, selector: unnoElementSelector })
+    result.push({ ok: false, result: `2026年报告，UN3171已不适用` })
   }
   if (projectYear === undefined && unno === 'UN3171') {
-    result.push({ ok: false, result: `UN3171已不适用，如果是25年报告请忽略`, selector: unnoElementSelector })
+    result.push({ ok: false, result: `UN3171已不适用，如果是25年报告请忽略` })
   }
   if (conclusions === 1) {
     // 危险品
@@ -70,15 +64,13 @@ export function conclusionsCheck(
       if (properShippingNameMap[unKey] !== properShippingName) {
         result.push({
           ok: false,
-          result: `结论错误，运输专用名称错误，应为${properShippingNameMap[unKey]}`,
-          selector: psnElementSelector,
+          result: `结论错误，运输专有名称错误，应为${properShippingNameMap[unKey]}`,
         })
       }
     } else {
       result.push({
         ok: false,
         result: 'UN编号错误',
-        selector: unnoElementSelector,
       })
     }
 
@@ -86,14 +78,12 @@ export function conclusionsCheck(
       result.push({
         ok: false,
         result: '结论错误，锂含量小于1g或2g，应为非限制性',
-        selector: conclusionsElementSelector,
       })
     }
     if (['≤100Wh', '≤20Wh'].includes(inspectionResult1) && unno !== 'UN3556') {
       result.push({
         ok: false,
         result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
-        selector: conclusionsElementSelector,
       })
     }
     // 单独运输
@@ -101,14 +91,12 @@ export function conclusionsCheck(
       result.push({
         ok: false,
         result: '结论错误，单独运输，UN编号应为UN3480',
-        selector: unnoElementSelector,
       })
     }
     if (otherDescribe === '540' && !isIon && unno !== 'UN3090') {
       result.push({
         ok: false,
         result: '结论错误，单独运输，UN编号应为UN3090',
-        selector: unnoElementSelector,
       })
     }
 
@@ -117,26 +105,22 @@ export function conclusionsCheck(
       result.push({
         ok: false,
         result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3481',
-        selector: unnoElementSelector,
       })
     if (otherDescribe !== '540' && unno !== 'UN3091' && !isIon)
       result.push({
         ok: false,
         result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3091',
-        selector: unnoElementSelector,
       })
     if (classOrDiv !== '9') {
       result.push({
         ok: false,
         result: '危险品物品，危险性应为9',
-        selector: classOrDivElementSelector,
       })
     }
     if (packageGrade !== '/') {
       result.push({
         ok: false,
         result: '危险品物品，包装等级应为斜杠',
-        selector: packageGradeElementSelector,
       })
     }
   } else {
@@ -145,42 +129,36 @@ export function conclusionsCheck(
       result.push({
         ok: false,
         result: '结论错误，锂含量大于1g或2g，应为危险物品',
-        selector: conclusionsElementSelector,
       })
     }
     if (['>100Wh', '>20Wh'].includes(inspectionResult1)) {
       result.push({
         ok: false,
         result: '结论错误，瓦时数大于100Wh或者20Wh，应为危险物品',
-        selector: conclusionsElementSelector,
       })
     }
     if (unno !== '') {
       result.push({
         ok: false,
         result: '非限制性物品，UN编号应为空',
-        selector: unnoElementSelector,
       })
     }
     if (properShippingName !== '') {
       result.push({
         ok: false,
-        result: '非限制性物品，运输专用名称应为空',
-        selector: psnElementSelector,
+        result: '非限制性物品，运输专有名称应为空',
       })
     }
     if (classOrDiv !== '') {
       result.push({
         ok: false,
         result: '非限制性物品，危险性应为空',
-        selector: classOrDivElementSelector,
       })
     }
     if (packageGrade !== '') {
       result.push({
         ok: false,
         result: '非限制性物品，包装等级应为空',
-        selector: packageGradeElementSelector,
       })
     }
     // 非限制性 单独运输 毛重大于30kg
@@ -188,7 +166,6 @@ export function conclusionsCheck(
       result.push({
         ok: false,
         result: '结论错误，单独运输，毛重大于30kg，应为危险品',
-        selector: btyGrossWeightElementSelector,
       })
   }
   return result

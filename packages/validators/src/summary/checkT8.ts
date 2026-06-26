@@ -10,7 +10,6 @@ export function checkT8(
         {
           ok: false,
           result: `钠离子电池, 概要T8测试结果应为不适用`,
-          selector: '',
         },
       ]
     }
@@ -20,7 +19,6 @@ export function checkT8(
         {
           ok: false,
           result: `非钠离子电池, 概要T8测试结果应为通过`,
-          selector: '',
         },
       ]
     }

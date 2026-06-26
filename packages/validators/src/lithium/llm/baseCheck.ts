@@ -18,7 +18,6 @@ export function baseCheck(
       results.push({
         ok: false,
         result: `UN报告上的${item}为${valueFromLLM}，概要中为${valueFromInfo}`,
-        selector: '',
       })
     }
   }

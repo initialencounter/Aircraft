@@ -21,14 +21,12 @@ export function checkIssueDate(
     result.push({
       ok: false,
       result: '签发日期早于项目编号日期',
-      selector: '',
     })
   }
   if (diffTime > 0) {
     result.push({
       ok: false,
       result: '签发日期晚于今天',
-      selector: '',
     })
   }
   return result

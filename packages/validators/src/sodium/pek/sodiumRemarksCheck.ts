@@ -7,8 +7,7 @@ import type { SodiumPkgInfoSubType } from '../shared/types'
 // 1402 每一单电池必须做好防短路措施，并装入坚固外包装内。
 export function sodiumRemarksCheck(
   remarks: string,
-  pkgInfoSubType: SodiumPkgInfoSubType,
-  selector: string,
+  pkgInfoSubType: SodiumPkgInfoSubType
 ): CheckResult[] {
   switch (pkgInfoSubType) {
     case '952':
@@ -20,7 +19,6 @@ export function sodiumRemarksCheck(
             ok: false,
             result:
               '注意事项错误，应为：电池或电芯必须加以保护,防止短路.设备必须采取措施防止意外启动.',
-            selector,
           },
         ]
       }
@@ -32,7 +30,6 @@ export function sodiumRemarksCheck(
             ok: false,
             result:
               '注意事项错误，应为：每一单电池必须做好防短路措施，并装入坚固外包装内。',
-            selector,
           },
         ]
       }
@@ -44,7 +41,6 @@ export function sodiumRemarksCheck(
           {
             ok: false,
             result: '注意事项错误，应为：包装必须达到II级包装的性能标准',
-            selector,
           },
         ]
       }

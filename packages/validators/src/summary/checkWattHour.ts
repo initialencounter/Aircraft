@@ -11,7 +11,6 @@ export function checkWattHour(
       {
         ok: false,
         result: `瓦时不一致, 系统上为${formWattHour}, 概要上为${summaryWattHourNumber}`,
-        selector: '',
       },
     ]
   }

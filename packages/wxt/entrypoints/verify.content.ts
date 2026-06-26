@@ -19,7 +19,6 @@ import {
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
 import { warmUp } from './modules/utils/api'
-import { clearError, markErrorElement } from './modules/ui/markError'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -67,7 +66,6 @@ export default defineContentScript({
      * 验证处理函数
      */
     async function verifyHandler() {
-      clearError()
       const currentProjectId = getCurrentProjectId()
       if (currentProjectId === null) {
         Qmsg.warning('获取项目ID失败')
@@ -85,20 +83,11 @@ export default defineContentScript({
       let result: Array<{
         ok: boolean
         result: string
-        selector: string
       }> = []
       try {
         document.getElementById('lims-verifyButton-icon')!.innerHTML = ''
         document.getElementById('lims-verifyButton-icon')?.appendChild(span)
         document.getElementById('lims-verifyButton-icon')?.appendChild(img)
-        // 清除之前的错误标记
-        document.querySelectorAll('[id]').forEach(el => {
-          const htmlEl = el as HTMLElement
-          if (htmlEl.style.backgroundColor === 'rgb(255, 99, 71)' || htmlEl.style.backgroundColor === '#FF6347') {
-            htmlEl.style.backgroundColor = ''
-            htmlEl.setAttribute('title', '')
-          }
-        })
         // 执行验证
         result = await verifyFormData(
           category,
@@ -122,16 +111,7 @@ export default defineContentScript({
           Qmsg.success('初步验证通过', { timeout: 500 })
           return
         }
-        // 按 selector 分组错误信息并标记到对应元素
-        const errorsByElement = new Map<string, string[]>()
-        result.forEach((r) => {
-          if (r.selector) {
-            if (!errorsByElement.has(r.selector)) errorsByElement.set(r.selector, [])
-            errorsByElement.get(r.selector)!.push(r.result)
-          }
-        })
-        errorsByElement.forEach((messages, id) => markErrorElement(id, messages))
-        const failedResults = result.map((result) => result.result).join(';\n\n')
+        const failedResults = JSON.stringify(result.map((result) => result), null, 2)
         updateVerifyButtonStatus('#fa5e55', failedResults)
         Qmsg.warning('初步验证未通过' + failedResults, {
           showClose: true,

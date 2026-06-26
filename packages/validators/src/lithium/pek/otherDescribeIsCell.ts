@@ -8,8 +8,7 @@ import type { CheckResult } from '../shared/types'
  */
 export function otherDescribeIsCell(
   isCell: boolean,
-  otherDescribe: string,
-  selector: string,
+  otherDescribe: string
 ): CheckResult[] {
   const result: CheckResult[] = []
   if (isCell) {
@@ -19,7 +18,6 @@ export function otherDescribeIsCell(
         ok: false,
         result:
           '物品为电芯，不应勾选: 该电池已经做好防短路...或该锂电池不属于召回电芯...',
-        selector,
       })
     }
   } else {
@@ -29,7 +27,6 @@ export function otherDescribeIsCell(
         ok: false,
         result:
           '物品为电池，不应勾选: 该电芯已经做好防短路...或该锂电芯不属于召回电芯...',
-        selector,
       })
     }
   }

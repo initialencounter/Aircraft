@@ -1,6 +1,5 @@
 import type {
   AttachmentInfo,
-  CheckResult,
   EntrustData,
   PekData,
   SekData,
@@ -30,27 +29,26 @@ export async function checkSystemAttachmentFile(
   type: 'goodsfile' | 'batteryfile',
   projectNo: string,
   projectId: string
-): Promise<CheckResult[]> {
+): Promise<Array<{ ok: boolean; result: string }>> {
   const AttachmentFilesName = type === 'goodsfile' ? '图片' : '概要'
   const AttachmentFilesText = await getAttachmentFiles(type, projectId)
   if (!AttachmentFilesText)
-    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '#openDocumentsBtn0 > span > span.l-btn-text' }]
+    return [{ ok: false, result: AttachmentFilesName + '未上传' }]
   const rawFileName = AttachmentFilesText.match(/"filename":"(.*?)\.pdf"/g)
   if (!rawFileName?.length) {
-    return [{ ok: false, result: AttachmentFilesName + '未上传', selector: '#openDocumentsBtn0 > span > span.l-btn-text' }]
+    return [{ ok: false, result: AttachmentFilesName + '未上传' }]
   } else if (rawFileName?.length > 1 && hasDuplicateStrings(rawFileName)) {
     return [
       {
         ok: false,
         result: AttachmentFilesName + '文件名称一样，检查是否重复上传',
-        selector: '#openDocumentsBtn0 > span > span.l-btn-text',
       },
     ]
   }
 
   const fileName = rawFileName[0].slice(12, 29)
   if (fileName !== projectNo)
-    return [{ ok: false, result: AttachmentFilesName + '上传错误', selector: '#openDocumentsBtn0 > span > span.l-btn-text' }]
+    return [{ ok: false, result: AttachmentFilesName + '上传错误' }]
   return []
 }
 
@@ -64,10 +62,10 @@ export async function checkLocalAttachment(
   entrustData: EntrustData | null,
   attachmentInfo: AttachmentInfo | null,
   isSodium: boolean
-): Promise<CheckResult[]> {
+): Promise<Array<{ ok: boolean; result: string }>> {
   if (localConfig.enableCheckAttachment === false) return []
   try {
-    const results: CheckResult[] = []
+    const results: Array<{ ok: boolean; result: string }> = []
     const projectNo = getCurrentProjectNo()
     if (!projectNo) return []
 
@@ -93,7 +91,7 @@ export async function checkLocalAttachment(
     return results
   } catch (e) {
     console.log(e)
-    return [{ ok: false, result: '附件解析失败', selector: '' }]
+    return [{ ok: false, result: '附件解析失败' }]
   }
 }
 

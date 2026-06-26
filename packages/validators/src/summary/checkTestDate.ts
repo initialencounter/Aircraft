@@ -17,7 +17,6 @@ export function checkTestDate(
     result.push({
       ok: false,
       result: '签发日期晚于今天',
-      selector: '',
     })
   }
   return result
