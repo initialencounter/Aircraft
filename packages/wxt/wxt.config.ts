@@ -23,7 +23,7 @@ export default defineConfig({
   entrypointsDir: './entrypoints',
   manifest: {
     name: 'lims',
-    version: '3.7.3',
+    version: '3.7.4',
     description: 'Automates form validation and data entry for battery inspection forms.',
     web_accessible_resources: [
       {
@@ -175,7 +175,7 @@ export default defineConfig({
 
       build({
         build: {
-          // minify: true,
+          minify: true,
           emptyOutDir: false,
           rolldownOptions: {
             input: {
