@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  enablePPOCR: boolean
   showCalculationProcess: boolean
   summaryDataFillEnabled: boolean
   setTitleWithProjectNo: boolean
@@ -176,6 +177,9 @@ export const Config: Schema<Config> = Schema.intersect([
     enableLabelCheck: Schema.boolean()
       .description('启用标签检查（自动识别包装标签）')
       .default(true),
+    enablePPOCR: Schema.boolean()
+      .description('启用 PPOCR 识别包装标签的UN编号（模糊的，方向偏移太多的识别不出来，建议关闭）')
+      .default(false),
     manualCheckStackEvaluation: Schema.boolean()
       .description('手动检查堆码评估单')
       .default(false),

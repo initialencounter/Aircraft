@@ -47,6 +47,7 @@ import { checkContactInfo } from './checkContactInfo'
 import { checkTestDate } from './checkTestDate'
 
 export function checkSekAttachment(
+  enablePPOCR: boolean,
   currentData: SekData | SekSodiumData,
   attachmentInfo: AttachmentInfo | null,
   entrustData: EntrustData | null,
@@ -98,6 +99,7 @@ export function checkSekAttachment(
   const results: CheckResult[] = []
   results.push(
     ...checkSekGoods(
+      enablePPOCR,
       conclusions,
       unno,
       isSodium,
@@ -136,6 +138,7 @@ export function checkSekAttachment(
   return results
 }
 export function checkPekAttachment(
+  enablePPOCR: boolean,
   currentData: PekData | PekSodiumData,
   attachmentInfo: AttachmentInfo | null,
   entrustData: EntrustData | null,
@@ -190,6 +193,7 @@ export function checkPekAttachment(
   const results: CheckResult[] = []
   results.push(
     ...checkPekGoods(
+      enablePPOCR,
       pkgInfoSubType,
       totalNetWeight,
       itemCName,

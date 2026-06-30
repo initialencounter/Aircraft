@@ -91,7 +91,12 @@ function sortLabel(arr: string[]): string[] {
   return arr.sort((a, b) => a.charCodeAt(0) - b.charCodeAt(0))
 }
 
+function removeDuplicates<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
 function checkLabel(
+  enablePPOCR: boolean,
   expectedLabel: string[],
   goodsLabels: string[]
 ): CheckResult[] {
@@ -99,7 +104,23 @@ function checkLabel(
     return []
   }
   expectedLabel = sortLabel(expectedLabel)
-  goodsLabels = sortLabel(goodsLabels)
+  goodsLabels = sortLabel(removeDuplicates(goodsLabels))
+  if (enablePPOCR !== true) {
+    expectedLabel = expectedLabel.map(label => {
+      if (label.startsWith('UN')) {
+        return 'bty'
+      } else {
+        return label
+      }
+    })
+    goodsLabels = goodsLabels.map(label => {
+      if (label.startsWith('UN')) {
+        return 'bty'
+      } else {
+        return label
+      }
+    })
+  }
   if (expectedLabel.length !== goodsLabels.length) {
     return [
       {

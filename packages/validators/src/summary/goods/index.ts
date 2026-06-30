@@ -11,6 +11,7 @@ import { checkProjectNo } from './checkProjectNo'
 export { getPekExpectedLabel, getSekExpectedLabel, checkLabel }
 
 export function checkSekGoods(
+  enablePPOCR: boolean,
   conclusions: number,
   UNNO: string,
   isSodium: boolean,
@@ -25,13 +26,14 @@ export function checkSekGoods(
   }
   const results: CheckResult[] = []
   const expectedLabel = getSekExpectedLabel(conclusions, UNNO, isSodium, otherDescribe, isIon)
-  results.push(...checkLabel(expectedLabel, goodsInfo.labels))
+  results.push(...checkLabel(enablePPOCR, expectedLabel, goodsInfo.labels))
   results.push(...checkItemCName(itemCName, goodsInfo.itemCName))
   results.push(...checkProjectNo(projectNo, goodsInfo.projectNo))
   return results
 }
 
 export function checkPekGoods(
+  enablePPOCR: boolean,
   pkgInfoSubType: PkgInfoSubType,
   netWeight: number,
   itemCName: string,
@@ -43,7 +45,7 @@ export function checkPekGoods(
   }
   const results: CheckResult[] = []
   const expectedLabel = getPekExpectedLabel(pkgInfoSubType, netWeight)
-  results.push(...checkLabel(expectedLabel, goodsInfo.labels))
+  results.push(...checkLabel(enablePPOCR, expectedLabel, goodsInfo.labels))
   results.push(...checkItemCName(itemCName, goodsInfo.itemCName))
   results.push(...checkProjectNo(projectNo, goodsInfo.projectNo))
   return results

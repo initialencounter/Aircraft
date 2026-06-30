@@ -66,6 +66,7 @@ function normalizeBox(x1: number, y1: number, x2: number, y2: number) {
 }
 
 export async function predict_yolo26(
+  enablePPOCR: boolean,
   session: any,
   imageInput: Uint8Array,
   Tensor: any,
@@ -118,6 +119,7 @@ export async function predict_yolo26(
 
     const res = await session.run(feeds);
     return process_yolo26_output(
+      enablePPOCR,
       res['output0']['data'],
       res['output1']['data'],
       originalWidth,
@@ -131,7 +133,7 @@ export async function predict_yolo26(
 }
 
 // YOLO26 专用处理函数
-export function process_yolo26_output(output: any, proto: any, originalWidth: number, originalHeight: number, confidence_threshold: number = 0.25): SegmentResult[] {
+export function process_yolo26_output(enablePPOCR: boolean, output: any, proto: any, originalWidth: number, originalHeight: number, confidence_threshold: number = 0.25): SegmentResult[] {
   const result: SegmentResult[] = [];
   const inputSize = YOLO_INPUT_SIZE; // YOLO26 模型输入尺寸
 
@@ -174,37 +176,45 @@ export function process_yolo26_output(output: any, proto: any, originalWidth: nu
       (h / inputSize) * originalHeight,
     );
     const label = yolo_classes[classId];
-
     if (label === 'bty') {
-      const coeffBaseIndex = baseIndex + 6
-      const maskX1 = Math.max(0, Math.floor((x1 / originalWidth) * YOLO_PROTO_WIDTH))
-      const maskY1 = Math.max(0, Math.floor((y1 / originalHeight) * YOLO_PROTO_HEIGHT))
-      const maskX2 = Math.min(YOLO_PROTO_WIDTH, Math.ceil((x2 / originalWidth) * YOLO_PROTO_WIDTH))
-      const maskY2 = Math.min(YOLO_PROTO_HEIGHT, Math.ceil((y2 / originalHeight) * YOLO_PROTO_HEIGHT))
-      const croppedMaskWidth = Math.max(1, maskX2 - maskX1)
-      const croppedMaskHeight = Math.max(1, maskY2 - maskY1)
-      const boxMask = new Float32Array(croppedMaskWidth * croppedMaskHeight)
+      if (enablePPOCR !== true) {
+        polygon = [
+          [x1, y1],
+          [x2, y1],
+          [x2, y2],
+          [x1, y2],
+        ];
+      } else {
+        const coeffBaseIndex = baseIndex + 6
+        const maskX1 = Math.max(0, Math.floor((x1 / originalWidth) * YOLO_PROTO_WIDTH))
+        const maskY1 = Math.max(0, Math.floor((y1 / originalHeight) * YOLO_PROTO_HEIGHT))
+        const maskX2 = Math.min(YOLO_PROTO_WIDTH, Math.ceil((x2 / originalWidth) * YOLO_PROTO_WIDTH))
+        const maskY2 = Math.min(YOLO_PROTO_HEIGHT, Math.ceil((y2 / originalHeight) * YOLO_PROTO_HEIGHT))
+        const croppedMaskWidth = Math.max(1, maskX2 - maskX1)
+        const croppedMaskHeight = Math.max(1, maskY2 - maskY1)
+        const boxMask = new Float32Array(croppedMaskWidth * croppedMaskHeight)
 
-      for (let maskY = 0; maskY < croppedMaskHeight; maskY += 1) {
-        const protoY = maskY1 + maskY
-        for (let maskX = 0; maskX < croppedMaskWidth; maskX += 1) {
-          const protoX = maskX1 + maskX
-          let sum = 0
-          for (let channel = 0; channel < YOLO_MASK_CHANNELS; channel += 1) {
-            const protoIndex = channel * YOLO_PROTO_HEIGHT * YOLO_PROTO_WIDTH + protoY * YOLO_PROTO_WIDTH + protoX
-            sum += flatOutput[coeffBaseIndex + channel] * proto[protoIndex]
+        for (let maskY = 0; maskY < croppedMaskHeight; maskY += 1) {
+          const protoY = maskY1 + maskY
+          for (let maskX = 0; maskX < croppedMaskWidth; maskX += 1) {
+            const protoX = maskX1 + maskX
+            let sum = 0
+            for (let channel = 0; channel < YOLO_MASK_CHANNELS; channel += 1) {
+              const protoIndex = channel * YOLO_PROTO_HEIGHT * YOLO_PROTO_WIDTH + protoY * YOLO_PROTO_WIDTH + protoX
+              sum += flatOutput[coeffBaseIndex + channel] * proto[protoIndex]
+            }
+            boxMask[maskY * croppedMaskWidth + maskX] = 1 / (1 + Math.exp(-sum))
           }
-          boxMask[maskY * croppedMaskWidth + maskX] = 1 / (1 + Math.exp(-sum))
         }
+
+        // 3. 将mask缩放到实际检测框大小（可选）
+        const actualWidth = Math.max(1, Math.round(x2 - x1))
+        const actualHeight = Math.max(1, Math.round(y2 - y1))
+        const scaledMask = resizeMask(boxMask, croppedMaskWidth, croppedMaskHeight, actualWidth, actualHeight)
+
+        const contourPoints = extractContourPointsFromMask(scaledMask, actualWidth, actualHeight, x1, y1)
+        polygon = maskXYTo4ptPolygon(contourPoints);
       }
-
-      // 3. 将mask缩放到实际检测框大小（可选）
-      const actualWidth = Math.max(1, Math.round(x2 - x1))
-      const actualHeight = Math.max(1, Math.round(y2 - y1))
-      const scaledMask = resizeMask(boxMask, croppedMaskWidth, croppedMaskHeight, actualWidth, actualHeight)
-
-      const contourPoints = extractContourPointsFromMask(scaledMask, actualWidth, actualHeight, x1, y1)
-      polygon = maskXYTo4ptPolygon(contourPoints);
     }
 
     result.push({

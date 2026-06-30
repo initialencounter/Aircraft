@@ -67,7 +67,7 @@ interface DebugPPOcrResult extends PPOcrDebugResult {
 let useWebGPU = chrome.runtime.getManifest()?.web_accessible_resources[0].resources.includes('model.js');
 
 // 创建 Offscreen Document（仅 Chrome）
-async function setupOffscreenDocument(path: string) {
+async function setupOffscreenDocument(path: string, enablePPOCR: boolean) {
   // Check if offscreen API is available
   if (!chrome.offscreen) {
     console.warn('Offscreen API is not available in this browser');
@@ -94,6 +94,10 @@ async function setupOffscreenDocument(path: string) {
     await creating;
     creating = null;
   }
+
+  setTimeout(() => {
+    chrome.runtime.sendMessage({ action: 'loadModel', enablePPOCR });
+  }, 3000)
 }
 
 // 初始化 ONNX 模型（Firefox 使用 WASM 后端）
@@ -162,10 +166,12 @@ entrypoint()
 
 
 async function entrypoint() {
+  let enablePPOCR = false
   try {
     // 启动心跳
     startHeartbeat();
-    chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck']).then((result) => {
+    chrome.storage.local.get(['allInWebBrowser', 'enableLabelCheck', 'enablePPOCR']).then((result) => {
+      enablePPOCR = result.enablePPOCR === true
       if (result.allInWebBrowser !== false) {
         aircraftServerAvailable = false
         initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
@@ -173,10 +179,12 @@ async function entrypoint() {
       if (!(result.enableLabelCheck === false)) {
         enableLabelCheck = true
         if (useWebGPU) {
-          setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'));
+          setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'), result.enablePPOCR === true);
         } else {
           initializeModel().catch(err => console.error('initializeModel failed:', err));
-          initializePPOcrModel().catch(err => console.error('initializePPOcrModel failed:', err));
+          if (result.enablePPOCR === true) {
+            initializePPOcrModel().catch(err => console.error('initializePPOcrModel failed:', err));
+          }
         }
       }
     }).catch(err => console.error('chrome.storage.local.get failed:', err))
@@ -320,7 +328,9 @@ async function entrypoint() {
         if (item.label === 'bty') {
           let fixedLabel = 'bty'
           const OCRResults = await recognizeBtyText(image, item.polygon)
-          if (OCRResults?.includes('3090')) {
+          if (!enablePPOCR) {
+            fixedLabel = 'bty'
+          } else if (OCRResults?.includes('3090')) {
             fixedLabel = 'UN3090'
           } else if (OCRResults?.includes('3091')) {
             fixedLabel = 'UN3091'
@@ -368,7 +378,7 @@ async function entrypoint() {
         if (!ortIsInitialized) {
           console.error('ONNX Runtime is not initialized, cannot perform YOLO inference');
         }
-        result = await predict_yolo26(session, Uint8Array.from(image), ort.Tensor, options);
+        result = await predict_yolo26(enablePPOCR, session, Uint8Array.from(image), ort.Tensor, options);
       }
 
       for (const item of result) {
@@ -414,7 +424,7 @@ async function entrypoint() {
       polygon,
       options: undefined,
     })
-    return typeof result === 'string' ? result : ''
+    return typeof result === 'string' ? result : 'bty'
   }
 
   async function predictPPOcrDebugWithOffscreen(
@@ -465,7 +475,7 @@ async function entrypoint() {
     for (let index = 0; index < safeIterations; index += 1) {
       const currentResults = useWebGPU
         ? await predictWithOffscreenDebug(image, options)
-        : await predict_yolo26(session, Uint8Array.from(image), ort.Tensor, options)
+        : await predict_yolo26(enablePPOCR, session, Uint8Array.from(image), ort.Tensor, options)
       if (index === safeIterations - 1) {
         segmentResults = currentResults
       }

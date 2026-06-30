@@ -75,6 +75,7 @@ export async function checkLocalAttachment(
 
     if (systemId === 'pek') {
       results.push(...checkPekAttachment(
+        localConfig.enablePPOCR,
         dataFromForm as PekData,
         attachmentInfo,
         entrustData,
@@ -82,6 +83,7 @@ export async function checkLocalAttachment(
       ))
     } else {
       results.push(...checkSekAttachment(
+        localConfig.enablePPOCR,
         dataFromForm as SekData,
         attachmentInfo,
         entrustData,
