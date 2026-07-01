@@ -113,6 +113,10 @@ export function summaryInfoToForm(summaryInfo: SummaryInfo): SummaryFormJSONData
   const voltage = String(matchVoltage(summaryInfo.voltage) ?? '')
   const capacity = String(matchCapacity(summaryInfo.capacity) ?? '')
 
+  const consignor = summaryInfo.consignorInfo ? summaryInfo.consignor.split('\n').join(' ') : summaryInfo.consignor.split('\n')[0]
+  const manufacturer = summaryInfo.manufacturerInfo ? summaryInfo.manufacturer.split('\n').join(' ') : summaryInfo.manufacturer.split('\n')[0]
+  const testlab = summaryInfo.testlabInfo ? summaryInfo.testlab.split('\n').join(' ') : summaryInfo.testlab.split('\n')[0]
+
   const resolveInfo = (info: string | undefined, base: string): string =>
     !info && base.includes('\n')
       ? base.split('\n').slice(1).join('\n').trim()
@@ -126,11 +130,11 @@ export function summaryInfoToForm(summaryInfo: SummaryInfo): SummaryFormJSONData
     id: '',
     projectNo: '',
     projectId: '',
-    consignor: summaryInfo.consignor.split('\n')[0] ?? '',
+    consignor,
     consignorInfo,
-    manufacturer: summaryInfo.manufacturer.split('\n')[0] ?? '',
+    manufacturer,
     manufacturerInfo,
-    testlab: summaryInfo.testlab.split('\n')[0] ?? '',
+    testlab,
     testlabInfo,
     cnName: summaryInfo.cnName.split('\n')[0] ?? '',
     enName,
