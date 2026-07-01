@@ -1,6 +1,6 @@
 # 更新日志
 
-## [v3.7.4] - 2026-06-30
+## [v3.7.5] - 2026-07-01
 
 ### 新增
 
@@ -9,6 +9,8 @@
 ## [v3.7.2] - 2026-05-21
 
 ## 修复
+
+- 概要单位信息英文名称无法填充([7ed428c](https://github.com/initialencounter/Aircraft/commit/7ed428c))
 
 - 最新版概要制造商无法填充([f4eed24](https://github.com/initialencounter/Aircraft/commit/f4eed24))
 
