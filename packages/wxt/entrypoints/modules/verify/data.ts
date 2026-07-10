@@ -69,6 +69,16 @@ export async function verifyFormData(
         )
       }
     }
+    const otherDescribeCAddition = (dataFromForm as PekData).otherDescribeCAddition ?? (dataFromForm as SekData).otherDescribeCAddition
+    const isChargingCase = otherDescribeCAddition.includes('耳机') && otherDescribeCAddition.includes('总净重') && (otherDescribeCAddition.includes('充电盒') || otherDescribeCAddition.includes('充电仓'))
+    if (batteryTestSummary.length > 1 && !isChargingCase) {
+      result.push(
+        {
+          ok: false,
+          result: "检测到多条电池测试概要，请检查是否有重复创建概要"
+        }
+      )
+    }
   }
 
   console.log('验证元数据:', { localConfig, dataFromForm, model, projectYear, systemId, category, is_965, entrustData, attachmentInfo })
