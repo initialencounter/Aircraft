@@ -12,12 +12,7 @@ export const defaultConfig: Config = {
   "showInspectFormLink": true,
   "enableDisplayEntrustEName": true,
   "enableSetEntrust": true,
-  "paymentCompany": {
-    "discount800": [],
-    "discount900": [],
-    "discount550": [],
-    "discount600": []
-  },
+  "paymentCompanyInfo": "",
   "category": 1,
   "moonPay": true,
   "amount": "500.00",

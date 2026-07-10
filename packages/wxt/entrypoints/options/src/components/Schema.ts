@@ -5,15 +5,8 @@ interface ModelsWithFactory {
   factory: string
 }
 
-interface paymentCompany {
-  discount800: string[]
-  discount900: string[]
-  discount550: string[]
-  discount600: string[]
-}
-
 export interface Config {
-  paymentCompany: paymentCompany
+  paymentCompanyInfo: string
   enablePPOCR: boolean
   showCalculationProcess: boolean
   summaryDataFillEnabled: boolean
@@ -112,20 +105,7 @@ export const Config: Schema<Config> = Schema.intersect([
     enableSetEntrust: Schema.boolean()
       .description(`自动设置初验的内容`)
       .default(true),
-    paymentCompany: Schema.object({
-      discount800: Schema.array(String)
-        .description('800')
-        .default([]),
-      discount900: Schema.array(String)
-        .description('900')
-        .default([]),
-      discount550: Schema.array(String)
-        .description('550')
-        .default([]),
-      discount600: Schema.array(String)
-        .description('600')
-        .default([]),
-    }).description('付款方'),
+    paymentCompanyInfo: Schema.string().role('textarea').default('').description('付款方信息'),
   }).description('初验'),
   Schema.union([
     Schema.object({
