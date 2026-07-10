@@ -519,7 +519,7 @@ async function entrypoint() {
     if (target && follower) {
       const cleanup = updatePosition(target, follower)
 
-      window.addEventListener('unload', cleanup)
+      window.addEventListener('pagehide', cleanup)
     }
   }
 }
