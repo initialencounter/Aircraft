@@ -46,7 +46,7 @@ impl HotkeyManager {
                 let log_tx = search_log_tx.clone();
                 async move {
                     let search_text = clipboard_win::get_clipboard_string().unwrap_or_default();
-                    let program = r"Everything64";
+                    let program = r"Everything";
                     if let Err(e) = std::process::Command::new(program)
                         .arg("-s")
                         .arg(&search_text)
