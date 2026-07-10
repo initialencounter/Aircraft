@@ -23,20 +23,19 @@ async function entrypoint() {
   insertPaymentCompanyInfo()
   setInterval(() => {
     const monthPay = document.querySelector("#monthPay") as HTMLInputElement
+    const paymentCompanyInfoElement = document.querySelector("#paymentCompanyInfo") as HTMLDivElement
     if (!monthPay?.checked) {
+      if (paymentCompanyInfoElement) paymentCompanyInfoElement.innerText = ''
       return
     }
     const paymentCompanyElement = document.querySelector("#txt_paymentCompanyContact") as HTMLSpanElement
-    const paymentCompanyInfoElement = document.querySelector("#paymentCompanyInfo") as HTMLDivElement
     for (const [key, value] of paymentCompanyInfo) {
       if (paymentCompanyElement?.innerText.includes(key)) {
-        if (paymentCompanyInfoElement) {
-          paymentCompanyInfoElement.innerText = value
-        }
+        if (paymentCompanyInfoElement) paymentCompanyInfoElement.innerText = value
         return
       }
     }
-    paymentCompanyInfoElement.innerText = ''
+    if (paymentCompanyInfoElement) paymentCompanyInfoElement.innerText = ''
   }, 200)
 }
 
@@ -55,7 +54,7 @@ async function insertPaymentCompanyInfo() {
   paymentCompanyInfoElement.style.padding = "5px"
   paymentCompanyInfoElement.style.zIndex = "1000"
   paymentCompanyInfoElement.id = "paymentCompanyInfo"
-  
+
   document.body.appendChild(paymentCompanyInfoElement)
 }
 
