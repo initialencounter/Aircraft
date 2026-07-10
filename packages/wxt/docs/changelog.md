@@ -1,9 +1,10 @@
 # 更新日志
 
-## [v3.7.5] - 2026-07-01
+## [v3.7.6] - 2026-07-00
 
 ### 新增
 
+- 初验增加付款方价格提示([d644b7c])(https://github.com/initialencounter/Aircraft/commit/d644b7c))
 - 净重旁边添加计算过程显示([704e111](https://github.com/initialencounter/Aircraft/commit/704e111))
 
 ## [v3.7.2] - 2026-05-21
