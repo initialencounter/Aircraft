@@ -11,7 +11,7 @@ export function stateOfCharge(
   otherDescribe: string,
   wattHour: number,
   unno: string,
-  projectYear?: string,
+  projectYear: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
   // SoC荷电状态≤30%

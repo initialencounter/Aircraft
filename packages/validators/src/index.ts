@@ -26,7 +26,7 @@ import { checkSekSodiumBtyType } from './sodium/sek'
 export function checkInspectData(
   dataFromForm: PekData | SekData | PekSodiumData | SekSodiumData,
   category: string,
-  projectYear: string | undefined,
+  projectYear: string,
 ): CheckResult[] {
   const systemId = dataFromForm.projectNo.slice(0, 3).toLowerCase()
   if (category === 'battery') {

@@ -24,12 +24,7 @@ export async function verifyFormData(
     = getFormData(systemId)
 
   const model = (dataFromForm as PekData).model ?? (dataFromForm as SekData).btyKind
-  // const data = await getProjectTrace(projectNo);
-  let projectYear: string | undefined = undefined;
-  // if (data && data.rows.length > 0 && data.rows[0]) {
-  //   projectYear = getProjectYear(projectNo, data.rows[0].nextYear)
-  // }
-
+  let projectYear: string = '2026';
   // 计算 is_965 值，后续并行请求需要用到
   let is_965 = false
   if (systemId === 'pek') {
@@ -81,7 +76,7 @@ export async function verifyFormData(
     }
   }
 
-  console.log('验证元数据:', { localConfig, dataFromForm, model, projectYear, systemId, category, is_965, entrustData, attachmentInfo })
+  console.log('验证元数据:', { localConfig, dataFromForm, model, systemId, category, is_965, entrustData, attachmentInfo })
 
   // 系统资料上传检查
   result.push(...goodsfileCheckResults)

@@ -33,7 +33,7 @@ import { packetOrContain } from './packetOrContain'
 import { remarksCheck } from './remarksCheck'
 import { stateOfCharge } from './stateOfCharge'
 
-function checkPekBtyType(currentData: PekData, projectYear?: string): CheckResult[] {
+function checkPekBtyType(currentData: PekData, projectYear: string): CheckResult[] {
   const result = []
   const btyType = getBtyTypeCode(currentData)
   // 品名

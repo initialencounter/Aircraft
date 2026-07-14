@@ -18,7 +18,7 @@ import { checkComment } from './checkComment'
 import { checkDropTest } from './checkDropTest'
 import { checkBtyLabel } from './checkBtyLabel'
 
-function checkSekBtyType(currentData: SekData, projectYear?: string): CheckResult[] {
+function checkSekBtyType(currentData: SekData, projectYear: string): CheckResult[] {
   const result = []
   const checkMap = {
     '500': ['≤100Wh', '>100Wh'],
