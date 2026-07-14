@@ -88,12 +88,20 @@ export function stateOfCharge(
               if (!socCapacity && !deviceBatteryCapacity) {
                 result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时>100，未勾选“SoC荷电状态≤30%”或“设备显示电量≤25%”，如果是25年报告请忽略` })
               }
+            } else {
+              if (!neitherSelect) {
+                result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时≤100，“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选，如果是25年报告请忽略` })
+              }
             }
             break;
           case '2026':
             if (wattHour > 100) {
               if (!socCapacity && !deviceBatteryCapacity) {
                 result.push({ ok: false, result: `${projectYear}年报告，${pkgInfoSubType} ${unno} 瓦时>100，未勾选“SoC荷电状态≤30%”或“设备显示电量≤25%”` })
+              }
+            } else {
+              if (!neitherSelect) {
+                result.push({ ok: false, result: `${pkgInfoSubType} ${unno} 瓦时≤100，“SoC荷电状态≤30%”和“设备显示电量≤25%”都不应勾选` })
               }
             }
             break;
