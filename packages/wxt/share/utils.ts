@@ -121,8 +121,38 @@ function getProjectYear(projectNo: string, nextYear: boolean): string {
   const year = parseInt(projectNo.slice(5, 9));
   return nextYear ? (year + 1).toString() : year.toString();
 }
+
+function waitForElement(selector: string, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    // 先检查元素是否已存在
+    const existing = document.querySelector(selector);
+    if (existing) return resolve(existing);
+
+    const observer = new MutationObserver(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        observer.disconnect();
+        resolve(element);
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    // 超时处理（可选）
+    if (timeout) {
+      setTimeout(() => {
+        observer.disconnect();
+        reject(new Error(`等待元素 ${selector} 超时`));
+      }, timeout);
+    }
+  });
+}
+
 export {
   LocalConfig, getLocalConfig, getCategory, getSystemId, checkDate, parseDate, sleep,
   setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor, validateFormat,
-  getProjectDate, getProjectYear
+  getProjectDate, getProjectYear, waitForElement
 }

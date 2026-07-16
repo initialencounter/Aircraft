@@ -6,6 +6,7 @@ import {
   getSystemId,
   setProjectNoToClipText,
   sleep,
+  waitForElement,
 } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
@@ -44,7 +45,7 @@ async function entrypoint() {
   const systemId = getSystemId()
   const Qmsg = getQmsg()
   let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
-  await sleep(500)
+  await waitForElement('#projectNo', 10000)
   const projectNo = getCurrentProjectNo()
 
   // 创建计算过程文本元素
