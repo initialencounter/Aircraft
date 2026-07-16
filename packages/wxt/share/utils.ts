@@ -132,7 +132,9 @@ function waitForElement(selector: string, timeout = 10000) {
       const element = document.querySelector(selector);
       if (element) {
         observer.disconnect();
-        resolve(element);
+        setTimeout(() => {
+          resolve(element)
+        }, 200)
       }
     });
 

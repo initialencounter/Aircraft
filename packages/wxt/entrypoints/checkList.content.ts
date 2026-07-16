@@ -1,4 +1,4 @@
-import { sleep } from '../share/utils'
+import { waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 
@@ -26,16 +26,13 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  await sleep(200)
   const Qmsg = getQmsg()
-  const headerBar = document.querySelector(
-    'body > div.panel.easyui-fluid > div.panel-header'
-  )
+  const headerBar = await waitForElement('body > div.panel.easyui-fluid > div.panel-header') as HTMLDivElement | null
   if (!headerBar) return
   headerBar.addEventListener('click', () => {
     setFormDataToClipBoard()
   })
-  const targetChild = document.getElementById('openDocumentsBtn0')
+  const targetChild = await waitForElement('#openDocumentsBtn0') as HTMLButtonElement | null
   if (!targetChild) return
   const targetParent = targetChild.parentElement
   if (!targetParent) return

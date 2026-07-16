@@ -1,4 +1,4 @@
-import { sleep } from '../share/utils'
+import { waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { SummaryFormJSONData } from '../share/types'
@@ -22,7 +22,7 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  await sleep(400)
+  await waitForElement("#printBtn0")
   const Qmsg = getQmsg()
   const headerBar = document.querySelector(
     'body > div.panel.easyui-fluid > div.panel-header'

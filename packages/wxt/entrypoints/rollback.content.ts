@@ -1,6 +1,6 @@
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { sleep } from '../share/utils'
+import { waitForElement } from '../share/utils'
 
 /**
  * rollback内容脚本
@@ -53,7 +53,7 @@ async function entrypoint() {
         result.nextYearColor ?? '',
         result.nextYearBgColor ?? '#76EEC6'
       )
-      await sleep(500)
+      await waitForElement('#datagrid-row-r1-2-0')
       // 替换橘黄色
       if (result.onekeyRollback === false) {
         console.log('未启用一键退回，退出脚本')

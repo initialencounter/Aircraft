@@ -3,6 +3,7 @@ import {
   getLocalConfig,
   parseDate,
   sleep,
+  waitForElement,
 } from '../share/utils'
 
 export default defineContentScript({
@@ -16,7 +17,7 @@ export default defineContentScript({
 
 async function entrypoint() {
   const localConfig = await getLocalConfig()
-  await sleep(400)
+  await waitForElement('#projectNo')
   if (localConfig.enableSetQueryProjectNo === false) {
     console.log('未启用设置查询项目编号，退出脚本')
     return

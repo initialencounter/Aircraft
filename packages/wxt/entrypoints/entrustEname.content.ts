@@ -1,4 +1,4 @@
-import { sleep } from '../share/utils'
+import { sleep, waitForElement } from '../share/utils'
 
 interface Customer {
   createdBy: string
@@ -39,18 +39,17 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  await sleep(500)
   let searchText = ''
   chrome.storage.local.get('enableDisplayEntrustEName', async (data) => {
     if (data.enableDisplayEntrustEName === false) return
     console.log('启用委托方英文名称显示')
     try {
-      await sleep(500)
       addEnameColumn()
       debounceInput()
-      setPage()
-      expandTable(800)
-      document.querySelector("#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > span > a")?.addEventListener('click', async () => {
+
+      // 特殊处理, 展开搜索结果后需要重新加宽列表
+      const expandElement = await waitForElement("#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > span > a") as HTMLAnchorElement | null
+      expandElement?.addEventListener('click', async () => {
         console.log('点击查询按钮')
         await sleep(200)
         expandTable(800)
@@ -121,7 +120,8 @@ async function entrypoint() {
     }
   }
 
-  function expandTable(width: number) {
+  async function expandTable(width: number) {
+    await waitForElement('body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-body > table > tbody')
     const selectors = {
       width: [
         'body > div:nth-child(10)',
@@ -130,6 +130,7 @@ async function entrypoint() {
         'body > div:nth-child(10) > div > div > div',
         'body > div:nth-child(10) > div > div > div > div.datagrid-view',
         'body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2',
+        'body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-header',
         'body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-body',
         'body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-body > table',
         'body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-body > table > tbody',
@@ -165,10 +166,10 @@ async function entrypoint() {
     })
   }
 
-  function addEnameColumn() {
-    const headerRow = document.querySelector(
+  async function addEnameColumn() {
+    const headerRow = await waitForElement(
       'body > div:nth-child(10) > div > div > div > div.datagrid-view > div.datagrid-view2 > div.datagrid-header > div > table > tbody > tr'
-    )
+    ) as HTMLTableRowElement | null
     if (headerRow) {
       const newHeader = document.createElement('td')
       newHeader.innerHTML = `<div class='datagrid-cell' style='width: 400px;'><span>客户英文名称</span></div>`
@@ -185,10 +186,10 @@ async function entrypoint() {
     }
   }
 
-  function debounceInput() {
-    const input = document.querySelector<HTMLInputElement>(
+  async function debounceInput() {
+    const input = await waitForElement(
       '#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > input.textbox-text.validatebox-text'
-    )
+    ) as HTMLInputElement | null
     if (!input) {
       console.warn('未找到输入元素')
       return
@@ -219,7 +220,6 @@ async function entrypoint() {
       isProcessing = true
       pendingRetry = false
       try {
-        expandTable(800)
         const customers = await getEntrustEName(currentSearch)
         await insertEntrustEname(customers)
         expandTable(800)
@@ -269,21 +269,5 @@ async function entrypoint() {
       subtree: true,
     })
     console.log('已设置 combogrid 数据加载监听器')
-  }
-
-  function setPage() {
-    const nextPage = document.querySelector(
-      'body > div:nth-child(10) > div > div > div > div.datagrid-pager.pagination > table > tbody > tr > td:nth-child(10) > a'
-    ) as HTMLAnchorElement
-    if (nextPage) {
-      nextPage.addEventListener('click', async () => {
-        // 翻页时只需展开表格，MutationObserver 会在 combogrid 数据渲染完成后
-        // 自动触发 getEntrustEName + insertEntrustEname
-        expandTable(700)
-        // 等待 combogrid 加载新页数据后再次展开表格
-        await sleep(500)
-        expandTable(700)
-      })
-    }
   }
 }

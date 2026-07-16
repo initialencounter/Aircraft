@@ -1,4 +1,4 @@
-import { sleep } from '../share/utils'
+import { waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { ID_CLASSIFICATION_MAP } from '../share/classificationMap'
@@ -28,10 +28,9 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  await sleep(400)
   const Qmsg = getQmsg()
   injectJQueryInterceptor()
-  const body = document.querySelector("body > div.panel.easyui-fluid > div.easyui-panel.panel-body")
+  const body = await waitForElement("body > div.panel.easyui-fluid > div.easyui-panel.panel-body") as HTMLDivElement | null
   if (!body) return
 
   // 拖拽文件监听（支持 .docx ）

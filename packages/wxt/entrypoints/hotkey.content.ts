@@ -121,7 +121,6 @@ async function entrypoint() {
 
   // 导入检验单时设置分类
   if (localConfig.enableSetImportClassification && !fromQuery) {
-    await sleep(300);
     await importClassification()
   }
 
@@ -293,7 +292,7 @@ async function entrypoint() {
 
   async function importClassification() {
     console.log('导入分类脚本运行中...')
-    const importBtn = document.getElementById('importBtn0')
+    const importBtn = await waitForElement('#importBtn0') as HTMLButtonElement | null
     if (importBtn) {
       importBtn.addEventListener('click', classification)
     }
@@ -328,6 +327,9 @@ async function entrypoint() {
         const resultRow1 = document.querySelector(resultRow1Selector) as HTMLElement
         if (resultRow1) {
           resultRow1.click()
+          resultRow1.addEventListener('dblclick', () => {
+            (document.querySelector("#assignSaveBtn") as HTMLAnchorElement)?.click()
+          })
         } else {
           console.log('resultRow1 not found')
         }

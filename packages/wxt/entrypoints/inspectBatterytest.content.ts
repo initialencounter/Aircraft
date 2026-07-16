@@ -1,5 +1,5 @@
 import { getQmsg } from "../share/qmsg"
-import { getLocalConfig, getSystemId, setProjectNoToClipText, sleep } from "../share/utils"
+import { getLocalConfig, setProjectNoToClipText, waitForElement } from "../share/utils"
 import { switchFaviconBySystemId } from "./modules/ui/favicon"
 import '../assets/message.min.css'
 
@@ -15,20 +15,18 @@ export default defineContentScript({
 async function entrypoint() {
   const Qmsg = getQmsg()
   const localConfig = await getLocalConfig()
-  await sleep(500) // 等待页面内容加载
-  const systemId = getSystemId()
+  const projectNoElement = await waitForElement('#projectNo') as HTMLSpanElement// 等待页面内容加载
+  const systemId = projectNoElement.innerHTML.slice(0, 5)
   const fromQuery =
     new URLSearchParams(window.location.search).get('from') === 'query'
 
   if (!(localConfig.setTitleWithProjectNo === false)) {
-    const projectNoElement = document.querySelector("#projectNo")
     if (projectNoElement) {
       document.title = '概要:' + projectNoElement.innerHTML
     }
   }
 
   if (localConfig.enableCopyProjectNoByClick) {
-    const projectNoElement = document.getElementById('projectNo')
     if (projectNoElement) {
       if (projectNoElement.parentElement && localConfig.enableCopyProjectNoByClick) {
         projectNoElement.parentElement.addEventListener('click', () => {

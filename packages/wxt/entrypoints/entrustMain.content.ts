@@ -1,4 +1,4 @@
-import { getLocalConfig, sleep } from '../share/utils'
+import { getLocalConfig, sleep, waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import type { EntrustFormData } from './modules/amount/types'
@@ -56,7 +56,6 @@ async function entrypoint() {
   let globalCheckAssignUser = true
   const Qmsg = getQmsg()
   const localConfig = await getLocalConfig()
-  await sleep(500)
   if (localConfig.enableSetEntrust === false) {
     console.log('未启用设置委托单，退出脚本')
     return
@@ -96,9 +95,9 @@ async function entrypoint() {
     }
   }
 
-  function setAmountListener() {
-    const immediatePayButton = document.getElementById(
-      'immediatePay'
+  async function setAmountListener() {
+    const immediatePayButton = await waitForElement(
+      '#immediatePay'
     ) as HTMLInputElement
     if (immediatePayButton) {
       immediatePayButton.addEventListener('click', function () {
@@ -132,20 +131,20 @@ async function entrypoint() {
     }
   }
 
-  function setCategory() {
-    const target = document.getElementById(
-      `_easyui_combobox_i5_${localConfig.category}`
+  async function setCategory() {
+    const target = await waitForElement(
+      `#_easyui_combobox_i5_${localConfig.category}`
     ) as HTMLDivElement
     if (target) {
       target.click()
     }
   }
 
-  function setMoonPay() {
+  async function setMoonPay() {
     if (localConfig.moonPay === false) return
     // 判断用户是不是手动选择的月结，如果是则取消
     if (immediatePayManual) return
-    const target = document.getElementById('monthPay') as HTMLInputElement
+    const target = await waitForElement('#monthPay') as HTMLInputElement
     if (target) {
       target.click()
     }
@@ -159,7 +158,7 @@ async function entrypoint() {
   }
 
   async function insertSaveAndAssignButton(uid: string) {
-    const parentElement = document.querySelector('#entrustBottomFollower')
+    const parentElement = await waitForElement('#entrustBottomFollower') as HTMLDivElement | null
     if (!parentElement) return
 
     // select
@@ -423,10 +422,10 @@ async function entrypoint() {
     }
   }
 
-  function insertReloadButton() {
-    const parentElement = document.querySelector(
+  async function insertReloadButton() {
+    const parentElement = await waitForElement(
       'body > div.panel.easyui-fluid > div.easyui-panel.panel-body'
-    )
+    ) as HTMLDivElement | null
     if (!parentElement) return
     const bottomElement = document.createElement('div')
     bottomElement.id = 'entrustBottomFollower'
@@ -508,8 +507,8 @@ async function entrypoint() {
     }
   }
 
-  function startFollow() {
-    const target = document.querySelector(
+  async function startFollow() {
+    const target = await waitForElement(
       '#entrustEditForm > table > tbody'
     ) as HTMLElement
     const follower = document.querySelector(

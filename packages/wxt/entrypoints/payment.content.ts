@@ -1,4 +1,4 @@
-import { getLocalConfig, sleep } from '../share/utils'
+import { getLocalConfig, waitForElement } from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -13,7 +13,7 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  await sleep(400)
+  await waitForElement('#txt_paymentCompanyContact')
   const localConfig = await getLocalConfig()
   if (!localConfig.paymentCompanyInfo) {
     console.log('No payment company info found in local config, skipping insertion.')

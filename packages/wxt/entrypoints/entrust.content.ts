@@ -1,4 +1,4 @@
-import { parseDate, sleep } from '../share/utils'
+import { parseDate, sleep, waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 
@@ -229,8 +229,7 @@ async function entrypoint() {
   }
 
   async function insertElement(uid: string) {
-    await sleep(200)
-    const targetParent = document.getElementById('toolbar')
+    const targetParent = await waitForElement('#toolbar') as HTMLDivElement | null
     if (!targetParent) return
     const div = document.createElement('div')
     div.style.display = 'flex'

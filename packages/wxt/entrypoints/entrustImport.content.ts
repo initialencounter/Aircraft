@@ -1,4 +1,4 @@
-import { getClipboardText, sleep } from '../share/utils'
+import { getClipboardText, waitForElement } from '../share/utils'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -19,7 +19,6 @@ async function entrypoint() {
         console.log('未启用导入委托单，退出脚本')
         return
       }
-      await sleep(400)
       await listenImportHotkey()
     })
   } catch (error) {
@@ -37,14 +36,14 @@ async function entrypoint() {
       }
 
       // 保持原来的选择器不变
-      const projectNoInput = document.querySelector(
+      const projectNoInput = await waitForElement(
         '#projectNo'
       ) as HTMLInputElement
       if (projectNoInput) {
         projectNoInput.value = projectNo
       }
 
-      const searchBtn = document.querySelector(
+      const searchBtn = await waitForElement(
         '#toolbar > p:nth-child(2) > a:nth-child(5)'
       ) as HTMLAnchorElement
       if (searchBtn) {
