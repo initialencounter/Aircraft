@@ -9,16 +9,13 @@
   "preload": "dist-electron/preload/index.js",
   "scripts": {
     "start": "chcp 65001 && vite -c vite.electron.config.ts",
-    "package": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-forge package",
-    "build": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-forge make"
+    "build": "vue-tsc --noEmit && vite -c vite.electron.config.ts build && electron-builder --publish never"
   },
-  "config": {
-    "forge": "./forge.config.ts"
+  "dependencies": {
+    "@aircraft/renderer": "workspace:*",
+    "aircraft-rs": "workspace:*"
   },
   "devDependencies": {
-    "@aircraft/renderer": "workspace:*",
-    "@electron-forge/cli": "^7.11.2",
-    "@electron-forge/maker-squirrel": "^7.11.2",
     "@koa/cors": "^5.0.0",
     "@koa/multer": "^3.1.0",
     "@types/auto-launch": "^5.0.5",
@@ -27,7 +24,6 @@
     "@types/koa__multer": "^2.0.8",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
-    "aircraft-rs": "workspace:*",
     "auto-launch": "^5.0.6",
     "cordis": "^4.0.0-rc.7",
     "electron": "38.3.0",
