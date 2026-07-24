@@ -1,7 +1,7 @@
 import '../assets/message.min.css'
 
 // 工具函数和辅助方法
-import { getCategory, getLocalConfig, waitForElement } from '../share/utils'
+import { getCategory, getLocalConfig, waitForElement, sleep } from '../share/utils'
 import {
   getCurrentProjectId,
   getCurrentProjectNo,
@@ -33,6 +33,7 @@ export default defineContentScript({
     // 读取本地配置
     const localConfig = await getLocalConfig()
     await waitForElement('#projectNo')
+    await sleep(300)
     if (localConfig.warmUp) {
       warmUp(getCurrentProjectNo() ?? '')
     }
