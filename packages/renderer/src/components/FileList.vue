@@ -69,14 +69,14 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
 
     <el-table-column label="大小" prop="size" width="100" />
 
-    <el-table-column label="修改时间" prop="lastModified" width="180" />
-
     <el-table-column
       v-if="props.additionLabel"
       :label="props.additionLabel"
       prop="additionValue"
       width="180"
     />
+
+    <el-table-column label="修改时间" prop="lastModified" width="180" />
 
     <el-table-column fixed="right" label="操作" width="80">
       <template #default="scope">

@@ -10,7 +10,6 @@ import {
   Search,
   Setting,
 } from '@element-plus/icons-vue'
-import Clip from '../assets/svg/Clip.vue'
 
 const router = useRouter()
 const activeIndex = ref('1')
@@ -34,11 +33,11 @@ const menuItems = [
     label: '堆码计算',
     icon: Box,
   },
-  {
+    {
     index: '4',
-    path: '/md5',
-    label: 'MD5',
-    icon: Clip,
+    path: '/logs',
+    label: '日志',
+    icon: Document,
   },
   {
     index: '5',
@@ -48,18 +47,12 @@ const menuItems = [
   },
   {
     index: '6',
-    path: '/logs',
-    label: '日志',
-    icon: Document,
-  },
-  {
-    index: '7',
     path: '/searchTNotes',
     label: '技术部备注',
     icon: Search,
   },
   {
-    index: '8',
+    index: '7',
     path: '/clipkeeper',
     label: '剪贴板快照',
     icon: Notebook,

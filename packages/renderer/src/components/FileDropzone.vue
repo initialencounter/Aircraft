@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import SparkMD5 from 'spark-md5'
 import { formatFileSize, formatTimestamp, getFileIcon } from '../utils/utils'
 import FileList from './FileList.vue'
 import { FileItem } from '../types'
@@ -43,6 +44,28 @@ const files = ref<FileItem[]>(fileItemStore[name] ?? [])
 const dropzoneRef = ref<HTMLElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
+
+let colorList = [
+  '#3cb44b',
+  '#ffe119',
+  '#4363d8',
+  '#f58231',
+  '#42d4f4',
+  '#f032e6',
+  '#fabed4',
+  '#469990',
+  '#dcbeff',
+  '#9A6324',
+  '#fffac8',
+  '#800000',
+  '#aaffc3',
+  '#000075',
+  '#a9a9a9',
+  '#ffffff',
+  '#e6194B',
+  '#000000',
+]
+let colorIndex = 0
 
 watch(files, (newVal: FileItem[]) => {
   fileItemStore[name] = newVal
@@ -117,6 +140,7 @@ const handleReadClipboard = async () => {
 // 处理清空所有文件
 const handleClearFiles = () => {
   files.value = []
+  colorIndex = 0
   emit('files-change', [])
   ElMessage.success('已清空所有文件')
 }
@@ -147,26 +171,16 @@ const handleParseReport = () => {
 
 // 处理文件处理逻辑
 const processFiles = (newFiles: File[]) => {
-  // 检查文件数量限制
-  if (files.value.length + newFiles.length > props.maxFiles) {
-    ElMessage.warning(`最多只能上传${props.maxFiles}个文件`)
-    newFiles = newFiles.slice(0, props.maxFiles - files.value.length)
-  }
-
   // 处理文件
-  const validFiles: FileItem[] = []
   newFiles.forEach((file) => {
-    // 检查文件类型
-    if (props.accept !== '*' && !isAcceptedFile(file)) {
-      ElMessage.warning(`不支持的文件类型: ${file.name}`)
-      return
-    }
 
     // 检查文件大小
     if (file.size > props.maxSize * 1024 * 1024) {
       ElMessage.warning(`文件过大: ${file.name}`)
       return
     }
+
+    getMd5(file, files.value.length)
 
     // 创建文件项
     const fileItem: FileItem = {
@@ -175,45 +189,59 @@ const processFiles = (newFiles: File[]) => {
       lastModified: formatTimestamp(file.lastModified),
       type: file.type || '未知类型',
       icon: getFileIcon(file.type),
+      additionValue: 'loading...',
+      bgColor: '#000',
     }
 
-    validFiles.push(fileItem)
+    files.value.push(fileItem)
     emit('file-select', file)
   })
 
   // 添加有效文件
-  files.value = [...files.value, ...validFiles]
   emit(
     'files-change',
     files.value.map((item) => item.file)
   )
 
-  if (validFiles.length > 0) {
-    ElMessage.success(`已添加 ${validFiles.length} 个文件`)
+  if (files.value.length > 0) {
+    ElMessage.success(`已添加 ${files.value.length} 个文件`)
   }
 }
 
-// 检查文件是否为接受类型
-const isAcceptedFile = (file: File): boolean => {
-  const acceptTypes = props.accept.split(',').map((type) => type.trim())
-
-  for (const type of acceptTypes) {
-    // 处理 .jpg, .pdf 这种格式
-    if (type.startsWith('.')) {
-      if (file.name.toLowerCase().endsWith(type.toLowerCase())) return true
+function getMd5(blob: Blob, id: number) {
+  const reader = new FileReader()
+  reader.onloadend = () => {
+    const spark = new SparkMD5.ArrayBuffer()
+    spark.append(reader.result as ArrayBuffer)
+    const res = spark.end()
+    console.log('MD5:', res, '文件ID:', id)
+    if (files.value[id]) {
+      files.value[id]['additionValue'] = res
     }
-    // 处理 image/* 这种格式
-    else if (type.endsWith('/*')) {
-      const category = type.slice(0, -2)
-      if (file.type.startsWith(`${category}/`)) return true
+    for (let i = 0; i < files.value.length; i++) {
+      let value = files.value[i]
+      if (value.additionValue === res) {
+        files.value[id]['bgColor'] = value.bgColor
+        break
+      }
     }
-    // 处理具体的MIME类型
-    else if (file.type === type) {
-      return true
+    if (files.value[id]['bgColor'] === '#000') {
+      files.value[id]['bgColor'] = colorList[colorIndex]
+      colorIndex++
+      if (colorIndex >= colorList.length) {
+        ElMessage.warning({
+          message: '颜色已经用完了，请清空列表！！回收颜色！！',
+          type: 'warning',
+        })
+      }
     }
   }
-
-  return false
+  reader.onerror = () => {
+    if (files.value) {
+      files.value[id]['additionValue'] = 'Error!'
+    }
+  }
+  reader.readAsArrayBuffer(blob)
 }
 
 // 设置事件监听
@@ -276,6 +304,7 @@ onBeforeUnmount(() => {
         </div>
         <FileList
           v-model="files"
+          addition-label="MD5"
           empty-text="请拖拽UN报告和概要到此处"
         ></FileList>
       </div>

@@ -3,7 +3,6 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Schema from '../components/Schema.vue'
 import Logs from '../views/Logs.vue'
-import Md5Checker from '../views/Md5checker.vue'
 //@ts-ignore
 import Stack from '../views/Stack.vue'
 import PdfParse from '../views/PdfParse.vue'
@@ -31,11 +30,6 @@ const router = createRouter({
       path: '/logs',
       name: 'Logs',
       component: Logs,
-    },
-    {
-      path: '/md5',
-      name: 'Md5Checker',
-      component: Md5Checker,
     },
     {
       path: '/stack',
