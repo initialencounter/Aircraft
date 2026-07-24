@@ -5,6 +5,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron/simple'
 import yaml from '@maikolib/vite-plugin-yaml'
+import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }: { command: string }) => {
@@ -20,6 +21,7 @@ export default defineConfig(({ command }: { command: string }) => {
     root,
     plugins: [
       vue({}),
+      vueDevTools(),
       yaml(),
       electron({
         main: {
