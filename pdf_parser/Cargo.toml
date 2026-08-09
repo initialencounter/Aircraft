@@ -19,3 +19,4 @@ cbc = "0.1.2"
 lazy_static = "1.5.0"
 regex = "1.13.1"
 aircraft-types = { path = "../types" }
+chrono = "0.4.45"

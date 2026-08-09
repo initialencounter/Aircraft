@@ -34,7 +34,7 @@ pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessa
     hotkey_manager.start();
     let clipboard_snapshot_manager = Arc::new(ClipboardSnapshotManager::new());
     clipboard_snapshot_manager.start();
-    let pdf_ocr_service = PdfOcrService::new().with_lang("chi_sim+eng");
+    let pdf_ocr_service = PdfOcrService::new(Some(log_tx.clone())).with_lang("chi_sim+eng");
     let server_handle = webhook::apply_webhook(
         config.server.port,
         webhook_client,

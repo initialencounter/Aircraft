@@ -1,7 +1,11 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::mpsc::Sender;
 
-use crate::read::{decrypt_pdf, extract_pdf_text};
+use aircraft_types::logger::LogMessage;
+use pdf_extract::extract_text_from_mem;
+
+use crate::read::{decrypt_pdf, is_encrypted, sanitize_pdf};
 
 /// 提取 PDF 文本的服务:
 /// 1. 有文本层 → 直接提取
@@ -18,6 +22,7 @@ pub struct PdfOcrService {
     lang: Option<String>,
     /// 渲染分辨率 (DPI), 默认 300
     dpi: u32,
+    pub log_tx: Option<Sender<LogMessage>>,
 }
 
 impl Default for PdfOcrService {
@@ -27,13 +32,20 @@ impl Default for PdfOcrService {
             gs_path: "gswin64c".to_string(),
             lang: None,
             dpi: 300,
+            log_tx: None,
         }
     }
 }
 
 impl PdfOcrService {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(log_tx: Option<Sender<LogMessage>>) -> Self {
+        match log_tx {
+            Some(tx) => Self {
+                log_tx: Some(tx),
+                ..Self::default()
+            },
+            None => Self::default(),
+        }
     }
 
     pub fn with_tesseract_path(mut self, path: impl Into<String>) -> Self {
@@ -56,10 +68,26 @@ impl PdfOcrService {
         self
     }
 
+    pub fn with_log_tx(mut self, log_tx: Sender<LogMessage>) -> Self {
+        self.log_tx = Some(log_tx);
+        self
+    }
+
+    pub fn log(&self, level: &str, message: &str) {
+        if let Some(tx) = &self.log_tx {
+            let log_message = LogMessage {
+                time_stamp: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+                level: level.to_string(),
+                message: message.to_string(),
+            };
+            let _ = tx.send(log_message);
+        }
+    }
+
     /// 提取 PDF 文本。文本层提取失败或为空时自动回退到 OCR。
     pub fn extract_text(&self, data: &[u8]) -> Result<String, PdfOcrError> {
         // 1+2: 文本层提取 / 解密后提取
-        let text = extract_pdf_text(data);
+        let text = self.extract_pdf_text(data);
         if !text.trim().is_empty() {
             return Ok(text);
         }
@@ -81,6 +109,10 @@ impl PdfOcrService {
     }
 
     fn render_and_ocr(&self, dir: &Path, input: &Path) -> Result<String, PdfOcrError> {
+        self.log(
+            "INFO",
+            &format!("开始 OCR: 渲染 PDF -> 图片, 输入文件: {}", input.display()),
+        );
         // 1. Ghostscript 渲染 PDF 每页为灰度 PNG (page_1.png, page_2.png, ...)
         let output_pattern = dir.join("page_%d.png");
         let gs = Command::new(&self.gs_path)
@@ -126,7 +158,12 @@ impl PdfOcrService {
 
         // 3. 逐页 tesseract OCR, 结果按页码拼接
         let mut parts = Vec::new();
+        let total_pages = pages.len();
         for png in pages {
+            self.log(
+                "INFO",
+                &format!("OCR 提取中 {}/{}", parts.len() + 1, total_pages),
+            );
             let mut cmd = Command::new(&self.tesseract_path);
             cmd.arg(&png).arg("stdout");
             if let Some(lang) = &self.lang {
@@ -148,6 +185,31 @@ impl PdfOcrService {
             }
         }
         Ok(parts.join("\n"))
+    }
+
+    /// 提取 PDF 文本层:
+    /// 1. 直接提取 (pdf-extract 无法处理加密 PDF, 失败或为空时继续)
+    /// 2. 若加密, 先解密生成未加密副本再提取
+    /// 无文本层时返回空字符串
+    pub fn extract_pdf_text(&self, data: &[u8]) -> String {
+        let clean = sanitize_pdf(data);
+        if let Ok(text) = extract_text_from_mem(clean) {
+            if !text.trim().is_empty() && text.trim().len() > 1000 {
+                self.log("INFO", "PDF 文本层提取成功");
+                return text;
+            }
+        }
+        if is_encrypted(clean) {
+            self.log("INFO", "PDF 加密, 尝试解密后提取文本层");
+            if let Ok(decrypted) = decrypt_pdf(clean) {
+                if let Ok(text) = extract_text_from_mem(&decrypted) {
+                    if !text.trim().is_empty() && text.trim().len() > 1000 {
+                        return text;
+                    }
+                }
+            }
+        }
+        String::new()
     }
 }
 
@@ -236,7 +298,7 @@ mod tests {
         let path = r"C:\Users\29115\RustroverProjects\validators\ts\encrypted.pdf";
         let data = std::fs::read(path).expect("读取测试 PDF 失败");
 
-        let service = PdfOcrService::new().with_lang("chi_sim+eng");
+        let service = PdfOcrService::new(None).with_lang("chi_sim+eng");
         let text = service.extract_text(&data).expect("提取文本失败");
         println!("--- OCR 结果 (len {}) ---", text.len());
         println!("{}", &text[..text.len().min(300)]);

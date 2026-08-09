@@ -68,28 +68,7 @@ pub fn decrypt_pdf(data: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error + S
     Ok(out)
 }
 
-/// 提取 PDF 文本层:
-/// 1. 直接提取 (pdf-extract 无法处理加密 PDF, 失败或为空时继续)
-/// 2. 若加密, 先解密生成未加密副本再提取
-/// 无文本层时返回空字符串
-pub fn extract_pdf_text(data: &[u8]) -> String {
-    let clean = sanitize_pdf(data);
-    if let Ok(text) = extract_text_from_mem(clean) {
-        if !text.trim().is_empty() {
-            return text;
-        }
-    }
-    if is_encrypted(clean) {
-        if let Ok(decrypted) = decrypt_pdf(clean) {
-            if let Ok(text) = extract_text_from_mem(&decrypted) {
-                if !text.trim().is_empty() {
-                    return text;
-                }
-            }
-        }
-    }
-    String::new()
-}
+
 
 #[derive(Debug, Clone)]
 pub struct ImageWithPosition {
