@@ -1,8 +1,11 @@
 <script lang="ts" setup>
+import { onBeforeUnmount, onMounted } from 'vue'
 import TitleBar from './components/TitleBar.vue'
 import type { Event } from '@tauri-apps/api/event'
 import SideBar from './components/SideBar.vue'
 import { ipcManager } from './utils/ipcManager.ts'
+import router from './router'
+import { pendingDropFiles } from './utils/globalDrop'
 
 interface Link {
   link: string
@@ -10,6 +13,45 @@ interface Link {
 
 ipcManager.on('open_link', (data: Event<Link>): void => {
   window.open(data.payload.link)
+})
+
+// 全局文件拖拽：任何页面都可拖拽文件，其他路由检测到文件拖入时跳转到 /summary_parse
+const handleGlobalDragEnter = (e: DragEvent) => {
+  const types = e.dataTransfer?.types
+  if (types && Array.from(types).includes('Files')) {
+    e.preventDefault()
+    if (router.currentRoute.value.path !== '/summary_parse') {
+      router.push('/summary_parse')
+    }
+  }
+}
+
+// 允许在窗口任意位置放下文件
+const handleGlobalDragOver = (e: DragEvent) => {
+  e.preventDefault()
+}
+
+const handleGlobalDrop = (e: DragEvent) => {
+  e.preventDefault()
+  const droppedFiles = Array.from(e.dataTransfer?.files ?? [])
+  if (droppedFiles.length > 0) {
+    pendingDropFiles.value = droppedFiles
+    if (router.currentRoute.value.path !== '/summary_parse') {
+      router.push('/summary_parse')
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('dragenter', handleGlobalDragEnter)
+  window.addEventListener('dragover', handleGlobalDragOver)
+  window.addEventListener('drop', handleGlobalDrop)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('dragenter', handleGlobalDragEnter)
+  window.removeEventListener('dragover', handleGlobalDragOver)
+  window.removeEventListener('drop', handleGlobalDrop)
 })
 </script>
 

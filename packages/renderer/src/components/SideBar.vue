@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import {
   Box,
   Document,
@@ -11,73 +10,54 @@ import {
   Setting,
 } from '@element-plus/icons-vue'
 
-const router = useRouter()
-const activeIndex = ref('1')
+const route = useRoute()
 
 const menuItems = [
   {
-    index: '1',
     path: '/home',
     label: '首页',
     icon: House,
   },
   {
-    index: '2',
     path: '/schema',
     label: '设置',
     icon: Setting,
   },
   {
-    index: '3',
     path: '/stack',
     label: '堆码计算',
     icon: Box,
   },
-    {
-    index: '4',
+  {
     path: '/logs',
     label: '日志',
     icon: Document,
   },
   {
-    index: '5',
     path: '/summary_parse',
     label: '概要解析',
     icon: MoonNight,
   },
   {
-    index: '6',
     path: '/searchTNotes',
     label: '技术部备注',
     icon: Search,
   },
   {
-    index: '7',
     path: '/clipkeeper',
     label: '剪贴板快照',
     icon: Notebook,
   },
 ]
-
-const handleSelect = (index: string) => {
-  const item = menuItems.find((item) => item.index === index)
-  if (item) {
-    router.push(item.path)
-  }
-}
 </script>
 
 <template>
-  <el-menu
-    :default-active="activeIndex"
-    class="sidebar-menu"
-    @select="handleSelect"
-  >
+  <el-menu :default-active="route.path" router class="sidebar-menu">
     <el-menu-item
       class="sidebar-menu-item"
       v-for="item in menuItems"
-      :key="item.index"
-      :index="item.index"
+      :key="item.path"
+      :index="item.path"
     >
       <el-icon>
         <component :is="item.icon" />

@@ -6,6 +6,7 @@ import { formatFileSize, formatTimestamp, getFileIcon } from '../utils/utils'
 import FileList from './FileList.vue'
 import { FileItem } from '../types'
 import { FileItemStore } from '../stores/fileItem.ts'
+import { pendingDropFiles } from '../utils/globalDrop'
 
 const props = defineProps({
   accept: {
@@ -69,6 +70,14 @@ let colorIndex = 0
 
 watch(files, (newVal: FileItem[]) => {
   fileItemStore[name] = newVal
+})
+
+// 处理从其他页面拖入的文件（全局 drop 未命中拖拽区时暂存于此）
+watch(pendingDropFiles, (newFiles: File[]) => {
+  if (newFiles.length > 0) {
+    processFiles(newFiles)
+    pendingDropFiles.value = []
+  }
 })
 
 // 处理拖拽进入事件
@@ -173,7 +182,6 @@ const handleParseReport = () => {
 const processFiles = (newFiles: File[]) => {
   // 处理文件
   newFiles.forEach((file) => {
-
     // 检查文件大小
     if (file.size > props.maxSize * 1024 * 1024) {
       ElMessage.warning(`文件过大: ${file.name}`)
@@ -252,6 +260,11 @@ onMounted(() => {
     dropzone.addEventListener('dragleave', handleDragLeave)
     dropzone.addEventListener('dragover', handleDragOver)
     dropzone.addEventListener('drop', handleDrop)
+  }
+  // 跳转前已在全局暂存的文件，挂载后直接处理
+  if (pendingDropFiles.value.length > 0) {
+    processFiles(pendingDropFiles.value)
+    pendingDropFiles.value = []
   }
 })
 
