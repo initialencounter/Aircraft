@@ -11,8 +11,8 @@ crate-type = ["cdylib", "rlib"]
 default = []
 
 [dependencies]
-serde = "1.0.228"
-wasm-bindgen = "0.2.105"
+serde = "1.0.229"
+wasm-bindgen = "0.2.127"
 # Optional native dependency; gated behind the "native" feature so it won't build for wasm32-unknown-unknown.
 summary = { path = "../summary", features = ["wasm-support"] }
 pdf_parser = { path = "../pdf_parser", features = ["wasm-support"] }
@@ -20,7 +20,7 @@ aircraft-types = { path = "../types", features = ["wasm-support"] }
 tsify = "0.5.6"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.55"
+wasm-bindgen-test = "0.3.77"
 
 [profile.release]
 # Optimize for small code size.

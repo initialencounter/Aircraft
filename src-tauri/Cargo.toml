@@ -18,16 +18,16 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2.3.0", features = [ "tray-icon"] }
+tauri = { version = "2.11.5", features = [ "tray-icon"] }
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri-plugin-dialog = "2.0.3"
-tauri-plugin-autostart = "2.0.1"
-reqwest = {version = "0.12.8", features = ["blocking", "json", "multipart", "cookies"] }
-tokio = { version = "1.41.0", features = ["full"] }
-chrono = "0.4.38"
-tauri-plugin-store = "2.1.0"
+tauri-plugin-dialog = "2.7.2"
+tauri-plugin-autostart = "2.5.1"
+reqwest = {version = "0.12.28", features = ["blocking", "json", "multipart", "cookies"] }
+tokio = { version = "1.53.1", features = ["full"] }
+chrono = "0.4.45"
+tauri-plugin-store = "2.4.4"
 share = { path = "../share" }
 base64 = "0.22.1"
 summary = { path = "../summary" }
