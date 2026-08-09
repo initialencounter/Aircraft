@@ -10,9 +10,9 @@
           :style="{backgroundColor: 'var(--color-background)'}"
           placeholder="请输入搜索内容"
         />
-        <el-button type="submit" @click="submitQuery">查询</el-button>
+        <el-button native-type="submit" @click="submitQuery">查询</el-button>
         <input type="text" v-model="host" placeholder="服务器IP" :style="{backgroundColor: 'var(--color-background)'}"/>
-        <el-button type="submit" @click="saveHost">保存</el-button>
+        <el-button native-type="submit" @click="saveHost">保存</el-button>
       </div>
     </div>
     <main>
