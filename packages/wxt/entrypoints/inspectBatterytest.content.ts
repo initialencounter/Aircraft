@@ -1,5 +1,5 @@
 import { getQmsg } from "../share/qmsg"
-import { getLocalConfig, setProjectNoToClipText, waitForElement } from "../share/utils"
+import { getClipboardText, getLocalConfig, setProjectNoToClipText, sleep, waitForElement } from "../share/utils"
 import { switchFaviconBySystemId } from "./modules/ui/favicon"
 import '../assets/message.min.css'
 
@@ -168,6 +168,45 @@ async function entrypoint() {
     }
   }
 
+  async function autoFillProjectNo() {
+    const importBtn = await waitForElement('#importBtn0') as HTMLButtonElement | null
+    if (importBtn) {
+      importBtn.addEventListener('click', fillProjectNo)
+    }
+  }
+
+  async function fillProjectNo() {
+    let projectNo = await getClipboardText()
+    projectNo = projectNo.replace(/[^0-9A-Z]/g, '')
+    const qProjectNo = document.getElementById('qProjectNo') as HTMLInputElement
+    const projectNoSpan = document.getElementById('projectNo')
+    const currentProjectNo = projectNoSpan?.innerText
+    if (
+      projectNo.startsWith(systemId) &&
+      projectNo.length === 17 &&
+      currentProjectNo !== projectNo
+    ) {
+      qProjectNo.value = projectNo
+      const searchButton = document.getElementById(
+        'searchBtn'
+      ) as HTMLButtonElement
+      if (searchButton) {
+        await sleep(100)
+        searchButton.click()
+        await sleep(100)
+        const resultRow1 = document.querySelector('#datagrid-row-r6-2-0') as HTMLElement
+        if (resultRow1) {
+          resultRow1.click()
+          resultRow1.addEventListener('dblclick', () => {
+            (document.querySelector("#assignSaveBtn") as HTMLAnchorElement)?.click()
+          })
+        } else {
+          console.log('resultRow1 not found')
+        }
+      }
+    }
+  }
+
   // 启用日期直接编辑
   modifyTestDateInput()
 
@@ -176,5 +215,8 @@ async function entrypoint() {
 
   // 注入拦截器脚本
   injectXHRInterceptor()
+
+  // 自动填充项目编号
+  autoFillProjectNo()
 }
 
