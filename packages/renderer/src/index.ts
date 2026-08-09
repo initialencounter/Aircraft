@@ -17,7 +17,7 @@ import { initTheme } from './utils/theme'
 
 export function apply() {
   initTheme()
-  const i18n = createI18n({})
+  const i18n = createI18n({ legacy: false })
   const app = createApp(App)
 
   app.use(ElementPlus)
