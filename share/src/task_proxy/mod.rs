@@ -4,6 +4,7 @@ use crate::manager::hotkey_manager::HotkeyManager;
 use crate::utils::uploader::FileManager;
 use aircraft_types::logger::LogMessage;
 use http_client::HttpClient;
+use pdf_parser::pdf_ocr::PdfOcrService;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
@@ -33,12 +34,14 @@ pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessa
     hotkey_manager.start();
     let clipboard_snapshot_manager = Arc::new(ClipboardSnapshotManager::new());
     clipboard_snapshot_manager.start();
+    let pdf_ocr_service = PdfOcrService::new().with_lang("chi_sim+eng");
     let server_handle = webhook::apply_webhook(
         config.server.port,
         webhook_client,
         file_manager,
         hotkey_manager,
         clipboard_snapshot_manager,
+        pdf_ocr_service,
     )
     .await;
 

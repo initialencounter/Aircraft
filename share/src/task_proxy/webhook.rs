@@ -20,7 +20,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use pdf_parser::read::read_pdf_u8;
+use pdf_parser::pdf_ocr::PdfOcrService;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt;
@@ -64,6 +64,7 @@ struct AppState {
     file_manager: Arc<FileManager>,
     hotkey_manager: Arc<HotkeyManager>,
     clipboard_snapshot_manager: Arc<ClipboardSnapshotManager>,
+    pdf_ocr_service: PdfOcrService,
 }
 
 pub async fn apply_webhook(
@@ -72,6 +73,7 @@ pub async fn apply_webhook(
     file_manager: Arc<FileManager>,
     hotkey_manager: Arc<HotkeyManager>,
     clipboard_snapshot_manager: Arc<ClipboardSnapshotManager>,
+    pdf_ocr_service: PdfOcrService,
 ) -> JoinHandle<()> {
     let (listener, current_port) = bind_available_port(port).await.unwrap();
 
@@ -88,6 +90,7 @@ pub async fn apply_webhook(
         file_manager,
         hotkey_manager,
         clipboard_snapshot_manager,
+        pdf_ocr_service,
     };
 
     let app = Router::new()
@@ -204,7 +207,7 @@ async fn get_summary_info_handler(mut multipart: Multipart) -> Response {
 }
 
 async fn upload_llm_files_handler(State(state): State<AppState>, multipart: Multipart) -> Response {
-    match handle_upload(multipart, state.file_manager).await {
+    match handle_upload(multipart, state.file_manager, state.pdf_ocr_service).await {
         Ok(json) => Json(json).into_response(),
         Err(e) => {
             eprintln!("LLM Parse error: {:?}", e);
@@ -245,7 +248,7 @@ async fn login_handler(
         Ok(res) => {
             println!("Login success: {:?}", res);
             Json(serde_json::json!(res)).into_response()
-        },
+        }
         Err(e) => Json(CustomError {
             message: format!("登录失败: {}", e),
         })
@@ -314,6 +317,7 @@ impl std::error::Error for UploadError {}
 async fn handle_upload(
     mut multipart: Multipart,
     file_manager: Arc<FileManager>,
+    pdf_ocr_service: PdfOcrService,
 ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let mut file_contents: Vec<String> = vec![];
 
@@ -328,8 +332,8 @@ async fn handle_upload(
             })?;
             let file_data_vec: Vec<u8> = file_data.to_vec();
 
-            let file_content = match read_pdf_u8(&file_data_vec) {
-                Ok(pdf) => pdf.text,
+            let file_content = match pdf_ocr_service.extract_text(&file_data_vec) {
+                Ok(pdf) => pdf,
                 Err(e) => {
                     eprintln!("Error: 读取 pdf Vec<u8> 失败: {:?}", e);
                     return Err("读取 pdf Vec<u8> 失败".into());
@@ -343,9 +347,7 @@ async fn handle_upload(
         }
     }
 
-    let res = file_manager
-        .chat_with_ai(file_contents)
-        .await;
+    let res = file_manager.chat_with_ai(file_contents).await;
 
     match res {
         Ok(json) => Ok(serde_json::json!(json)),

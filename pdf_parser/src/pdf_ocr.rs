@@ -7,6 +7,7 @@ use crate::read::{decrypt_pdf, extract_pdf_text};
 /// 1. 有文本层 → 直接提取
 /// 2. 加密 → 先解密生成未加密副本再提取
 /// 3. 无文本层 → 用 Ghostscript 渲染页面后 tesseract OCR
+#[derive(Debug, Clone)]
 pub struct PdfOcrService {
     /// tesseract 可执行文件, 默认 "tesseract" (需在 PATH 中)
     tesseract_path: String,
@@ -105,8 +106,7 @@ impl PdfOcrService {
             .map(|e| e.path())
             .filter(|p| {
                 p.extension().map(|x| x == "png").unwrap_or(false)
-                    && p
-                        .file_name()
+                    && p.file_name()
                         .and_then(|n| n.to_str())
                         .map(|n| n.starts_with("page_"))
                         .unwrap_or(false)
@@ -165,15 +165,27 @@ pub enum PdfOcrError {
     /// 临时文件读写失败
     Io(std::io::Error),
     /// 无法启动 Ghostscript 进程
-    RenderSpawn { path: String, source: std::io::Error },
+    RenderSpawn {
+        path: String,
+        source: std::io::Error,
+    },
     /// Ghostscript 渲染失败
-    RenderFailed { status: std::process::ExitStatus, stderr: String },
+    RenderFailed {
+        status: std::process::ExitStatus,
+        stderr: String,
+    },
     /// Ghostscript 未渲染出任何页面
     NoPagesRendered,
     /// 无法启动 tesseract 进程
-    TesseractSpawn { path: String, source: std::io::Error },
+    TesseractSpawn {
+        path: String,
+        source: std::io::Error,
+    },
     /// tesseract 执行失败
-    TesseractFailed { status: std::process::ExitStatus, stderr: String },
+    TesseractFailed {
+        status: std::process::ExitStatus,
+        stderr: String,
+    },
 }
 
 impl std::fmt::Display for PdfOcrError {
