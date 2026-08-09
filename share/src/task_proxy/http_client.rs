@@ -220,8 +220,11 @@ impl HttpClient {
                 login_username,
             };
         } else if response_text.contains("欢迎") {
-            self.log("INFO", &format!("登录成功, 用户名: {}", login_username.clone()))
-                .await;
+            self.log(
+                "INFO",
+                &format!("登录成功, 用户名: {}", login_username.clone()),
+            )
+            .await;
             let log_tx = self.log_tx.clone();
             task::spawn(async move {
                 sleep(Duration::from_millis(3600 * 1000 * 24)).await;

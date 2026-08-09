@@ -1,4 +1,6 @@
+pub mod crypt;
 pub mod parse;
+pub mod pdf_ocr;
 pub mod read;
 
 // 从统一的 types 包导入类型

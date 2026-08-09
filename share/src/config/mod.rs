@@ -9,7 +9,7 @@ lazy_static! {
         .unwrap()
         .join("electron.initialencounter.aircraft")
         .join("config.json");
-    
+
     // 配置缓存，使用 Mutex 保证线程安全
     static ref CONFIG_CACHE: Mutex<Option<Config>> = Mutex::new(None);
 }
@@ -24,16 +24,16 @@ impl ConfigManager {
                 return cached_config.clone();
             }
         }
-        
+
         // 缓存中没有，从文件读取
         let config = Self::load_config_from_file();
-        
+
         // 将配置保存到缓存
         {
             let mut cache = CONFIG_CACHE.lock().unwrap();
             *cache = Some(config.clone());
         }
-        
+
         config
     }
 
@@ -43,14 +43,14 @@ impl ConfigManager {
         }
         let content = serde_json::to_string_pretty(config).unwrap();
         std::fs::write(&*CONFIG_PATH, content).unwrap();
-        
+
         // 更新缓存
         {
             let mut cache = CONFIG_CACHE.lock().unwrap();
             *cache = Some(config.clone());
         }
     }
-    
+
     /// 从文件加载配置的私有方法
     fn load_config_from_file() -> Config {
         match std::fs::read_to_string(&*CONFIG_PATH) {

@@ -1,5 +1,6 @@
 // Fork from https://github.com/pdf-rs/pdf/blob/master/pdf/examples/read.rs
 
+use crate::crypt;
 use fax::tiff;
 use pdf::content::Op;
 use pdf::enc::StreamFilter;
@@ -28,6 +29,66 @@ pub fn read_pdf_u8(data: &[u8]) -> Result<PdfReadResult, PdfError> {
             image: None,
         }),
     }
+}
+
+/// 判断 PDF 是否加密 (快速扫描 /Encrypt 标记)
+pub fn is_encrypted(data: &[u8]) -> bool {
+    data.windows(8).any(|w| w == b"/Encrypt")
+}
+
+/// 截断最后一个 %%EOF 之后的尾部垃圾数据。
+/// 部分工具会在 EOF 标记后追加对象且不再更新 xref, 导致 lopdf 等
+/// 严格解析器报 "Invalid cross-reference table" 错误。
+pub fn sanitize_pdf(data: &[u8]) -> &[u8] {
+    let mut last_eof = 0;
+    for (i, w) in data.windows(5).enumerate() {
+        if w == b"%%EOF" {
+            last_eof = i + 5;
+        }
+    }
+    if last_eof > 0 {
+        &data[..last_eof.min(data.len())]
+    } else {
+        data
+    }
+}
+
+/// 破解空密码加密的 PDF, 返回未加密的副本
+/// 使用 lopdf 载入 -> 解密 (RC4/AESV2) -> 重新保存为未加密 PDF
+pub fn decrypt_pdf(data: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    // 未加密的 PDF 无需解密, 直接返回, 避免多余的重新编码
+    if !is_encrypted(data) {
+        return Ok(data.to_vec());
+    }
+    let clean = sanitize_pdf(data);
+    let doc = lopdf::Document::load_mem(clean)?;
+    let mut doc = crypt::decrypt_document(doc, b"")?;
+    let mut out = Vec::new();
+    doc.save_to(&mut out)?;
+    Ok(out)
+}
+
+/// 提取 PDF 文本层:
+/// 1. 直接提取 (pdf-extract 无法处理加密 PDF, 失败或为空时继续)
+/// 2. 若加密, 先解密生成未加密副本再提取
+/// 无文本层时返回空字符串
+pub fn extract_pdf_text(data: &[u8]) -> String {
+    let clean = sanitize_pdf(data);
+    if let Ok(text) = extract_text_from_mem(clean) {
+        if !text.trim().is_empty() {
+            return text;
+        }
+    }
+    if is_encrypted(clean) {
+        if let Ok(decrypted) = decrypt_pdf(clean) {
+            if let Ok(text) = extract_text_from_mem(&decrypted) {
+                if !text.trim().is_empty() {
+                    return text;
+                }
+            }
+        }
+    }
+    String::new()
 }
 
 #[derive(Debug, Clone)]
@@ -201,6 +262,34 @@ pub fn read_pdf_img_bottom_right(data: &[u8]) -> Result<Option<Vec<u8>>, PdfErro
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_extract_pdf_text_encrypted() {
+        // 加密 + 尾部有孤儿对象的畸形 PDF (AGC 运单)
+        let path = r"C:\Users\29115\RustroverProjects\validators\ts\encrypted.pdf";
+        let data = std::fs::read(path).unwrap();
+
+        // 直接提取应失败 (加密 + 畸形 xref)
+        assert!(extract_text_from_mem(&data).is_err());
+
+        // 解密应生成可被 pdf-rs 正常解析的未加密副本
+        let dec = decrypt_pdf(&data).expect("解密失败");
+        assert!(!is_encrypted(&dec));
+        std::fs::write("decrypted.pdf", &dec).expect("写入解密副本失败");
+        let file = pdf::file::FileOptions::cached()
+            .load(&dec[..])
+            .expect("解密副本无法解析");
+        assert!(file.pages().count() >= 1);
+    }
+
+    #[test]
+    fn test_sanitize_pdf_truncates_trailing_garbage() {
+        // 构造 %%EOF 后有垃圾数据的输入
+        let mut data = b"%PDF-1.7\n...\n%%EOF".to_vec();
+        data.extend_from_slice(&[0x41, 0x42, 0x43]); // 尾部垃圾
+        let clean = sanitize_pdf(&data);
+        assert_eq!(clean, b"%PDF-1.7\n...\n%%EOF");
+    }
 
     #[test]
     fn test_read_pdf_sorted() {
