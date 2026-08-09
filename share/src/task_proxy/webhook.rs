@@ -344,7 +344,7 @@ async fn handle_upload(
     }
 
     let res = file_manager
-        .chat_with_ai_fast_and_cheap(file_contents)
+        .chat_with_ai(file_contents)
         .await;
 
     match res {

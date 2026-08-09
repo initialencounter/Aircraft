@@ -1,10 +1,7 @@
 use aircraft_types::config::LLMConfig;
-use aircraft_types::llm::{
-    ChatRequest, ChatResponse, FileUploadResult, Message, PdfDeleteResult, ResponseFormat,
-};
+use aircraft_types::llm::{ChatRequest, ChatResponse, Message, ResponseFormat};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
-use reqwest::multipart::Part;
-use reqwest::{multipart, Client};
+use reqwest::Client;
 use std::error::Error;
 use std::sync::Mutex;
 
@@ -51,158 +48,12 @@ impl FileManager {
         *self.model.lock().unwrap() = config.model;
     }
 
-    async fn upload(&self, file_path: &str) -> Result<String, Box<dyn Error>> {
-        // 异步读取文件内容到字节数组
-        let file_data = tokio::fs::read(file_path).await?;
-
-        // 创建 Part 并设置文件名和 MIME 类型
-        let file_part = Part::bytes(file_data)
-            .file_name(file_path.to_string()) // Convert `file_path` to an owned `String`
-            .mime_str("application/pdf")?;
-        self.upload_part(file_part).await
-    }
-
-    pub async fn upload_u8(
-        &self,
-        filename: String,
-        file_data: Vec<u8>,
-    ) -> Result<String, Box<dyn Error>> {
-        let file_part = reqwest::multipart::Part::bytes(file_data)
-            .file_name(filename) // Convert `file_path` to an owned `String`
-            .mime_str("application/pdf")
-            .unwrap();
-        self.upload_part(file_part).await
-    }
-
-    pub async fn upload_part(&self, file_part: Part) -> Result<String, Box<dyn Error>> {
-        // 创建 multipart 表单
-        let form = multipart::Form::new()
-            .part("file", file_part)
-            .text("purpose", "file-extract"); // 根据需求修改用途参数
-
-        // 发送请求
-        let response = self
-            .client
-            .post(&format!("{}/files", *&self.base_url.lock().unwrap()))
-            .header(
-                AUTHORIZATION,
-                format!("Bearer {}", *&self.api_key.lock().unwrap()),
-            )
-            .multipart(form)
-            .send()
-            .await?;
-
-        // 处理响应
-        if response.status().is_success() {
-            Ok(response.json::<FileUploadResult>().await?.id)
-        } else {
-            Err(format!("上传失败！{}", response.text().await?))?
-        }
-    }
-
-    /// 使用 API 上传文件并获取 OCR 内容
-    pub async fn get_u8_text(
-        &self,
-        filename: String,
-        file_data: Vec<u8>,
-    ) -> Result<String, Box<dyn Error>> {
-        let file_id = self.upload_u8(filename, file_data).await?;
-        let text = self.content(&file_id).await?;
-        self.delete(&file_id).await?;
-        Ok(text)
-    }
-
-    async fn delete(&self, file_id: &str) -> Result<PdfDeleteResult, Box<dyn Error>> {
-        // 发送请求
-        let response = self
-            .client
-            .delete(&format!(
-                "{}/files/{}",
-                *&self.base_url.lock().unwrap(),
-                file_id
-            ))
-            .header(
-                AUTHORIZATION,
-                format!("Bearer {}", *&self.api_key.lock().unwrap()),
-            )
-            .send()
-            .await
-            .unwrap();
-
-        // 处理响应
-        if response.status().is_success() {
-            Ok(response.json::<PdfDeleteResult>().await?)
-        } else {
-            Err(format!("删除失败！{}", response.text().await?))?
-        }
-    }
-    async fn content(&self, file_id: &str) -> Result<String, Box<dyn Error>> {
-        // 发送请求
-        let response = self
-            .client
-            .get(&format!(
-                "{}/files/{}/content",
-                *&self.base_url.lock().unwrap(),
-                file_id
-            ))
-            .header(
-                AUTHORIZATION,
-                format!("Bearer {}", *&self.api_key.lock().unwrap()),
-            )
-            .send()
-            .await
-            .unwrap();
-
-        // 处理响应
-        if response.status().is_success() {
-            Ok(response.text().await?)
-        } else {
-            Err(format!("获取文件内容失败！{}", response.text().await?))?
-        }
-    }
-    pub async fn get_file_content(&self, file_path: &str) -> Result<String, Box<dyn Error>> {
-        let file_id = self.upload(file_path).await?;
-        let result = self.content(&file_id).await?;
-        self.delete(&file_id).await?;
-        Ok(result)
-    }
-
-    pub async fn chat_with_ai(&self, file_list: Vec<String>) -> Result<String, Box<dyn Error>> {
-        let mut file_content: Vec<String> = vec![];
-        for file_path in file_list {
-            let file_id = self.upload(&file_path).await?;
-            let result = self.content(&file_id).await?;
-            self.delete(&file_id).await?;
-            file_content.push(result);
-        }
-        self.chat_with_ai_fast_and_cheap(file_content).await
-    }
-
-    pub async fn chat_with_ai_proxy(
-        &self,
-        file_parts: Vec<Part>,
-    ) -> Result<String, Box<dyn Error>> {
-        let mut file_content: Vec<String> = vec![];
-        for part in file_parts {
-            let file_id = self.upload_part(part).await?;
-            let result = self.content(&file_id).await?;
-            self.delete(&file_id).await?;
-            file_content.push(result);
-        }
-        self.chat_with_ai_fast_and_cheap(file_content).await
-    }
-
-    pub async fn chat_with_ai_fast_and_cheap(
-        &self,
-        file_content: Vec<String>,
-    ) -> Result<String, Box<dyn Error>> {
+    pub async fn chat_with_ai(&self, file_content: Vec<String>) -> Result<String, Box<dyn Error>> {
         // packages/validators/src/shared/types/attachment.ts
-        let mut messages: Vec<Message> = vec![
-            Message {
-                content: PARSE_PROMPT.to_string(),
-                role: "system".to_string(),
-            },
-        ];
+        let mut messages: Vec<Message> = vec![Message {
+            content: PARSE_PROMPT.to_string(),
+            role: "system".to_string(),
+        }];
         for content in file_content {
             messages.push(Message {
                 content,
@@ -258,6 +109,7 @@ impl FileManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pdf_parser::read::read_pdf_u8;
     use tokio::test;
 
     #[test]
@@ -272,11 +124,9 @@ mod tests {
             model: model.to_string(),
         };
         let manage = FileManager::new(config);
-        // let result = manage.upload(file_path).unwrap();
-        // println!("{:?}", result.clone());
-        // println!("{:?}", manage.delete(&result));
-        // manage.get_file_content("cv26m9supvnh8m4rmvh0");
-        let file_list = vec![file_path.to_string()];
+        let file_data_vec: Vec<u8> = std::fs::read(file_path).expect("Failed to read file");
+        let file_content = read_pdf_u8(&file_data_vec).unwrap();
+        let file_list = vec![file_content.text];
         let json = manage.chat_with_ai(file_list).await.unwrap();
         println!("json: {:?}", json);
     }
