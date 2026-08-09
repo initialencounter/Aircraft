@@ -7,10 +7,11 @@
           type="text"
           v-model="queryText"
           :id="type"
+          :style="{backgroundColor: '#313136'}"
           placeholder="请输入搜索内容"
         />
         <el-button type="submit" @click="submitQuery">查询</el-button>
-        <input type="text" v-model="host" placeholder="服务器IP" />
+        <input type="text" v-model="host" placeholder="服务器IP" :style="{backgroundColor: '#313136'}"/>
         <el-button type="submit" @click="saveHost">保存</el-button>
       </div>
     </div>

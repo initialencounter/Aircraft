@@ -7,6 +7,7 @@
       border
       :max-height="800"
       :row-class-name="setRowClass"
+      :header-cell-style="headerCellStyle"
       @cell-click="handleCellClick"
     >
       <el-table-column
@@ -84,6 +85,10 @@ defineProps<{
   tableData: DataModel[]
 }>()
 
+const headerCellStyle = () => {
+  return { backgroundColor: '#111116' }
+}
+
 // 设置行的类名
 const setRowClass = (row: { row: DataModel }) => {
   let systemId = row.row?.projectNo?.slice(0, 3) // 获取系统ID
@@ -150,7 +155,11 @@ const handleCellClick = (
 }
 
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
-  background-color: #151517; /* stripe 斑马条纹的背景颜色 */
+  background-color: #252529 /* stripe 斑马条纹的背景颜色 */
+}
+
+:deep(.el-table--striped .el-table__body tr:not(.el-table__row--striped) td) {
+  background-color: #313136;  /* 设置你想要的浅色背景 */
 }
 
 :deep(.row-green) {

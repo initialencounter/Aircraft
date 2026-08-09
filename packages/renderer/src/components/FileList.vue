@@ -111,6 +111,10 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
   background-color: #252529;
 }
 
+:deep(.el-table__empty-block) {
+  background-color: #252529;
+}
+
 :deep(.el-table th) {
   background-color: #363636;
 }
