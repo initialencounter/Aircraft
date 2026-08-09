@@ -32,8 +32,8 @@ const handleRemoveFile = (index: number) => {
 function rowStyle({ row }: { row: any; rowIndex: number }) {
   if (!row.bgColor) {
     return {
-      backgroundColor: '#252529',
-      color: '#e5eaf3',
+      backgroundColor: 'var(--color-background-soft)',
+      color: 'var(--color-text)',
     }
   }
   return {
@@ -106,20 +106,20 @@ function rowStyle({ row }: { row: any; rowIndex: number }) {
 }
 
 :deep(.el-table) {
-  --el-table-border-color: #484848;
-  --el-table-header-bg-color: #363636;
-  background-color: #252529;
+  --el-table-border-color: var(--color-border);
+  --el-table-header-bg-color: var(--color-background-elevated);
+  background-color: var(--color-background-soft);
 }
 
 :deep(.el-table__empty-block) {
-  background-color: #252529;
+  background-color: var(--color-background-soft);
 }
 
 :deep(.el-table th) {
-  background-color: #363636;
+  background-color: var(--color-background-elevated);
 }
 
 :deep(.el-table--enable-row-hover .el-table__body tr:hover > td) {
-  background-color: #363636;
+  background-color: var(--color-background-elevated);
 }
 </style>

@@ -319,7 +319,7 @@ onMounted(() => {
 .header h1 {
   margin: 0;
   font-size: 20px;
-  color: #b5b5b5;
+  color: var(--color-text-secondary);
 }
 
 .configs-list {
@@ -349,7 +349,7 @@ onMounted(() => {
 .config-name {
   font-size: 16px;
   font-weight: 600;
-  color: #dedede;
+  color: var(--color-text-secondary);
 }
 
 .card-actions {
@@ -363,7 +363,7 @@ onMounted(() => {
 
 .hotkeys-label {
   font-size: 13px;
-  color: #ffffff;
+  color: var(--color-text-strong);
   margin-bottom: 6px;
   font-weight: 500;
 }
@@ -420,14 +420,14 @@ onMounted(() => {
 }
 
 .clipkeeper-button {
-  background-color: #1e1e20;
+  background-color: var(--color-background-deep);
 }
 .clipkeeper-button:hover {
-  background-color: #4f9633;
+  background-color: var(--color-primary-hover);
 }
 
 :deep(.el-card) {
-  background: #363636;
+  background: var(--color-background-elevated);
 }
 
 :deep(.el-tag) {

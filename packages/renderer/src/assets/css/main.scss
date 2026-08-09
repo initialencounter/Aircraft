@@ -12,14 +12,14 @@
 a,
 .green {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
+  color: var(--color-primary);
   transition: 0.4s;
   padding: 3px;
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: var(--color-primary-soft);
   }
 }
 
@@ -38,39 +38,29 @@ a,
 
 @include meta.load-css('element.scss');
 
-:root {
-  --color-text: #ebebe2;
-  --color-background: #313136;
-  --el-menu-bg-color: #101c2e;
-  --el-dialog-bg-color: #000000;
-  --el-border-color-light: #414148;
-  --el-border-color-lighter: #414148;
-  --el-fill-color: #414148;
-  --el-color-primary: #519f1f;
-  .k-schema-item:hover {
-    background-color: #252529;
-  }
+:root .k-schema-item:hover {
+  background-color: var(--color-background-soft);
 }
 
 .el-button {
-  --el-button-border-color: #414148;
-  --el-button-hover-bg-color: #252529;
-  --el-button-hover-border-color: #519f1f;
-  background-color: #313136;
+  --el-button-border-color: var(--color-border-light);
+  --el-button-hover-bg-color: var(--color-background-soft);
+  --el-button-hover-border-color: var(--color-primary);
+  background-color: var(--color-background);
 }
 
 .el-input {
-  --el-input-border-color: rgba(82, 82, 89, 0.8);
-  --el-input-bg-color: #313136;
-  --el-input-hover-border-color: #519f1f;
-  --el-input-hover-bg-color: #252529;
+  --el-input-border-color: var(--color-border);
+  --el-input-bg-color: var(--color-background);
+  --el-input-hover-border-color: var(--color-primary);
+  --el-input-hover-bg-color: var(--color-background-soft);
 }
 
 .el-switch {
-  --el-switch-on-color: #519f1f;
-  --el-switch-off-color: #4c4c4c;
+  --el-switch-on-color: var(--color-primary);
+  --el-switch-off-color: var(--color-text-muted);
 }
 
 .el-popover {
-  --el-popup-bg-color: #000000;
+  --el-popup-bg-color: var(--color-overlay);
 }

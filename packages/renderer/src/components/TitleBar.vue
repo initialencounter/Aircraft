@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { Moon, Sunny } from '@element-plus/icons-vue'
 import { ipcManager } from '../utils/ipcManager.ts'
+import { theme, toggleTheme } from '../utils/theme.ts'
 defineProps<{
   link: string
   avatar: string
@@ -72,6 +74,12 @@ const hideWindow = () => {
         </div>
       </template>
     </el-popover>
+    <div class="titleBar-button" @click="toggleTheme" title="切换深色/浅色主题">
+      <el-icon :size="16">
+        <Moon v-if="theme === 'dark'" />
+        <Sunny v-else />
+      </el-icon>
+    </div>
     <div id="titleBar-minimize" class="titleBar-button" @click="minimizeWindow">
       <svg height="1.5em" viewBox="0 0 24 24" width="1.5em">
         <path d="M20 14H4v-4h16" />
@@ -124,10 +132,15 @@ const hideWindow = () => {
   padding: 10px;
   width: 40px;
   height: 40px;
+  color: var(--color-text-strong);
+}
+
+.titleBar-button svg {
+  fill: currentColor;
 }
 
 .titleBar-button:hover {
-  background-color: #1e1e1e;
+  background-color: var(--color-background-deep);
   cursor: pointer;
 }
 </style>

@@ -42,7 +42,7 @@ onBeforeUnmount(() => {
   height: 100vh;
   overflow-y: auto;
   padding: 12px;
-  background: #1e1e1e;
+  background: var(--color-background-deep);
 }
 
 .log-item {
@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
 }
 
 .log-timestamp {
-  color: #808080;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
@@ -69,21 +69,21 @@ onBeforeUnmount(() => {
 
 .level-info {
   background: rgba(0, 255, 0, 0.1);
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .level-error {
   background: rgba(255, 0, 0, 0.1);
-  color: #f44336;
+  color: var(--color-danger);
 }
 
 .level-warn {
   background: rgba(255, 255, 0, 0.1);
-  color: #ffeb3b;
+  color: var(--color-warning);
 }
 
 .log-message {
-  color: #d0d7de;
+  color: var(--color-text-secondary);
   word-break: break-all;
 }
 </style>

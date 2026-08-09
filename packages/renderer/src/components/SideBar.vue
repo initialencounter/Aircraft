@@ -93,16 +93,16 @@ const handleSelect = (index: string) => {
   left: 0;
   top: 0;
   height: 100vh;
-  background-color: #252529;
+  background-color: var(--color-background-soft);
   z-index: 10;
 }
 
 .sidebar-menu-item {
-  background-color: #252529;
+  background-color: var(--color-background-soft);
 }
 
 .sidebar-menu-item:hover {
-  background-color: #4f9633;
+  background-color: var(--color-primary-hover);
 }
 
 * {

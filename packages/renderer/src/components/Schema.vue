@@ -142,10 +142,10 @@ onMounted(async () => {
   margin-top: 50px; /* 给按钮留出空间 */
 }
 .schema-button {
-  background-color: #1e1e20;
+  background-color: var(--color-background-deep);
 }
 .schema-button:hover {
-  background-color: #4f9633;
+  background-color: var(--color-primary-hover);
 }
 .loading-mask {
   position: absolute; /* 改为绝对定位，相对于.pdf-parse-container */
@@ -166,7 +166,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: white; /* 确保文字在深色背景上可见 */
+  color: var(--color-on-dark); /* 遮罩为深色，文字保持白色 */
 }
 
 .loading-icon {

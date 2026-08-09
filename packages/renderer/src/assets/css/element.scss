@@ -1,18 +1,17 @@
 // https://github.com/koishijs/webui/packages/client/app/styles/element.scss
+// 将 Element Plus 的变量同步到主题变量，使组件随主题切换
 :root {
-  --bg0: #252529;
-  --el-text-color-regular: var(--fg1);
-  --el-text-color-primary: var(--fg2);
-  --el-input-text-color: var(--fg1);
-  --el-border-color: var(--k-color-border);
-  --el-border-color-light: var(--k-color-border-light);
-  --el-border-color-lighter: var(--k-color-divider);
-  --el-border-color-extra-light: var(--k-color-divider-light);
-  --el-border-color-hover: var(--active);
-  --el-color-black: var(--fg1);
-  --el-bg-color: var(--bg0);
-  --el-bg-color-overlay: var(--bg0);
-  --el-disabled-bg-color: var(--card-bg);
-  --el-fill-color: var(--card-bg);
-  --el-fill-color-light: var(--k-hover-bg);
+  --el-text-color-regular: var(--color-text);
+  --el-text-color-primary: var(--color-text-strong);
+  --el-input-text-color: var(--color-text);
+  --el-border-color: var(--color-border);
+  --el-border-color-light: var(--color-border-light);
+  --el-border-color-lighter: var(--color-border-light);
+  --el-border-color-extra-light: var(--color-border-light);
+  --el-border-color-hover: var(--color-primary);
+  --el-bg-color: var(--color-background-soft);
+  --el-bg-color-overlay: var(--color-background-soft);
+  --el-disabled-bg-color: var(--color-background-mute);
+  --el-fill-color: var(--color-background-elevated);
+  --el-fill-color-light: var(--color-background-elevated);
 }

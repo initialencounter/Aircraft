@@ -7,11 +7,11 @@
           type="text"
           v-model="queryText"
           :id="type"
-          :style="{backgroundColor: '#313136'}"
+          :style="{backgroundColor: 'var(--color-background)'}"
           placeholder="请输入搜索内容"
         />
         <el-button type="submit" @click="submitQuery">查询</el-button>
-        <input type="text" v-model="host" placeholder="服务器IP" :style="{backgroundColor: '#313136'}"/>
+        <input type="text" v-model="host" placeholder="服务器IP" :style="{backgroundColor: 'var(--color-background)'}"/>
         <el-button type="submit" @click="saveHost">保存</el-button>
       </div>
     </div>
@@ -101,22 +101,22 @@ onMounted(() => {
 .input-group input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 14px;
   transition: all 0.3s;
 }
 
 .input-group input:focus {
-  border-color: #409eff;
+  border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 0 0 2px var(--color-primary-soft);
 }
 
 button {
   padding: 8px 20px;
-  background-color: #409eff;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-on-dark);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -125,10 +125,10 @@ button {
 }
 
 button:hover {
-  background-color: #66b1ff;
+  background-color: var(--color-primary-hover);
 }
 
 button:active {
-  background-color: #3a8ee6;
+  background-color: var(--color-primary-active);
 }
 </style>

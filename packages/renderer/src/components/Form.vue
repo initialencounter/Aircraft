@@ -86,7 +86,7 @@ defineProps<{
 }>()
 
 const headerCellStyle = () => {
-  return { backgroundColor: '#111116' }
+  return { backgroundColor: 'var(--color-background-deep)' }
 }
 
 // 设置行的类名
@@ -155,27 +155,27 @@ const handleCellClick = (
 }
 
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
-  background-color: #252529 /* stripe 斑马条纹的背景颜色 */
+  background-color: var(--color-background-stripe) /* stripe 斑马条纹的背景颜色 */
 }
 
 :deep(.el-table--striped .el-table__body tr:not(.el-table__row--striped) td) {
-  background-color: #313136;  /* 设置你想要的浅色背景 */
+  background-color: var(--color-background);  /* 设置你想要的浅色背景 */
 }
 
 :deep(.row-green) {
-  color: #51a020 !important;
+  color: var(--color-green) !important;
 }
 
 :deep(.row-blue) {
-  color: #3e8ed0 !important;
+  color: var(--color-blue) !important;
 }
 
 :deep(.row-purple) {
-  color: #8c1af6 !important;
+  color: var(--color-purple) !important;
 }
 
 :deep(.row-red) {
-  color: #ea3323 !important;
+  color: var(--color-red) !important;
 }
 
 /* 优化表格在小屏幕上的显示 */

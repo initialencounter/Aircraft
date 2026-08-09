@@ -326,14 +326,14 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   padding: 30px;
   text-align: center;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--color-background-elevated);
   transition: all 0.3s;
   cursor: pointer;
 }
 
 .file-dropzone:hover {
-  border-color: #409eff;
-  background-color: rgba(64, 158, 255, 0.05);
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-soft);
 }
 
 .is-dragging {
@@ -343,7 +343,7 @@ onBeforeUnmount(() => {
 
 .file-list {
   margin-top: 20px;
-  border: 1px solid #484848;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -353,15 +353,15 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background-color: #363636;
-  border-bottom: 1px solid #484848;
+  background-color: var(--color-background-elevated);
+  border-bottom: 1px solid var(--color-border);
 }
 
 :deep(.el-table th) {
-  background-color: #363636;
+  background-color: var(--color-background-elevated);
 }
 
 :deep(.el-table--enable-row-hover .el-table__body tr:hover > td) {
-  background-color: #363636;
+  background-color: var(--color-background-elevated);
 }
 </style>

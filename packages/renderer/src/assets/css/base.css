@@ -1,53 +1,84 @@
-/* color palette from <https://github.com/vuejs/theme> */
-:root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+/* ===== 主题变量 =====
+ * 通过 <html data-theme="..."> 切换主题。
+ * 默认（无属性）为深色主题，与原有样式保持一致。 */
+:root,
+:root[data-theme='dark'] {
+  /* 背景色 */
+  --color-background: #313136;          /* 页面背景 / 输入框背景 */
+  --color-background-soft: #252529;     /* 侧边栏 / 表格行 / 面板 */
+  --color-background-mute: #2a2a2a;     /* 卡片 */
+  --color-background-elevated: #363636; /* 表头 / 悬停 / 卡片内部 */
+  --color-background-stripe: #252529;   /* 表格斑马条纹 */
+  --color-background-deep: #1e1e1e;     /* 日志面板 / 标题栏悬停 / 按钮 */
 
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
+  /* 文字色 */
+  --color-text: #ebebe2;
+  --color-text-strong: #ffffff;
+  --color-text-secondary: #b4b4b4;
+  --color-text-muted: #808080;
 
-  --vt-c-indigo: #2c3e50;
+  /* 边框色 */
+  --color-border: #484848;
+  --color-border-light: #414148;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+  /* 主题强调色 */
+  --color-primary: #519f1f;
+  --color-primary-hover: #4f9633;
+  --color-primary-active: #3d7a16;
+  --color-primary-soft: rgba(81, 159, 31, 0.15);
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
+  /* 浮层背景 */
+  --color-overlay: #000000;
 
-/* semantic color variables for this project */
-:root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
-
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
-
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
+  /* Element Plus 同步 */
+  --el-menu-bg-color: #101c2e;
+  --el-dialog-bg-color: var(--color-overlay);
+  --el-color-primary: var(--color-primary);
 
   --section-gap: 160px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: var(--vt-c-black);
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
+/* 浅色主题 */
+:root[data-theme='light'] {
+  --color-background: #f5f5f5;
+  --color-background-soft: #ffffff;
+  --color-background-mute: #ffffff;
+  --color-background-elevated: #f0f2f5;
+  --color-background-stripe: #e6e6e6;
+  --color-background-deep: #ffffff;
 
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
+  --color-text: #303133;
+  --color-text-strong: #1f2d3d;
+  --color-text-secondary: #909399;
+  --color-text-muted: #a8abb2;
 
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
-  }
+  --color-border: #dcdfe6;
+  --color-border-light: #e4e7ed;
+
+  --color-primary: #519f1f;
+  --color-primary-hover: #4f9633;
+  --color-primary-active: #3d7a16;
+  --color-primary-soft: rgba(81, 159, 31, 0.15);
+
+  --color-overlay: #ffffff;
+
+  --el-menu-bg-color: #ffffff;
+  --el-dialog-bg-color: var(--color-overlay);
+  --el-color-primary: var(--color-primary);
+}
+
+/* 语义色（不随主题变化，便于统一调整） */
+:root {
+  --color-success: #4caf50;
+  --color-danger: #f44336;
+  --color-warning: #ffeb3b;
+  --color-warning-amber: #ffc107;
+  --color-info: #64b5f6;
+  --color-green: #51a020;
+  --color-blue: #3e8ed0;
+  --color-purple: #8c1af6;
+  --color-red: #ea3323;
+  --color-on-dark: #ffffff; /* 深色浮层 / 主题色按钮上的文字 */
 }
 
 *,

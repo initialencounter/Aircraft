@@ -235,6 +235,6 @@ setInterval(async () => {
 }
 
 :deep(.el-card) {
-  background: #363636;
+  background: var(--color-background-elevated);
 }
 </style>

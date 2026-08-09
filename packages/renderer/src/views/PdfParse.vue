@@ -303,7 +303,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: white; /* 确保文字在深色背景上可见 */
+  color: var(--color-on-dark); /* 遮罩为深色，文字保持白色 */
 }
 
 .loading-icon {

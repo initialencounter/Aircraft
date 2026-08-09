@@ -168,7 +168,7 @@ const formatNumber = (num: number, fixed = 3) => {
 }
 
 .calculator-container {
-  background: #2a2a2a;
+  background: var(--color-background-mute);
   border-radius: 12px;
   padding: 25px;
   width: 100%;
@@ -177,7 +177,7 @@ const formatNumber = (num: number, fixed = 3) => {
 }
 
 .title {
-  color: #fff;
+  color: var(--color-text-strong);
   text-align: center;
   margin-bottom: 30px;
   font-size: 24px;
@@ -197,7 +197,7 @@ const formatNumber = (num: number, fixed = 3) => {
 .input-item label {
   display: block;
   margin-bottom: 10px;
-  color: #b4b4b4;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 
@@ -208,18 +208,18 @@ const formatNumber = (num: number, fixed = 3) => {
 .input-wrapper input {
   width: 100%;
   padding: 12px 40px 12px 12px;
-  border: 2px solid #404040;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
-  background-color: #333;
-  color: #fff;
+  background-color: var(--color-background);
+  color: var(--color-text-strong);
   font-size: 16px;
   transition: all 0.3s ease;
 }
 
 .input-wrapper input:focus {
-  border-color: #666;
+  border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 2px var(--color-primary-soft);
 }
 
 .unit {
@@ -227,7 +227,7 @@ const formatNumber = (num: number, fixed = 3) => {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .results {
@@ -237,18 +237,18 @@ const formatNumber = (num: number, fixed = 3) => {
 
 .result-group {
   flex: 1;
-  background: #333;
+  background: var(--color-background);
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid #404040;
+  border: 1px solid var(--color-border);
 }
 
 .result-group h3 {
-  color: #fff;
+  color: var(--color-text-strong);
   margin-bottom: 16px;
   font-size: 18px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #404040;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .result-row {
@@ -259,7 +259,7 @@ const formatNumber = (num: number, fixed = 3) => {
 }
 
 .label {
-  color: #b4b4b4;
+  color: var(--color-text-secondary);
 }
 
 .result-value {
@@ -268,15 +268,15 @@ const formatNumber = (num: number, fixed = 3) => {
 }
 
 .result-value-layer {
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .result-value-kgf {
-  color: #ffc107;
+  color: var(--color-warning-amber);
 }
 
 .result-value-n {
-  color: #64b5f6;
+  color: var(--color-info);
 }
 
 @media (max-width: 600px) {

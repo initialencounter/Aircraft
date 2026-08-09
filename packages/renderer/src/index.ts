@@ -13,8 +13,10 @@ import App from './App.vue'
 // @ts-ignore
 import './assets/css/main.scss'
 import router from './router'
+import { initTheme } from './utils/theme'
 
 export function apply() {
+  initTheme()
   const i18n = createI18n({})
   const app = createApp(App)
 
