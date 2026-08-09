@@ -23,6 +23,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import { Config, ConfigSchema } from '../schema'
 import { apiManager } from '../utils/api'
 import { ipcManager } from '../utils/ipcManager'
