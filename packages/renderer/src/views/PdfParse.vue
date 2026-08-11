@@ -1,30 +1,17 @@
 <script lang="ts" setup xmlns="">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import summaryTable from '../components/SummaryTable.vue'
-import type { SummaryFromLLM } from '@aircraft/validators'
-import { ElMessage } from 'element-plus'
 import FileDropzone from '../components/FileDropzone.vue'
-import { checkSummaryFromLLM } from '@aircraft/validators'
 import { useSummaryStore } from '../stores/summary'
 import { useLogStore, type LogStore } from '../stores/logs'
-import { SummaryInfo } from 'aircraft-rs'
+import { useParseStore } from '../stores/parse'
 import { Loading } from '@element-plus/icons-vue'
-import { getServerPort } from '../utils/utils'
-import {
-  SummaryFormJSONData2SummaryFromLLM,
-  summaryInfoToSummaryFromLLM,
-} from '../../../wxt/share/convert'
-import { SummaryFormJSONData } from '../../../wxt/share/types'
+import type { SummaryFormJSONData } from '../../../wxt/share/types'
 
-interface ParseReportFiles {
-  pdf: File
-  docx: File
-}
 const summaryStore = useSummaryStore()
+const parseStore = useParseStore()
 
-const loading = ref(false)
+const loading = computed(() => parseStore.loading)
 const labelPosition = ref('result')
 
 // 遮罩上的实时日志
@@ -34,221 +21,36 @@ const maskLogs = computed(() => {
   return [...logStore.logHistory].reverse().slice(0, MASK_LOG_COUNT)
 })
 
-// loading 显示时开始轮询日志，隐藏时停止
-watch(loading, (val) => {
-  if (val) {
-    logStore.startGetLog()
-  } else {
-    logStore.stopGetLog()
-  }
-})
-
-onBeforeUnmount(() => {
-  logStore.stopGetLog()
-})
-const verifyResult = ref<string[]>(summaryStore.result)
-const parseResult = ref<SummaryFromLLM>(summaryStore.pdf)
-const llmResult = ref<SummaryFromLLM>(summaryStore.docx)
-const serverPort = ref(25455)
+// 展示数据直接从 store 派生，解析/切视图都不会丢
+const verifyResult = computed(() => summaryStore.result)
+const parseResult = computed(() => summaryStore.docx)
+const llmResult = computed(() => summaryStore.pdf)
 
 document.oncontextmenu = function () {
   return false
 }
 
-const docxInfo = ref<SummaryFromLLM | null>(null)
-
 const handleFilesChange = (_files: File[]) => {}
 
-const handleFileSelect = async (file: File) => {
+const handleFileSelect = (file: File) => {
   if (file.name.endsWith('.docx') || file.type.includes('word')) {
-    loading.value = true
-    try {
-      const docxFileData = await fileTransfer(file)
-      if (docxFileData) {
-        const docxRes = await getSummaryInfo(docxFileData)
-        if (docxRes) {
-          const summaryInfo = summaryInfoToSummaryFromLLM(docxRes)
-          docxInfo.value = summaryInfo
-          parseResult.value = summaryInfo
-          summaryStore.setDocx(parseResult.value)
-          ElMessage.success('已自动解析概要')
-        }
-      }
-    } catch (e) {
-      console.log(e)
-    } finally {
-      loading.value = false
-    }
+    parseStore.parseDocx(file)
   }
 }
 
 const handleFileRemove = (_file: File) => {}
 
 const handleClipboardSummary = (data: SummaryFormJSONData) => {
-  const summaryInfo: SummaryFromLLM = SummaryFormJSONData2SummaryFromLLM(data)
-  docxInfo.value = summaryInfo
-  parseResult.value = summaryInfo
-  summaryStore.setDocx(summaryInfo)
+  parseStore.setClipboardSummary(data)
 }
 
-const handleParseReport = async (files: ParseReportFiles) => {
-  loading.value = true // 开始处理文件时显示loading
-  try {
-    if (!files.pdf) {
-      ElMessage.error('缺少PDF文件')
-      loading.value = false
-      return
-    }
-    const pdfDataUrl = await fileToBase64(files.pdf)
-    if (!pdfDataUrl) {
-      ElMessage.error('文件解析失败')
-      loading.value = false
-      return
-    }
-
-    const pdfFileData = await fileTransfer(files.pdf)
-    if (!pdfFileData) {
-      ElMessage.error('文件解析失败')
-      loading.value = false
-      return
-    }
-    const pdfRes: SummaryFromLLM | null = JSON.parse(
-      (await getReportInfo(pdfFileData)) ?? '{}'
-    ) as SummaryFromLLM
-
-    if (!pdfRes) {
-      ElMessage.error('文件解析失败')
-      loading.value = false
-      return
-    }
-
-    llmResult.value = pdfRes as SummaryFromLLM
-    summaryStore.setPdf(llmResult.value)
-
-    if (!docxInfo.value || !parseResult.value) {
-      ElMessage.error('没有概要信息，请先拖入docx或读取剪贴板')
-      loading.value = false
-      return
-    }
-
-    let result = checkSummaryFromLLM(pdfRes, docxInfo.value)
-    verifyResult.value = result.map((item) => item.result)
-    summaryStore.setResult(verifyResult.value)
-  } catch (e) {
-    console.log(e)
-    ElMessage.error('解析失败' + e)
-  } finally {
-    loading.value = false // 无论成功或失败都关闭loading
-  }
+const handleParseReport = (files: { pdf?: File; docx?: File }) => {
+  parseStore.parseReport(files)
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onload = () => {
-      const base64String = reader.result as string
-      resolve(base64String)
-    }
-
-    reader.onerror = (error) => {
-      reject(error)
-    }
-
-    reader.readAsDataURL(file)
-  })
+const closeMask = () => {
+  parseStore.loading = false
 }
-
-interface FileData {
-  name: string
-  type: string
-  data: number[]
-}
-
-async function fileTransfer(file: File): Promise<FileData | null> {
-  return new Promise<FileData | null>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const arrayBuffer = reader.result
-      const uint8Array = new Uint8Array(arrayBuffer as ArrayBuffer)
-      resolve({
-        name: file.name,
-        type: file.type,
-        data: Array.from(uint8Array),
-      })
-    }
-    reader.onerror = (error) => {
-      reject(error)
-    }
-    reader.readAsArrayBuffer(file)
-  })
-}
-
-async function getSummaryInfo(file: FileData) {
-  try {
-    const formData = new FormData()
-    const uint8Array = new Uint8Array(file.data)
-    const blob = new Blob([uint8Array], { type: file.type })
-    formData.append('file', blob, file.name)
-
-    const response = await fetch(
-      `http://127.0.0.1:${serverPort.value}/get-summary-info`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('getSummaryInfo HTTP 错误:', errorText)
-      throw new Error(
-        `HTTP error! status: ${response.status}, body: ${errorText}`
-      )
-    }
-    const data = await response.json()
-    return data as SummaryInfo
-  } catch (error) {
-    console.error('获取docx概要信息失败:', error)
-    ElMessage.error('获取docx概要信息失败: ' + error)
-    return null
-  }
-}
-
-async function getReportInfo(file: FileData) {
-  try {
-    const formData = new FormData()
-    const uint8Array = new Uint8Array(file.data)
-    const blob = new Blob([uint8Array], { type: file.type })
-    formData.append('file', blob, file.name)
-
-    const response = await fetch(
-      `http://127.0.0.1:${serverPort.value}/upload-llm-files`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('getReportInfo HTTP 错误:', errorText)
-      throw new Error(
-        `HTTP error! status: ${response.status}, body: ${errorText}`
-      )
-    }
-    const data = await response.json()
-    return data as string
-  } catch (error) {
-    console.error('获取PDF报告信息失败:', error)
-    ElMessage.error('获取PDF报告信息失败: ' + error)
-    return null
-  }
-}
-
-onMounted(async () => {
-  serverPort.value = await getServerPort()
-})
 </script>
 
 <template>
@@ -289,7 +91,7 @@ onMounted(async () => {
     ></summaryTable>
 
     <!-- 添加遮罩层 - 现在相对于容器定位 -->
-    <div class="loading-mask" v-if="loading" @dblclick="loading = false">
+    <div class="loading-mask" v-if="loading" @dblclick="closeMask">
       <div class="loading-content">
         <el-icon class="loading-icon"><Loading /></el-icon>
         <span>正在解析文件，请稍候...<br />双击关闭遮罩</span>
