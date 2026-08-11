@@ -1,6 +1,6 @@
 //! PDF 加密破解:
 //! - RC4 (V=1/2, R=2/3) 由 lopdf 的 Document::decrypt 处理
-//! - AESV2 (V=4, R=4, AES-128-CBC) 在此手动实现 (lopdf 0.34 不支持 AES)
+//! - V4/R4 (AES-128-CBC 或 RC4, 由 /CF 的 CFM 决定) 在此手动实现 (lopdf 0.34 不支持 AES)
 
 use aes::Aes128;
 use cbc::Decryptor;
@@ -17,6 +17,20 @@ const PAD: [u8; 32] = [
 
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 
+/// 移除加密标记: 常规在 trailer, 少数工具还会把 /Encrypt 写进 Catalog。
+/// 加密字典对象本身也一并从对象表移除, 避免重新序列化时残留。
+fn remove_encrypt(doc: &mut Document, encrypt_ref: ObjectId) {
+    doc.trailer.remove(b"Encrypt");
+    if let Ok(root_ref) = doc.trailer.get(b"Root").and_then(Object::as_reference) {
+        if let Ok(root) = doc.get_object_mut(root_ref) {
+            if let Ok(dict) = root.as_dict_mut() {
+                dict.remove(b"Encrypt");
+            }
+        }
+    }
+    doc.objects.remove(&encrypt_ref);
+}
+
 /// 破解加密的 PDF, 返回未加密的 Document
 pub fn decrypt_document(doc: Document, password: &[u8]) -> Result<Document> {
     let mut doc = doc;
@@ -32,20 +46,21 @@ pub fn decrypt_document(doc: Document, password: &[u8]) -> Result<Document> {
     // lopdf 支持 RC4: V=1/2, R=2/3
     if (1..=2).contains(&v) && (2..=3).contains(&r) {
         doc.decrypt(password)?;
-        doc.trailer.remove(b"Encrypt");
+        remove_encrypt(&mut doc, encrypt_ref);
         return Ok(doc);
     }
 
-    // AESV2: V=4, R=4, AES-128-CBC
+    // V4/R4: AES-128-CBC 或 RC4 (由 /CF 的 CFM 决定)
     if v == 4 && r == 4 {
-        return decrypt_aesv2(doc, &encrypt, encrypt_ref, password);
+        return decrypt_v4(doc, &encrypt, encrypt_ref, password);
     }
 
     Err(format!("不支持的加密方案 V={v} R={r}").into())
 }
 
-/// AESV2 (Algorithm 2 密钥推导 + Algorithm 1 逐对象解密)
-fn decrypt_aesv2(
+/// V4/R4 加密 (Algorithm 2 密钥推导 + Algorithm 1 逐对象解密)
+/// 实际算法由 /CF 字典里的 CFM 决定: AESV2 → AES-128-CBC, V2 → RC4 (与 qpdf 一致)
+fn decrypt_v4(
     mut doc: Document,
     encrypt: &lopdf::Dictionary,
     encrypt_ref: ObjectId,
@@ -105,6 +120,12 @@ fn decrypt_aesv2(
         }
     };
 
+    // 解析 StrF / StmF 实际使用的加密方法 (CFM: V2=RC4, AESV2=AES)
+    let str_filter = encrypt.get(b"StrF").ok().and_then(|o| o.as_name().ok());
+    let stm_filter = encrypt.get(b"StmF").ok().and_then(|o| o.as_name().ok());
+    let str_method = crypt_method(encrypt, str_filter);
+    let stm_method = crypt_method(encrypt, stm_filter);
+
     // Algorithm 1: 逐对象解密 (跳过加密字典, EncryptMetadata=false 时跳过 Metadata)
     let encrypt_metadata = encrypt
         .get(b"EncryptMetadata")
@@ -118,18 +139,47 @@ fn decrypt_aesv2(
         if obj.type_name().unwrap_or("") == "Metadata" && !encrypt_metadata {
             continue;
         }
-        // b) 对象密钥 = MD5(file_key + 对象号(3 LE) + 代次号(2 LE) + "sAlT")
+        // b) 对象密钥 = MD5(file_key + 对象号(3 LE) + 代次号(2 LE) [+ "sAlT" 仅 AES])
+        //    AES 与 RC4 推导不同, 一并预计算。
         //    字典/数组内的内联字符串用所属对象的密钥, 一并递归解密
-        let obj_key = object_key(&key, id);
-        decrypt_object(obj, &obj_key)?;
+        let aes_key = object_key(&key, id);
+        let rc4_key = object_key_rc4(&key, id);
+        decrypt_object(obj, &aes_key, &rc4_key, str_method, stm_method)?;
     }
 
     // 移除加密字典, 输出未加密文档
-    doc.trailer.remove(b"Encrypt");
+    remove_encrypt(&mut doc, encrypt_ref);
     Ok(doc)
 }
 
-/// 对象密钥 = MD5(file_key + 对象号(3 LE) + 代次号(2 LE) + "sAlT")
+/// V4/R4 下各对象的加密算法
+#[derive(Clone, Copy)]
+enum Method {
+    /// AES-128-CBC (对象密钥带 "sAlT" 盐)
+    Aes128,
+    /// RC4 (对象密钥无盐, 长度保持)
+    Rc4,
+}
+
+/// 解析加密字典中 StrF/StmF 指向的 crypt filter 的加密方法。
+/// CFM: V2 → RC4, AESV2/AESV3 → AES-128。未知或缺省按 AES (与 qpdf 的回退一致)。
+fn crypt_method(encrypt: &lopdf::Dictionary, filter: Option<&[u8]>) -> Method {
+    let cfm = encrypt
+        .get(b"CF")
+        .ok()
+        .and_then(|cf| cf.as_dict().ok())
+        .and_then(|cf| filter.and_then(|name| cf.get(name).ok()))
+        .and_then(|f| f.as_dict().ok())
+        .and_then(|f| f.get(b"CFM").ok())
+        .and_then(|m| m.as_name().ok());
+    match cfm {
+        Some(b"V2") => Method::Rc4,
+        Some(b"AESV2") | Some(b"AESV3") => Method::Aes128,
+        _ => Method::Aes128,
+    }
+}
+
+/// 对象密钥 (AES) = MD5(file_key + 对象号(3 LE) + 代次号(2 LE) + "sAlT")
 fn object_key(file_key: &[u8], id: ObjectId) -> [u8; 16] {
     let mut key_data = Vec::with_capacity(16 + 9);
     key_data.extend_from_slice(file_key);
@@ -139,20 +189,40 @@ fn object_key(file_key: &[u8], id: ObjectId) -> [u8; 16] {
     md5::compute(&key_data).0
 }
 
+/// 对象密钥 (RC4) = MD5(file_key + 对象号(3 LE) + 代次号(2 LE)), 无 sAlT
+fn object_key_rc4(file_key: &[u8], id: ObjectId) -> [u8; 16] {
+    let mut key_data = Vec::with_capacity(16 + 5);
+    key_data.extend_from_slice(file_key);
+    key_data.extend_from_slice(&id.0.to_le_bytes()[..3]);
+    key_data.extend_from_slice(&id.1.to_le_bytes()[..2]);
+    md5::compute(&key_data).0
+}
+
 /// 递归解密对象内的字符串与流内容 (Algorithm 1)
-fn decrypt_object(obj: &mut Object, obj_key: &[u8; 16]) -> Result<()> {
+/// 字符串按 StrF、流按 StmF 的加密方法分别处理 (AES 或 RC4)
+fn decrypt_object(
+    obj: &mut Object,
+    aes_key: &[u8; 16],
+    rc4_key: &[u8; 16],
+    str_method: Method,
+    stm_method: Method,
+) -> Result<()> {
     match obj {
-        Object::String(content, _) => {
-            *content = aes128_decrypt(obj_key, content)?;
-        }
+        Object::String(content, _) => match str_method {
+            Method::Aes128 => *content = aes128_decrypt(aes_key, content)?,
+            Method::Rc4 => rc4(rc4_key, content),
+        },
         Object::Stream(stream) => {
-            stream.content = aes128_decrypt(obj_key, &stream.content)?;
-            decrypt_dict(&mut stream.dict, obj_key)?;
+            match stm_method {
+                Method::Aes128 => stream.content = aes128_decrypt(aes_key, &stream.content)?,
+                Method::Rc4 => rc4(rc4_key, &mut stream.content),
+            }
+            decrypt_dict(&mut stream.dict, aes_key, rc4_key, str_method, stm_method)?;
         }
-        Object::Dictionary(dict) => decrypt_dict(dict, obj_key)?,
+        Object::Dictionary(dict) => decrypt_dict(dict, aes_key, rc4_key, str_method, stm_method)?,
         Object::Array(arr) => {
             for v in arr.iter_mut() {
-                decrypt_object(v, obj_key)?;
+                decrypt_object(v, aes_key, rc4_key, str_method, stm_method)?;
             }
         }
         _ => {}
@@ -161,9 +231,15 @@ fn decrypt_object(obj: &mut Object, obj_key: &[u8; 16]) -> Result<()> {
 }
 
 /// 解密字典中的内联字符串
-fn decrypt_dict(dict: &mut lopdf::Dictionary, obj_key: &[u8; 16]) -> Result<()> {
+fn decrypt_dict(
+    dict: &mut lopdf::Dictionary,
+    aes_key: &[u8; 16],
+    rc4_key: &[u8; 16],
+    str_method: Method,
+    stm_method: Method,
+) -> Result<()> {
     for (_, v) in dict.iter_mut() {
-        decrypt_object(v, obj_key)?;
+        decrypt_object(v, aes_key, rc4_key, str_method, stm_method)?;
     }
     Ok(())
 }
@@ -223,6 +299,20 @@ fn rc4(key: &[u8], data: &mut [u8]) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_decrypt_skip_text_rc4_v2() {
+        // V4/R4 但 CFM=/V2 实际用 RC4 加密 (AES 路径会报 "数据长度非法", 需按 RC4 解密)
+        let path = r"C:\Users\29115\RustroverProjects\validators\ts\skip-text.pdf";
+        let data = std::fs::read(path).unwrap();
+
+        let dec = crate::read::decrypt_pdf(&data).expect("解密失败");
+        assert!(!crate::read::is_encrypted(&dec));
+        let file = pdf::file::FileOptions::cached()
+            .load(&dec[..])
+            .expect("解密副本无法解析");
+        assert!(file.pages().count() >= 1);
+    }
 
     #[test]
     fn test_rc4_known_vector() {

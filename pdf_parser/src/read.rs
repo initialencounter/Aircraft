@@ -68,8 +68,6 @@ pub fn decrypt_pdf(data: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error + S
     Ok(out)
 }
 
-
-
 #[derive(Debug, Clone)]
 pub struct ImageWithPosition {
     pub data: Vec<u8>,
