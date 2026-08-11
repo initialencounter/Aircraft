@@ -1,13 +1,14 @@
 <script lang="ts" setup xmlns="">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import { onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import summaryTable from '../components/SummaryTable.vue'
 import type { SummaryFromLLM } from '@aircraft/validators'
 import { ElMessage } from 'element-plus'
 import FileDropzone from '../components/FileDropzone.vue'
 import { checkSummaryFromLLM } from '@aircraft/validators'
 import { useSummaryStore } from '../stores/summary'
+import { useLogStore, type LogStore } from '../stores/logs'
 import { SummaryInfo } from 'aircraft-rs'
 import { Loading } from '@element-plus/icons-vue'
 import { getServerPort } from '../utils/utils'
@@ -25,6 +26,26 @@ const summaryStore = useSummaryStore()
 
 const loading = ref(false)
 const labelPosition = ref('result')
+
+// 遮罩上的实时日志
+const logStore: LogStore = useLogStore()
+const MASK_LOG_COUNT = 30 // 遮罩上最多显示的日志条数
+const maskLogs = computed(() => {
+  return [...logStore.logHistory].reverse().slice(0, MASK_LOG_COUNT)
+})
+
+// loading 显示时开始轮询日志，隐藏时停止
+watch(loading, (val) => {
+  if (val) {
+    logStore.startGetLog()
+  } else {
+    logStore.stopGetLog()
+  }
+})
+
+onBeforeUnmount(() => {
+  logStore.stopGetLog()
+})
 const verifyResult = ref<string[]>(summaryStore.result)
 const parseResult = ref<SummaryFromLLM>(summaryStore.pdf)
 const llmResult = ref<SummaryFromLLM>(summaryStore.docx)
@@ -273,6 +294,18 @@ onMounted(async () => {
         <el-icon class="loading-icon"><Loading /></el-icon>
         <span>正在解析文件，请稍候...<br />双击关闭遮罩</span>
       </div>
+      <!-- 实时日志，30% 透明度 -->
+      <div class="loading-log">
+        <div
+          v-for="(item, index) in maskLogs"
+          :key="index"
+          class="loading-log-item"
+        >
+          <span class="log-timestamp">[{{ item.timeStamp }}]</span>
+          <span class="log-level">{{ item.level }}</span>
+          <span class="log-message">{{ item.message }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -310,6 +343,42 @@ onMounted(async () => {
   font-size: 24px;
   margin-bottom: 10px;
   animation: rotate 1.5s linear infinite;
+}
+
+.loading-log {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-height: 60%;
+  overflow-y: auto;
+  opacity: 0.3; /* 30% 透明度 */
+  padding: 10px 20px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--color-on-dark);
+  display: flex;
+  flex-direction: column; /* 最新日志在最上方 */
+}
+
+.loading-log-item {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+
+.log-timestamp {
+  color: var(--color-text-muted);
+}
+
+.log-level {
+  font-weight: bold;
+}
+
+.log-message {
+  word-break: break-all;
+  white-space: normal;
 }
 
 @keyframes rotate {
