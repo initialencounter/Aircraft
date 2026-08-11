@@ -31,14 +31,10 @@ const emit = defineEmits([
   'files-change',
   'file-select',
   'file-remove',
-  'parse-report',
+  'parse-pdf',
+  'compare-report',
   'clipboard-summary',
 ])
-
-interface ParseReportFiles {
-  pdf?: File
-  docx?: File
-}
 const name = 'summary'
 const fileItemStore = FileItemStore()
 const files = ref<FileItem[]>(fileItemStore[name] ?? [])
@@ -154,28 +150,21 @@ const handleClearFiles = () => {
   ElMessage.success('已清空所有文件')
 }
 
-// 处理文件任务
-const handleParseReport = () => {
-  if (files.value.length === 0) {
-    ElMessage.warning('请先选择文件')
+// 只解析 PDF（耗时操作），可预先完成，无需等待 docx
+const handleParsePdf = () => {
+  const pdfFile = files.value.find(
+    (file) => file.file.type === 'application/pdf'
+  )
+  if (!pdfFile) {
+    ElMessage.warning('请先添加PDF文件')
     return
   }
-  if (files.value.length > 2) {
-    ElMessage.warning('只能选择两个文件进行比较')
-    return
-  }
-  const parseReportFiles: ParseReportFiles = {
-    pdf: undefined,
-    docx: undefined,
-  }
-  for (const file of files.value) {
-    if (file.file.type === 'application/pdf') {
-      parseReportFiles.pdf = file.file
-    } else {
-      parseReportFiles.docx = file.file
-    }
-  }
-  emit('parse-report', parseReportFiles)
+  emit('parse-pdf', pdfFile.file)
+}
+
+// 只做对比（需要已解析的 PDF 和概要）
+const handleCompareReport = () => {
+  emit('compare-report')
 }
 
 // 处理文件处理逻辑
@@ -308,8 +297,11 @@ onBeforeUnmount(() => {
           <el-button size="small" type="danger" @click="handleSelectFiles"
             >手动选择文件
           </el-button>
-          <el-button size="small" type="danger" @click="handleParseReport"
-            >比较UN报告与概要
+          <el-button size="small" type="danger" @click="handleParsePdf"
+            >解析PDF
+          </el-button>
+          <el-button size="small" type="danger" @click="handleCompareReport"
+            >对比
           </el-button>
           <el-button size="small" type="danger" @click="handleClearFiles"
             >清空所有文件

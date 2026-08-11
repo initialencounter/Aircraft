@@ -44,8 +44,12 @@ const handleClipboardSummary = (data: SummaryFormJSONData) => {
   parseStore.setClipboardSummary(data)
 }
 
-const handleParseReport = (files: { pdf?: File; docx?: File }) => {
-  parseStore.parseReport(files)
+const handleParsePdf = (file: File) => {
+  parseStore.parsePdf(file)
+}
+
+const handleCompareReport = () => {
+  parseStore.compareReport()
 }
 
 const closeMask = () => {
@@ -67,7 +71,8 @@ const closeMask = () => {
       @files-change="handleFilesChange"
       @file-select="handleFileSelect"
       @file-remove="handleFileRemove"
-      @parse-report="handleParseReport"
+      @parse-pdf="handleParsePdf"
+      @compare-report="handleCompareReport"
       @clipboard-summary="handleClipboardSummary"
     />
     <el-radio-group v-model="labelPosition">
