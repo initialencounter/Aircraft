@@ -64,8 +64,6 @@ impl Logger {
 
         std::thread::spawn(move || {
             while let Ok(log) = receiver.recv() {
-                let now = Local::now();
-                let time_stamp = now.format("%Y-%m-%d %H:%M:%S").to_string();
                 let colored_level = match log.level.to_uppercase().as_str() {
                     "ERROR" => log.level.red().bold(),
                     "WARN" => log.level.yellow().bold(),
@@ -74,7 +72,7 @@ impl Logger {
                     _ => log.level.normal(),
                 };
 
-                let log_entry = format!("[{}] {} - {}\n", time_stamp, log.level, log.message);
+                let log_entry = format!("[{}] {} - {}\n", log.time_stamp, log.level, log.message);
 
                 if enabled_clone {
                     if let Ok(mut file) = file_clone.lock() {
@@ -84,7 +82,7 @@ impl Logger {
 
                 let colored_log = format!(
                     "[{}] {} - {}",
-                    time_stamp.bright_black(),
+                    log.time_stamp.bright_black(),
                     colored_level,
                     log.message
                 );
@@ -96,7 +94,7 @@ impl Logger {
 
                 if let Ok(mut temp_logs) = temp_logs_clone.lock() {
                     temp_logs.push(LogMessage {
-                        time_stamp,
+                        time_stamp: log.time_stamp,
                         level: log.level,
                         message: log.message,
                     });
