@@ -209,12 +209,21 @@ fn decrypt_object(
 ) -> Result<()> {
     match obj {
         Object::String(content, _) => match str_method {
-            Method::Aes128 => *content = aes128_decrypt(aes_key, content)?,
+            Method::Aes128 => match aes128_decrypt(aes_key, content) {
+                Ok(d) => *content = d,
+                // 部分生产者写入未加密或非块对齐的字符串 (如签名 /Reference 的
+                // /DigestValue), 与 qpdf 的容错行为一致: 保留原值, 不中止
+                Err(e) => eprintln!("警告: 字符串 AES 解密失败, 保留原值 ({e})"),
+            },
             Method::Rc4 => rc4(rc4_key, content),
         },
         Object::Stream(stream) => {
             match stm_method {
-                Method::Aes128 => stream.content = aes128_decrypt(aes_key, &stream.content)?,
+                // set_content 同步更新 /Length: AES 解密会去掉 IV 和填充, 长度变短
+                Method::Aes128 => {
+                    let plain = aes128_decrypt(aes_key, &stream.content)?;
+                    stream.set_content(plain);
+                }
                 Method::Rc4 => rc4(rc4_key, &mut stream.content),
             }
             decrypt_dict(&mut stream.dict, aes_key, rc4_key, str_method, stm_method)?;
@@ -238,7 +247,13 @@ fn decrypt_dict(
     str_method: Method,
     stm_method: Method,
 ) -> Result<()> {
-    for (_, v) in dict.iter_mut() {
+    // 签名字典 (含 /ByteRange) 的 /Contents 是 CMS 签名值, 签署时以明文写入,
+    // 不参与加密 (Acrobat/iText 如此, qpdf 解密时也跳过)
+    let is_sig = dict.has(b"ByteRange");
+    for (k, v) in dict.iter_mut() {
+        if is_sig && k.as_slice() == b"Contents" {
+            continue;
+        }
         decrypt_object(v, aes_key, rc4_key, str_method, stm_method)?;
     }
     Ok(())
@@ -304,6 +319,21 @@ mod tests {
     fn test_decrypt_skip_text_rc4_v2() {
         // V4/R4 但 CFM=/V2 实际用 RC4 加密 (AES 路径会报 "数据长度非法", 需按 RC4 解密)
         let path = r"C:\Users\29115\RustroverProjects\validators\ts\skip-text.pdf";
+        let data = std::fs::read(path).unwrap();
+
+        let dec = crate::read::decrypt_pdf(&data).expect("解密失败");
+        assert!(!crate::read::is_encrypted(&dec));
+        let file = pdf::file::FileOptions::cached()
+            .load(&dec[..])
+            .expect("解密副本无法解析");
+        assert!(file.pages().count() >= 1);
+    }
+
+    #[test]
+    fn test_decrypt_signed_aesv2() {
+        // iText 增量签署的 AESV2 加密 PDF: 签名字典 /Contents 为明文,
+        // /DigestValue 长度非块对齐, 均不应导致解密中止
+        let path = r"C:\Users\29115\RustroverProjects\validators\ts\edit.pdf";
         let data = std::fs::read(path).unwrap();
 
         let dec = crate::read::decrypt_pdf(&data).expect("解密失败");

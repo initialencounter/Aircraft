@@ -63,6 +63,9 @@ pub fn decrypt_pdf(data: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error + S
     let clean = sanitize_pdf(data);
     let doc = lopdf::Document::load_mem(clean)?;
     let mut doc = crypt::decrypt_document(doc, b"")?;
+    // 解密后整体重写, 历史修订指针随之失效, 移除避免严格解析器 (pdf-rs) 循址报错
+    doc.trailer.remove(b"Prev");
+    doc.trailer.remove(b"XRefStm");
     let mut out = Vec::new();
     doc.save_to(&mut out)?;
     Ok(out)
