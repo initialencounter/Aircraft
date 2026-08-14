@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc::Sender;
 
+use std::os::windows::process::CommandExt;
+
 use aircraft_types::logger::LogMessage;
 use pdf_extract::extract_text_from_mem;
 
@@ -116,6 +118,7 @@ impl PdfOcrService {
         // 1. Ghostscript 渲染 PDF 每页为灰度 PNG (page_1.png, page_2.png, ...)
         let output_pattern = dir.join("page_%d.png");
         let gs = Command::new(&self.gs_path)
+            .creation_flags(0x08000000) // CREATE_NO_WINDOW: 不弹出终端窗口
             .args(["-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", "-sDEVICE=pnggray"])
             .arg(format!("-r{}", self.dpi))
             .arg(format!("-sOutputFile={}", output_pattern.display()))
@@ -165,6 +168,7 @@ impl PdfOcrService {
                 &format!("OCR 提取中 {}/{}", parts.len() + 1, total_pages),
             );
             let mut cmd = Command::new(&self.tesseract_path);
+            cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW: 不弹出终端窗口
             cmd.arg(&png).arg("stdout");
             if let Some(lang) = &self.lang {
                 cmd.arg("-l").arg(lang);
