@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  assigneeDiff: boolean
   paymentCompanyInfo: string
   enablePPOCR: boolean
   showCalculationProcess: boolean
@@ -144,6 +145,9 @@ export const Config: Schema<Config> = Schema.intersect([
 
   // 样品检验-主界面 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Schema.object({
+    assigneeDiff: Schema.boolean()
+      .description('启用委托方对比 (在检验单查看委托书, 相同的委托方和厂家会高亮显示)')
+      .default(true),
     showCalculationProcess: Schema.boolean()
       .description('显示净重计算过程（在每包装件的净重输入框右侧显示一个文本框，显示净重的计算过程）')
       .default(true),

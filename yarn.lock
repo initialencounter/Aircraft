@@ -5148,6 +5148,7 @@ __metadata:
     "@vueuse/core": "npm:^13.9.0"
     "@wxt-dev/module-vue": "npm:^1.0.3"
     aircraft-rs: "workspace:*"
+    diff: "npm:^9.0.0"
     element-plus: "npm:^2.14.3"
     markdown-vue: "npm:^1.0.3"
     npm-run-all2: "npm:^7.0.2"
@@ -7021,6 +7022,13 @@ __metadata:
   version: 5.2.2
   resolution: "diff@npm:5.2.2"
   checksum: 10c0/52da594c54e9033423da26984b1449ae6accd782d5afc4431c9a192a8507ddc83120fe8f925d7220b9da5b5963c7b6f5e46add3660a00cb36df7a13420a09d4b
+  languageName: node
+  linkType: hard
+
+"diff@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "diff@npm:9.0.0"
+  checksum: 10c0/a971cc88f66071a33bd3942db2f51b57d484e9856265ae45cf44fb28ab2fde91f132d9c26d8be0fb6082d2be94d29e1295c1adb251b7461935d6a2dd304cd161
   languageName: node
   linkType: hard
 
