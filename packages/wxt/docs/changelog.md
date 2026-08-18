@@ -1,5 +1,10 @@
 # 更新日志
 
+
+## [v3.7.8] - 2026-08-18
+
+- `查看我委托书`页面, 相同d委托方和制造商高亮显示([9bb010f](https://github.com/initialencounter/Aircraft/commit/9bb010f))
+
 ## [v3.7.7] - 2026-07-14
 
 ### 新增
