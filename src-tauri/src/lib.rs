@@ -1,5 +1,6 @@
 mod apply;
 mod command;
+mod drop_zone;
 mod handle;
 mod menu;
 mod utils;
