@@ -719,6 +719,8 @@ async function runPPOcrPipeline(
     detInput.canvas,
     options.detThreshold ?? DET_THRESHOLD,
   );
+  detTensor.dispose();
+  detOutput.dispose();
   const recInput = prepareRecognitionBatch(detBoxes, runtime.recImageHeight);
   const recTensor = new runtime.Tensor('float32', recInput.data, [detBoxes.length, 3, recInput.imgH, recInput.imgW]);
   const recFeeds = { [runtime.recSession.inputNames[0]]: recTensor };
@@ -726,6 +728,8 @@ async function runPPOcrPipeline(
   const recOutputName = runtime.recSession.outputNames[0];
   const recOutput = recResults[recOutputName];
   const decodedLines = decodeRecognition(recOutput, runtime.dictionary);
+  recTensor.dispose();
+  recOutput.dispose();
 
   return {
     imageData,

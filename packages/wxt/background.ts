@@ -639,7 +639,7 @@ async function entrypoint() {
         return null
       }
       const result = await response.json()
-      console.log('searchAttachment result:', result)
+      console.log('searchAttachment result count:', result.results?.length)
       return result
     } catch (error) {
       console.error('搜索异常', error)

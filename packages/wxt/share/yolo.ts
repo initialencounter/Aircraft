@@ -118,7 +118,7 @@ export async function predict_yolo26(
     const feeds = { images: inputTensor };
 
     const res = await session.run(feeds);
-    return process_yolo26_output(
+    const result = process_yolo26_output(
       enablePPOCR,
       res['output0']['data'],
       res['output1']['data'],
@@ -126,6 +126,11 @@ export async function predict_yolo26(
       originalHeight,
       confidenceThreshold,
     );
+    // 释放 tensor，避免 WASM 堆内存泄漏
+    inputTensor.dispose();
+    res['output0'].dispose();
+    res['output1'].dispose();
+    return result;
   } catch (error) {
     console.error('predict error:', error);
     return [];
