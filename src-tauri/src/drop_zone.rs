@@ -5,11 +5,11 @@ use tauri::{
 };
 
 /// 小窗尺寸（物理像素）。
-const SMALL: u32 = 110;
+const SMALL: u32 = 160;
 /// 放大后的尺寸（物理像素）。
-const LARGE: u32 = 200;
+const LARGE: u32 = 250;
 /// 窗口距屏幕工作区右/下边距（物理像素）。
-const MARGIN: i32 = 20;
+const MARGIN: i32 = 40;
 
 /// 用 Tauri WebviewWindow 实现的拖拽承接窗口控制器。
 /// 窗口惰性创建一次并复用，避免每次拖拽都重建 WebView2（约 300ms 延迟）。
