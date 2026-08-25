@@ -7,7 +7,7 @@ use http_client::HttpClient;
 use pdf_parser::pdf_ocr::PdfOcrService;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Sender;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tokio::sync::watch;
 pub mod http_client;
 pub mod webhook;
@@ -16,6 +16,14 @@ pub use http_client::LOGIN_STATUS;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
+/// 全局共享的 HttpClient 句柄：供热键、拖拽等进程内触发点直接调用上传逻辑，
+/// 避免经 loopback HTTP 自调。服务器重启时替换为新实例。
+static CLIENT: RwLock<Option<Arc<HttpClient>>> = RwLock::new(None);
+
+pub fn get_http_client() -> Option<Arc<HttpClient>> {
+    CLIENT.read().unwrap().clone()
+}
+
 pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessage>) -> Result<()> {
     let config = ConfigManager::get_config();
     let client = Arc::new(HttpClient::new(
@@ -23,6 +31,7 @@ pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessa
         log_tx.clone(),
         popup_message,
     ));
+    *CLIENT.write().unwrap() = Some(client.clone());
     client.log("INFO", "开始运行").await;
 
     let webhook_client = client.clone();
@@ -30,6 +39,7 @@ pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessa
     let hotkey_manager = Arc::new(HotkeyManager::new(
         crate::config::ConfigManager::get_config().hotkey,
         log_tx.clone(),
+        client.clone(),
     ));
     hotkey_manager.start();
     let clipboard_snapshot_manager = Arc::new(ClipboardSnapshotManager::new());

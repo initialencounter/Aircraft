@@ -418,7 +418,6 @@ impl HttpClient {
     }
 
     pub async fn post_file_from_file_list(&self, file_list: Vec<String>) -> Vec<String> {
-        println!("上传热键触发，文件列表3: {:?}", file_list.clone());
         let raw_file_info = match_file_list(file_list);
         self.post_raw_file(raw_file_info).await
     }

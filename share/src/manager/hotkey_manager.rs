@@ -1,9 +1,9 @@
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Sender;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use crate::hotkey_handler::copy2::copy2_callback;
-use crate::hotkey_handler::upload::upload_file;
+use crate::task_proxy::http_client::HttpClient;
 use crate::{config::ConfigManager, hotkey_handler::copy::copy_file_to_here};
 use aircraft_types::config::HotkeyConfig;
 use aircraft_types::logger::LogMessage;
@@ -12,6 +12,7 @@ use flextrek::{listen, listen_path, listen_selected_files, HotkeyHandle};
 
 pub struct HotkeyManager {
     is_running: AtomicBool,
+    client: Arc<HttpClient>,
     copy_handle: Mutex<Option<HotkeyHandle>>,
     upload_handle: Mutex<Option<HotkeyHandle>>,
     pub search_handle: Mutex<Option<HotkeyHandle>>,
@@ -22,9 +23,10 @@ pub struct HotkeyManager {
 }
 
 impl HotkeyManager {
-    pub fn new(config: HotkeyConfig, log_tx: Sender<LogMessage>) -> Self {
+    pub fn new(config: HotkeyConfig, log_tx: Sender<LogMessage>, client: Arc<HttpClient>) -> Self {
         Self {
             is_running: AtomicBool::new(true),
+            client,
             copy_handle: Mutex::new(None),
             upload_handle: Mutex::new(None),
             config: Mutex::new(config),
@@ -88,10 +90,15 @@ impl HotkeyManager {
 
         // 注册文件上传热键
         if config.upload_enable {
+            let client = self.client.clone();
             *self.upload_handle.lock().unwrap() = Some(listen_selected_files(
                 config.upload_key,
-                |paths| async move {
-                    upload_file(paths.to_vec()).await;
+                move |paths| {
+                    let client = client.clone();
+                    async move {
+                        // 进程内直调，不走 loopback HTTP，paths 直接 move 零拷贝
+                        let _ = client.post_file_from_file_list(paths).await;
+                    }
                 },
             ));
         }
