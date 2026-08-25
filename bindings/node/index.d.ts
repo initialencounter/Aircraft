@@ -6,9 +6,17 @@ export declare class AircraftRs {
   tryGetLogs(): Array<LogMessage>
 }
 
+export interface DropInputState {
+  lbutton: boolean
+  escape: boolean
+}
+
 export declare function getConfig(): Config
 
 export declare function getDefaultConfig(): Config
+
+/** 供 JS 拖拽会话循环轮询的按键状态：左键是否按下、ESC 是否按下。 */
+export declare function getDropInputState(): DropInputState
 
 export declare function getLoginStatus(): boolean
 
@@ -16,7 +24,22 @@ export declare function getServerPort(): number
 
 export declare function openLocalDir(target: string): void
 
+/**
+ * 拖拽确认后进程内直调上传（与上传热键同一条路径），避免 loopback HTTP 自调。
+ * 内部含原生确认对话框，跑在 napi 的 tokio runtime 上，不阻塞主进程。
+ */
+export declare function postFileFromFileList(files: Array<string>): Promise<Array<string>>
+
 export declare function saveConfig(config: Config): void
+
+/**
+ * 注册全局 Explorer 文件拖拽监听：拖拽开始时把文件路径列表回调给 JS（Electron 主进程）。
+ * 回调经 ThreadsafeFunction 投递，可在 flextrek 的阻塞线程池线程上安全调用。
+ */
+export declare function startDropListener(callback: (arg?: unknown) => unknown): void
+
+/** 卸载全局拖拽监听。 */
+export declare function stopDropListener(): void
 export interface AttachmentInfo {
   summary: SummaryInfo
   goods: GoodsInfo
@@ -233,7 +256,6 @@ export interface SegmentResult {
   label: string
   confidence: number
   mask: Array<Array<number>>
-  polygon: Array<Array<number>>
 }
 
 export interface ServerConfig {

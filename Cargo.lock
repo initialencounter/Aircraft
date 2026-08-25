@@ -70,12 +70,14 @@ name = "aircraft-rs"
 version = "0.0.0"
 dependencies = [
  "aircraft-types",
+ "flextrek",
  "napi",
  "napi-build",
  "napi-derive",
  "pdf_parser",
  "share",
  "summary",
+ "windows 0.62.2",
 ]
 
 [[package]]

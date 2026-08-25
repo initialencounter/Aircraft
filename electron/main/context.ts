@@ -8,6 +8,7 @@ import { Window } from './service/win'
 import { Ipc } from './service/ipc'
 import { RustBindings } from './service/bindings'
 import { LoggerService } from './service/logger'
+import { DropTarget } from './service/dropTarget'
 import { Launch } from './plugins/launch'
 
 const context = new Context()
@@ -19,5 +20,6 @@ context.plugin(Tray)
 context.plugin(WindowManager)
 context.plugin(Ipc)
 context.plugin(LoggerService)
+context.plugin(DropTarget)
 context.plugin(Launch)
 export { context }

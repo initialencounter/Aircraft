@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    />
+    <title>拖放目标</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+      .drop-zone {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: default;
+      }
+      .drop-card {
+        width: 84%;
+        height: 84%;
+        border-radius: 24px;
+        background: rgba(81, 159, 31, 0.35);
+        border: 2px dashed rgba(81, 159, 31, 0.9);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .plus {
+        font-size: 11vmin;
+        font-weight: 300;
+        color: #cfe8c0;
+        line-height: 1;
+      }
+      .label {
+        font-size: 6vmin;
+        color: #fff;
+        white-space: nowrap;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drop-zone">
+      <div class="drop-card">
+        <div class="plus">+</div>
+        <div class="label">文件拖拽到这, 即可上传</div>
+      </div>
+    </div>
+    <script>
+      // 本窗口仅作视觉承接指示，放落确认由主进程轮询光标判定；
+      // 阻止 dragover/drop 避免 Chromium 把窗口当作放落目标触发导航/下载。
+      document.addEventListener('dragover', (e) => e.preventDefault())
+      document.addEventListener('drop', (e) => e.preventDefault())
+    </script>
+  </body>
+</html>
