@@ -32,7 +32,9 @@ fn remove_encrypt(doc: &mut Document, encrypt_ref: ObjectId) {
 }
 
 /// 破解加密的 PDF, 返回未加密的 Document
-pub fn decrypt_document(doc: Document, password: &[u8]) -> Result<Document> {
+/// `file_data` 为加载前的原始字节 (lopdf 加载加密 ObjStm 时可能已破坏其内容,
+/// 需回读原始字节恢复, 见 [`recover_objstm`])
+pub fn decrypt_document(doc: Document, password: &[u8], file_data: &[u8]) -> Result<Document> {
     let mut doc = doc;
     let encrypt_ref = match doc.trailer.get(b"Encrypt").and_then(|o| o.as_reference()) {
         Ok(r) => r,
@@ -52,7 +54,7 @@ pub fn decrypt_document(doc: Document, password: &[u8]) -> Result<Document> {
 
     // V4/R4: AES-128-CBC 或 RC4 (由 /CF 的 CFM 决定)
     if v == 4 && r == 4 {
-        return decrypt_v4(doc, &encrypt, encrypt_ref, password);
+        return decrypt_v4(doc, &encrypt, encrypt_ref, password, file_data);
     }
 
     Err(format!("不支持的加密方案 V={v} R={r}").into())
@@ -65,6 +67,7 @@ fn decrypt_v4(
     encrypt: &lopdf::Dictionary,
     encrypt_ref: ObjectId,
     password: &[u8],
+    file_data: &[u8],
 ) -> Result<Document> {
     const KEY_LEN: usize = 16;
 
@@ -132,11 +135,31 @@ fn decrypt_v4(
         .and_then(Object::as_bool)
         .unwrap_or(true);
 
+    // 加密的 ObjStm 流在 lopdf 加载时已被解压失败并清空内容, 内部的压缩对象
+    // 随之丢失 (如本文件的 /Pages)。解密时从原始字节回读密文, 解密后解包注入。
+    // 先克隆 xref 表, 避免与对象的可变借用冲突。
+    let reference_table = doc.reference_table.clone();
+    let mut recovered: Vec<(ObjectId, Object)> = Vec::new();
+
     for (&id, obj) in doc.objects.iter_mut() {
         if id == encrypt_ref {
             continue;
         }
         if obj.type_name().unwrap_or("") == "Metadata" && !encrypt_metadata {
+            continue;
+        }
+        if obj.type_name().unwrap_or("") == "ObjStm" {
+            // 加密 ObjStm 流在 lopdf 加载时被清空内容, 才需要回读恢复;
+            // 明文/已解包的 ObjStm (内容完好) 保持原样即可。流本身不参与常规解密。
+            if let Object::Stream(s) = obj {
+                if s.content.is_empty() {
+                    if let Some(objs) =
+                        recover_objstm(file_data, &reference_table, id, &key, stm_method)?
+                    {
+                        recovered.extend(objs);
+                    }
+                }
+            }
             continue;
         }
         // b) 对象密钥 = MD5(file_key + 对象号(3 LE) + 代次号(2 LE) [+ "sAlT" 仅 AES])
@@ -147,9 +170,54 @@ fn decrypt_v4(
         decrypt_object(obj, &aes_key, &rc4_key, str_method, stm_method)?;
     }
 
+    // 解包出的对象同样按各自的对象密钥加密, 解密后再写入对象表
+    for (oid, mut obj) in recovered {
+        let aes_key = object_key(&key, oid);
+        let rc4_key = object_key_rc4(&key, oid);
+        decrypt_object(&mut obj, &aes_key, &rc4_key, str_method, stm_method)?;
+        doc.objects.entry(oid).or_insert(obj);
+    }
+
     // 移除加密字典, 输出未加密文档
     remove_encrypt(&mut doc, encrypt_ref);
     Ok(doc)
+}
+
+/// 回读被 lopdf 破坏的加密 ObjStm 流并解包出内部对象。
+/// lopdf 加载时对加密的 ObjStm 流解压 (FlateDecode) 失败且吞掉错误, 内容被清空,
+/// 内部压缩对象 (如 /Pages) 随之丢失。这里用原始字节 + 已加载的 xref 表重新读取
+/// 密文, 按 StmF 解密后由 [`lopdf::ObjectStream`] 解包。
+fn recover_objstm(
+    file_data: &[u8],
+    xref: &lopdf::xref::Xref,
+    obj_id: ObjectId,
+    key: &[u8; 16],
+    stm_method: Method,
+) -> Result<Option<Vec<(ObjectId, Object)>>> {
+    let mut rd_doc = Document::new();
+    rd_doc.reference_table = xref.clone();
+    let reader = lopdf::Reader {
+        buffer: file_data,
+        document: rd_doc,
+    };
+    let raw = reader
+        .get_object(obj_id, &mut std::collections::HashSet::new())
+        .map_err(|e| format!("读取 ObjStm {}.{} 失败: {e}", obj_id.0, obj_id.1))?;
+    let lopdf::Object::Stream(raw_stream) = raw else {
+        return Ok(None);
+    };
+    let plain = match stm_method {
+        Method::Aes128 => aes128_decrypt(&object_key(key, obj_id), &raw_stream.content)?,
+        Method::Rc4 => {
+            let mut c = raw_stream.content.clone();
+            rc4(&object_key_rc4(key, obj_id), &mut c);
+            c
+        }
+    };
+    // ObjectStream::new 内部对解密后的明文 Flate 数据解压并解析 index 块
+    let obj_stream = lopdf::ObjectStream::new(&mut lopdf::Stream::new(raw_stream.dict, plain))
+        .map_err(|e| format!("解包 ObjStm {}.{} 失败: {e}", obj_id.0, obj_id.1))?;
+    Ok(Some(obj_stream.objects.into_iter().collect()))
 }
 
 /// V4/R4 下各对象的加密算法
@@ -218,6 +286,16 @@ fn decrypt_object(
             Method::Rc4 => rc4(rc4_key, content),
         },
         Object::Stream(stream) => {
+            // 结构对象不参与加密 (PDF 32000-1 §7.5.8 / §7.6.1), 整体跳过:
+            // - /Type /XRef 交叉引用流
+            // - 流字典显式引用加密字典 (/Encrypt) 的未加密流
+            // 空流 (如 lopdf 对加密 ObjStm 解压失败后 content 置空) 无内容可解
+            if stream.dict.type_is(b"XRef")
+                || stream.dict.has(b"Encrypt")
+                || stream.content.is_empty()
+            {
+                return Ok(());
+            }
             match stm_method {
                 // set_content 同步更新 /Length: AES 解密会去掉 IV 和填充, 长度变短
                 Method::Aes128 => {
