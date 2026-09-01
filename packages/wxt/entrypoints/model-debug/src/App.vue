@@ -317,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, shallowRef } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadFile, UploadFiles } from 'element-plus'
@@ -396,16 +396,16 @@ const LABEL_RGB_MAP: Record<string, [number, number, number]> = {
 const goodsIs965 = ref(false)
 const goodsLoading = ref(false)
 const goodsFileName = ref('')
-const goodsBytes = ref<number[] | null>(null)
+const goodsBytes = shallowRef<number[] | null>(null)
 const goodsResult = ref<GoodsInfoResult | null>(null)
 
 const summaryLoading = ref(false)
 const summaryFileName = ref('')
-const summaryBytes = ref<number[] | null>(null)
+const summaryBytes = shallowRef<number[] | null>(null)
 const summaryResult = ref<SummaryInfoResult | null>(null)
 
 const imageFileName = ref('')
-const imageBytes = ref<number[] | null>(null)
+const imageBytes = shallowRef<number[] | null>(null)
 const imagePreviewUrl = ref('')
 const yoloCanvasRef = ref<HTMLCanvasElement | null>(null)
 const ppocrCanvasRef = ref<HTMLCanvasElement | null>(null)
