@@ -27,14 +27,18 @@ async function entrypoint() {
   chrome.storage.local.get(['assigneeDiff'], async (localConfig) => {
     if (localConfig.assigneeDiff !== false) {
       console.log("assigneeDiff is running")
-      setupDiff()
+      await setupDiff()
     }else {
       console.log("assigneeDiff not running")
     }
   })
 
 
-  function setupDiff() {
+  async function setupDiff() {
+    const titleElement = await waitForElement("#page1 > table > tbody > tr:nth-child(5) > td:nth-child(2) > span") as HTMLSpanElement
+    if (!titleElement || !titleElement.innerHTML?.includes("运 输 危 险 性 鉴 别 委 托 书")) {
+      return
+    }
     const assignee = getCompany(ASSIGNEE_SELECTOR[0], ASSIGNEE_SELECTOR[1])
     const manufacturer = getCompany(MANUFACTURER_SELECTOR[0], MANUFACTURER_SELECTOR[1])
 
