@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "diff": "^9.0.0",
-    "onnxruntime-web": "^1.29.0-dev.20260723-1b1e1db7bc"
+    "onnxruntime-web": "1.29.0"
   },
   "devDependencies": {
     "@aircraft/validators": "workspace:*",
