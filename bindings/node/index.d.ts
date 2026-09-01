@@ -256,6 +256,7 @@ export interface SegmentResult {
   label: string
   confidence: number
   mask: Array<Array<number>>
+  polygon: Array<Array<number>>
 }
 
 export interface ServerConfig {
