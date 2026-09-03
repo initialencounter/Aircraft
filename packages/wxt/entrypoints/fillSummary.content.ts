@@ -8,6 +8,7 @@ import { ID_COLOR_MAP } from '../share/colorMap'
 import { SummaryFormJSONData } from '../share/types'
 import { ID_MANUAL_MAP } from '../share/manualMap'
 import { summaryInfoToForm } from '../share/convert'
+import { ConsoleLogger } from './modules/utils/logger'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -28,6 +29,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[FillSummary Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const Qmsg = getQmsg()
   injectJQueryInterceptor()
   const body = await waitForElement("body > div.panel.easyui-fluid > div.easyui-panel.panel-body") as HTMLDivElement | null
@@ -74,7 +81,7 @@ async function entrypoint() {
           } else {
             const summaryInfo = response as SummaryInfo
             const formData = summaryInfoToForm(summaryInfo)
-            console.log({
+            logger.log({
               summaryInfo,
               formData,
             })
@@ -236,14 +243,14 @@ async function entrypoint() {
       script.remove();
     };
     script.onerror = (e) => {
-      console.error('[JQuery Hook] Failed to load interceptor script:', e);
+      logger.error('[JQuery Hook] Failed to load interceptor script:', e);
     };
 
     try {
       const target = document.head || document.documentElement || document;
       target.appendChild(script);
     } catch (e) {
-      console.error('[JQuery Hook] Failed to inject script:', e);
+      logger.error('[JQuery Hook] Failed to inject script:', e);
     }
   }
 

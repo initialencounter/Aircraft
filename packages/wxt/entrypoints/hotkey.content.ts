@@ -14,6 +14,7 @@ import { warmUp } from './modules/utils/api'
 import { getCurrentProjectNo } from './modules/utils/helpers'
 import { switchFaviconBySystemId } from './modules/ui/favicon'
 import { insertCalculationText, updateCalculationText } from './modules/ui/calculation'
+import { ConsoleLogger } from './modules/utils/logger'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -30,7 +31,14 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  console.log('快捷键脚本运行中...')
+  const logger = new ConsoleLogger({
+    prefix: '[Hotkey Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    style: 'color: #f0883e; font-weight: 700;',
+    level: 'trace',
+  });
+  logger.log('快捷键脚本运行中...')
   const fromQuery =
     new URLSearchParams(window.location.search).get('from') === 'query'
   let changed = false
@@ -46,8 +54,9 @@ async function entrypoint() {
   const Qmsg = getQmsg()
   let changedTarget: (HTMLInputElement | HTMLTextAreaElement)[] = []
   await waitForElement('#projectNo', 10000)
+  await sleep(300)
   const projectNo = getCurrentProjectNo()
-
+  logger.log('当前项目编号:', projectNo)
   // 创建计算过程文本元素
   if (localConfig.showCalculationProcess) {
     insertCalculationText(systemId)
@@ -188,7 +197,7 @@ async function entrypoint() {
       button.click()
       Qmsg.success('保存成功', { timeout: 500 })
     } else {
-      console.log('Button not found')
+      logger.log('Button not found')
       Qmsg.error('保存失败')
     }
   }
@@ -198,7 +207,7 @@ async function entrypoint() {
     if (button) {
       button.click()
     } else {
-      console.log('Button not found')
+      logger.log('Button not found')
     }
   }
 
@@ -207,7 +216,7 @@ async function entrypoint() {
       'itemCName'
     ) as HTMLInputElement
     const projectName = projectNameSpan.value
-    console.log(projectName)
+    logger.log(projectName)
     navigator.clipboard.writeText(projectName)
     Qmsg.success('已复制项目名称', { timeout: 500 })
   }
@@ -291,7 +300,7 @@ async function entrypoint() {
   }
 
   async function importClassification() {
-    console.log('导入分类脚本运行中...')
+    logger.log('导入分类脚本运行中...')
     const importBtn = await waitForElement('#importBtn0') as HTMLButtonElement | null
     if (importBtn) {
       importBtn.addEventListener('click', classification)
@@ -331,10 +340,10 @@ async function entrypoint() {
             (document.querySelector("#assignSaveBtn") as HTMLAnchorElement)?.click()
           })
         } else {
-          console.log('resultRow1 not found')
+          logger.log('resultRow1 not found')
         }
       } else {
-        console.log('searchButton not found')
+        logger.log('searchButton not found')
       }
       return
     }
@@ -420,7 +429,7 @@ async function entrypoint() {
     }
     let UnNo = ''
     const isLiIonBattery = isLiIon(projectName)
-    console.log('isLiIonBattery:', isLiIonBattery)
+    logger.log('isLiIonBattery:', isLiIonBattery)
     if (isLiIonBattery) {
       UnNo = '3481'
     }

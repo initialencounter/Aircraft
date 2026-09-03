@@ -4,6 +4,7 @@ import '../assets/message.min.css'
 import type { EntrustFormData } from './modules/amount/types'
 import { startListenAmount } from './modules/amount'
 import { getFormData } from './modules/amount'
+import { ConsoleLogger } from './modules/utils/logger'
 
 interface Task {
   assignee: string
@@ -51,16 +52,22 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[EntrustMain Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   let assignRunning = false
   let globalAssignUser = ''
   let globalCheckAssignUser = true
   const Qmsg = getQmsg()
   const localConfig = await getLocalConfig()
   if (localConfig.enableSetEntrust === false) {
-    console.log('未启用设置委托单，退出脚本')
+    logger.log('未启用设置委托单，退出脚本')
     return
   }
-  console.log('委托单脚本运行中...')
+  logger.log('委托单脚本运行中...')
   createMask()
   setMoonPay()
   setCategory()
@@ -75,7 +82,7 @@ async function entrypoint() {
       const assignUser = data.assignUser as string
       globalAssignUser = assignUser
       globalCheckAssignUser = data.checkAssignUser === false ? false : true
-      console.log('保存并分配脚本运行中...', data)
+      logger.log('保存并分配脚本运行中...', data)
       if (!(data.saveAndAssign === false))
         await insertSaveAndAssignButton(assignUser)
     }
@@ -120,7 +127,7 @@ async function entrypoint() {
       const callback = function (mutationsList: MutationRecord[]) {
         for (const mutation of mutationsList) {
           if (mutation.type === 'childList') {
-            console.log('A child node has been added or removed.')
+            logger.log('A child node has been added or removed.')
             setTagNextYear()
             setMoonPay()
           }
@@ -195,7 +202,7 @@ async function entrypoint() {
       `
     assignButton.onclick = saveAndAssign
     parentElement.appendChild(assignButton)
-    console.log('保存并分配按钮插入成功')
+    logger.log('保存并分配按钮插入成功')
   }
 
   function getEntrustFormData(): EntrustFormData | undefined {
@@ -286,7 +293,7 @@ async function entrypoint() {
       }
       await okAssignTask(id, selectUid)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
     } finally {
       assignRunning = false
       hideMask()
@@ -310,12 +317,12 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('assign task failed1')
+      logger.error('assign task failed1')
       return
     }
     const result = await response.json()
     const id = result['id']
-    console.log('saveFormData: ', id)
+    logger.log('saveFormData: ', id)
     return id
   }
 
@@ -324,16 +331,16 @@ async function entrypoint() {
       const res = confirm('确定主检员是正确的吗？')
       if (!res) return
     }
-    console.log('okAssignTask:', id)
+    logger.log('okAssignTask:', id)
     const receiveIds = await ReceiveSubmit([id], 'receive')
     if (!receiveIds.length) return
-    console.log('receiveIds:', receiveIds)
+    logger.log('receiveIds:', receiveIds)
     const submitIds = await ReceiveSubmit(receiveIds, 'submit')
     if (!submitIds.length) return
-    console.log('submitIds:', submitIds)
+    logger.log('submitIds:', submitIds)
     const taskIds = await getTaskIds(submitIds)
     if (!taskIds) return
-    console.log('taskIds:', taskIds)
+    logger.log('taskIds:', taskIds)
     await assignTask(taskIds, uid)
   }
 
@@ -355,7 +362,7 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('receive failed')
+      logger.error('receive failed')
       return []
     }
     const data = await response.json()
@@ -377,7 +384,7 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('get task ids failed')
+      logger.error('get task ids failed')
       return []
     }
     const data = await response.json()
@@ -410,14 +417,14 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('assign task failed1')
+      logger.error('assign task failed1')
       return
     }
     const result = await response.json()
     if (result['result'] === 'success') {
       Qmsg['success']('分配成功')
     } else {
-      console.error('assign task failed2')
+      logger.error('assign task failed2')
       Qmsg['error']('分配失败')
     }
   }

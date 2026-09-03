@@ -18,6 +18,7 @@ import {
 // 验证相关
 import { verifyFormData } from './modules/verify/data'
 import { warmUp } from './modules/utils/api'
+import { ConsoleLogger } from './modules/utils/logger'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -29,7 +30,12 @@ export default defineContentScript({
   ],
   allFrames: true,
   async main() {
-
+    const logger = new ConsoleLogger({
+      prefix: '[Verify Entrypoint]',
+      showTimestamp: true,
+      enabled: true,
+      level: 'trace',
+    });
     // 读取本地配置
     const localConfig = await getLocalConfig()
     await waitForElement('#projectNo')
@@ -46,7 +52,7 @@ export default defineContentScript({
     // 如果不是电池类别或未启用验证，则退出
     if (!['battery', 'sodium'].includes(category)) return
     if (!localConfig.verify) {
-      console.log('未启用验证，退出脚本')
+      logger.log('未启用验证，退出脚本')
       return
     }
 
@@ -97,7 +103,7 @@ export default defineContentScript({
           localConfig
         )
       } catch (e) {
-        console.error('验证处理出错:', e)
+        logger.error('验证处理出错:', e)
         // 检查是否是扩展上下文失效错误
         if (e instanceof Error && e.message.includes('扩展已更新或重新加载')) {
           Qmsg.error('扩展已更新，请刷新页面后重试', { timeout: 5000 })

@@ -1,3 +1,5 @@
+import { ConsoleLogger } from "./modules/utils/logger";
+
 export default defineContentScript({
   runAt: 'document_start',
   matches: [
@@ -34,39 +36,46 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[EasyUIHook Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
+  function injectEasyUIInterceptor() {
+    // 检查是否已经注入过
+    if ((window as any).__easyui_intercepted) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('easyui-interceptor.js');
+    script.onload = () => {
+      (window as any).__easyui_intercepted = true;
+      script.remove();
+    };
+    script.onerror = (e) => {
+      logger.error('[EasyUI Hook] Failed to load interceptor script:', e);
+    };
+
+    try {
+      const target = document.head || document.documentElement || document;
+      target.appendChild(script);
+    } catch (e) {
+      logger.error('[EasyUI Hook] Failed to inject script:', e);
+    }
+  }
+
   try {
     chrome.storage.local.get(['hundredRowsResult'], (localConfig) => {
       if (localConfig?.hundredRowsResult === false) {
-        console.log('[EasyUI] hundredRowsResult is disabled, skipping injection.');
+        logger.log('[EasyUI] hundredRowsResult is disabled, skipping injection.');
         return;
       }
       injectEasyUIInterceptor(); // 注入EasyUI拦截器
     })
   } catch (error) {
-    console.error('[EasyUI] Error in entrypoint:', error);
+    logger.error('[EasyUI] Error in entrypoint:', error);
   }
 }
 
-function injectEasyUIInterceptor() {
-  // 检查是否已经注入过
-  if ((window as any).__easyui_intercepted) {
-    return;
-  }
-
-  const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('easyui-interceptor.js');
-  script.onload = () => {
-    (window as any).__easyui_intercepted = true;
-    script.remove();
-  };
-  script.onerror = (e) => {
-    console.error('[EasyUI Hook] Failed to load interceptor script:', e);
-  };
-
-  try {
-    const target = document.head || document.documentElement || document;
-    target.appendChild(script);
-  } catch (e) {
-    console.error('[EasyUI Hook] Failed to inject script:', e);
-  }
-}

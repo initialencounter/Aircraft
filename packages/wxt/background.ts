@@ -12,6 +12,7 @@ import {
 import { predict_yolo26, type YoloPredictOptions } from './share/yolo';
 import type * as Aircraft from './public/aircraft';
 import init, * as AircraftWasm from './public/aircraft.js';
+import { ConsoleLogger } from './entrypoints/modules/utils/logger';
 
 
 interface SearchResult {
@@ -44,6 +45,13 @@ let ppocrRuntime: PPOcrRuntime | null = null;
 let ortIsInitialized = false;
 let aircraftServerAvailable = true;
 let enableLabelCheck = false;
+
+const logger = new ConsoleLogger({
+  prefix: '[BackGround]',
+  showTimestamp: true,
+  enabled: true,
+  level: 'trace',
+});
 
 type SegmentResultWithOcr = SegmentResult & {
   ocrText?: string
@@ -112,9 +120,9 @@ async function initializeModel() {
       executionProviders: ['wasm'],
     });
     ortIsInitialized = true;
-    console.log("ONNX Model loaded successfully in background with WASM backend (Firefox)");
+    logger.log("ONNX Model loaded successfully in background with WASM backend (Firefox)");
   } catch (e) {
-    console.error("Model loading error:", e);
+    logger.error("Model loading error:", e);
     ortIsInitialized = false;
   }
 }
@@ -134,9 +142,9 @@ async function initializePPOcrModel() {
         },
       },
     })
-    console.log('PPOCR loaded successfully in background with single-thread WASM backend (Firefox)')
+    logger.log('PPOCR loaded successfully in background with single-thread WASM backend (Firefox)')
   } catch (e) {
-    console.error('PPOCR loading error:', e)
+    logger.error('PPOCR loading error:', e)
     ppocrRuntime = null
   }
 }
@@ -147,16 +155,16 @@ async function initAircraftWasm() {
     const wasmURL = chrome.runtime.getURL('aircraft_bg.wasm');
     await init(wasmURL);
     wasmModule = AircraftWasm as any;
-    console.log('Aircraft WASM initialized successfully');
+    logger.log('Aircraft WASM initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize Aircraft WASM:', error);
+    logger.error('Failed to initialize Aircraft WASM:', error);
   }
 }
 
 function startHeartbeat() {
   // 每20秒发送一次心跳
   setInterval(() => {
-    console.log('Service Worker heartbeat:', new Date().toISOString());
+    logger.log('Service Worker heartbeat:', new Date().toISOString());
     // 可以执行一些轻量级操作来保持活跃
     chrome.runtime.getPlatformInfo().catch(() => { });
   }, 20000) as unknown as number;
@@ -174,22 +182,22 @@ async function entrypoint() {
       enablePPOCR = result.enablePPOCR === true
       if (result.allInWebBrowser !== false) {
         aircraftServerAvailable = false
-        initAircraftWasm().catch(err => console.error('initAircraftWasm failed:', err));
+        initAircraftWasm().catch(err => logger.error('initAircraftWasm failed:', err));
       }
       if (!(result.enableLabelCheck === false)) {
         enableLabelCheck = true
         if (useWebGPU) {
           setupOffscreenDocument(chrome.runtime.getURL('offscreen.html'), result.enablePPOCR === true);
         } else {
-          initializeModel().catch(err => console.error('initializeModel failed:', err));
+          initializeModel().catch(err => logger.error('initializeModel failed:', err));
           if (result.enablePPOCR === true) {
-            initializePPOcrModel().catch(err => console.error('initializePPOcrModel failed:', err));
+            initializePPOcrModel().catch(err => logger.error('initializePPOcrModel failed:', err));
           }
         }
       }
-    }).catch(err => console.error('chrome.storage.local.get failed:', err))
+    }).catch(err => logger.error('chrome.storage.local.get failed:', err))
   } catch (error) {
-    console.error('entrypoint initialization error:', error);
+    logger.error('entrypoint initialization error:', error);
   }
 
   async function getAttachmentInfo(
@@ -216,7 +224,7 @@ async function entrypoint() {
       }
       return await response.json()
     } catch (error) {
-      console.error('getAttachmentInfo error:', error);
+      logger.error('getAttachmentInfo error:', error);
       return null;
     }
   }
@@ -230,7 +238,7 @@ async function entrypoint() {
       };
       const searchRes = await searchAttachment(projectNo)
       if (searchRes === null) {
-        console.error('概要结果为空')
+        logger.error('概要结果为空')
         return null
       }
       const projectDir = searchRes.results[0].path
@@ -252,7 +260,7 @@ async function entrypoint() {
       attachmentInfo['other'] = await getOtherInfo(fileItems, projectDir)
       return attachmentInfo
     } catch (error) {
-      console.error('wasmGetAttachmentInfo error:', error);
+      logger.error('wasmGetAttachmentInfo error:', error);
       return null;
     }
   }
@@ -263,7 +271,7 @@ async function entrypoint() {
       return wasmModule.get_summary_info(summaryArray);
     }
     catch (error) {
-      console.error('getSummaryInfo error:', error);
+      logger.error('getSummaryInfo error:', error);
       return null;
     }
   }
@@ -281,7 +289,7 @@ async function entrypoint() {
         segmentResults: [],
       }
     } catch (error) {
-      console.error('getGoodsInfo error:', error);
+      logger.error('getGoodsInfo error:', error);
       return {
         projectNo: '',
         itemCName: '',
@@ -355,7 +363,7 @@ async function entrypoint() {
 
       return { labels, segmentResults }
     } catch (error) {
-      console.error('getSegmentResults error:', error);
+      logger.error('getSegmentResults error:', error);
       return { labels: [], segmentResults: [] };
     }
   }
@@ -376,7 +384,7 @@ async function entrypoint() {
         result = await predictWithOffscreen(image);
       } else {
         if (!ortIsInitialized) {
-          console.error('ONNX Runtime is not initialized, cannot perform YOLO inference');
+          logger.error('ONNX Runtime is not initialized, cannot perform YOLO inference');
         }
         result = await predict_yolo26(enablePPOCR, session, Uint8Array.from(image), ort.Tensor, options);
       }
@@ -391,7 +399,7 @@ async function entrypoint() {
 
       return { labels, segmentResults }
     } catch (error) {
-      console.error('getYOLOSegmentResults error:', error);
+      logger.error('getYOLOSegmentResults error:', error);
       return { labels: [], segmentResults: [] };
     }
   }
@@ -452,13 +460,13 @@ async function entrypoint() {
       }
 
       if (!ppocrRuntime) {
-        console.error('PPOCR Runtime is not initialized, cannot perform OCR inference')
+        logger.error('PPOCR Runtime is not initialized, cannot perform OCR inference')
         return ''
       }
 
       return await recognizeTextFromImageBytes(Uint8Array.from(image), ppocrRuntime, polygon)
     } catch (error) {
-      console.error('recognizeBtyText error:', error)
+      logger.error('recognizeBtyText error:', error)
       return ''
     }
   }
@@ -530,12 +538,12 @@ async function entrypoint() {
     try {
       const attachmentInfo = filterFileExtension(searchRes, '.docx')
       if (attachmentInfo.length === 0) {
-        console.error('概要 docx 文件未找到')
+        logger.error('概要 docx 文件未找到')
         return null
       }
       return `${attachmentInfo[0].path}/${attachmentInfo[0].name}`
     } catch (error) {
-      console.error('getSummaryPath error:', error);
+      logger.error('getSummaryPath error:', error);
       return null;
     }
   }
@@ -547,12 +555,12 @@ async function entrypoint() {
         `${projectNo}.pdf`
       )
       if (attachmentInfo.length === 0) {
-        console.error('图片 pdf 文件未找到')
+        logger.error('图片 pdf 文件未找到')
         return null
       }
       return `${attachmentInfo[0].path}/${attachmentInfo[0].name}`
     } catch (error) {
-      console.error('getGoodsPath error:', error);
+      logger.error('getGoodsPath error:', error);
       return null;
     }
   }
@@ -570,7 +578,7 @@ async function entrypoint() {
       }
       return res
     } catch (error) {
-      console.error('filterFileExtension error:', error);
+      logger.error('filterFileExtension error:', error);
       return [];
     }
   }
@@ -579,12 +587,12 @@ async function entrypoint() {
     try {
       const pathResponses: SearchPathResponse | null = await searchEverythingPath(projectDir)
       if (pathResponses === null || pathResponses.totalResults === 0) {
-        console.error('路径搜索结果为空')
+        logger.error('路径搜索结果为空')
         return null
       }
       return pathResponses
     } catch (error) {
-      console.error('获取项目目录文件名异常', error)
+      logger.error('获取项目目录文件名异常', error)
       return null
     }
   }
@@ -607,13 +615,13 @@ async function entrypoint() {
         },
       })
       if (!response.ok) {
-        console.error(`搜索失败！${await response.text()}`)
+        logger.error(`搜索失败！${await response.text()}`)
         return null
       }
       const result = await response.json()
       return result
     } catch (error) {
-      console.error('搜索异常', error)
+      logger.error('搜索异常', error)
       return null
     }
   }
@@ -635,14 +643,14 @@ async function entrypoint() {
         },
       })
       if (!response.ok) {
-        console.error(`搜索失败！${await response.text()}`)
+        logger.error(`搜索失败！${await response.text()}`)
         return null
       }
       const result = await response.json()
-      console.log('searchAttachment result count:', result.results?.length)
+      logger.log('searchAttachment result count:', result.results?.length)
       return result
     } catch (error) {
-      console.error('搜索异常', error)
+      logger.error('搜索异常', error)
       return null
     }
   }
@@ -660,13 +668,13 @@ async function entrypoint() {
         }
       })
       if (!response.ok) {
-        console.error(`下载失败！${await response.text()}`)
+        logger.error(`下载失败！${await response.text()}`)
         return null
       }
       const result = await response.arrayBuffer()
       return result
     } catch (error) {
-      console.error('下载异常', error)
+      logger.error('下载异常', error)
       return null
     }
   }
@@ -685,7 +693,7 @@ async function entrypoint() {
         (async () => {
           let attachmentInfo: AttachmentInfo;
           if (aircraftServerAvailable) {
-            console.log('Server is available, using getAttachmentInfo')
+            logger.log('Server is available, using getAttachmentInfo')
             attachmentInfo = await getAttachmentInfo(
               request.aircraftServer,
               request.projectNo,
@@ -693,7 +701,7 @@ async function entrypoint() {
               request.is_965
             )
           } else {
-            console.log('Server is not available, using wasmGetAttachmentInfo')
+            logger.log('Server is not available, using wasmGetAttachmentInfo')
             attachmentInfo = await wasmGetAttachmentInfo(
               request.projectNo,
               request.is_965
@@ -713,7 +721,7 @@ async function entrypoint() {
 
       if (request.action === 'search') {
         const result = searchAttachment(request.projectNo)
-        console.log('search result promise:', result)
+        logger.log('search result promise:', result)
         if (result) {
           result
             .then((res) => sendResponse(res))
@@ -784,7 +792,7 @@ async function entrypoint() {
         return true
       }
     } catch (error) {
-      console.error('chrome.runtime.onMessage error:', error);
+      logger.error('chrome.runtime.onMessage error:', error);
       sendResponse({ error: error instanceof Error ? error.message : String(error) });
     }
     return false

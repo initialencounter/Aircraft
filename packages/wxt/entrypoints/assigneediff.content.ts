@@ -1,5 +1,6 @@
 import { waitForElement } from '../share/utils'
 import { diffChars } from 'diff'
+import { ConsoleLogger } from './modules/utils/logger'
 
 const ASSIGNEE_SELECTOR = [
   "#page1 > table > tbody > tr:nth-child(6) > td:nth-child(3) > span",
@@ -23,13 +24,19 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[Assigneediff Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   await waitForElement(MANUFACTURER_SELECTOR[0])
   chrome.storage.local.get(['assigneeDiff'], async (localConfig) => {
     if (localConfig.assigneeDiff !== false) {
-      console.log("assigneeDiff is running")
+      logger.log("assigneeDiff is running")
       await setupDiff()
-    }else {
-      console.log("assigneeDiff not running")
+    } else {
+      logger.log("assigneeDiff not running")
     }
   })
 

@@ -1,4 +1,5 @@
 import { getClipboardText, waitForElement } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger';
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -13,25 +14,31 @@ export default defineContentScript({
 let isListening = false
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[EntrustImport Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   try {
     chrome.storage.local.get(['autoImport'], async (localConfig) => {
       if (localConfig?.autoImport === false) {
-        console.log('未启用导入委托单，退出脚本')
+        logger.log('未启用导入委托单，退出脚本')
         return
       }
       await listenImportHotkey()
     })
   } catch (error) {
-    console.error('初始化失败:', error)
+    logger.error('初始化失败:', error)
   }
 
   async function autoImport() {
     try {
       const projectNo = (await getClipboardText()).replace(/[^0-9A-Z]/g, '')
-      console.log('项目编号：', projectNo)
+      logger.log('项目编号：', projectNo)
 
       if (!projectNo) {
-        console.log('没有项目编号，退出脚本')
+        logger.log('没有项目编号，退出脚本')
         return
       }
 
@@ -61,17 +68,17 @@ async function entrypoint() {
         }
       }, 200)
     } catch (error) {
-      console.error('自动导入失败:', error)
+      logger.error('自动导入失败:', error)
     }
   }
 
   async function listenImportHotkey() {
     if (isListening) {
-      console.log('已在监听快捷键，跳过重复绑定')
+      logger.log('已在监听快捷键，跳过重复绑定')
       return
     }
 
-    console.log('监听导入委托单快捷键')
+    logger.log('监听导入委托单快捷键')
     isListening = true
 
     // 使用具名函数便于移除监听器

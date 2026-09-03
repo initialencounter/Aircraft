@@ -1,6 +1,7 @@
 import { parseDate, sleep, waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
+import { ConsoleLogger } from './modules/utils/logger'
 
 interface Task {
   assignee: string
@@ -45,6 +46,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[Entrust Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const Qmsg = getQmsg()
   let globalAssignUser = ''
   let globalCheckAssignUser = true
@@ -71,7 +78,7 @@ async function entrypoint() {
       const assignUser = data.assignUser as string
       globalAssignUser = assignUser
       globalCheckAssignUser = data.checkAssignUser !== false
-      console.log('一键分配脚本运行中...', data)
+      logger.log('一键分配脚本运行中...', data)
       if (!(data.onekeyAssign === false)) await insertElement(assignUser)
       if (!(data.showInspectFormLink === false)) observeItemNumberList1()
       // 设置下一年报告颜色
@@ -121,7 +128,7 @@ async function entrypoint() {
       dataCache.set(cacheKey, { data: users, timestamp: Date.now() })
       return users
     } catch (error) {
-      console.error('Failed to fetch users:', error)
+      logger.error('Failed to fetch users:', error)
       return []
     }
   }
@@ -133,16 +140,16 @@ async function entrypoint() {
     }
     const ids = getIds()
     if (!ids.length) return
-    console.log('assignSelectId:', ids)
+    logger.log('assignSelectId:', ids)
     const receiveIds = await ReceiveSubmit(ids, 'receive')
     if (!receiveIds.length) return
-    console.log('receiveIds:', receiveIds)
+    logger.log('receiveIds:', receiveIds)
     const submitIds = await ReceiveSubmit(receiveIds, 'submit')
     if (!submitIds.length) return
-    console.log('submitIds:', submitIds)
+    logger.log('submitIds:', submitIds)
     const taskIds = await getTaskIds(submitIds)
     if (!taskIds) return
-    console.log('taskIds:', taskIds)
+    logger.log('taskIds:', taskIds)
     await assignTask(taskIds, uid)
     doFreshEntrustList()
   }
@@ -165,7 +172,7 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('receive failed')
+      logger.error('receive failed')
       return []
     }
     const data = await response.json()
@@ -187,7 +194,7 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('get task ids failed')
+      logger.error('get task ids failed')
       return []
     }
     const data = await response.json()
@@ -216,14 +223,14 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('assign task failed1')
+      logger.error('assign task failed1')
       return
     }
     const result = await response.json()
     if (result['result'] === 'success') {
       Qmsg['success']('分配成功')
     } else {
-      console.error('assign task failed2')
+      logger.error('assign task failed2')
       Qmsg['error']('分配失败')
     }
   }
@@ -278,7 +285,7 @@ async function entrypoint() {
     if (!button1) return
     targetParent.children[1].insertBefore(assignButton, button1)
     targetParent.children[1].insertBefore(select, button1)
-    console.log('一键分配按钮插入成功')
+    logger.log('一键分配按钮插入成功')
   }
 
   async function lims_onekey_assign_click() {
@@ -391,7 +398,7 @@ async function entrypoint() {
   }
 
   async function listenFreshHotkeyEntrustList() {
-    console.log('监听刷新快捷键')
+    logger.log('监听刷新快捷键')
     // 监听 Ctrl+D 键的弹起事件
     document.addEventListener('keydown', async function (event) {
       if (!event.ctrlKey) {
@@ -422,7 +429,7 @@ async function entrypoint() {
         if (hiddenDuration >= autoRefreshDuration) {
           // 10秒 = 10000毫秒
           doFreshEntrustList()
-          console.log('离开页面10秒，刷新列表')
+          logger.log('离开页面10秒，刷新列表')
         }
         hiddenTimeEntrustList = null
       }
@@ -451,7 +458,7 @@ async function entrypoint() {
         }
       )
       if (!response.ok) {
-        console.log('请求失败1')
+        logger.log('请求失败1')
         return undefined
       }
       const { rows }: QueryResultData = await response.json()
@@ -464,7 +471,7 @@ async function entrypoint() {
         from: 'query',
       } as LinkParams
     } catch {
-      console.log('请求失败2')
+      logger.log('请求失败2')
       return undefined
     }
   }
@@ -523,7 +530,7 @@ async function entrypoint() {
       from: linkParams.from,
     })
     const link = `/${linkParams.systemId}/inspect?${params.toString()}`
-    console.log(link)
+    logger.log(link)
     window.open(link, '_blank')
   }
 }

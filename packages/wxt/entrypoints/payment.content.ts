@@ -1,4 +1,5 @@
 import { getLocalConfig, waitForElement } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger';
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -13,10 +14,16 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[Payment Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   await waitForElement('#txt_paymentCompanyContact')
   const localConfig = await getLocalConfig()
   if (!localConfig.paymentCompanyInfo) {
-    console.log('No payment company info found in local config, skipping insertion.')
+    logger.log('No payment company info found in local config, skipping insertion.')
     return
   }
   const paymentCompanyInfo = localConfig.paymentCompanyInfo.split('\n').map(item => item.split(/[，,]/))

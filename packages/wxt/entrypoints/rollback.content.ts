@@ -1,6 +1,7 @@
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { waitForElement } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger'
 
 /**
  * rollback内容脚本
@@ -22,6 +23,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[Rollback Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const Qmsg = getQmsg()
   let hiddenTimeInspectList: number | null = null
 
@@ -56,7 +63,7 @@ async function entrypoint() {
       await waitForElement('#datagrid-row-r1-2-0')
       // 替换橘黄色
       if (result.onekeyRollback === false) {
-        console.log('未启用一键退回，退出脚本')
+        logger.log('未启用一键退回，退出脚本')
         return
       }
       setupInspectListObserver()
@@ -110,7 +117,7 @@ async function entrypoint() {
       Qmsg['success']('退回成功', { timeout: 1000 })
       doFreshInspectList()
     } catch (error) {
-      console.error('rollbackOneKey error:', error)
+      logger.error('rollbackOneKey error:', error)
       Qmsg['error']('退回过程中发生错误', { timeout: 1000 })
     }
   }
@@ -126,7 +133,7 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('get task ids failed')
+      logger.error('get task ids failed')
       return ''
     }
     const data = await response.json()
@@ -145,7 +152,7 @@ async function entrypoint() {
       }
     )
     if (!response.ok) {
-      console.error('get task ids failed')
+      logger.error('get task ids failed')
       return ''
     }
     const data = await response.json()
@@ -157,7 +164,7 @@ async function entrypoint() {
   function insertRollbackButton() {
     const targets = document.getElementById('datagrid-row-r1-2-0')
       ?.parentElement?.children
-    if (!targets) return 
+    if (!targets) return
 
     for (let i = 0; i < targets.length; i++) {
       const row = targets[i]
@@ -226,7 +233,7 @@ async function entrypoint() {
   }
 
   async function listenFreshHotkeyInspectList() {
-    console.log('监听刷新快捷键')
+    logger.log('监听刷新快捷键')
     // 使用节流来避免快速连续按键导致的多次执行
     let isProcessing = false
 
@@ -275,7 +282,7 @@ async function entrypoint() {
         if (hiddenDuration >= autoRefreshDuration) {
           // 10秒 = 10000毫秒
           doFreshInspectList()
-          console.log('离开页面10秒，刷新列表')
+          logger.log('离开页面10秒，刷新列表')
         }
         hiddenTimeInspectList = null
       }

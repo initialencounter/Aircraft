@@ -2,6 +2,7 @@ import { waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { SummaryFormJSONData } from '../share/types'
+import { ConsoleLogger } from './modules/utils/logger'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -22,6 +23,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[SummaryCompare Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   await waitForElement("#printBtn0")
   const Qmsg = getQmsg()
   const headerBar = document.querySelector(
@@ -56,7 +63,7 @@ async function entrypoint() {
   checkListButton.onclick = handleDiffClick
   checkListButton.title = '点其他概要的表头获取概要数据，再点此对比，比较两份概要数据的一致性'
   targetParent.appendChild(checkListButton)
-  console.log('对比按钮插入成功！')
+  logger.log('对比按钮插入成功！')
 
   function getFormDataJSON() {
     const projectNo = document.querySelector("#projectNo")?.textContent
@@ -68,8 +75,8 @@ async function entrypoint() {
     const formData = new FormData(form)
     formData.forEach((value, name) => {
       const key = name as keyof SummaryFormJSONData
-      ;(data as Record<keyof SummaryFormJSONData, string | boolean>)[key] =
-        value as string
+        ; (data as Record<keyof SummaryFormJSONData, string | boolean>)[key] =
+          value as string
     })
     data.projectNo = projectNo || ''
     return data as SummaryFormJSONData
@@ -97,7 +104,7 @@ async function entrypoint() {
         if (verifyButton) verifyButton.setAttribute('fill', '#54a124')
       }
     } catch (e) {
-      console.error('parse clipboard data error:', e)
+      logger.error('parse clipboard data error:', e)
       Qmsg.error('解析数据失败', { timeout: 500 })
     }
   }

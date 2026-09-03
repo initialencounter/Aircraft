@@ -5,6 +5,7 @@ import {
   sleep,
   waitForElement,
 } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger';
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -16,14 +17,20 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[Query Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const localConfig = await getLocalConfig()
   await waitForElement('#projectNo')
   if (localConfig.enableSetQueryProjectNo === false) {
-    console.log('未启用设置查询项目编号，退出脚本')
+    logger.log('未启用设置查询项目编号，退出脚本')
     return
   }
   injectJQueryInterceptor()
-  console.log('检验单查询脚本运行中...')
+  logger.log('检验单查询脚本运行中...')
 
   document.addEventListener('input', function (event: Event) {
     if (!document.hasFocus()) return
@@ -101,14 +108,14 @@ async function entrypoint() {
       script.remove();
     };
     script.onerror = (e) => {
-      console.error('[JQuery Hook] Failed to load interceptor script:', e);
+      logger.error('[JQuery Hook] Failed to load interceptor script:', e);
     };
 
     try {
       const target = document.head || document.documentElement || document;
       target.appendChild(script);
     } catch (e) {
-      console.error('[JQuery Hook] Failed to inject script:', e);
+      logger.error('[JQuery Hook] Failed to inject script:', e);
     }
   }
 

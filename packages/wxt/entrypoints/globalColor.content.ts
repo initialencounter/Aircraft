@@ -1,4 +1,5 @@
 import { getLocalConfig, sleep, validateFormat } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger';
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -38,7 +39,13 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
-  console.log('全局脚本启动')
+  const logger = new ConsoleLogger({
+    prefix: '[GlobalColor Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
+  logger.log('全局脚本启动')
   await sleep(500)
   const localConfig = await getLocalConfig()
   if (localConfig.customIcon === false) return
@@ -93,7 +100,7 @@ async function entrypoint() {
     // 定期清理缓存，防止内存泄漏
     if (processedProjectNoValues.size > 1000) {
       processedProjectNoValues.clear()
-      console.log('清理项目编号颜色缓存')
+      logger.log('清理项目编号颜色缓存')
     }
 
     processElements()
@@ -181,7 +188,7 @@ async function entrypoint() {
         const foundElements = document.querySelectorAll(selector)
         elements.push(...foundElements)
       } catch (error) {
-        console.warn(`优先选择器 ${selector} 查询失败:`, error)
+        logger.warn(`优先选择器 ${selector} 查询失败:`, error)
       }
     }
 
@@ -192,7 +199,7 @@ async function entrypoint() {
           const foundElements = document.querySelectorAll(selector)
           elements.push(...foundElements)
         } catch (error) {
-          console.warn(`备用选择器 ${selector} 查询失败:`, error)
+          logger.warn(`备用选择器 ${selector} 查询失败:`, error)
         }
       }
     }
@@ -224,7 +231,7 @@ async function entrypoint() {
         const nestedElements = getElementsFromIframeDoc(iframeDoc, 1)
         elements.push(...nestedElements)
       } catch (error) {
-        console.warn('无法访问iframe内容:', iframe.src, error)
+        logger.warn('无法访问iframe内容:', iframe.src, error)
       }
     })
 
@@ -253,7 +260,7 @@ async function entrypoint() {
         const deeperElements = getElementsFromIframeDoc(nestedDoc, depth + 1)
         elements.push(...deeperElements)
       } catch (error) {
-        console.warn('无法访问嵌套iframe内容:', error)
+        logger.warn('无法访问嵌套iframe内容:', error)
       }
     })
 

@@ -1,6 +1,7 @@
 import { waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
+import { ConsoleLogger } from './modules/utils/logger'
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -26,6 +27,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[CheckList Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const Qmsg = getQmsg()
   const headerBar = await waitForElement('body > div.panel.easyui-fluid > div.panel-header') as HTMLDivElement | null
   if (!headerBar) return
@@ -56,7 +63,7 @@ async function entrypoint() {
     `
   checkListButton.onclick = handleDiffClick
   targetParent.appendChild(checkListButton)
-  console.log('对比按钮插入成功！')
+  logger.log('对比按钮插入成功！')
 
   function getFormDataJSON() {
     const form = document.querySelector(
@@ -103,7 +110,7 @@ async function entrypoint() {
         if (verifyButton) verifyButton.setAttribute('fill', '#54a124')
       }
     } catch (e) {
-      console.error('parse clipboard data error:', e)
+      logger.error('parse clipboard data error:', e)
       Qmsg.error('解析数据失败', { timeout: 500 })
     }
   }
@@ -292,7 +299,7 @@ async function entrypoint() {
       }
       if (sekValue.trim() !== pekValue.trim()) {
         diffDataKeys.push(keyMap[sekKey as keyof FormJSONData] || pekKey)
-        console.log({ sekKey, sekValue, pekValue, pekKey })
+        logger.log({ sekKey, sekValue, pekValue, pekKey })
       }
     }
     return diffDataKeys

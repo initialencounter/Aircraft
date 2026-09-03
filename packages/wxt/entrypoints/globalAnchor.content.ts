@@ -1,4 +1,5 @@
 import { sleep, validateFormat } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger';
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -32,7 +33,12 @@ export default defineContentScript({
 
 async function entrypoint() {
   await sleep(400)
-
+  const logger = new ConsoleLogger({
+    prefix: '[GlobalAnchor Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   chrome.storage.local.get(['openInNewTab'], async (localConfig) => {
     if (localConfig.openInNewTab === true) {
       setupOpenInNewTab()
@@ -113,16 +119,16 @@ async function entrypoint() {
                     collectAnchorsFromDocument(loadedIframeDoc, currentDepth + 1);
                   }
                 } catch (error) {
-                  console.warn('无法访问已加载的iframe内容:', error);
+                  logger.warn('无法访问已加载的iframe内容:', error);
                 }
               });
             }
           } catch (error) {
-            console.warn('无法访问iframe内容（同源策略限制）:', error);
+            logger.warn('无法访问iframe内容（同源策略限制）:', error);
           }
         });
       } catch (error) {
-        console.error('在收集锚点标签时发生错误:', error);
+        logger.error('在收集锚点标签时发生错误:', error);
       }
     }
 

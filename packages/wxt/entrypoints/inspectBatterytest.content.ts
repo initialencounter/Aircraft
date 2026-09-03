@@ -2,6 +2,7 @@ import { getQmsg } from "../share/qmsg"
 import { getClipboardText, getLocalConfig, setProjectNoToClipText, sleep, waitForElement } from "../share/utils"
 import { switchFaviconBySystemId } from "./modules/ui/favicon"
 import '../assets/message.min.css'
+import { ConsoleLogger } from "./modules/utils/logger"
 
 export default defineContentScript({
   runAt: 'document_end',
@@ -13,6 +14,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[InspectBatterytest Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const Qmsg = getQmsg()
   const localConfig = await getLocalConfig()
   const projectNoElement = await waitForElement('#projectNo') as HTMLSpanElement// 等待页面内容加载
@@ -65,7 +72,7 @@ async function entrypoint() {
       button.click()
       Qmsg.success('保存成功', { timeout: 500 })
     } else {
-      console.log('Button not found')
+      logger.log('Button not found')
       Qmsg.error('保存失败')
     }
   }
@@ -157,14 +164,14 @@ async function entrypoint() {
       script.remove();
     };
     script.onerror = (e) => {
-      console.error('[XHR Hook] Failed to load interceptor script:', e);
+      logger.error('[XHR Hook] Failed to load interceptor script:', e);
     };
 
     try {
       const target = document.head || document.documentElement || document;
       target.appendChild(script);
     } catch (e) {
-      console.error('[XHR Hook] Failed to inject script:', e);
+      logger.error('[XHR Hook] Failed to inject script:', e);
     }
   }
 
@@ -201,7 +208,7 @@ async function entrypoint() {
             (document.querySelector("#assignSaveBtn") as HTMLAnchorElement)?.click()
           })
         } else {
-          console.log('resultRow1 not found')
+          logger.log('resultRow1 not found')
         }
       }
     }

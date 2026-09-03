@@ -1,6 +1,7 @@
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { sleep } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger'
 
 interface User {
   userId: string
@@ -105,6 +106,12 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[AssignExperiment Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   const Qmsg = getQmsg()
   const dataCache = new Map<string, any>()
   const currentDate = new Date()
@@ -331,7 +338,7 @@ async function entrypoint() {
       dataCache.set(cacheKey, { data: users, timestamp: Date.now() })
       return users
     } catch (error) {
-      console.error('Failed to fetch users:', error)
+      logger.error('Failed to fetch users:', error)
       return []
     }
   }
@@ -350,7 +357,7 @@ async function entrypoint() {
       const experimentIds: string[] = data.map((item: any) => item.id)
       return experimentIds
     } catch (error) {
-      console.error('Failed to fetch experiment ID:', error)
+      logger.error('Failed to fetch experiment ID:', error)
       return null
     }
   }
@@ -369,12 +376,12 @@ async function entrypoint() {
           body: JSON.stringify(body),
         })
       if (!response.ok) {
-        console.error(`Failed to assign experiment for task ${taskId}:`, response.statusText)
+        logger.error(`Failed to assign experiment for task ${taskId}:`, response.statusText)
         return false
       }
       return true
     } catch (error) {
-      console.error(`Failed to assign experiment for task ${taskId}:`, error)
+      logger.error(`Failed to assign experiment for task ${taskId}:`, error)
       return false
     }
   }
@@ -392,12 +399,12 @@ async function entrypoint() {
           body: JSON.stringify(data),
         })
       if (!response.ok) {
-        console.error(`Failed to Submit experiment`, response.statusText)
+        logger.error(`Failed to Submit experiment`, response.statusText)
         return false
       }
       return true
     } catch (error) {
-      console.error(`Failed to Submit experiment`, error)
+      logger.error(`Failed to Submit experiment`, error)
       return false
     }
   }
@@ -500,7 +507,7 @@ async function entrypoint() {
       }
       return false
     } catch (error) {
-      console.error('Failed to fetch experiment task IDs:', error)
+      logger.error('Failed to fetch experiment task IDs:', error)
       return false
     }
   }
@@ -518,14 +525,14 @@ async function entrypoint() {
 
       // 检查是否发生了重定向
       if (response.redirected) {
-        console.log(`重定向到: ${response.url}`)
+        logger.log(`重定向到: ${response.url}`)
       }
 
       if (!response.ok) return ''
       const html = await response.text()
       return html
     } catch (error) {
-      console.error('Failed to fetch experiment form HTML:', error)
+      logger.error('Failed to fetch experiment form HTML:', error)
       return ''
     }
   }
@@ -602,7 +609,7 @@ async function entrypoint() {
       }
     }
     catch (error) {
-      console.error(error)
+      logger.error(error)
       errorMessages.push(`任务处理失败`)
     }
     finally {

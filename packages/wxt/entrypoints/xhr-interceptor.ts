@@ -1,3 +1,4 @@
+import { ConsoleLogger } from "./modules/utils/logger";
 
 declare global {
   interface Window {
@@ -67,6 +68,12 @@ interface SummaryInfo {
 
 
 export default defineUnlistedScript(() => {
+  const logger = new ConsoleLogger({
+    prefix: '[xhr-interceptor]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   // 防止重复注入
   if (window.__xhr_intercepted) {
     return;
@@ -88,7 +95,7 @@ export default defineUnlistedScript(() => {
 
       return url.toString();
     } catch (error) {
-      console.log('[Injected] Failed to modify URL query:', originalUrl, error);
+      logger.log('[Injected] Failed to modify URL query:', originalUrl, error);
       return originalUrl;
     }
   }
@@ -114,7 +121,7 @@ export default defineUnlistedScript(() => {
         // @ts-ignore
         return originalXHROpen.apply(this, arguments);
       }
-      console.log(`[Injected] Intercepted XHR: ${method} ${originalUrl}, testReportNo=${testReportNo}`);
+      logger.log(`[Injected] Intercepted XHR: ${method} ${originalUrl}, testReportNo=${testReportNo}`);
 
       const modifiedUrl = modifyUrlQuery(originalUrl, testReportNo);
 
@@ -171,7 +178,7 @@ export default defineUnlistedScript(() => {
       const data = JSON.parse(rawText);
       __last_intercepted_batterytest_query_response = data;
     } catch (e) {
-      console.log('[Injected] Failed to read response:', e);
+      logger.log('[Injected] Failed to read response:', e);
     }
   }
 

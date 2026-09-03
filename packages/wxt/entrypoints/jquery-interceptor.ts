@@ -1,3 +1,5 @@
+import { ConsoleLogger } from "./modules/utils/logger";
+
 declare global {
   interface Window {
     __jquery_intercepted?: boolean;
@@ -19,6 +21,12 @@ declare global {
 }
 
 export default defineUnlistedScript(() => {
+  const logger = new ConsoleLogger({
+    prefix: '[jquery-interceptor]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   if (window.__jquery_intercepted) {
     return;
   }
@@ -49,7 +57,7 @@ export default defineUnlistedScript(() => {
     if (event.data.type === 'JQUERY_SET_COMBOBOX') {
       const selector = event.data.selector;
       const data = event.data.payload;
-      console.log(`[JQuery Hook] Setting combobox ${selector} value to:`, data);
+      logger.log(`[JQuery Hook] Setting combobox ${selector} value to:`, data);
       $(selector).combobox('setValue', data);
     }
 

@@ -1,4 +1,5 @@
 import { sleep, waitForElement } from '../share/utils'
+import { ConsoleLogger } from './modules/utils/logger'
 
 interface Customer {
   createdBy: string
@@ -39,10 +40,16 @@ export default defineContentScript({
 })
 
 async function entrypoint() {
+  const logger = new ConsoleLogger({
+    prefix: '[EntrustEname Entrypoint]',
+    showTimestamp: true,
+    enabled: true,
+    level: 'trace',
+  });
   let searchText = ''
   chrome.storage.local.get('enableDisplayEntrustEName', async (data) => {
     if (data.enableDisplayEntrustEName === false) return
-    console.log('启用委托方英文名称显示')
+    logger.log('启用委托方英文名称显示')
     try {
       addEnameColumn()
       debounceInput()
@@ -50,12 +57,12 @@ async function entrypoint() {
       // 特殊处理, 展开搜索结果后需要重新加宽列表
       const expandElement = await waitForElement("#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > span > a") as HTMLAnchorElement | null
       expandElement?.addEventListener('click', async () => {
-        console.log('点击查询按钮')
+        logger.log('点击查询按钮')
         await sleep(200)
         expandTable(800)
       })
     } catch (error) {
-      console.error('初始化失败:', error)
+      logger.error('初始化失败:', error)
     }
   })
 
@@ -85,7 +92,7 @@ async function entrypoint() {
       const data: CustomerResponse = await response.json()
       return data.rows
     } catch (error) {
-      console.error('获取委托方英文名称失败:', error)
+      logger.error('获取委托方英文名称失败:', error)
       return []
     }
   }
@@ -191,7 +198,7 @@ async function entrypoint() {
       '#entrustEditForm > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(4) > span > input.textbox-text.validatebox-text'
     ) as HTMLInputElement | null
     if (!input) {
-      console.warn('未找到输入元素')
+      logger.warn('未找到输入元素')
       return
     }
 
@@ -224,7 +231,7 @@ async function entrypoint() {
         await insertEntrustEname(customers)
         expandTable(800)
       } catch (error) {
-        console.error('处理数据加载时发生错误:', error)
+        logger.error('处理数据加载时发生错误:', error)
       } finally {
         isProcessing = false
         // 如果在处理期间有新数据加载，立即重试
@@ -268,6 +275,6 @@ async function entrypoint() {
       childList: true,
       subtree: true,
     })
-    console.log('已设置 combogrid 数据加载监听器')
+    logger.log('已设置 combogrid 数据加载监听器')
   }
 }
