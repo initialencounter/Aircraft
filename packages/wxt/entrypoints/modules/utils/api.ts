@@ -163,6 +163,7 @@ export async function getProjectTrace(projectNo: string): Promise<ProjectTraceRe
 }
 
 export async function warmUp(projectNo: string) {
+  if (!projectNo) return
   await chrome.runtime.sendMessage({
     action: 'warmUp',
     projectNo,

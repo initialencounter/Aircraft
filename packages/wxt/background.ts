@@ -599,6 +599,10 @@ async function entrypoint() {
 
   async function searchEverythingPath(path: string): Promise<SearchPathResponse | null> {
     try {
+      if (!path) {
+        logger.error('路径为空，无法搜索')
+        return null
+      }
       const params = new URLSearchParams({
         search: path,
         json: '1',
@@ -628,6 +632,10 @@ async function entrypoint() {
 
   async function searchAttachment(projectNo: string): Promise<SearchResponse | null> {
     try {
+      if (!projectNo) {
+        logger.error('项目编号为空，无法搜索附件')
+        return null
+      }
       const params = new URLSearchParams({
         search: projectNo,
         json: '1',

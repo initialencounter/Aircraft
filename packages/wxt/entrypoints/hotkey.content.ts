@@ -10,7 +10,6 @@ import {
 } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
-import { warmUp } from './modules/utils/api'
 import { getCurrentProjectNo } from './modules/utils/helpers'
 import { switchFaviconBySystemId } from './modules/ui/favicon'
 import { insertCalculationText, updateCalculationText } from './modules/ui/calculation'
@@ -224,7 +223,6 @@ async function entrypoint() {
   function watchInput() {
     // 使用事件捕获在文档级别监听,绕过 EasyUI 的事件处理
     document.addEventListener('input', function (event: Event) {
-      debouncedWarmUp(projectNo ?? '')
       if (!localConfig.enablePreventCloseBeforeSave || fromQuery) return
       if (!document.hasFocus()) return
       const target = event.target as HTMLElement
@@ -472,22 +470,5 @@ async function entrypoint() {
       return false
     }
     return true
-  }
-
-  // 防抖函数
-  const debounce = (func: Function, delay: number) => {
-    let timeoutId: NodeJS.Timeout
-    return (...args: any[]) => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => func.apply(null, args), delay)
-    }
-  }
-
-  // 防抖保存函数
-  function debouncedWarmUp(projectNo: string) {
-    if (!localConfig.warmUp) return
-    debounce(() => {
-      warmUp(projectNo)
-    }, 8000)()
   }
 }
