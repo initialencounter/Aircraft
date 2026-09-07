@@ -71,13 +71,8 @@ export function checkName(
     case '2':
       const indexKeyWord = formCName.indexOf('内置')
       const indexKeyEWord = formEName.indexOf('Containing')
-      if (indexKeyWord < indexModel[1]) {
-        formCNameText = formCName.substring(indexKeyWord + 2, indexModel[1])
-        formENameText = formEName.substring(indexKeyEWord + 10, indexEModel[1])
-      } else {
-        formCNameText = formCName.substring(0, indexModel[0])
-        formENameText = formEName.substring(0, indexEModel[1])
-      }
+      formCNameText = formCName.substring(indexKeyWord + 2, indexModel[0])
+      formENameText = formEName.substring(indexKeyEWord + 10, indexEModel[0])
       break
   }
   formCNameText = formCNameText.trim()
@@ -122,6 +117,14 @@ export function checkName(
 // ))
 
 // console.log(checkName('1',
+//   'Rechargeable Li-ion Battery QPOS Plus 3.7V 1800mAh 6.66Wh（Packed with Mobile POS QPOS Plus）',
+//   '可充电锂离子电池 QPOS Plus 3.7V 1800mAh 6.66Wh QPOS Plus（与移动 POS 机包装在一起）',
+//   'QPOS Plus',
+//   '可充电锂离子电池',
+//   'Rechargeable Li-ion Battery'
+// ))
+
+// console.log(checkName('1',
 //   'Smart Door Lock Lithium Battery HK-03 7.4V 5000mAh 37Wh (Packed with Digital smart lock A10)',
 //   '智能门锁锂电池组 HK-03 7.4V 5000mAh 37Wh （与智能门锁 A10包装在一起）',
 //   'HK-03',
@@ -159,4 +162,28 @@ export function checkName(
 //   'QPOS Plus',
 //   '可充电锂离子电池',
 //   'QPOS Plus Rechargeable Li-ion Battery'
+// ))
+
+// console.log(checkName('2',
+//   'Mobile POS QPOS Plus（Containing Rechargeable Li-ion Battery QPOS Plus 3.7V 1800mAh 6.66Wh）',
+//   '移动 POS 机 QPOS Plus（内置可充电锂离子电池 QPOS Plus 3.7V 1800mAh 6.66Wh）',
+//   'QPOS Plus',
+//   '可充电锂离子电池',
+//   'Rechargeable Li-ion Battery'
+// ))
+
+// console.log(checkName('2',
+//   'Mobile POS QPOS Plus（Containing Rechargeable Li-ion Battery QPOS 3.7V 1800mAh 6.66Wh）',
+//   '移动 POS 机 QPOS Plus（内置可充电锂离子电池 QPOS 3.7V 1800mAh 6.66Wh）',
+//   'QPOS',
+//   '可充电锂离子电池',
+//   'Rechargeable Li-ion Battery'
+// ))
+
+// console.log(checkName('2',
+//   'Mobile POS Plus（Containing Rechargeable Li-ion Battery QPOS 3.7V 1800mAh 6.66Wh）',
+//   '移动 POS 机 Plus（内置可充电锂离子电池 QPOS 3.7V 1800mAh 6.66Wh）',
+//   'QPOS',
+//   '可充电锂离子电池',
+//   'Rechargeable Li-ion Battery'
 // ))
