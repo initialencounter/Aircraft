@@ -37,7 +37,7 @@ function matchWattHour(projectName: string) {
   let wattHour = parseFloat(lastResult)
   if (!results.length) return 0
   if (isNaN(wattHour)) return 0
-  
+
   // 根据前缀进行单位换算（统一转换为瓦时Wh）
   const prefix = prefixes[prefixes.length - 1]
   if (prefix === 'M') {                      // 兆瓦时 → 瓦时: × 1,000,000
@@ -60,7 +60,7 @@ function matchVoltage(projectName: string) {
   let voltage = parseFloat(lastResult)
   if (!results.length) return 0
   if (isNaN(voltage)) return 0
-  
+
   // 根据前缀进行单位换算（统一转换为伏V）
   const prefix = prefixes[prefixes.length - 1]
   if (prefix === 'M') {                      // 兆伏 → 伏: × 1,000,000
@@ -71,7 +71,7 @@ function matchVoltage(projectName: string) {
     voltage = fixFloatPrecision(voltage / 1000)
   }
   // 无前缀就是伏，保持不变
-  
+
   return voltage
 }
 
@@ -84,7 +84,7 @@ function matchCapacity(projectName: string) {
   let result = parseFloat(lastResult)
   if (!results.length) return 0
   if (isNaN(result)) return 0
-  
+
   // 根据前缀进行单位换算（统一转换为毫安时mAh）
   const prefix = prefixes[prefixes.length - 1]
   if (prefix === 'M') {                      // 兆安时 → 毫安时: × 1,000,000,000
@@ -96,7 +96,7 @@ function matchCapacity(projectName: string) {
   } else {                                   // 安时 → 毫安时: × 1000
     result = fixFloatPrecision(result * 1000)
   }
-  
+
   return result
 }
 
@@ -227,6 +227,32 @@ function getPkgInfo(
   }
 }
 
+function getIs188(
+  isSingleCell: boolean,
+  isIon: boolean,
+  wattHour: number,
+  liContent: number,
+  otherDescribe: string,
+  grossWeight: number,
+  unno: string,
+): boolean {
+  if (unno === 'UN3171' || unno === 'UN3556' || unno === 'UN3557' || unno === 'UN3558') return false
+  if (otherDescribe === '540' && grossWeight > 30) return false
+  if (isIon) {
+    if (isSingleCell) {
+      return wattHour <= 20
+    } else {
+      return wattHour <= 100
+    }
+  } else {
+    if (isSingleCell) {
+      return liContent <= 1
+    } else {
+      return liContent <= 2
+    }
+  }
+}
+
 function isBatteryLabel(
   pkgInfoSubType: PkgInfoSubType | SodiumPkgInfoSubType,
   shape: string,
@@ -244,13 +270,15 @@ function isBatteryLabel(
     case '977, I':
     case '978, I':
       return false
+    case '967, II':
     case '970, II':
     case '978, II':
-      if (!isCell) return false
-      return shape !== '8aad92b65aae82c3015ab094788a0026'
+      if (shape === '8aad92b65aae82c3015ab094788a0026' && isCell) {
+        return false
+      }
+      return true
     case '965, IB':
     case '966, II':
-    case '967, II':
     case '968, IB':
     case '969, II':
     case '977, II':
@@ -461,6 +489,7 @@ export {
   matchBatteryWeight,
   getIsCell,
   getIsIon,
+  getIs188,
   matchDeviceName,
   matchDeviceModel,
   matchDeviceTrademark,

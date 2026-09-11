@@ -1,6 +1,6 @@
 import { CheckResult, PekUNNO } from "../../lithium/shared/types"
 import { SekSodiumBtyType, SekSodiumData } from "../shared/types"
-import { getIsCell, matchBatteryWeight, matchCapacity, matchNumber, matchVoltage, matchWattHour } from "../../lithium/shared/utils"
+import { getIs188, getIsCell, matchBatteryWeight, matchCapacity, matchNumber, matchVoltage, matchWattHour } from "../../lithium/shared/utils"
 import { checkComment } from "../../lithium/sek/checkComment"
 import { checkReMark } from "../../lithium/sek/checkReMark"
 import { wattHourScope } from "../../lithium/sek/wattHourScope"
@@ -70,6 +70,8 @@ export function checkSekSodiumBtyType(currentData: SekSodiumData): CheckResult[]
   const unno = currentData['unno'] as PekUNNO
   // 电芯
   const isCell: boolean = getIsCell(btyType)
+  // 单电芯
+  const isSingleCell: boolean = ['601', '602'].includes(btyType)
   // 包装类型 0 965 1 966 2 967
   const otherDescribe2Pek = otherDescribe.slice(2) as
     | '0'
@@ -162,8 +164,9 @@ export function checkSekSodiumBtyType(currentData: SekSodiumData): CheckResult[]
   // 检验结果5 1.2米跌落
   result.push(...checkDropTest(otherDescribe, dropTest, conclusions))
 
+  const is188 = getIs188(isSingleCell, true, wattHour, 0, otherDescribe, btyGrossWeight, unno)
   // 电池标记
-  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions, btyType, otherDescribe2Pek))
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, is188, isCell))
 
 
   // 随附文件

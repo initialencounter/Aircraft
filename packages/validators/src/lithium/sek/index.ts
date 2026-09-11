@@ -1,6 +1,7 @@
 import { baseCheck } from '../shared'
 import type { CheckResult, PekUNNO, SekBtyType, SekData } from '../shared/types'
 import {
+  getIs188,
   getIsCell,
   getIsIon,
   matchBatteryWeight,
@@ -64,6 +65,8 @@ function checkSekBtyType(currentData: SekData, projectYear: string): CheckResult
   const capacity = matchCapacity(itemCName)
   // 瓦时
   const wattHour = matchNumber(currentData['inspectionItem1Text1'])
+  // 锂含量
+  const liContent = matchNumber(currentData['inspectionItem1Text2'])
   const wattHourFromName = matchWattHour(itemCName)
   // 真实显示净重数字 单位：g
   const netWeightDisplay = matchNumber(currentData['btyNetWeight']) * 1000
@@ -81,6 +84,8 @@ function checkSekBtyType(currentData: SekData, projectYear: string): CheckResult
   const unno = currentData['unno'] as PekUNNO
   // 电芯
   const isCell: boolean = getIsCell(btyType)
+  // 单电芯
+  const isSingleCell: boolean = ['501', '504', '503', '505'].includes(btyType)
   // 包装类型 0 965 1 966 2 967
   const otherDescribe2Pek = otherDescribe.slice(2) as
     | '0'
@@ -173,8 +178,9 @@ function checkSekBtyType(currentData: SekData, projectYear: string): CheckResult
   // 检验结果5 1.2米跌落
   result.push(...checkDropTest(otherDescribe, dropTest, conclusions))
 
+  const is188 = getIs188(isSingleCell, isIon, wattHour, liContent, otherDescribe, btyGrossWeight, unno)
   // 电池标记
-  result.push(...checkBtyLabel(isBtyLabel, btyShape, conclusions, btyType, otherDescribe2Pek))
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, is188, isCell))
 
   // 随附文件
   if (currentData['inspectionResult7'] !== '2')

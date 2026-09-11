@@ -10,23 +10,20 @@ import type { CheckResult, SekBtyType } from '../shared/types'
 export function checkBtyLabel(
   isBtyLabel: boolean,
   btyShape: string,
-  conclusions: number,
-  btyType: SekBtyType, 
-  otherDescribe2Pek: '0' | '1' | '2',
+  is188: boolean,
+  isCell: boolean,
 ): CheckResult[] {
   const result: CheckResult[] = []
-  const PI970II = otherDescribe2Pek === '2'&& btyType === '503' && String(conclusions) === '0'
-  const PI978II = otherDescribe2Pek === '2'&& btyType === '601' && String(conclusions) === '0'
+  const isButtonCell = btyShape === '8aad92b65aae82c3015ab094788a0026' && !isCell
   if (isBtyLabel) {
-    if (String(conclusions) === '1') {
+    if (is188) {
+      if (isButtonCell) result.push({ ok: false, result: '内置纽扣电芯, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
+    }
+    else {
       result.push({ ok: false, result: '危险品, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
     }
-    else if (btyShape === '8aad92b65aae82c3015ab094788a0026' && (PI970II || PI978II)) {
-      result.push({ ok: false, result: 'PI970II || PI978II 纽扣电池, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
-    }
   } else {
-    if (String(conclusions) === '0'
-      && !(btyShape === '8aad92b65aae82c3015ab094788a0026' && (PI970II || PI978II))) {
+    if (is188) {
       result.push({
         ok: false,
         result: '未勾选包装件需要按照特殊规定188的要求进行适当标记。',
