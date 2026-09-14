@@ -83,7 +83,9 @@ export function updateWattCalculationText(systemId: string) {
   const capacity = matchCapacity(itemCName)
   // 瓦时
   const wattHourInputName = systemId === 'PEKGZ' ? 'inspectionItem3Text1' : 'inspectionItem1Text1'
-  const wattHour = matchNumber((document.getElementsByName(wattHourInputName)[0] as HTMLInputElement)?.value || '0')
+  const wattHourString = (document.getElementsByName(wattHourInputName)[0] as HTMLInputElement)?.value
+  if (!wattHourString) return
+  const wattHour = matchNumber(wattHourString || '0')
 
   const expectedWattHour = fixFloatPrecision((Number(voltage) * capacity) / 1000)
   const abs = Math.abs(
