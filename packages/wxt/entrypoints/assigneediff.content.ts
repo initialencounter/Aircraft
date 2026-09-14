@@ -49,6 +49,11 @@ async function entrypoint() {
     const assignee = getCompany(ASSIGNEE_SELECTOR[0], ASSIGNEE_SELECTOR[1])
     const manufacturer = getCompany(MANUFACTURER_SELECTOR[0], MANUFACTURER_SELECTOR[1])
 
+    console.log({
+      assignee,
+      manufacturer
+    })
+
     const cDiff = diffChars(assignee.cName, manufacturer.cName)
     const eDiff = diffChars(assignee.eName, manufacturer.eName)
 
@@ -62,7 +67,7 @@ async function entrypoint() {
     const el = document.querySelector(selector)
     if (!el) return
 
-    let html = ''
+    el.textContent = ''
     for (const part of diff) {
       // 只在各自单元格里渲染属于自己那一版的内容
       if (part.removed && side === 'manufacturer') continue
@@ -70,9 +75,11 @@ async function entrypoint() {
 
       const isSame = !part.added && !part.removed
       const color = isSame ? '#ccffcc' : '#ffcccc'
-      html += `<span style="background-color: ${color}">${part.value}</span>`
+      const span = document.createElement('span')
+      span.style.backgroundColor = color
+      span.textContent = part.value
+      el.appendChild(span)
     }
-    el.innerHTML = html
   }
 
   function getCompany(cNameSelector: string, eNameSelector: string): { cName: string, eName: string } {
@@ -82,12 +89,12 @@ async function entrypoint() {
     }
     const cnameElement = document.querySelector(cNameSelector)
     if (cnameElement) {
-      company.cName = cnameElement.innerHTML
+      company.cName = cnameElement.textContent ?? ''
     }
 
     const eNameElement = document.querySelector(eNameSelector)
     if (eNameElement) {
-      company.eName = eNameElement.innerHTML
+      company.eName = eNameElement.textContent ?? ''
     }
     return company
   }
