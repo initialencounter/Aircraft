@@ -12,7 +12,7 @@ import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import { getCurrentProjectNo } from './modules/utils/helpers'
 import { switchFaviconBySystemId } from './modules/ui/favicon'
-import { insertCalculationText, updateCalculationText } from './modules/ui/calculation'
+import { insertCalculationText, insertWattCalculationText, updateCalculationText, updateWattCalculationText } from './modules/ui/calculation'
 import { ConsoleLogger } from './modules/utils/logger'
 
 export default defineContentScript({
@@ -59,6 +59,7 @@ async function entrypoint() {
   // 创建计算过程文本元素
   if (localConfig.showCalculationProcess) {
     insertCalculationText(systemId)
+    insertWattCalculationText(systemId)
   }
   // 将项目编号设置为标题
   if (localConfig.setTitleWithProjectNo) {
@@ -245,8 +246,13 @@ async function entrypoint() {
               }
             }
           }
-          if (localConfig.showCalculationProcess && ['btyCount', 'otherDescribeCAddition'].includes(target.id)) {
-            updateCalculationText()
+          if (localConfig.showCalculationProcess && ['btyCount', 'otherDescribeCAddition', 'btyNetWeight', 'netWeight'].includes(target.name)) {
+            updateCalculationText(systemId)
+          }
+
+          if (localConfig.showCalculationProcess && ['itemCName', systemId === 'PEKGZ' ? 'inspectionItem3Text1' : 'inspectionItem1Text1'].includes(target.name)) {
+            console.log('updateWattCalculationText(systemId)', target.id)
+            updateWattCalculationText(systemId)
           }
         }
         changedTarget.push(target)
