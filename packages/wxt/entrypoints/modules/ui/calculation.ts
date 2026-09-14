@@ -78,9 +78,17 @@ export function insertWattCalculationText(systemId: string) {
 export function updateWattCalculationText(systemId: string) {
   const itemCName = (document.getElementById("itemCName") as HTMLInputElement)?.value || ''
   // 电压
-  const voltage = matchVoltage(itemCName)
+  let voltage = matchVoltage(itemCName)
   // 容量
-  const capacity = matchCapacity(itemCName)
+  let capacity = matchCapacity(itemCName)
+  if (!voltage && !capacity) {
+    if (systemId !== 'PEKGZ') {
+      return
+    } else {
+      voltage = matchNumber((document.getElementsByName('inspectionItem2Text1')[0] as HTMLInputElement)?.value || '0')
+      capacity = matchNumber((document.getElementsByName('inspectionItem2Text2')[0] as HTMLInputElement)?.value || '0')
+    }
+  }
   // 瓦时
   const wattHourInputName = systemId === 'PEKGZ' ? 'inspectionItem3Text1' : 'inspectionItem1Text1'
   const wattHourString = (document.getElementsByName(wattHourInputName)[0] as HTMLInputElement)?.value

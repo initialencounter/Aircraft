@@ -250,7 +250,8 @@ async function entrypoint() {
             updateCalculationText(systemId)
           }
 
-          if (localConfig.showCalculationProcess && ['itemCName', systemId === 'PEKGZ' ? 'inspectionItem3Text1' : 'inspectionItem1Text1'].includes(target.name)) {
+          const wattHourInputName = systemId === 'PEKGZ' ? ['itemCName', 'inspectionItem3Text1', 'inspectionItem2Text1', 'inspectionItem2Text2'] : ['itemCName', 'inspectionItem1Text1']
+          if (localConfig.showCalculationProcess && wattHourInputName.includes(target.name)) {
             console.log('updateWattCalculationText(systemId)', target.id)
             updateWattCalculationText(systemId)
           }
