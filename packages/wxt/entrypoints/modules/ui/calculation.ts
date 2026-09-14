@@ -1,4 +1,4 @@
-import { matchBatteryWeight } from "../../../../validators/src/lithium/shared/utils"
+import { fixFloatPrecision, matchBatteryWeight } from "../../../../validators/src/lithium/shared/utils"
 import { markErrorElement } from "./markError"
 
 export function insertCalculationText(systemId: string) {
@@ -25,6 +25,7 @@ export function insertCalculationText(systemId: string) {
   display.textContent = ''
   display.style.paddingLeft = '8px'
   outerSpan.appendChild(display)
+  updateCalculationText()
 }
 
 
@@ -33,7 +34,7 @@ export function updateCalculationText() {
   const btyCount = (document.getElementById('btyCount') as HTMLInputElement)?.value || '0'
   const otherDescribeCAddition = (document.getElementById('otherDescribeCAddition') as HTMLInputElement)?.value || '0'
   const btyMass = matchBatteryWeight(otherDescribeCAddition)
-  const expectedNetWeight = (Number(btyCount) * btyMass) / 1000
+  const expectedNetWeight = fixFloatPrecision((Number(btyCount) * btyMass) / 1000)
   const calculationText = `${btyCount} * ${btyMass}g = ${expectedNetWeight}kg`
   const display = document.getElementById('calculatorDisplay')
   if (!display) return

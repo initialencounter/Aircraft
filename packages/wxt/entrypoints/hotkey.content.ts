@@ -223,7 +223,7 @@ async function entrypoint() {
   function watchInput() {
     // 使用事件捕获在文档级别监听,绕过 EasyUI 的事件处理
     document.addEventListener('input', function (event: Event) {
-      if (!localConfig.enablePreventCloseBeforeSave || fromQuery) return
+      if (!localConfig.enablePreventCloseBeforeSave) return
       if (!document.hasFocus()) return
       const target = event.target as HTMLElement
 
