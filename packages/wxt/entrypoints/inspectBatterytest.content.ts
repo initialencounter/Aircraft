@@ -189,7 +189,6 @@ async function entrypoint() {
     const projectNoSpan = document.getElementById('projectNo')
     const currentProjectNo = projectNoSpan?.innerText
     if (
-      projectNo.startsWith(systemId) &&
       projectNo.length === 17 &&
       currentProjectNo !== projectNo
     ) {
