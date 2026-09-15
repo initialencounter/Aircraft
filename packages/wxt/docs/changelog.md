@@ -1,21 +1,21 @@
 # 更新日志
 
 
-## [v3.7.8] - 2026-08-18
+## [v3.7.12] - 2026-09-15
 
-- `查看我委托书`页面, 相同d委托方和制造商高亮显示([9bb010f](https://github.com/initialencounter/Aircraft/commit/9bb010f))
+- `查看委托书`页面, 相同的委托方和制造商高亮显示([9bb010f](https://github.com/initialencounter/Aircraft/commit/9bb010f))
 
 ## [v3.7.7] - 2026-07-14
 
 ### 新增
 
 - 初验增加付款方价格提示([d644b7c](https://github.com/initialencounter/Aircraft/commit/d644b7c))
-- 净重旁边添加计算过程显示([704e111](https://github.com/initialencounter/Aircraft/commit/704e111))
+- 净重、瓦时旁边添加计算过程显示([704e111](https://github.com/initialencounter/Aircraft/commit/704e111))
 - 检查重复创建概要([0e18eff](https://github.com/initialencounter/Aircraft/commit/0e18eff))
 
 ## [v3.7.2] - 2026-05-21
 
-## 修复
+### 修复
 
 - 概要单位信息英文名称无法填充([7ed428c](https://github.com/initialencounter/Aircraft/commit/7ed428c))
 
@@ -27,17 +27,17 @@
 
 ## [v3.7.1] - 2026-04-26
 
-## 新增
+### 新增
 
 - 电池标记UN编号识别([f8a11844](https://github.com/initialencounter/Aircraft/commit/f8a11844))
 
-## 修复
+### 修复
 
 - 单位转换浮点精度丢失([9869584](https://github.com/initialencounter/Aircraft/commit/9869584))
 
 ## [v3.6.3] - 2026-04-16
 
-## 新增
+### 新增
 
 - 固定标签检测结果图片，并添加右键放大缩小功能([18fc5f3](https://github.com/initialencounter/Aircraft/commit/18fc5f3))
 
