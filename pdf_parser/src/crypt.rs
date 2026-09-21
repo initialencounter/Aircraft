@@ -391,19 +391,20 @@ fn rc4(key: &[u8], data: &mut [u8]) {
 
 #[cfg(test)]
 mod tests {
-    use pdf_extract::extract_text_from_mem;
+
+    use crate::inspector::extract_text_from_mem;
 
     use super::*;
 
     #[test]
     fn test_decrypt_skip_text_rc4_v2() {
-        for i in 1..=6 {
+        for i in 1..=8 {
             // V4/R4 但 CFM=/V2 实际用 RC4 加密 (AES 路径会报 "数据长度非法", 需按 RC4 解密)
             let path = format!(r"C:\Users\29115\Documents\lims-test-data\decrypt\{}.pdf", i);
             let data = std::fs::read(&path).unwrap();
 
             let dec = crate::read::decrypt_pdf(&data).expect(&format!("pdf{}解密失败", i));
-            println!("{}", extract_text_from_mem(&dec).unwrap().len());
+            println!("{}", extract_text_from_mem(&dec).len());
             assert!(!crate::read::is_encrypted(&dec));
             let file = pdf::file::FileOptions::cached()
                 .load(&dec[..])

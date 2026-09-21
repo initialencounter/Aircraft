@@ -2,6 +2,7 @@ pub mod crypt;
 pub mod parse;
 pub mod pdf_ocr;
 pub mod read;
+pub mod inspector;
 
 // 从统一的 types 包导入类型
 pub use aircraft_types::pdf_parser::{GoodsInfo, PdfReadResult};

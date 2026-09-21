@@ -5,9 +5,9 @@ use std::sync::mpsc::Sender;
 use std::os::windows::process::CommandExt;
 
 use aircraft_types::logger::LogMessage;
-use pdf_extract::extract_text_from_mem;
 
-use crate::read::{decrypt_pdf, is_encrypted, sanitize_pdf};
+use crate::inspector::{extract_text_from_mem, is_text_based_document_from_mem};
+use crate::read::decrypt_pdf;
 
 /// 提取 PDF 文本的服务:
 /// 1. 有文本层 → 直接提取
@@ -88,10 +88,14 @@ impl PdfOcrService {
 
     /// 提取 PDF 文本。文本层提取失败或为空时自动回退到 OCR。
     pub fn extract_text(&self, data: &[u8]) -> Result<String, PdfOcrError> {
-        // 1+2: 文本层提取 / 解密后提取
-        let text = self.extract_pdf_text(data);
-        if !text.trim().is_empty() {
-            return Ok(text);
+        // TextBased 文本层提取
+
+        if is_text_based_document_from_mem(data) {
+            self.log("INFO", "TextBased PDF");
+            let text = extract_text_from_mem(data);
+            if !text.trim().is_empty() {
+                return Ok(text);
+            }
         }
         // 3: 无文本层, 优先用解密+清理后的副本做 OCR (兼容加密/畸形 xref 的 PDF)
         let ocr_input = decrypt_pdf(data).unwrap_or_else(|_| data.to_vec());
@@ -190,53 +194,6 @@ impl PdfOcrService {
         }
         Ok(parts.join("\n"))
     }
-
-    /// 提取 PDF 文本层:
-    /// 1. 若加密, 先解密生成未加密副本再提取
-    /// 2. 否则直接提取 (pdf-extract 无法处理加密 PDF)
-    /// 无文本层时返回空字符串
-    pub fn extract_pdf_text(&self, data: &[u8]) -> String {
-        let clean = sanitize_pdf(data);
-        if is_encrypted(clean) {
-            self.log("INFO", "PDF 加密, 尝试解密后提取文本层");
-            let decrypted = match decrypt_pdf(clean) {
-                Ok(d) => d,
-                Err(e) => {
-                    self.log("WARN", &format!("PDF 解密失败: {}", e));
-                    return String::new();
-                }
-            };
-            match extract_text_from_mem(&decrypted) {
-                Ok(text) if !text.trim().is_empty() && text.trim().len() > 1000 => {
-                    self.log("INFO", "PDF 解密后文本层提取成功");
-                    text
-                }
-                Ok(_) => {
-                    self.log("INFO", "PDF 解密后无文本层, 尝试 OCR 提取");
-                    String::new()
-                }
-                Err(e) => {
-                    self.log("WARN", &format!("PDF 解密后文本层提取失败: {}", e));
-                    String::new()
-                }
-            }
-        } else {
-            match extract_text_from_mem(clean) {
-                Ok(text) if !text.trim().is_empty() && text.trim().len() > 1000 => {
-                    self.log("INFO", "PDF 文本层提取成功");
-                    text
-                }
-                Ok(_) => {
-                    self.log("INFO", "PDF 无文本层, 尝试 OCR 提取");
-                    String::new()
-                }
-                Err(e) => {
-                    self.log("WARN", &format!("PDF 文本层提取失败: {}", e));
-                    String::new()
-                }
-            }
-        }
-    }
 }
 
 /// 生成唯一的临时目录
@@ -320,22 +277,29 @@ mod tests {
 
     #[test]
     fn test_extract_text_ocr_fallback() {
-        let (sender, receiver) = std::sync::mpsc::channel::<LogMessage>();
-        std::thread::spawn(move || {
-            while let Ok(log) = receiver.recv() {
-                let log_entry: String =
-                    format!("[{}] {} - {}\n", log.time_stamp, log.level, log.message);
-                print!("{}", log_entry);
-            }
-        });
-        let service = PdfOcrService::new(Some(sender)).with_lang("chi_sim+eng");
-        // 加密且无文本层的扫描运单 PDF: 应走解密 -> gs 渲染 -> tesseract OCR
-        let path = r"C:\Users\29115\RustroverProjects\validators\ts\test.pdf";
-        let data = std::fs::read(path).expect("读取测试 PDF 失败");
+        for i in 1..=8 {
+            let path = format!(r"C:\Users\29115\Documents\lims-test-data\decrypt\{}.pdf", i);
+            let data = std::fs::read(&path).unwrap();
+            let (sender, receiver) = std::sync::mpsc::channel::<LogMessage>();
+            std::thread::spawn(move || {
+                while let Ok(log) = receiver.recv() {
+                    let log_entry: String =
+                        format!("[{}] {} - {}\n", log.time_stamp, log.level, log.message);
+                    print!("{}", log_entry);
+                }
+            });
+            let service = PdfOcrService::new(Some(sender)).with_lang("chi_sim+eng");
+            // 加密且无文本层的扫描运单 PDF: 应走解密 -> gs 渲染 -> tesseract OCR
 
-        let text = service.extract_text(&data).expect("提取文本失败");
-        println!("--- OCR 结果 (len {}) ---", text.len());
-        let preview: String = text.chars().take(300).collect();
-        println!("{}", preview);
+            let text = service.extract_text(&data).expect("提取文本失败");
+            std::fs::write(
+                format!(
+                    r"C:\Users\29115\Documents\lims-test-data\decrypt\{}_extracted_ocrmypdf.md",
+                    i
+                ),
+                text,
+            )
+            .unwrap();
+        }
     }
 }

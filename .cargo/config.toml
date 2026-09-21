@@ -1,0 +1,12 @@
+[env]
+# pdfium 原生库由 render-pdfium 特性在运行期加载。
+# firecrawl-pdfium 的发现链第 3 项用的是相对路径 ./target/pdfium/<platform>/...，
+# 而 cargo 运行测试时的 CWD 是被测 package 的根目录，解析不到 workspace 下的 target/，
+# 因此这里显式指定。relative = true 表示相对本文件所在目录解析，避免硬编码用户名。
+PDFIUM_LIB_PATH = { value = "firecrawl-pdfium-win-x64/bin/pdfium.dll", relative = true }
+
+# ort (load-dynamic) 在运行期按文件名加载 onnxruntime.dll，会先命中系统自带的
+# C:\Windows\System32\onnxruntime.dll（1.17，只支持 ONNX IR v9），
+# 而 pp-ocrv6 的模型是 IR v10，加载时报 "Unsupported model IR version: 10"。
+# 这里指向 1.27.0 的官方发行版。
+ORT_DYLIB_PATH = { value = "onnxruntime-win-x64-1.27.0/lib/onnxruntime.dll", relative = true }
