@@ -1,4 +1,4 @@
-use pdf_inspector::vision::{OcrPdfOptions, process_pdf_with_ocr};
+use pdf_inspector::vision::{OcrPdfOptions, process_pdf_with_ocr_mem};
 use pdf_inspector::{detect_pdf_mem, process_pdf_mem};
 
 pub fn is_text_based_document_from_mem(bytes: &[u8]) -> bool {
@@ -17,8 +17,8 @@ pub fn extract_text_from_mem(bytes: &[u8]) -> String {
     return "".to_string();
 }
 
-pub fn extract_text_from_mem_with_ocr(path: &str) -> String {
-    if let Ok(result) = process_pdf_with_ocr(path, OcrPdfOptions::auto()) {
+pub fn extract_text_from_mem_with_ocr(bytes: &[u8]) -> String {
+    if let Ok(result) = process_pdf_with_ocr_mem(bytes, OcrPdfOptions::auto()) {
         return result.markdown;
     }
     return "".to_string();
@@ -37,7 +37,7 @@ mod tests {
             let data = std::fs::read(&path).unwrap();
             let markdown: String;
             if !is_text_based_document_from_mem(&data) {
-                markdown = extract_text_from_mem_with_ocr(&path);
+                markdown = extract_text_from_mem_with_ocr(&data);
             } else {
                 markdown = extract_text_from_mem(&data);
             }

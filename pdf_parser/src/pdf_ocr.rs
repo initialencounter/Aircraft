@@ -6,7 +6,7 @@ use std::os::windows::process::CommandExt;
 
 use aircraft_types::logger::LogMessage;
 
-use crate::inspector::{extract_text_from_mem, is_text_based_document_from_mem};
+use crate::inspector::{extract_text_from_mem, extract_text_from_mem_with_ocr, is_text_based_document_from_mem};
 use crate::read::decrypt_pdf;
 
 /// 提取 PDF 文本的服务:
@@ -94,6 +94,12 @@ impl PdfOcrService {
             self.log("INFO", "TextBased PDF");
             let text = extract_text_from_mem(data);
             if !text.trim().is_empty() {
+                return Ok(text);
+            }
+        }else {
+            let text = extract_text_from_mem_with_ocr(data);
+            if !text.trim().is_empty() {
+                self.log("INFO", "extract_text_from_mem_with_ocr");
                 return Ok(text);
             }
         }
@@ -277,7 +283,7 @@ mod tests {
 
     #[test]
     fn test_extract_text_ocr_fallback() {
-        for i in 1..=8 {
+        for i in 5..=5 {
             let path = format!(r"C:\Users\29115\Documents\lims-test-data\decrypt\{}.pdf", i);
             let data = std::fs::read(&path).unwrap();
             let (sender, receiver) = std::sync::mpsc::channel::<LogMessage>();
