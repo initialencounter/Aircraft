@@ -58,6 +58,7 @@ const defaultConfig: Config = {
     baseUrl: 'https://api.moonshot.cn/v1',
     apiKey: '',
     model: 'moonshot-v1-128k',
+    thinking: false,
   },
   other: {
     queryServerHost: '192.168.0.195',
@@ -84,6 +85,7 @@ const debouncedSave = debounce(() => {
 async function getConfig() {
   try {
     const appConfigResponse = await apiManager.get('/get-config')
+    console.log(appConfigResponse)
     config.value = appConfigResponse
   } catch (error) {
     console.error('获取配置失败:', error)

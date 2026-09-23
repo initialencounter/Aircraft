@@ -50,6 +50,7 @@ export const LlmConfigSchema: Schema<LLMConfig> = Schema.object({
     .default('https://api.moonshot.cn/v1'),
   apiKey: Schema.string().description('API key').role('secret').default(''),
   model: Schema.string().description('模型').default('moonshot-v1-128k'),
+  thinking: Schema.boolean().description('思考模式').default(false),
 }).description('服务设置')
 
 export const OtherConfigSchema: Schema<OtherConfig> = Schema.object({
