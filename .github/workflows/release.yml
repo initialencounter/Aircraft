@@ -62,6 +62,15 @@ jobs:
           cd ../../
           yarn build:v
 
+      - name: Download native libraries
+        shell: bash
+        run: |
+          mkdir -p firecrawl-pdfium-win-x64/bin onnxruntime-win-x64-1.27.0/lib
+          curl -fL --retry 3 -o firecrawl-pdfium-win-x64/bin/pdfium.dll \
+            https://github.com/initialencounter/Aircraft/releases/download/lib/pdfium.dll
+          curl -fL --retry 3 -o onnxruntime-win-x64-1.27.0/lib/onnxruntime.dll \
+            https://github.com/initialencounter/Aircraft/releases/download/lib/onnxruntime.dll
+
       - name: Build electron
         run: |
           yarn build:el
