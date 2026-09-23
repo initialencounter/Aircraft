@@ -7,14 +7,14 @@ export function checkCompany(
   summaryManufacturer: string,
 ): CheckResult[] {
   const results: CheckResult[] = []
-  if (!summaryTestLab.includes(reportTestLab)) {
+  if (!reportTestLab || !summaryTestLab.includes(reportTestLab)) {
     results.push({
       ok: false,
       result: `UN报告上的测试单位为:${reportTestLab}，概要上的为:${summaryTestLab.slice(0, 20)}`,
     })
   }
   if (
-    !summaryManufacturer.includes(reportManufacturer)
+    !reportManufacturer || !summaryManufacturer.includes(reportManufacturer)
   ) {
     results.push({
       ok: false,

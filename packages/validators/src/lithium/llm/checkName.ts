@@ -10,13 +10,13 @@ export function checkName(
   if (!summaryEName) {
     summaryEName = summaryCName
   }
-  if (!summaryCName.includes(String(llmCName))) {
+  if (!llmCName || !summaryCName.includes(String(llmCName))) {
     result.push({
       ok: false,
       result: `UN报告上的电池中文名称为 ${llmCName}, 概要上为${summaryCName}`,
     })
   }
-  if (!summaryEName.includes(String(llmEName))) {
+  if (!llmEName || !summaryEName.includes(String(llmEName))) {
     result.push({
       ok: false,
       result: `UN报告上的电池英文名称为 ${llmEName}, 概要上为${summaryEName}`,
