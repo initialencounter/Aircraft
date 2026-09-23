@@ -1,6 +1,6 @@
 import { CheckResult } from './types'
 
-const MAX_ENERGY_DENSITY = 0.32 // 假设最大能量密度为0.32 Wh/g
+const MAX_ENERGY_DENSITY = 0.4 // 假设最大能量密度为0.4 Wh/g
 
 
 export function checkEnergyDensity(wattHour: number, mass: number): CheckResult[] {
@@ -12,7 +12,7 @@ export function checkEnergyDensity(wattHour: number, mass: number): CheckResult[
   if (density > MAX_ENERGY_DENSITY) {
     results.push({
       ok: false,
-      result: '电池能量密度大于320Wh/kg，请确认电池参数是否正确',
+      result: '电池能量密度大于400Wh/kg，请确认电池参数是否正确',
     })
   }
 
