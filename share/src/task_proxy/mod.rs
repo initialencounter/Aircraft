@@ -35,7 +35,7 @@ pub async fn run(mut shutdown_rx: watch::Receiver<bool>, log_tx: Sender<LogMessa
     client.log("INFO", "开始运行").await;
 
     let webhook_client = client.clone();
-    let file_manager = Arc::new(FileManager::new(config.llm));
+    let file_manager = Arc::new(FileManager::new());
     let hotkey_manager = Arc::new(HotkeyManager::new(
         crate::config::ConfigManager::get_config().hotkey,
         log_tx.clone(),

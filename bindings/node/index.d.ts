@@ -157,6 +157,7 @@ export interface LLMConfig {
   baseUrl: string
   apiKey: string
   model: string
+  thinking: boolean
 }
 
 export interface LoginRequest {

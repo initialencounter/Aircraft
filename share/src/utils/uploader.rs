@@ -1,9 +1,7 @@
-use aircraft_types::config::LLMConfig;
-use aircraft_types::llm::{ChatRequest, ChatResponse, Message, ResponseFormat};
+use aircraft_types::llm::{ChatRequest, ChatResponse, Message, ResponseFormat, Thinking};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use reqwest::Client;
 use std::error::Error;
-use std::sync::Mutex;
 
 use crate::config::ConfigManager;
 
@@ -26,47 +24,38 @@ fn extract_json(input: &str) -> Option<String> {
 #[derive(Debug)]
 pub struct FileManager {
     pub client: Client,
-    pub base_url: Mutex<String>,
-    pub api_key: Mutex<String>,
-    pub model: Mutex<String>,
 }
 impl FileManager {
-    pub fn new(config: LLMConfig) -> Self {
+    pub fn new() -> Self {
         let client = Client::new();
-        Self {
-            client,
-            base_url: Mutex::new(config.base_url),
-            api_key: Mutex::new(config.api_key),
-            model: Mutex::new(config.model),
-        }
-    }
-
-    pub fn reload(&self) {
-        let config = ConfigManager::get_config().llm;
-        *self.base_url.lock().unwrap() = config.base_url;
-        *self.api_key.lock().unwrap() = config.api_key;
-        *self.model.lock().unwrap() = config.model;
+        Self { client }
     }
 
     pub async fn chat_with_ai(&self, file_content: Vec<String>) -> Result<String, Box<dyn Error>> {
+        let config = ConfigManager::get_config().llm;
         // packages/validators/src/shared/types/attachment.ts
         let mut messages: Vec<Message> = vec![Message {
             content: PARSE_PROMPT.to_string(),
             role: "system".to_string(),
+            reasoning_content: None,
         }];
         for content in file_content {
             messages.push(Message {
                 content,
                 role: "system".to_string(),
+                reasoning_content: None,
             });
         }
-        let model = {
-            let guard = self.model.lock().unwrap();
-            guard.clone()
-        };
         let payload = ChatRequest {
             messages,
-            model,
+            model: config.model,
+            thinking: Thinking {
+                thinking_type: if config.thinking.unwrap_or(false) {
+                    "enabled".to_string()
+                } else {
+                    "disabled".to_string()
+                },
+            },
             temperature: 0.3,
             response_format: ResponseFormat {
                 response_format_type: "json_object".to_string(),
@@ -74,14 +63,8 @@ impl FileManager {
         };
         let response = self
             .client
-            .post(&format!(
-                "{}/chat/completions",
-                *&self.base_url.lock().unwrap()
-            ))
-            .header(
-                AUTHORIZATION,
-                format!("Bearer {}", *&self.api_key.lock().unwrap()),
-            )
+            .post(&format!("{}/chat/completions", config.base_url))
+            .header(AUTHORIZATION, format!("Bearer {}", config.api_key))
             .header(CONTENT_TYPE, "application/json")
             .body(serde_json::to_string(&payload)?)
             .send()
@@ -114,16 +97,8 @@ mod tests {
 
     #[test]
     async fn test_upload_pdf_to_openai() {
-        let base_url = "https://api.moonshot.cn/v1";
-        let api_key = "sk-";
         let file_path = r#"C:\Users\29115\RustroverProjects\validators\ts\test.pdf"#;
-        let model = "moonshot-v1-128k";
-        let config = LLMConfig {
-            base_url: base_url.to_string(),
-            api_key: api_key.to_string(),
-            model: model.to_string(),
-        };
-        let manage = FileManager::new(config);
+        let manage = FileManager::new();
         let file_data_vec: Vec<u8> = std::fs::read(file_path).expect("Failed to read file");
         let file_content = read_pdf_u8(&file_data_vec).unwrap();
         let file_list = vec![file_content.text];
@@ -134,20 +109,13 @@ mod tests {
     #[test]
     async fn test_upload_pdf_to_openai_with_ocr() {
         for i in 1..=1 {
-            let base_url = "https://api.moonshot.cn/v1";
-            let api_key = "sk-";
             let file_path = format!(
                 r"C:\Users\29115\Documents\lims-test-data\decrypt\{}_extracted.md",
                 i
             );
-            let model = "moonshot-v1-128k";
-            let config = LLMConfig {
-                base_url: base_url.to_string(),
-                api_key: api_key.to_string(),
-                model: model.to_string(),
-            };
-            let manage = FileManager::new(config);
-            let file_content: String = std::fs::read_to_string(&file_path).expect("Failed to read file");
+            let manage = FileManager::new();
+            let file_content: String =
+                std::fs::read_to_string(&file_path).expect("Failed to read file");
             let json: String = manage.chat_with_ai(vec![file_content]).await.unwrap();
             std::fs::write(
                 format!(
@@ -155,7 +123,8 @@ mod tests {
                     i
                 ),
                 json,
-            ).unwrap();
+            )
+            .unwrap();
         }
     }
 }

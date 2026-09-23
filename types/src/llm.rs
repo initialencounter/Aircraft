@@ -69,8 +69,19 @@ pub struct PdfDeleteResult {
 pub struct ChatRequest {
     pub messages: Vec<Message>,
     pub model: String,
+    pub thinking: Thinking,
     pub temperature: f64,
     pub response_format: ResponseFormat,
+}
+
+/// Thinking
+#[cfg_attr(feature = "napi-support", napi(object))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm-support", derive(Tsify))]
+#[cfg_attr(feature = "wasm-support", tsify(into_wasm_abi, from_wasm_abi))]
+pub struct Thinking {
+    #[serde(rename = "type")]
+    pub thinking_type: String,
 }
 
 /// ChatResponse
@@ -113,6 +124,8 @@ pub struct Message {
     pub content: String,
 
     pub role: String,
+
+    pub reasoning_content: Option<String>,
 }
 
 #[cfg_attr(feature = "napi-support", napi(object))]

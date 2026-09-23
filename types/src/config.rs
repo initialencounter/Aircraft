@@ -100,6 +100,7 @@ pub struct LLMConfig {
     pub base_url: String,
     pub api_key: String,
     pub model: String,
+    pub thinking: Option<bool>,
 }
 
 impl LLMConfig {
@@ -108,6 +109,7 @@ impl LLMConfig {
             base_url: "https://api.moonshot.cn/v1".to_string(),
             api_key: "".to_string(),
             model: "moonshot-v1-128k".to_string(),
+            thinking: Some(false),
         }
     }
 }
