@@ -80,7 +80,7 @@ export function conclusionsCheck(
         result: '结论错误，锂含量小于1g或2g，应为非限制性',
       })
     }
-    if (['≤100Wh', '≤20Wh'].includes(inspectionResult1) && unno !== 'UN3556') {
+    if (['≤100Wh', '≤20Wh'].includes(inspectionResult1) && !['UN3171', 'UN3556'].includes(unno)) {
       result.push({
         ok: false,
         result: '结论错误，瓦时数小于100Wh或者20Wh，应为非限制性',
@@ -101,7 +101,7 @@ export function conclusionsCheck(
     }
 
     // 危险品，设备内置或与设备包装在一起的电池
-    if (otherDescribe !== '540' && !['UN3556', 'UN3557', 'UN3481'].includes(unno) && isIon)
+    if (otherDescribe !== '540' && !['UN3171', 'UN3556', 'UN3557', 'UN3481'].includes(unno) && isIon)
       result.push({
         ok: false,
         result: '危险品，设备内置或与设备包装在一起的电池，UN编号应为UN3481',
