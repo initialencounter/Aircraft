@@ -1,4 +1,4 @@
-import type { CheckResult, SekBtyType } from '../shared/types'
+import type { CheckResult } from '../shared/types'
 
 /**
  * 锂含量范围检测
