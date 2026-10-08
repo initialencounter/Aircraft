@@ -35,10 +35,11 @@ enum SummaryField {
     Note,
 }
 
-const FIELD_MAPPINGS: [(&str, SummaryField); 27] = [
+const FIELD_MAPPINGS: [(&str, SummaryField); 28] = [
     ("委托单位", SummaryField::Consignor),
     ("生产单位", SummaryField::Manufacturer),
     ("制造商", SummaryField::Manufacturer),
+    ("制造单位", SummaryField::Manufacturer),
     ("测试单位", SummaryField::Testlab),
     ("名称", SummaryField::CnName),
     ("电芯类别", SummaryField::Classification),
