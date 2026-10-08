@@ -1,7 +1,9 @@
 pub mod crypt;
 pub mod parse;
+#[cfg(not(feature = "wasm-support"))]
 pub mod pdf_ocr;
 pub mod read;
+#[cfg(not(feature = "wasm-support"))]
 pub mod inspector;
 
 // 从统一的 types 包导入类型
