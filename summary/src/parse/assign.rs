@@ -92,7 +92,7 @@ pub fn parse_docx_table(content: Vec<String>) -> SummaryInfo {
         }
 
         // 生产单位信息
-        if (item.contains("生产单位") || item.contains("制造商")) && index + 2 < content.len()
+        if (item.contains("生产单位") || item.contains("制造商") || item.contains("制造单位")) && index + 2 < content.len()
         {
             let manufacturer_info = content[index + 2].clone();
             if !manufacturer_info.contains("测试单位") && !manufacturer_info.contains("Test Lab")
@@ -254,7 +254,7 @@ mod tests {
     fn test_parse_docx() {
         let text = read_docx_content(
             // r"C:\Users\29115\RustroverProjects\docx-rs\tests\test.docx",
-            r"C:\Users\29115\Downloads\8.14众凯（影翎 四款套装）\8.14众凯（影翎 四款套装）\8.14 申请鉴定书-KEYLAB2508006--4种套装\1. A1 标续3电套装\体感控\PEKGZ202508141214 概要.docx",
+            r"C:\Users\29115\Downloads\20261008制造商丢失.docx",
             vec!["word/document.xml".to_string()],
         );
         let content = parse_docx_text(&text.unwrap()[0].clone());
