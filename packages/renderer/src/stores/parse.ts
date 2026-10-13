@@ -18,28 +18,34 @@ interface FileData {
   data: number[]
 }
 
+interface ParseReportFiles {
+  pdf?: File
+  docx?: File
+}
+
 // 解析是跨视图的后台任务：状态和日志轮询都跟着 store 走，切换视图不影响解析
 export const useParseStore = defineStore('parse', {
   state: () => ({
     loading: false,
-    // PDF 是否已成功解析（解析与对比已拆开，对比前需先解析）
-    pdfParsed: false,
-    // 从 docx/剪贴板得到的概要信息，对比时需要它
+    // 从 docx/剪贴板得到的概要信息，解析 PDF 时需要它做对比
     docxInfo: null as SummaryFromLLM | null,
   }),
   actions: {
-    // 只解析 PDF（耗时操作），可预先完成，无需等待 docx
-    async parsePdf(file: File) {
+    async parseReport(files: ParseReportFiles) {
       this.loading = true
       useLogStore().startGetLog()
       try {
-        const pdfDataUrl = await fileToBase64(file)
+        if (!files.pdf) {
+          ElMessage.error('缺少PDF文件')
+          return
+        }
+        const pdfDataUrl = await fileToBase64(files.pdf)
         if (!pdfDataUrl) {
           ElMessage.error('文件解析失败')
           return
         }
 
-        const pdfFileData = await fileTransfer(file)
+        const pdfFileData = await fileTransfer(files.pdf)
         if (!pdfFileData) {
           ElMessage.error('文件解析失败')
           return
@@ -53,9 +59,16 @@ export const useParseStore = defineStore('parse', {
           return
         }
 
-        useSummaryStore().setPdf(pdfRes)
-        this.pdfParsed = true
-        ElMessage.success('PDF解析完成')
+        const summaryStore = useSummaryStore()
+        summaryStore.setPdf(pdfRes)
+
+        if (!this.docxInfo) {
+          ElMessage.error('没有概要信息，请先拖入docx或读取剪贴板')
+          return
+        }
+
+        const result = checkSummaryFromLLM(pdfRes, this.docxInfo)
+        summaryStore.setResult(result.map((item) => item.result))
       } catch (e) {
         console.log(e)
         ElMessage.error('解析失败' + e)
@@ -63,20 +76,6 @@ export const useParseStore = defineStore('parse', {
         this.loading = false
         useLogStore().stopGetLog()
       }
-    },
-    // 只做对比：需要已解析的 PDF 结果和 docx/剪贴板概要
-    compareReport() {
-      if (!this.pdfParsed) {
-        ElMessage.error('请先解析PDF')
-        return
-      }
-      if (!this.docxInfo) {
-        ElMessage.error('没有概要信息，请先拖入docx或读取剪贴板')
-        return
-      }
-      const result = checkSummaryFromLLM(useSummaryStore().pdf, this.docxInfo)
-      useSummaryStore().setResult(result.map((item) => item.result))
-      ElMessage.success('对比完成')
     },
     async parseDocx(file: File) {
       this.loading = true
