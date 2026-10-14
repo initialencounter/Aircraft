@@ -41,10 +41,7 @@ export function updateCalculationText(systemId: string) {
   if (!display) return
   display.innerHTML = calculationText
   const btyNetWeight = Number((document.getElementById(inputName) as HTMLInputElement)?.value || '0')
-  const abs = Math.abs(
-    (expectedNetWeight - btyNetWeight) / btyNetWeight
-  )
-  markErrorElement(inputName, abs > 0.05 ? [calculationText] : [])
+  markErrorElement(inputName, expectedNetWeight !== btyNetWeight ? [calculationText] : [])
 }
 
 export function insertWattCalculationText(systemId: string) {
@@ -96,13 +93,10 @@ export function updateWattCalculationText(systemId: string) {
   const wattHour = matchNumber(wattHourString || '0')
 
   const expectedWattHour = fixFloatPrecision((Number(voltage) * capacity) / 1000)
-  const abs = Math.abs(
-    (expectedWattHour - wattHour) / wattHour
-  )
-  const calculationText = `${voltage}V * ${capacity}mAh = ${expectedWattHour}Wh &nbsp;&nbsp;&nbsp;${abs > 0 ? abs : ''}`
+  const calculationText = `${voltage}V * ${capacity}mAh = ${expectedWattHour}Wh`
   const display = document.getElementById('wattCalculatorDisplay')
   if (!display) return
   display.innerHTML = calculationText
 
-  markErrorElement(wattHourInputName, abs > 0 ? [calculationText] : [])
+  markErrorElement(wattHourInputName, expectedWattHour !== wattHour ? [calculationText] : [])
 }
