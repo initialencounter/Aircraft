@@ -57,6 +57,7 @@ export const defaultConfig: Config = {
   "enableSaveHotKey": true,
   "enableImportHotKey": true,
   "dataCompare": false,
+  "enableChecklist": false,
   "customIcon": false,
   "pekProjectNoColor": "#51a020",
   "sekProjectNoColor": "#3e8ed0",

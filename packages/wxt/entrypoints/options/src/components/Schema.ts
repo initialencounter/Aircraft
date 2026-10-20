@@ -48,6 +48,7 @@ export interface Config {
   tagNextYear?: boolean
   customIcon?: boolean
   dataCompare?: boolean
+  enableChecklist?: boolean
   onekeyAssign?: boolean
   onekeyRollback?: boolean
   nextYearColor?: string
@@ -231,6 +232,9 @@ export const Config: Schema<Config> = Schema.intersect([
       .description(
         '启用海陆运数据对比功能（在检验单页面，点击表头即可将表单数据复制到剪切板, 再点击另一页面的对比按钮）'
       )
+      .default(false),
+    enableChecklist: Schema.boolean()
+      .description('显示检查单提醒（在检验单页面右侧显示可勾选的检查项，按检验单编号分别保存进度）')
       .default(false),
     customIcon: Schema.boolean()
       .description('自定义空海运主题（用更显眼的图标或字体颜色来区分空海运）')
