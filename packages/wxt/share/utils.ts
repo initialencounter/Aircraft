@@ -94,6 +94,29 @@ function formatHexColor(color: string) {
     return color
 }
 
+function getProjectDatePart(input: string): string {
+  if (!validateFormat(input)) {
+    throw new Error(`项目编号格式不合法: ${input}`);
+  }
+
+  const datePart = input.substring(5, 13); // YYYYMMDD
+  const year = Number(datePart.substring(0, 4));
+  const month = Number(datePart.substring(4, 6));
+  const day = Number(datePart.substring(6, 8));
+
+  // 校验真实日期，防止 2026-02-30、2025-04-31 这类"格式对但日期不存在"的情况
+  const d = new Date(year, month - 1, day);
+  if (
+    d.getFullYear() !== year ||
+    d.getMonth() !== month - 1 ||
+    d.getDate() !== day
+  ) {
+    throw new Error(`项目编号中的日期无效: ${datePart}`);
+  }
+
+  return datePart;
+}
+
 function validateFormat(input: string): boolean {
   // 正则表达式解释：
   // ^[A-Z]EK[A-Z]{2} - 以大写字母开头，接着EK，再两个大写字母
@@ -156,5 +179,5 @@ function waitForElement(selector: string, timeout = 10000) {
 export {
   LocalConfig, getLocalConfig, getCategory, getSystemId, checkDate, parseDate, sleep,
   setProjectNoToClipText, getClipboardText, getMonthsAgoProjectNo, formatHexColor, validateFormat,
-  getProjectDate, getProjectYear, waitForElement
+  getProjectDate, getProjectYear, waitForElement, getProjectDatePart,
 }

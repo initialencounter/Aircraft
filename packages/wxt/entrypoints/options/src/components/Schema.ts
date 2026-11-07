@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  clearManufacturer?: boolean
   assigneeDiff: boolean
   paymentCompanyInfo: string
   enablePPOCR: boolean
@@ -126,6 +127,9 @@ export const Config: Schema<Config> = Schema.intersect([
       tagNextYear: Schema.boolean()
         .description(`导入项目后，标记为下一年报告`)
         .default(false),
+      clearManufacturer: Schema.boolean()
+        .description(`剪切板中项目编号日期早于20260507，清空制造商, 重新检查一遍再输入`)
+        .default(true),
     }),
     Schema.object({
       enableSetEntrust: Schema.const(false),

@@ -1,4 +1,4 @@
-import { getLocalConfig, sleep, waitForElement } from '../share/utils'
+import { getClipboardText, getLocalConfig, getProjectDatePart, sleep, validateFormat, waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import type { EntrustFormData } from './modules/amount/types'
@@ -129,6 +129,7 @@ async function entrypoint() {
           if (mutation.type === 'childList') {
             logger.log('A child node has been added or removed.')
             setTagNextYear()
+            clearManufacturer()
             setMoonPay()
           }
         }
@@ -162,6 +163,19 @@ async function entrypoint() {
     if (importButtonClicked === false) return
     const nextYear = document.getElementById('nextYear') as HTMLInputElement
     if (nextYear) nextYear.click()
+  }
+
+  async function clearManufacturer() {
+    if (localConfig.clearManufacturer === false) return
+    let projectNo = await getClipboardText()
+    projectNo = projectNo.replace(/[^0-9A-Z]/g, '')
+    const projectDate = getProjectDatePart(projectNo); // YYYYMMDD
+    if (projectDate > '20260507'){
+      return
+    }
+    if (importButtonClicked === false) return
+    const manufacturerCName = document.getElementById("manufacturersCName") as HTMLInputElement
+    if (manufacturerCName) manufacturerCName.value = ""
   }
 
   async function insertSaveAndAssignButton(uid: string) {
