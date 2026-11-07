@@ -17,7 +17,7 @@ export const defaultConfig: Config = {
   "moonPay": true,
   "amount": "500.00",
   "tagNextYear": false,
-  "clearManufacturer": true,
+  "clearManufacturer": false,
   "openInNewTab": false,
   "onekeyRollback": true,
   "freshHotkey": true,

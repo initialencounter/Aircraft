@@ -129,7 +129,7 @@ export const Config: Schema<Config> = Schema.intersect([
         .default(false),
       clearManufacturer: Schema.boolean()
         .description(`剪切板中项目编号日期早于20260507，清空制造商, 重新检查一遍再输入`)
-        .default(true),
+        .default(false),
     }),
     Schema.object({
       enableSetEntrust: Schema.const(false),

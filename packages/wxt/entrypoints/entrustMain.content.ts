@@ -1,4 +1,4 @@
-import { getClipboardText, getLocalConfig, getProjectDatePart, sleep, validateFormat, waitForElement } from '../share/utils'
+import { getClipboardText, getLocalConfig, getProjectDatePart, sleep, waitForElement } from '../share/utils'
 import { getQmsg } from '../share/qmsg'
 import '../assets/message.min.css'
 import type { EntrustFormData } from './modules/amount/types'
@@ -74,7 +74,7 @@ async function entrypoint() {
   setAmountListener()
   insertReloadButton()
   startFollow()
-  if (localConfig.tagNextYear === true) setTagNextYearListener()
+  if (localConfig.tagNextYear === true || localConfig.clearManufacturer === true) setTagNextYearListener()
   startListenAmount(localConfig.amount)
   chrome.storage.local.get(
     ['assignUser', 'saveAndAssign', 'checkAssignUser'],
