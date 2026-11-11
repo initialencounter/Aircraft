@@ -1,6 +1,12 @@
 # 更新日志
 
 
+## [v3.7.13] - 2026-11-11
+
+### 新增
+
+- 添加未采信实验室验证([2605b84](https://github.com/initialencounter/Aircraft/commit/2605b84))
+
 ## [v3.7.12] - 2026-09-15
 
 - `查看委托书`页面, 相同的委托方和制造商高亮显示([9bb010f](https://github.com/initialencounter/Aircraft/commit/9bb010f))
