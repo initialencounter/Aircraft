@@ -6,6 +6,7 @@ interface ModelsWithFactory {
 }
 
 export interface Config {
+  testlabBlacklist: string
   clearManufacturer?: boolean
   assigneeDiff: boolean
   paymentCompanyInfo: string
@@ -179,6 +180,8 @@ export const Config: Schema<Config> = Schema.intersect([
     dangerousModelsWithFactory: Schema.array(ModelsWithFactoryList)
       .default([{ model: '18650', factory: '东莞倍创利电子科技有限公司' }])
       .description('危险电池型号对应的厂家(常见的电池型号可以输入对应，只有型号和厂家都相同才会弹出提示)'),
+    testlabBlacklist: Schema.string()
+      .role('textarea').default('').description("未采信的实验室名单"),
     aircraftServer: Schema.string()
       .description('附件解析服务器地址（保留配置，以防万一 wasm 失效）')
       .default('http://127.0.0.1:25455'),

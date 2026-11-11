@@ -67,10 +67,21 @@ export async function checkLocalAttachment(
   try {
     const results: Array<{ ok: boolean; result: string }> = []
     const projectNo = getCurrentProjectNo()
-    if (!projectNo) return []
+    if (!projectNo) return [{ ok: false, result: "未找到项目编号" }]
 
     if (!localConfig.enableLabelCheck && attachmentInfo) {
       attachmentInfo.goods.labels = ['pass']
+    }
+
+    if (localConfig.testlabBlacklist.length) {
+      for (let lab of localConfig.testlabBlacklist.split('\n')) {
+        if (attachmentInfo?.summary?.testlab?.includes(lab)) {
+          results.push({
+            ok: false,
+            result: `未采信的实验室: ${lab}`,
+          })
+        }
+      }
     }
 
     if (systemId === 'pek') {

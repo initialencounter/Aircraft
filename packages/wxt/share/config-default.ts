@@ -42,6 +42,7 @@ export const defaultConfig: Config = {
       "factory": "东莞倍创利电子科技有限公司"
     }
   ],
+  "testlabBlacklist": "",
   "aircraftServer": "http://127.0.0.1:25455",
   "enableCheckAttachment": true,
   "enableLabelCheck": true,

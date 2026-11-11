@@ -76,8 +76,8 @@ export async function verifyFormData(
     }
   }
 
-  // attachmentInfo 含 packageImage 大数组，不打印，避免 Firefox 控制台保留大对象
-  console.log('验证元数据:', { localConfig, dataFromForm, model, systemId, category, is_965, entrustData })
+
+  console.log('验证元数据:', { attachmentInfo, localConfig, dataFromForm, model, systemId, category, is_965, entrustData })
 
   // 系统资料上传检查
   result.push(...goodsfileCheckResults)
