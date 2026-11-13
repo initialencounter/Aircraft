@@ -12,20 +12,21 @@ export function checkBtyLabel(
   btyShape: string,
   is188: boolean,
   isCell: boolean,
+  otherDescribe: string,
 ): CheckResult[] {
   const result: CheckResult[] = []
-  const isButtonCell = btyShape === '8aad92b65aae82c3015ab094788a0026' && isCell
+  const isContainButtonCell = btyShape === '8aad92b65aae82c3015ab094788a0026' && isCell && otherDescribe === '542' // 内置纽扣电芯
 
   // 勾选了特殊规定188的要求进行适当标记
   if (isBtyLabel) {
     if (is188) {
-      if (isButtonCell) result.push({ ok: false, result: '内置纽扣电芯, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
+      if (isContainButtonCell) result.push({ ok: false, result: '内置纽扣电芯, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
     }
     else {
       result.push({ ok: false, result: '危险品, 不要勾选包装件需要按照特殊规定188的要求进行适当标记。' })
     }
   } else {
-    if (is188 && !isButtonCell) { // 没勾选特殊规定188的要求进行适当标记，且不是纽扣电芯
+    if (is188 && !isContainButtonCell) { // 没勾选特殊规定188的要求进行适当标记，且不是内置纽扣电芯
       result.push({
         ok: false,
         result: '未勾选包装件需要按照特殊规定188的要求进行适当标记。',

@@ -180,7 +180,7 @@ function checkSekBtyType(currentData: SekData, projectYear: string): CheckResult
 
   const is188 = getIs188(isSingleCell, isIon, wattHour, liContent, otherDescribe, btyGrossWeight, unno)
   // 电池标记
-  result.push(...checkBtyLabel(isBtyLabel, btyShape, is188, isCell))
+  result.push(...checkBtyLabel(isBtyLabel, btyShape, is188, isCell, otherDescribe))
 
   // 随附文件
   if (currentData['inspectionResult7'] !== '2')
