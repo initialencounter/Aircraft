@@ -1,6 +1,16 @@
 # 更新日志
 
 
+
+## [v3.7.14] - 2026-11-13
+
+### 新增
+
+- 初验磁性物质价格设置([c0f0600](https://github.com/initialencounter/Aircraft/commit/c0f0600))
+
+
+
+
 ## [v3.7.14] - 2026-11-13
 
 ### 修复
