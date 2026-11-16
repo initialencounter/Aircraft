@@ -2,7 +2,7 @@ import type { EntrustFormData } from './types'
 
 let amountStatus = '500.00'
 
-export async function startListenAmount(money: string = '500.00') {
+export async function startListenAmount(money: string = '500.00', magneticAmount: string = '100.00') {
   const inputSpan = document.querySelector(
     '#entrustEditForm > table > tbody > tr:nth-child(5) > td:nth-child(4) > span'
   ) as HTMLSpanElement
@@ -33,6 +33,9 @@ export async function startListenAmount(money: string = '500.00') {
     }
     if (data.amount === '480.00') {
       setAmount(money)
+    }
+    if (data.amount === '380.00') {
+      setAmount(magneticAmount)
     }
     if (data.amount === '680.00') {
       setAmount(String(Number(money) + 200) + '.00')

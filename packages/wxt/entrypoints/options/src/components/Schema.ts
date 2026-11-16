@@ -47,6 +47,7 @@ export interface Config {
   category?: 0 | 1 | 2 | 3 | 4
   moonPay?: boolean
   amount?: string
+  magneticAmount?: string
   tagNextYear?: boolean
   customIcon?: boolean
   dataCompare?: boolean
@@ -125,6 +126,7 @@ export const Config: Schema<Config> = Schema.intersect([
         .default(1),
       moonPay: Schema.boolean().description(`月结`).default(true),
       amount: Schema.string().description(`金额`).default('500.00'),
+      magneticAmount: Schema.string().description(`磁性物质金额`).default('100.00'),
       tagNextYear: Schema.boolean()
         .description(`导入项目后，标记为下一年报告`)
         .default(false),

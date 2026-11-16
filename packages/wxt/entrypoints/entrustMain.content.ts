@@ -75,7 +75,7 @@ async function entrypoint() {
   insertReloadButton()
   startFollow()
   if (localConfig.tagNextYear === true || localConfig.clearManufacturer === true) setTagNextYearListener()
-  startListenAmount(localConfig.amount)
+  startListenAmount(localConfig.amount, localConfig.magneticAmount)
   chrome.storage.local.get(
     ['assignUser', 'saveAndAssign', 'checkAssignUser'],
     async function (data) {

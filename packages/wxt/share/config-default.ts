@@ -16,6 +16,7 @@ export const defaultConfig: Config = {
   "category": 1,
   "moonPay": true,
   "amount": "500.00",
+  "magneticAmount": "100.00",
   "tagNextYear": false,
   "clearManufacturer": false,
   "openInNewTab": false,
