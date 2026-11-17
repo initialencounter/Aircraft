@@ -106,6 +106,10 @@ pub async fn apply_webhook(
         )
         .route("/get-summary-info", post(get_summary_info_handler))
         .route("/upload-llm-files", post(upload_llm_files_handler))
+        .route(
+            "/upload-drop-or-stack-files",
+            post(upload_drop_or_stack_files_handler),
+        )
         .route("/ping", get(ping_handler))
         .route("/get-captcha", post(get_captcha_handler))
         .route("/login", post(login_handler))
@@ -219,6 +223,22 @@ async fn upload_llm_files_handler(State(state): State<AppState>, multipart: Mult
     }
 }
 
+async fn upload_drop_or_stack_files_handler(
+    State(state): State<AppState>,
+    multipart: Multipart,
+) -> Response {
+    match handle_drop_or_stack_upload(multipart, state.file_manager, state.pdf_ocr_service).await {
+        Ok(json) => Json(json).into_response(),
+        Err(e) => {
+            eprintln!("Drop/Stack LLM Parse error: {:?}", e);
+            Json(CustomError {
+                message: format!("Drop/Stack LLM Parse err:{:?}", e),
+            })
+            .into_response()
+        }
+    }
+}
+
 async fn ping_handler() -> Json<&'static str> {
     Json("pong")
 }
@@ -314,11 +334,10 @@ impl fmt::Display for UploadError {
 
 impl std::error::Error for UploadError {}
 
-async fn handle_upload(
+async fn extract_upload_contents(
     mut multipart: Multipart,
-    file_manager: Arc<FileManager>,
-    pdf_ocr_service: PdfOcrService,
-) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    pdf_ocr_service: &PdfOcrService,
+) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut file_contents: Vec<String> = vec![];
 
     while let Some(field) = multipart.next_field().await.map_err(|e| {
@@ -347,12 +366,37 @@ async fn handle_upload(
         }
     }
 
+    Ok(file_contents)
+}
+
+async fn handle_upload(
+    multipart: Multipart,
+    file_manager: Arc<FileManager>,
+    pdf_ocr_service: PdfOcrService,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    let file_contents = extract_upload_contents(multipart, &pdf_ocr_service).await?;
     let res = file_manager.chat_with_ai(file_contents).await;
 
     match res {
         Ok(json) => Ok(serde_json::json!(json)),
         Err(e) => Err(Box::new(CustomError {
             message: format!("获取项目信息失败: {}", e),
+        }) as Box<dyn std::error::Error>),
+    }
+}
+
+async fn handle_drop_or_stack_upload(
+    multipart: Multipart,
+    file_manager: Arc<FileManager>,
+    pdf_ocr_service: PdfOcrService,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    let file_contents = extract_upload_contents(multipart, &pdf_ocr_service).await?;
+    let res = file_manager.chat_with_drop_or_stack_ai(file_contents).await;
+
+    match res {
+        Ok(json) => Ok(serde_json::json!(json)),
+        Err(e) => Err(Box::new(CustomError {
+            message: format!("获取跌落/堆码报告信息失败: {}", e),
         }) as Box<dyn std::error::Error>),
     }
 }

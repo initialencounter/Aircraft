@@ -6,6 +6,7 @@ import Logs from '../views/Logs.vue'
 //@ts-ignore
 import Stack from '../views/Stack.vue'
 import PdfParse from '../views/PdfParse.vue'
+import DropStackParse from '../views/DropStackParse.vue'
 import SearchTNotes from '../components/SearchTNotes.vue'
 import Clipkeeper from '../views/Clipkeeper.vue'
 
@@ -40,6 +41,11 @@ const router = createRouter({
       path: '/summary_parse',
       name: 'Pdf Parse',
       component: PdfParse,
+    },
+    {
+      path: '/drop_stack_parse',
+      name: 'DropStackParse',
+      component: DropStackParse,
     },
     {
       path: '/searchTNotes',

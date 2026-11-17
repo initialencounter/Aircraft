@@ -6,6 +6,7 @@ use std::error::Error;
 use crate::config::ConfigManager;
 
 const PARSE_PROMPT: &str = include_str!("parse_prompt.md");
+const DROP_OR_STACK_PROMPT: &str = include_str!("parse_drop_or_stack.md");
 
 fn extract_json(input: &str) -> Option<String> {
     // 定义起始和结束标记
@@ -32,10 +33,26 @@ impl FileManager {
     }
 
     pub async fn chat_with_ai(&self, file_content: Vec<String>) -> Result<String, Box<dyn Error>> {
+        self.chat_with_prompt(PARSE_PROMPT, file_content).await
+    }
+
+    pub async fn chat_with_drop_or_stack_ai(
+        &self,
+        file_content: Vec<String>,
+    ) -> Result<String, Box<dyn Error>> {
+        self.chat_with_prompt(DROP_OR_STACK_PROMPT, file_content)
+            .await
+    }
+
+    async fn chat_with_prompt(
+        &self,
+        prompt: &str,
+        file_content: Vec<String>,
+    ) -> Result<String, Box<dyn Error>> {
         let config = ConfigManager::get_config().llm;
         // packages/validators/src/shared/types/attachment.ts
         let mut messages: Vec<Message> = vec![Message {
-            content: PARSE_PROMPT.to_string(),
+            content: prompt.to_string(),
             role: "system".to_string(),
             reasoning_content: None,
         }];

@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import {
   Box,
   Document,
+  Files,
   House,
   MoonNight,
   Notebook,
@@ -37,6 +38,11 @@ const menuItems = [
     path: '/summary_parse',
     label: '概要解析',
     icon: MoonNight,
+  },
+  {
+    path: '/drop_stack_parse',
+    label: '跌落堆码比对',
+    icon: Files,
   },
   {
     path: '/searchTNotes',

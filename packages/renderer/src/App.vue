@@ -16,10 +16,15 @@ ipcManager.on('open_link', (data: Event<Link>): void => {
 })
 
 // 全局文件拖拽：任何页面都可拖拽文件，其他路由检测到文件拖入时跳转到 /summary_parse
+// 跌落/堆码比对页有自己的两个拖拽区，不做全局跳转
+const isDropStackRoute = () =>
+  router.currentRoute.value.path === '/drop_stack_parse'
+
 const handleGlobalDragEnter = (e: DragEvent) => {
   const types = e.dataTransfer?.types
   if (types && Array.from(types).includes('Files')) {
     e.preventDefault()
+    if (isDropStackRoute()) return
     if (router.currentRoute.value.path !== '/summary_parse') {
       router.push('/summary_parse')
     }
@@ -33,6 +38,7 @@ const handleGlobalDragOver = (e: DragEvent) => {
 
 const handleGlobalDrop = (e: DragEvent) => {
   e.preventDefault()
+  if (isDropStackRoute()) return
   const droppedFiles = Array.from(e.dataTransfer?.files ?? [])
   if (droppedFiles.length > 0) {
     pendingDropFiles.value = droppedFiles
