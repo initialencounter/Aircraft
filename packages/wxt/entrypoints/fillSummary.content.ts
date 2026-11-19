@@ -86,7 +86,8 @@ async function entrypoint() {
               formData,
             })
             setCommonData(formData)
-            jQuerySetDateBox('#testDate', formData.testDate)
+            if (isValidDateString(formData.testDate))
+              jQuerySetDateBox('#testDate', formData.testDate)
             setCheckboxValue(formData)
             setClassification(formData.classification)
             setColor(formData.color)
@@ -252,6 +253,30 @@ async function entrypoint() {
     } catch (e) {
       logger.error('[JQuery Hook] Failed to inject script:', e);
     }
+  }
+
+  function isValidDateString(value: string): boolean {
+    // 1. 格式校验：4 位年 - 2 位月 - 2 位日
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return false;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    // 2. 月份范围 01-12
+    if (month < 1 || month > 12) return false;
+
+    // 3. 计算该月天数（闰年 2 月为 29 天）
+    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    const daysInMonth = [
+      31,
+      isLeapYear ? 29 : 28,
+      31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    ];
+
+    // 4. 日期范围 01 到 当月最大天数
+    return day >= 1 && day <= daysInMonth[month - 1];
   }
 
   function jQuerySetDateBox(selector: string, date: string) {
